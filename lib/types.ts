@@ -132,11 +132,11 @@ export interface Company {
   actionPlan: string[] | null;
 }
 
+// User identity is managed by Clerk — we store only the app-level fields
 export interface User {
-  id: string;
+  id: string; // Clerk user ID
   name: string;
   email: string;
-  passHash: string;
   companyId: string;
   createdAt: string;
 }
@@ -151,11 +151,4 @@ export interface EmissionFactor {
   source_url: string;
   year_effective: number;
   year_retired: number | null;
-}
-
-export interface DB {
-  users: User[];
-  companies: Company[];
-  auditLog: AuditRow[];
-  factors: EmissionFactor[];
 }

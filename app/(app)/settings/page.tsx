@@ -1,25 +1,29 @@
 import { currentUser } from "@/lib/auth";
 import { getCompany } from "@/lib/store";
-import { updateProfile, changePassword } from "@/lib/actions";
+import { updateProfile } from "@/lib/actions";
 import { PageHeader } from "@/components/ui";
+import { ThemeToggle } from "@/components/theme-toggle";
 
-const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
-export default async function Settings({ searchParams }: { searchParams: { saved?: string; pw_error?: string } }) {
+export default async function Settings({ searchParams }: { searchParams: Promise<{ saved?: string }> }) {
+  const { saved } = await searchParams;
   const user = (await currentUser())!;
   const company = await getCompany(user.companyId);
 
   return (
     <div className="mx-auto max-w-2xl">
-      <PageHeader title="Settings" subtitle="Manage your company profile, account, and data." />
+      <PageHeader title="Settings" subtitle="Manage your company, display, and account preferences." />
 
-      {searchParams.saved && (
-        <p className="mb-4 rounded-lg bg-brand-50 px-4 py-2 text-sm text-brand-800">✓ Changes saved.</p>
+      {saved && (
+        <p className="mb-4 rounded-lg px-4 py-2 text-sm" style={{ background: "var(--brand-light)", color: "var(--brand-text)" }}>
+          ✓ Changes saved.
+        </p>
       )}
 
-      {/* Company profile */}
+      {/* Company Profile */}
       <form action={updateProfile} className="card mb-5">
-        <h2 className="font-semibold text-navy-900">Company Profile</h2>
+        <h2 className="font-semibold" style={{ color: "var(--text-1)" }}>Company Profile</h2>
         <div className="mt-4 grid grid-cols-2 gap-4">
           <div className="col-span-2">
             <label className="label">Company name</label>
@@ -27,7 +31,7 @@ export default async function Settings({ searchParams }: { searchParams: { saved
           </div>
           <div>
             <label className="label">Industry</label>
-            <input className="input bg-zinc-50" disabled value={company.industry ?? ""} />
+            <input className="input opacity-60 cursor-not-allowed" disabled value={company.industry ?? ""} />
           </div>
           <div>
             <label className="label">Fiscal year end</label>
@@ -36,54 +40,48 @@ export default async function Settings({ searchParams }: { searchParams: { saved
             </select>
           </div>
         </div>
-        <p className="mt-3 text-xs text-amber-600">
-          ⚠ Changing fiscal year end re-scopes all calculations to a different 12-month window — resync connections afterwards.
-        </p>
-        <div className="mt-4 flex justify-end">
-          <button className="btn-primary">Save profile</button>
-        </div>
+        <p className="mt-3 text-xs text-amber-600">⚠ Changing fiscal year end re-scopes all calculations — resync connections afterwards.</p>
+        <div className="mt-4 flex justify-end"><button className="btn-primary">Save profile</button></div>
       </form>
 
-      {/* User account */}
+      {/* Contact */}
       <div className="card mb-5">
-        <h2 className="font-semibold text-navy-900">User Account</h2>
-        <dl className="mt-3 space-y-2 text-sm">
-          <div className="flex justify-between"><dt className="text-zinc-500">Name</dt><dd className="font-medium">{user.name}</dd></div>
-          <div className="flex justify-between"><dt className="text-zinc-500">Email</dt><dd className="font-medium">{user.email}</dd></div>
+        <h2 className="font-semibold" style={{ color: "var(--text-1)" }}>Contact</h2>
+        <p className="mt-1 text-sm" style={{ color: "var(--text-2)" }}>Your identity is managed by Clerk. Click below to update your name, email, or password.</p>
+        <dl className="mt-4 space-y-2 text-sm">
+          <div className="flex justify-between">
+            <dt style={{ color: "var(--text-2)" }}>Name</dt>
+            <dd className="font-medium" style={{ color: "var(--text-1)" }}>{user.name}</dd>
+          </div>
+          <div className="flex justify-between">
+            <dt style={{ color: "var(--text-2)" }}>Email</dt>
+            <dd className="font-medium" style={{ color: "var(--text-1)" }}>{user.email}</dd>
+          </div>
         </dl>
+        <div className="mt-4 flex gap-3 text-sm" style={{ borderTop: "1px solid var(--border)", paddingTop: "1rem" }}>
+          <span style={{ color: "var(--text-3)" }}>Need help?</span>
+          <a href="mailto:support@greentrack.app" className="font-medium hover:underline" style={{ color: "var(--brand)" }}>
+            support@greentrack.app
+          </a>
+        </div>
       </div>
 
-      {/* Password change */}
-      <form action={changePassword} className="card mb-5">
-        <h2 className="font-semibold text-navy-900">Change Password</h2>
-        {searchParams.pw_error === "wrong" && (
-          <p className="mt-2 rounded bg-red-50 px-3 py-1.5 text-sm text-red-700">Current password is incorrect.</p>
-        )}
-        {searchParams.pw_error === "short" && (
-          <p className="mt-2 rounded bg-red-50 px-3 py-1.5 text-sm text-red-700">New password must be 8+ characters.</p>
-        )}
-        <div className="mt-4 grid grid-cols-2 gap-4">
-          <div>
-            <label className="label">Current password</label>
-            <input name="current_password" type="password" required className="input" autoComplete="current-password" />
-          </div>
-          <div>
-            <label className="label">New password (8+ chars)</label>
-            <input name="new_password" type="password" minLength={8} required className="input" autoComplete="new-password" />
-          </div>
+      {/* Display */}
+      <div className="card mb-5">
+        <h2 className="font-semibold" style={{ color: "var(--text-1)" }}>Display</h2>
+        <p className="mt-1 text-sm" style={{ color: "var(--text-2)" }}>Choose how GreenTrack looks. System follows your OS preference.</p>
+        <div className="mt-4">
+          <ThemeToggle />
         </div>
-        <div className="mt-4 flex justify-end">
-          <button className="btn-primary">Update password</button>
-        </div>
-      </form>
+      </div>
 
-      {/* Data management */}
+      {/* Data */}
       <div className="card">
-        <h2 className="font-semibold text-navy-900">Data Management</h2>
-        <p className="mt-2 text-sm text-zinc-500">Your data is yours. Export everything at any time — there is no lock-in.</p>
+        <h2 className="font-semibold" style={{ color: "var(--text-1)" }}>Data Management</h2>
+        <p className="mt-2 text-sm" style={{ color: "var(--text-2)" }}>Your data is yours. Export everything at any time.</p>
         <div className="mt-4 flex gap-3">
           <a href="/api/export" className="btn-secondary text-sm">Export all data (JSON)</a>
-          <span className="btn-secondary cursor-not-allowed text-sm opacity-40" title="Soft-delete with 30-day retention coming soon">Delete account</span>
+          <span className="btn-secondary cursor-not-allowed text-sm opacity-40">Delete account</span>
         </div>
       </div>
     </div>

@@ -13,12 +13,14 @@ const HEADCOUNTS: [string, string][] = [
   ["350_500", "350 to 500"],
 ];
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const STEP_LABELS = ["Company", "Industry", "Employees", "Locations", "Fiscal Year"];
 
 interface Loc { address: string; city: string; state: string; zip: string }
 
-export default function SetupWizard({ companyName }: { companyName: string }) {
+export default function SetupWizard() {
   const router = useRouter();
   const [step, setStep] = useState(1);
+  const [companyName, setCompanyName] = useState("");
   const [industry, setIndustry] = useState("");
   const [headcount, setHeadcount] = useState("");
   const [locCount, setLocCount] = useState(1);
@@ -42,6 +44,7 @@ export default function SetupWizard({ companyName }: { companyName: string }) {
   async function finish() {
     setSubmitting(true);
     const fd = new FormData();
+    fd.set("company_name", companyName);
     fd.set("industry", industry);
     fd.set("headcount", headcount);
     fd.set("fiscal_year_end", String(fyEnd));
@@ -56,19 +59,30 @@ export default function SetupWizard({ companyName }: { companyName: string }) {
     router.push("/setup/complete");
   }
 
-  const STEP_LABELS = ["Industry", "Employees", "Locations", "Fiscal Year"];
-
   return (
     <main className="mx-auto flex min-h-screen max-w-xl flex-col bg-white px-6 py-10">
       <div className="mb-8 flex justify-center"><Logo /></div>
-
       <div className="mb-2 flex items-center justify-between text-xs font-medium text-zinc-400">
-        <span>Step {step} of 4 — {STEP_LABELS[step - 1]}</span>
-        <span>{companyName}</span>
+        <span>Step {step} of 5 — {STEP_LABELS[step - 1]}</span>
       </div>
-      <ProgressBar percent={(step / 4) * 100} className="mb-10" />
+      <ProgressBar percent={(step / 5) * 100} className="mb-10" />
 
       {step === 1 && (
+        <div className="card">
+          <h1 className="text-lg font-bold text-navy-900">What&rsquo;s your company name?</h1>
+          <p className="mt-1 text-sm text-zinc-500">This appears on your GHG report and audit trail.</p>
+          <input
+            className="input mt-4" placeholder="Pacific Coast Logistics"
+            value={companyName} onChange={(e) => setCompanyName(e.target.value)}
+            autoFocus
+          />
+          <div className="mt-6 flex justify-end">
+            <button className="btn-primary" disabled={!companyName.trim()} onClick={() => setStep(2)}>Next →</button>
+          </div>
+        </div>
+      )}
+
+      {step === 2 && (
         <div className="card">
           <h1 className="text-lg font-bold text-navy-900">What industry is your company in?</h1>
           <p className="mt-1 text-sm text-zinc-500">This determines which emissions categories matter most for you.</p>
@@ -76,39 +90,35 @@ export default function SetupWizard({ companyName }: { companyName: string }) {
             <option value="">Select an industry…</option>
             {INDUSTRIES.map((i) => <option key={i}>{i}</option>)}
           </select>
-          <div className="mt-6 flex justify-end">
-            <button className="btn-primary" disabled={!industry} onClick={() => setStep(2)}>Next →</button>
-          </div>
-        </div>
-      )}
-
-      {step === 2 && (
-        <div className="card">
-          <h1 className="text-lg font-bold text-navy-900">How many employees does your company have?</h1>
-          <p className="mt-1 text-sm text-zinc-500">Governance requirements scale with company size.</p>
-          <div className="mt-4 grid grid-cols-2 gap-3">
-            {HEADCOUNTS.map(([value, label]) => (
-              <button
-                key={value}
-                onClick={() => setHeadcount(value)}
-                className={`rounded-xl border-2 px-4 py-5 text-sm font-semibold transition-all ${
-                  headcount === value
-                    ? "border-brand-500 bg-brand-50 text-brand-800 shadow-sm"
-                    : "border-zinc-200 bg-white text-zinc-700 hover:border-brand-300"
-                }`}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
           <div className="mt-6 flex justify-between">
             <button className="btn-secondary" onClick={() => setStep(1)}>← Back</button>
-            <button className="btn-primary" disabled={!headcount} onClick={() => setStep(3)}>Next →</button>
+            <button className="btn-primary" disabled={!industry} onClick={() => setStep(3)}>Next →</button>
           </div>
         </div>
       )}
 
       {step === 3 && (
+        <div className="card">
+          <h1 className="text-lg font-bold text-navy-900">How many employees does your company have?</h1>
+          <p className="mt-1 text-sm text-zinc-500">Governance requirements scale with company size.</p>
+          <div className="mt-4 grid grid-cols-2 gap-3">
+            {HEADCOUNTS.map(([value, label]) => (
+              <button key={value} onClick={() => setHeadcount(value)}
+                className={`rounded-xl border-2 px-4 py-5 text-sm font-semibold transition-all ${
+                  headcount === value ? "border-brand-500 bg-brand-50 text-brand-800 shadow-sm" : "border-zinc-200 bg-white text-zinc-700 hover:border-brand-300"
+                }`}>
+                {label}
+              </button>
+            ))}
+          </div>
+          <div className="mt-6 flex justify-between">
+            <button className="btn-secondary" onClick={() => setStep(2)}>← Back</button>
+            <button className="btn-primary" disabled={!headcount} onClick={() => setStep(4)}>Next →</button>
+          </div>
+        </div>
+      )}
+
+      {step === 4 && (
         <div className="card">
           <h1 className="text-lg font-bold text-navy-900">How many physical locations does your company operate?</h1>
           <p className="mt-1 text-sm text-zinc-500">Each location needs its own electricity and gas data. Different grid regions have different emission factors.</p>
@@ -130,13 +140,13 @@ export default function SetupWizard({ companyName }: { companyName: string }) {
             ))}
           </div>
           <div className="mt-6 flex justify-between">
-            <button className="btn-secondary" onClick={() => setStep(2)}>← Back</button>
-            <button className="btn-primary" disabled={locations.some((l) => !l.city || !l.state)} onClick={() => setStep(4)}>Next →</button>
+            <button className="btn-secondary" onClick={() => setStep(3)}>← Back</button>
+            <button className="btn-primary" disabled={locations.some((l) => !l.city || !l.state)} onClick={() => setStep(5)}>Next →</button>
           </div>
         </div>
       )}
 
-      {step === 4 && (
+      {step === 5 && (
         <div className="card">
           <h1 className="text-lg font-bold text-navy-900">When does your fiscal year end?</h1>
           <p className="mt-1 text-sm text-zinc-500">All data collection and calculations cover the 12 months ending on this month.</p>
@@ -144,7 +154,7 @@ export default function SetupWizard({ companyName }: { companyName: string }) {
             {MONTHS.map((m, i) => <option key={m} value={i + 1}>{m}</option>)}
           </select>
           <div className="mt-6 flex justify-between">
-            <button className="btn-secondary" onClick={() => setStep(3)}>← Back</button>
+            <button className="btn-secondary" onClick={() => setStep(4)}>← Back</button>
             <button className="btn-primary" disabled={submitting} onClick={finish}>
               {submitting ? "Saving…" : "Finish Setup ✓"}
             </button>

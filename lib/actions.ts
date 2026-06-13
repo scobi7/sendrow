@@ -3,28 +3,24 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { auth } from "@clerk/nextjs/server";
 import { createCompanyRecord } from "./newcompany";
-import { createUser, updateUser, getCompany, getUserByEmail, saveCompany, uid } from "./store";
-import { createSession, currentUser, destroySession, hashPassword, verifyPassword } from "./auth";
+import { getUserCompany, getCompany, saveCompany, uid } from "./store";
 import { Company, HeadcountRange, Industry, User } from "./types";
 import { egridForState } from "./factors";
 import { generateQBTransactions, generateUtilityData } from "./mockdata";
 import { recalcCompany } from "./calc";
 import { refreshSectionStatus } from "./progress";
 import { logChange } from "./audit";
-import { checkRateLimit, resetRateLimit } from "./ratelimit";
-import { sendWelcomeEmail } from "./email";
-
-function clientIP(): string {
-  const xff = headers().get("x-forwarded-for");
-  return xff ? xff.split(",")[0].trim() : "unknown";
-}
+import { checkRateLimit } from "./ratelimit";
 
 async function requireUser(): Promise<{ user: User; company: Company }> {
-  const user = await currentUser();
-  if (!user) redirect("/login");
-  const company = await getCompany(user!.companyId);
-  return { user: user!, company };
+  const { userId } = await auth();
+  if (!userId) redirect("/login");
+  const user = await getUserCompany(userId!);
+  if (!user) redirect("/setup"); // new Clerk user, no company yet
+  const company = await getCompany(user.companyId);
+  return { user, company };
 }
 
 async function persist(company: Company) {
@@ -34,70 +30,25 @@ async function persist(company: Company) {
   revalidatePath("/", "layout");
 }
 
-// ─────────── Auth ───────────
-
-export async function signup(formData: FormData) {
-  const ip = clientIP();
-  if (!checkRateLimit(`signup:${ip}`, 10)) {
-    redirect("/signup?error=" + encodeURIComponent("Too many sign-up attempts. Try again in an hour."));
-  }
-  const name = String(formData.get("name") ?? "").trim();
-  const email = String(formData.get("email") ?? "").trim().toLowerCase();
-  const companyName = String(formData.get("company") ?? "").trim();
-  const password = String(formData.get("password") ?? "");
-  if (!name || !email || !companyName || password.length < 8) {
-    redirect("/signup?error=" + encodeURIComponent("All fields required; password must be 8+ characters."));
-  }
-  if (await getUserByEmail(email)) {
-    redirect("/signup?error=" + encodeURIComponent("An account with that email already exists."));
-  }
-  const company = createCompanyRecord(companyName);
-  const user: User = {
-    id: uid("u_"),
-    name,
-    email,
-    passHash: hashPassword(password),
-    companyId: company.id,
-    createdAt: new Date().toISOString(),
-  };
-  await saveCompany(company);
-  await createUser(user);
-  createSession(user.id);
-  sendWelcomeEmail(name, email).catch(() => {}); // fire-and-forget, never block signup
-  redirect("/setup");
-}
-
-export async function login(formData: FormData) {
-  const ip = clientIP();
-  if (!checkRateLimit(`login:${ip}`, 10)) {
-    redirect("/login?error=" + encodeURIComponent("Too many failed attempts. Try again in an hour."));
-  }
-  const email = String(formData.get("email") ?? "").trim().toLowerCase();
-  const password = String(formData.get("password") ?? "");
-  const user = await getUserByEmail(email);
-  if (!user || !verifyPassword(password, user.passHash)) {
-    redirect("/login?error=" + encodeURIComponent("Invalid email or password."));
-  }
-  resetRateLimit(`login:${ip}`);
-  createSession(user!.id);
-  const company = await getCompany(user!.companyId);
-  redirect(company.setupComplete ? "/dashboard" : "/setup");
-}
-
-export async function logout() {
-  destroySession();
-  redirect("/");
-}
-
 // ─────────── Setup wizard ───────────
 
 export async function saveSetup(formData: FormData) {
-  const { user, company } = await requireUser();
+  const { userId } = await auth();
+  if (!userId) redirect("/login");
+  const user = await getUserCompany(userId!);
+  if (!user) redirect("/setup");
+  const company = await getCompany(user.companyId);
+
+  const companyName = String(formData.get("company_name") ?? "").trim();
   const industry = String(formData.get("industry") ?? "") as Industry;
   const headcount = String(formData.get("headcount") ?? "") as HeadcountRange;
   const fyEnd = Number(formData.get("fiscal_year_end"));
   const locCount = Number(formData.get("location_count"));
 
+  if (companyName) {
+    await logChange({ user, companyId: company.id, section: "setup", field: "company_name", prev: company.name, next: companyName });
+    company.name = companyName;
+  }
   await logChange({ user, companyId: company.id, section: "setup", field: "industry", prev: company.industry, next: industry });
   await logChange({ user, companyId: company.id, section: "setup", field: "headcount_range", prev: company.headcountRange, next: headcount });
   await logChange({ user, companyId: company.id, section: "setup", field: "fiscal_year_end", prev: company.fiscalYearEndMonth, next: fyEnd });
@@ -236,9 +187,7 @@ export async function saveLeadership(formData: FormData) {
 export async function generateReport() {
   const { user, company } = await requireUser();
   const s = company.sectionStatus;
-  if (!(s.connections === "complete" && s.scope1 === "complete" && s.scope2 === "complete")) {
-    return; // pre-flight hard gate, validated server-side
-  }
+  if (!(s.connections === "complete" && s.scope1 === "complete" && s.scope2 === "complete")) return;
   company.reportGeneratedAt = new Date().toISOString();
   await logChange({ user, companyId: company.id, section: "reports", field: "ghg_inventory_report", prev: "—", next: `generated ${company.reportGeneratedAt}` });
   await persist(company);
@@ -267,20 +216,5 @@ export async function updateProfile(formData: FormData) {
     company.fiscalYearEndMonth = fy;
   }
   await persist(company);
-  redirect("/settings?saved=1");
-}
-
-export async function changePassword(formData: FormData) {
-  const { user } = await requireUser();
-  const current = String(formData.get("current_password") ?? "");
-  const next = String(formData.get("new_password") ?? "");
-  if (!verifyPassword(current, user.passHash)) {
-    redirect("/settings?pw_error=wrong");
-  }
-  if (next.length < 8) {
-    redirect("/settings?pw_error=short");
-  }
-  user.passHash = hashPassword(next);
-  await updateUser(user);
   redirect("/settings?saved=1");
 }
