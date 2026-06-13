@@ -4,9 +4,9 @@ import { gapAnalysis } from "@/lib/progress";
 import { saveActionPlan } from "@/lib/actions";
 import { PageHeader } from "@/components/ui";
 
-export default async function Gaps() {
-  const user = (await currentUser())!;
-  const company = await getCompany(user.companyId);
+export default function Gaps() {
+  const user = currentUser()!;
+  const company = getCompany(user.companyId);
   const gaps = gapAnalysis(company);
   const saved = company.actionPlan;
 

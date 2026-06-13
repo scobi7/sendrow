@@ -6,10 +6,10 @@ import { totals } from "@/lib/calc";
 import { fiscalPeriodLabel } from "@/lib/mapping";
 import PrintButton from "../print-button";
 
-export default async function GHGReport() {
-  const user = await currentUser();
+export default function GHGReport() {
+  const user = currentUser();
   if (!user) redirect("/login");
-  const company = await getCompany(user!.companyId);
+  const company = getCompany(user.companyId);
   const t = totals(company);
   const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 2 });
   const s1 = company.calcs.filter((c) => c.scope === 1);

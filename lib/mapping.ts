@@ -2,6 +2,11 @@ import { Company } from "./types";
 import { totals } from "./calc";
 import { headcountMidpoint } from "./calc";
 
+/**
+ * Questionnaire Helper — display mapping only (no CDP/EcoVadis API in v1).
+ * Maps each questionnaire's question IDs to internal data fields.
+ */
+
 export interface MappingRow {
   questionId: string;
   question: string;
@@ -55,6 +60,7 @@ export function questionnaireMapping(company: Company, format: string): MappingR
       { questionId: "W-5", question: "Renewable energy share", yourValue: inp.has_recs ? `${inp.rec_coverage_pct ?? 0}% via RECs` : "0%" },
     ];
   }
+  // Generic
   return [
     { questionId: "G-1", question: "Scope 1 emissions", yourValue: t(tot.scope1) },
     { questionId: "G-2", question: "Scope 2 emissions (location-based)", yourValue: t(tot.scope2Location) },

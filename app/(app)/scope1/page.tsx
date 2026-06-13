@@ -3,9 +3,9 @@ import { getCompany } from "@/lib/store";
 import { saveFields } from "@/lib/actions";
 import { CO2eBox, InfoTip, PageHeader } from "@/components/ui";
 
-export default async function Scope1() {
-  const user = (await currentUser())!;
-  const company = await getCompany(user.companyId);
+export default function Scope1() {
+  const user = currentUser()!;
+  const company = getCompany(user.companyId);
   const inp = company.inputs;
   const calcs = company.calcs.filter((c) => c.scope === 1);
   const sub = (prefix: string) =>
@@ -20,6 +20,7 @@ export default async function Scope1() {
       <form action={saveFields} className="space-y-5">
         <input type="hidden" name="redirect_to" value="/scope1" />
 
+        {/* Fleet Fuel */}
         <details className="card" open>
           <summary className="cursor-pointer font-semibold text-navy-900">
             Fleet Fuel <InfoTip text="Fuel burned in vehicles your company owns or leases. Find totals on your fleet card statement or fuel receipts." />
@@ -45,6 +46,7 @@ export default async function Scope1() {
           <CO2eBox label="Fleet fuel emissions" tons={sub("fleet")} />
         </details>
 
+        {/* Natural Gas */}
         <details className="card" open>
           <summary className="cursor-pointer font-semibold text-navy-900">
             Natural Gas <InfoTip text="Pre-filled from your utility connection. Enter a value only to override." />
@@ -64,6 +66,7 @@ export default async function Scope1() {
           <CO2eBox label="Natural gas emissions" tons={sub("natural gas")} />
         </details>
 
+        {/* Refrigerants */}
         <details className="card" open>
           <summary className="cursor-pointer font-semibold text-navy-900">
             Refrigerants <InfoTip text="Refrigerant gases topped up in your HVAC or refrigeration systems this year. Ask your HVAC service vendor — it's on the service invoice." />
@@ -87,6 +90,7 @@ export default async function Scope1() {
           <CO2eBox label="Refrigerant emissions" tons={sub("refrigerant")} />
         </details>
 
+        {/* On-Site Equipment */}
         <details className="card" open>
           <summary className="cursor-pointer font-semibold text-navy-900">
             On-Site Equipment <InfoTip text="Generators, forklifts, and other fuel-burning equipment at your facilities." />

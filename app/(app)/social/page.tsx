@@ -3,9 +3,9 @@ import { getCompany } from "@/lib/store";
 import { saveFields } from "@/lib/actions";
 import { InfoTip, PageHeader } from "@/components/ui";
 
-export default async function Social() {
-  const user = (await currentUser())!;
-  const company = await getCompany(user.companyId);
+export default function Social() {
+  const user = currentUser()!;
+  const company = getCompany(user.companyId);
   const inp = company.inputs;
   const turnover =
     inp.social_departures != null && inp.social_total_employees

@@ -1,8 +1,7 @@
-node_modules/
-.next/
-out/
-data/db.json
-.env*
-*.tsbuildinfo
-next-env.d.ts
+node_modules
+.env
 .DS_Store
+dist
+build
+.next
+.cache

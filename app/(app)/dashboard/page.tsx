@@ -16,9 +16,9 @@ const SECTIONS: [SectionName, string, string, string][] = [
   ["reports", "Reports", "/reports", "Generate your GHG inventory and questionnaire answers"],
 ];
 
-export default async function Dashboard() {
-  const user = (await currentUser())!;
-  const company = await getCompany(user.companyId);
+export default function Dashboard() {
+  const user = currentUser()!;
+  const company = getCompany(user.companyId);
   const pct = progressPercent(company);
   const t = totals(company);
   const ready = canGenerateReport(company);

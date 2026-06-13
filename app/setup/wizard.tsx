@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Logo, ProgressBar } from "@/components/ui";
 import { saveSetup } from "@/lib/actions";
 
@@ -13,14 +12,11 @@ const HEADCOUNTS: [string, string][] = [
   ["350_500", "350 to 500"],
 ];
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-const STEP_LABELS = ["Company", "Industry", "Employees", "Locations", "Fiscal Year"];
 
 interface Loc { address: string; city: string; state: string; zip: string }
 
-export default function SetupWizard() {
-  const router = useRouter();
+export default function SetupWizard({ companyName }: { companyName: string }) {
   const [step, setStep] = useState(1);
-  const [companyName, setCompanyName] = useState("");
   const [industry, setIndustry] = useState("");
   const [headcount, setHeadcount] = useState("");
   const [locCount, setLocCount] = useState(1);
@@ -44,7 +40,6 @@ export default function SetupWizard() {
   async function finish() {
     setSubmitting(true);
     const fd = new FormData();
-    fd.set("company_name", companyName);
     fd.set("industry", industry);
     fd.set("headcount", headcount);
     fd.set("fiscal_year_end", String(fyEnd));
@@ -56,107 +51,90 @@ export default function SetupWizard() {
       fd.set(`loc_${i}_zip`, l.zip);
     });
     await saveSetup(fd);
-    router.push("/setup/complete");
   }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-xl flex-col bg-white px-6 py-10">
+    <main className="mx-auto flex min-h-screen max-w-xl flex-col px-6 py-10">
       <div className="mb-8 flex justify-center"><Logo /></div>
-      <div className="mb-2 flex items-center justify-between text-xs font-medium text-zinc-400">
-        <span>Step {step} of 5 — {STEP_LABELS[step - 1]}</span>
-      </div>
-      <ProgressBar percent={(step / 5) * 100} className="mb-10" />
+      <p className="mb-2 text-center text-sm text-slate-500">Step {step} of 4 — {companyName}</p>
+      <ProgressBar percent={(step / 4) * 100} className="mb-10" />
 
       {step === 1 && (
         <div className="card">
-          <h1 className="text-lg font-bold text-navy-900">What&rsquo;s your company name?</h1>
-          <p className="mt-1 text-sm text-zinc-500">This appears on your GHG report and audit trail.</p>
-          <input
-            className="input mt-4" placeholder="Pacific Coast Logistics"
-            value={companyName} onChange={(e) => setCompanyName(e.target.value)}
-            autoFocus
-          />
+          <h1 className="text-lg font-bold text-navy-900">What industry is your company in?</h1>
+          <p className="mt-1 text-sm text-slate-500">This determines which emissions categories matter most for you.</p>
+          <select className="input mt-4" value={industry} onChange={(e) => setIndustry(e.target.value)}>
+            <option value="">Select an industry…</option>
+            {INDUSTRIES.map((i) => <option key={i}>{i}</option>)}
+          </select>
           <div className="mt-6 flex justify-end">
-            <button className="btn-primary" disabled={!companyName.trim()} onClick={() => setStep(2)}>Next →</button>
+            <button className="btn-primary" disabled={!industry} onClick={() => setStep(2)}>Next</button>
           </div>
         </div>
       )}
 
       {step === 2 && (
         <div className="card">
-          <h1 className="text-lg font-bold text-navy-900">What industry is your company in?</h1>
-          <p className="mt-1 text-sm text-zinc-500">This determines which emissions categories matter most for you.</p>
-          <select className="input mt-4" value={industry} onChange={(e) => setIndustry(e.target.value)}>
-            <option value="">Select an industry…</option>
-            {INDUSTRIES.map((i) => <option key={i}>{i}</option>)}
-          </select>
+          <h1 className="text-lg font-bold text-navy-900">How many employees does your company have?</h1>
+          <div className="mt-4 grid grid-cols-2 gap-3">
+            {HEADCOUNTS.map(([value, label]) => (
+              <button
+                key={value}
+                onClick={() => setHeadcount(value)}
+                className={`rounded-lg border px-4 py-4 text-sm font-medium transition ${
+                  headcount === value ? "border-brand-600 bg-brand-50 text-brand-800" : "border-slate-300 bg-white text-slate-700 hover:border-brand-400"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
           <div className="mt-6 flex justify-between">
-            <button className="btn-secondary" onClick={() => setStep(1)}>← Back</button>
-            <button className="btn-primary" disabled={!industry} onClick={() => setStep(3)}>Next →</button>
+            <button className="btn-secondary" onClick={() => setStep(1)}>Back</button>
+            <button className="btn-primary" disabled={!headcount} onClick={() => setStep(3)}>Next</button>
           </div>
         </div>
       )}
 
       {step === 3 && (
         <div className="card">
-          <h1 className="text-lg font-bold text-navy-900">How many employees does your company have?</h1>
-          <p className="mt-1 text-sm text-zinc-500">Governance requirements scale with company size.</p>
-          <div className="mt-4 grid grid-cols-2 gap-3">
-            {HEADCOUNTS.map(([value, label]) => (
-              <button key={value} onClick={() => setHeadcount(value)}
-                className={`rounded-xl border-2 px-4 py-5 text-sm font-semibold transition-all ${
-                  headcount === value ? "border-brand-500 bg-brand-50 text-brand-800 shadow-sm" : "border-zinc-200 bg-white text-zinc-700 hover:border-brand-300"
-                }`}>
-                {label}
-              </button>
-            ))}
-          </div>
-          <div className="mt-6 flex justify-between">
-            <button className="btn-secondary" onClick={() => setStep(2)}>← Back</button>
-            <button className="btn-primary" disabled={!headcount} onClick={() => setStep(4)}>Next →</button>
-          </div>
-        </div>
-      )}
-
-      {step === 4 && (
-        <div className="card">
           <h1 className="text-lg font-bold text-navy-900">How many physical locations does your company operate?</h1>
-          <p className="mt-1 text-sm text-zinc-500">Each location needs its own electricity and gas data. Different grid regions have different emission factors.</p>
+          <p className="mt-1 text-sm text-slate-500">Each location will need its own electricity and gas data. Different grid regions have different emission factors.</p>
           <input type="number" min={1} max={20} className="input mt-4 w-28" value={locCount}
             onChange={(e) => updateLocCount(Number(e.target.value))} />
           <div className="mt-4 space-y-4">
             {locations.map((l, i) => (
-              <div key={i} className="rounded-xl border border-zinc-200 bg-zinc-50 p-4">
-                <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-zinc-400">Location {i + 1}</p>
+              <div key={i} className="rounded-lg border border-slate-200 p-4">
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Location {i + 1}</p>
                 <div className="grid grid-cols-2 gap-3">
-                  <input className="input col-span-2 bg-white" placeholder="Street address" value={l.address} onChange={(e) => setLocField(i, "address", e.target.value)} />
-                  <input className="input bg-white" placeholder="City" value={l.city} onChange={(e) => setLocField(i, "city", e.target.value)} />
-                  <div className="flex gap-2">
-                    <input className="input w-14 bg-white" placeholder="CA" maxLength={2} value={l.state} onChange={(e) => setLocField(i, "state", e.target.value.toUpperCase())} />
-                    <input className="input bg-white" placeholder="ZIP" value={l.zip} onChange={(e) => setLocField(i, "zip", e.target.value)} />
+                  <input className="input col-span-2" placeholder="Street address" value={l.address} onChange={(e) => setLocField(i, "address", e.target.value)} />
+                  <input className="input" placeholder="City" value={l.city} onChange={(e) => setLocField(i, "city", e.target.value)} />
+                  <div className="flex gap-3">
+                    <input className="input w-16" placeholder="CA" maxLength={2} value={l.state} onChange={(e) => setLocField(i, "state", e.target.value.toUpperCase())} />
+                    <input className="input" placeholder="ZIP" value={l.zip} onChange={(e) => setLocField(i, "zip", e.target.value)} />
                   </div>
                 </div>
               </div>
             ))}
           </div>
           <div className="mt-6 flex justify-between">
-            <button className="btn-secondary" onClick={() => setStep(3)}>← Back</button>
-            <button className="btn-primary" disabled={locations.some((l) => !l.city || !l.state)} onClick={() => setStep(5)}>Next →</button>
+            <button className="btn-secondary" onClick={() => setStep(2)}>Back</button>
+            <button className="btn-primary" disabled={locations.some((l) => !l.city || !l.state)} onClick={() => setStep(4)}>Next</button>
           </div>
         </div>
       )}
 
-      {step === 5 && (
+      {step === 4 && (
         <div className="card">
           <h1 className="text-lg font-bold text-navy-900">When does your fiscal year end?</h1>
-          <p className="mt-1 text-sm text-zinc-500">All data collection and calculations cover the 12 months ending on this month.</p>
+          <p className="mt-1 text-sm text-slate-500">All data collection and calculations cover the 12 months ending on this month.</p>
           <select className="input mt-4" value={fyEnd} onChange={(e) => setFyEnd(Number(e.target.value))}>
             {MONTHS.map((m, i) => <option key={m} value={i + 1}>{m}</option>)}
           </select>
           <div className="mt-6 flex justify-between">
-            <button className="btn-secondary" onClick={() => setStep(4)}>← Back</button>
+            <button className="btn-secondary" onClick={() => setStep(3)}>Back</button>
             <button className="btn-primary" disabled={submitting} onClick={finish}>
-              {submitting ? "Saving…" : "Finish Setup ✓"}
+              {submitting ? "Saving…" : "Finish Setup"}
             </button>
           </div>
         </div>

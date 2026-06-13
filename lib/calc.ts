@@ -2,6 +2,13 @@ import { CalcResult, Company } from "./types";
 import { getFactor, uid } from "./store";
 import { COMMUTE_FACTOR, QB_CATEGORY_TO_USEEIO, REFRIGERANT_FACTOR } from "./factors";
 
+/**
+ * Server-side calculation engine. Runs after every data save; results are
+ * stored on the company record. The dashboard reads stored values only.
+ * Every result carries the factor id used and a human-readable formula —
+ * both flow into the audit trail and methodology section.
+ */
+
 const r2 = (n: number) => Math.round(n * 100) / 100;
 const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 2 });
 
@@ -28,6 +35,7 @@ export function recalcCompany(company: Company): void {
     results.push({ id: uid("calc_"), scope, category, co2eTons: r2(co2eTons), factorId, formula, basis, marketBasedTons: marketBasedTons === undefined ? undefined : r2(marketBasedTons) });
   };
 
+  // ───────────── Scope 1 ─────────────
   if (!inp.fleet_na) {
     const fuels: [string, number | null | undefined, string][] = [
       ["gasoline", inp.fleet_gasoline_gal, "fuel.gasoline.2025"],
@@ -68,6 +76,7 @@ export function recalcCompany(company: Company): void {
       `${fmt(inp.equipment_gal)} gal × ${f.value} ${f.unit} = ${fmt(r2(inp.equipment_gal * f.value))} tCO2e`);
   }
 
+  // ───────────── Scope 2 ─────────────
   if (company.connections.utility.connected && company.utilityData.length > 0) {
     const residual = getFactor("residual.WECC.2024");
     const recPct = inp.has_recs ? Math.min(Math.max(inp.rec_coverage_pct ?? 0, 0), 100) : 0;
@@ -84,6 +93,7 @@ export function recalcCompany(company: Company): void {
     }
   }
 
+  // ───────────── Scope 3 ─────────────
   if (company.connections.quickbooks.connected && company.qbTransactions.length > 0) {
     const byCategory: Record<string, number> = {};
     for (const t of company.qbTransactions) byCategory[t.category] = (byCategory[t.category] ?? 0) + t.amount;
@@ -141,6 +151,7 @@ export function recalcCompany(company: Company): void {
 
   for (const [cat, decision] of Object.entries(inp.scope3_other_categories ?? {})) {
     if (decision === "industry_average") {
+      // flat low-confidence placeholder: 1% of current scope 3 subtotal or 5 t
       const s3 = results.filter((r) => r.scope === 3).reduce((s, r) => s + r.co2eTons, 0);
       const est = r2(Math.max(s3 * 0.01, 5));
       add(3, `${cat} (industry average estimate)`, est, null,

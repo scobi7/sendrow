@@ -1,6 +1,12 @@
 import { Company, QBTransaction, UtilityMonth } from "./types";
 import { uid } from "./store";
 
+/**
+ * Simulated connector payloads. In production these come from the
+ * QuickBooks API (Bill/Purchase objects) and UtilityAPI/Arcadia.
+ * Deterministic per company so demos are repeatable.
+ */
+
 function seededRandom(seed: string) {
   let h = 2166136261;
   for (const c of seed) h = Math.imul(h ^ c.charCodeAt(0), 16777619);
@@ -23,6 +29,7 @@ const VENDORS: Record<string, string[]> = {
   "Meals & Catering": ["Corporate Catering Co", "Costco Business", "Panera Bread"],
 };
 
+/** Annual spend envelope by category, scaled by industry + headcount. */
 function spendProfile(company: Company): Record<string, number> {
   const head = { under_50: 35, "50_150": 100, "150_350": 250, "350_500": 425 }[
     company.headcountRange ?? "50_150"
@@ -58,10 +65,12 @@ function spendProfile(company: Company): Record<string, number> {
   return out;
 }
 
+/** 12 fiscal-year months ending at fiscalYearEndMonth of the most recent completed FY. */
 export function fiscalMonths(company: Company): string[] {
   const endMonth = company.fiscalYearEndMonth ?? 12;
   const now = new Date();
   let endYear = now.getFullYear();
+  // use the most recently completed fiscal year
   if (endMonth >= now.getMonth() + 1) endYear -= 1;
   const months: string[] = [];
   for (let i = 11; i >= 0; i--) {
@@ -106,9 +115,11 @@ export function generateUtilityData(company: Company): UtilityMonth[] {
   ];
   const rows: UtilityMonth[] = [];
   for (const loc of company.locations) {
+    // base load roughly proportional to headcount split across locations
     const baseKwh = (head * 2600) / Math.max(company.locations.length, 1);
     const baseTherms = (head * 55) / Math.max(company.locations.length, 1);
     for (let i = 0; i < months.length; i++) {
+      // seasonal curve: more electricity in summer (cooling), more gas in winter
       const season = Math.sin(((i + 3) / 12) * 2 * Math.PI);
       rows.push({
         locationId: loc.id,

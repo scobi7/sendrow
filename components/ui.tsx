@@ -3,12 +3,8 @@ import { SectionStatus } from "@/lib/types";
 
 export function Logo({ light = false }: { light?: boolean }) {
   return (
-    <span className="flex items-center gap-2 text-lg font-bold tracking-tight"
-      style={{ color: light ? "#fff" : "var(--text-1)" }}>
-      <span className="flex h-7 w-7 items-center justify-center rounded-lg text-sm font-bold text-white shadow-sm"
-        style={{ background: "var(--brand)" }}>
-        G
-      </span>
+    <span className={`flex items-center gap-2 text-lg font-bold ${light ? "text-white" : "text-navy-900"}`}>
+      <span className="flex h-7 w-7 items-center justify-center rounded-md bg-brand-600 text-sm text-white">G</span>
       GreenTrack
     </span>
   );
@@ -16,26 +12,26 @@ export function Logo({ light = false }: { light?: boolean }) {
 
 export function StatusDot({ status }: { status: SectionStatus }) {
   const color =
-    status === "complete"    ? "var(--brand)" :
-    status === "in_progress" ? "#d97706" :
-                               "var(--border)";
-  return <span className="inline-block h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: color }} />;
+    status === "complete" ? "bg-brand-500" : status === "in_progress" ? "bg-amber-400" : "bg-slate-300";
+  return <span className={`inline-block h-3 w-3 rounded-full ${color}`} />;
 }
 
 export function ProgressBar({ percent, className = "" }: { percent: number; className?: string }) {
   return (
-    <div className={`h-2 w-full overflow-hidden rounded-full ${className}`} style={{ background: "var(--border)" }}>
-      <div className="h-full rounded-full transition-all duration-500" style={{ width: `${Math.max(percent, 2)}%`, background: "var(--brand)" }} />
+    <div className={`h-3 w-full overflow-hidden rounded-full bg-slate-200 ${className}`}>
+      <div
+        className="h-full rounded-full bg-brand-500 transition-all"
+        style={{ width: `${Math.max(percent, 2)}%` }}
+      />
     </div>
   );
 }
 
 export function CO2eBox({ label, tons }: { label: string; tons: number }) {
   return (
-    <div className="mt-4 flex items-center justify-between rounded-lg px-4 py-3 text-sm"
-      style={{ background: "var(--brand-light)" }}>
-      <span className="font-medium" style={{ color: "var(--brand-text)" }}>{label}</span>
-      <span className="font-bold" style={{ color: "var(--brand)" }}>
+    <div className="mt-4 flex items-center justify-between rounded-lg bg-brand-50 px-4 py-3 text-sm">
+      <span className="font-medium text-brand-800">{label}</span>
+      <span className="font-bold text-brand-700">
         {tons.toLocaleString("en-US", { maximumFractionDigits: 2 })} tCO2e
       </span>
     </div>
@@ -45,8 +41,8 @@ export function CO2eBox({ label, tons }: { label: string; tons: number }) {
 export function PageHeader({ title, subtitle }: { title: string; subtitle?: string }) {
   return (
     <div className="mb-6">
-      <h1 className="text-2xl font-bold tracking-tight" style={{ color: "var(--text-1)" }}>{title}</h1>
-      {subtitle && <p className="mt-1 text-sm" style={{ color: "var(--text-2)" }}>{subtitle}</p>}
+      <h1 className="text-2xl font-bold text-navy-900">{title}</h1>
+      {subtitle && <p className="mt-1 text-sm text-slate-500">{subtitle}</p>}
     </div>
   );
 }
@@ -54,10 +50,10 @@ export function PageHeader({ title, subtitle }: { title: string; subtitle?: stri
 export function InfoTip({ text }: { text: string }) {
   return (
     <span className="group relative ml-1 inline-flex cursor-help">
-      <span className="flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-bold"
-        style={{ background: "var(--border)", color: "var(--text-2)" }}>i</span>
-      <span className="invisible absolute bottom-5 left-1/2 z-10 w-64 -translate-x-1/2 rounded-lg p-3 text-xs text-white shadow-lg group-hover:visible"
-        style={{ background: "var(--text-1)" }}>
+      <span className="flex h-4 w-4 items-center justify-center rounded-full bg-slate-200 text-[10px] font-bold text-slate-500">
+        i
+      </span>
+      <span className="invisible absolute bottom-5 left-1/2 z-10 w-64 -translate-x-1/2 rounded-lg bg-navy-900 p-3 text-xs text-white shadow-lg group-hover:visible">
         {text}
       </span>
     </span>
@@ -66,8 +62,7 @@ export function InfoTip({ text }: { text: string }) {
 
 export function BackLink({ href = "/dashboard", label = "Back to dashboard" }: { href?: string; label?: string }) {
   return (
-    <Link href={href} className="mb-4 inline-block text-sm hover:underline no-print"
-      style={{ color: "var(--brand)" }}>
+    <Link href={href} className="mb-4 inline-block text-sm text-brand-700 hover:underline no-print">
       ← {label}
     </Link>
   );

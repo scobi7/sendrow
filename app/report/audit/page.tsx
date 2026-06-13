@@ -6,11 +6,11 @@ import { auditForCompany } from "@/lib/audit";
 import { fiscalPeriodLabel } from "@/lib/mapping";
 import PrintButton from "../print-button";
 
-export default async function AuditTrail() {
-  const user = await currentUser();
+export default function AuditTrail() {
+  const user = currentUser();
   if (!user) redirect("/login");
-  const company = await getCompany(user!.companyId);
-  const rows = await auditForCompany(company.id);
+  const company = getCompany(user.companyId);
+  const rows = auditForCompany(company.id);
 
   return (
     <main className="mx-auto max-w-4xl bg-white px-8 py-10 text-slate-800">

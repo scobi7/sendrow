@@ -13,9 +13,9 @@ const POLICIES = [
 ];
 const LEVELS = ["C-Suite", "VP/Director", "Manager", "Individual Contributor"];
 
-export default async function Governance() {
-  const user = (await currentUser())!;
-  const company = await getCompany(user.companyId);
+export default function Governance() {
+  const user = currentUser()!;
+  const company = getCompany(user.companyId);
   const inp = company.inputs;
   const policies = inp.gov_policies ?? {};
   const leadership = inp.gov_leadership ?? {};
