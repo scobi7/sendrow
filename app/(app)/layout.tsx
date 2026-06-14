@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { auth } from "@clerk/nextjs/server";
 import { Logo } from "@/components/ui";
 import { currentUser } from "@/lib/auth";
 import { loadCompany } from "@/lib/store";
@@ -19,8 +20,10 @@ const NAV: [string, string][] = [
 ];
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
+  const { userId } = await auth();
+  if (!userId) redirect("/login");           // not signed in with Clerk at all
   const user = await currentUser();
-  if (!user) redirect("/login");
+  if (!user) redirect("/onboarding");        // signed in with Clerk but no DB record yet
   if (user.role === "consultant") redirect("/consultant");
   if (!user.companyId) redirect("/onboarding");
   const company = await loadCompany(user.companyId);

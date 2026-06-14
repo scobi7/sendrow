@@ -1,12 +1,15 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { auth } from "@clerk/nextjs/server";
 import { Logo } from "@/components/ui";
 import { currentUser } from "@/lib/auth";
 import { LogoutButton } from "@/components/logout-button";
 
 export default async function ConsultantLayout({ children }: { children: React.ReactNode }) {
+  const { userId } = await auth();
+  if (!userId) redirect("/login");
   const user = await currentUser();
-  if (!user) redirect("/login");
+  if (!user) redirect("/onboarding");
   if (user.role !== "consultant") redirect("/dashboard");
 
   return (

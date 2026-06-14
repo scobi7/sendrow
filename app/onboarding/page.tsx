@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { auth } from "@clerk/nextjs/server";
 import { Logo } from "@/components/ui";
 import { currentUser } from "@/lib/auth";
 import { onboardAsCompany, onboardAsConsultant } from "@/lib/actions";
@@ -8,10 +9,10 @@ export default async function OnboardingPage({
 }: {
   searchParams: Promise<{ error?: string }>;
 }) {
-  const [{ error }, user] = await Promise.all([searchParams, currentUser()]);
-  if (!user) redirect("/login");
-  if (user.companyId) redirect("/dashboard");
-  if (user.role === "consultant") redirect("/consultant");
+  const [{ error }, { userId }, user] = await Promise.all([searchParams, auth(), currentUser()]);
+  if (!userId) redirect("/login");          // not signed in with Clerk
+  if (user?.companyId) redirect("/dashboard");
+  if (user?.role === "consultant") redirect("/consultant");
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center px-6 bg-slate-50">
