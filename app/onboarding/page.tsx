@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { redirect } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
 import { Logo } from "@/components/ui";
@@ -9,10 +11,11 @@ export default async function OnboardingPage({
 }: {
   searchParams: Promise<{ error?: string }>;
 }) {
-  const [{ error }, { userId }, user] = await Promise.all([searchParams, auth(), currentUser()]);
-  if (!userId) redirect("/login");          // not signed in with Clerk
+  const { error } = await searchParams;
+  const { userId } = await auth();
+  if (!userId) redirect("/login");
+  const user = await currentUser();
   if (user?.companyId) redirect("/dashboard");
-  if (user?.role === "consultant") redirect("/consultant");
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center px-6 bg-slate-50">

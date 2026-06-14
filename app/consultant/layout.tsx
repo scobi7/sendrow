@@ -27,6 +27,12 @@ export default async function ConsultantLayout({ children }: { children: React.R
         <div className="border-t border-slate-100 pt-4">
           <p className="truncate text-xs font-semibold text-slate-900">{user.name}</p>
           <p className="truncate text-xs text-slate-400">{user.email}</p>
+          <Link
+            href="/onboarding"
+            className="mt-2 block text-xs text-slate-400 hover:text-slate-600"
+          >
+            Switch account type
+          </Link>
           <LogoutButton />
         </div>
       </aside>

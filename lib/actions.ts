@@ -68,18 +68,25 @@ export async function onboardAsCompany(formData: FormData) {
     sectionStatus: company.sectionStatus,
   });
 
-  await db.insert(userCompanies).values({
-    clerkId: userId,
-    companyId: company.id,
-    name: clerkUser?.fullName ?? clerkUser?.firstName ?? "User",
-    email: clerkUser?.emailAddresses[0]?.emailAddress ?? "",
-    role: "company",
-    createdAt: new Date().toISOString(),
-  });
+  const uname = clerkUser?.fullName ?? clerkUser?.firstName ?? "User";
+  const uemail = clerkUser?.emailAddresses[0]?.emailAddress ?? "";
 
-  const name = clerkUser?.fullName ?? clerkUser?.firstName ?? "";
-  const email = clerkUser?.emailAddresses[0]?.emailAddress ?? "";
-  if (name && email) sendWelcomeEmail(name, email);
+  await db
+    .insert(userCompanies)
+    .values({
+      clerkId: userId,
+      companyId: company.id,
+      name: uname,
+      email: uemail,
+      role: "company",
+      createdAt: new Date().toISOString(),
+    })
+    .onConflictDoUpdate({
+      target: userCompanies.clerkId,
+      set: { companyId: company.id, name: uname, email: uemail, role: "company" },
+    });
+
+  if (uname && uemail) sendWelcomeEmail(uname, uemail);
 
   redirect("/setup");
 }
@@ -92,14 +99,20 @@ export async function onboardAsConsultant() {
   const name = clerkUser?.fullName ?? clerkUser?.firstName ?? "User";
   const email = clerkUser?.emailAddresses[0]?.emailAddress ?? "";
 
-  await db.insert(userCompanies).values({
-    clerkId: userId,
-    companyId: null,
-    name,
-    email,
-    role: "consultant",
-    createdAt: new Date().toISOString(),
-  });
+  await db
+    .insert(userCompanies)
+    .values({
+      clerkId: userId,
+      companyId: null,
+      name,
+      email,
+      role: "consultant",
+      createdAt: new Date().toISOString(),
+    })
+    .onConflictDoUpdate({
+      target: userCompanies.clerkId,
+      set: { companyId: null, name, email, role: "consultant" },
+    });
 
   if (email) sendWelcomeEmail(name, email);
   redirect("/consultant");
