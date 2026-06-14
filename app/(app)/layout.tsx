@@ -21,6 +21,7 @@ const NAV: [string, string][] = [
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const user = currentUser();
   if (!user) redirect("/login");
+  if (user.role === "consultant") redirect("/consultant");
   const company = getCompany(user.companyId);
   if (!company.setupComplete) redirect("/setup");
 

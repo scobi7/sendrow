@@ -1,10 +1,3 @@
-import { defineConfig } from "drizzle-kit";
-
-export default defineConfig({
-  schema: "./lib/db/schema.ts",
-  out: "./lib/db/migrations",
-  dialect: "postgresql",
-  dbCredentials: {
-    url: process.env.DATABASE_URL!,
-  },
-});
+// Drizzle config — not active until Neon Postgres migration (v1.3).
+// Install drizzle-kit, then restore this config.
+export {};

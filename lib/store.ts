@@ -14,7 +14,7 @@ const DB_PATH = path.join(DATA_DIR, "db.json");
 const g = globalThis as unknown as { __gtdb?: DB };
 
 function emptyDB(): DB {
-  return { users: [], companies: [], auditLog: [], factors: SEED_FACTORS };
+  return { users: [], companies: [], auditLog: [], factors: SEED_FACTORS, consultantClients: [], inviteTokens: [] };
 }
 
 export function loadDB(): DB {
@@ -23,6 +23,8 @@ export function loadDB(): DB {
     const raw = fs.readFileSync(DB_PATH, "utf-8");
     const db = JSON.parse(raw) as DB;
     if (!db.factors || db.factors.length === 0) db.factors = SEED_FACTORS;
+    if (!db.consultantClients) db.consultantClients = [];
+    if (!db.inviteTokens) db.inviteTokens = [];
     g.__gtdb = db;
   } catch {
     g.__gtdb = emptyDB();

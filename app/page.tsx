@@ -40,9 +40,9 @@ export default function Landing() {
         </div>
         <p className="mt-12 text-sm text-slate-400">
           I am an ESG consultant —{" "}
-          <span className="cursor-not-allowed underline decoration-dotted" title="Consultant platform: coming in the next build phase">
-            consultant platform coming soon
-          </span>
+          <Link href="/signup?role=consultant" className="underline hover:text-slate-600">
+            sign up for the consultant platform
+          </Link>
         </p>
       </section>
     </main>

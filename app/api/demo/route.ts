@@ -1,36 +1,36 @@
 import { NextResponse } from "next/server";
-import { uid, getCompany, saveCompany, createUserCompany, getUserCompany } from "@/lib/store";
+import { loadDB, saveDB, uid } from "@/lib/store";
 import { egridForState } from "@/lib/factors";
 import { generateQBTransactions, generateUtilityData } from "@/lib/mockdata";
 import { recalcCompany } from "@/lib/calc";
 import { refreshSectionStatus } from "@/lib/progress";
-import { appendAudit } from "@/lib/store";
-import { Company } from "@/lib/types";
-import { auth } from "@clerk/nextjs/server";
+import { hashPassword } from "@/lib/auth";
+import { createSession } from "@/lib/auth";
+import { Company, User } from "@/lib/types";
 
 export async function GET(request: Request) {
   const secret = process.env.DEMO_SECRET;
+  const { searchParams } = new URL(request.url);
+
   if (secret) {
-    const { searchParams } = new URL(request.url);
     if (searchParams.get("key") !== secret) return new Response("Not Found", { status: 404 });
   } else if (process.env.NODE_ENV === "production") {
     return new Response("Not Found", { status: 404 });
   }
 
-  const { userId } = await auth();
-  if (!userId) return NextResponse.redirect(new URL("/login", request.url));
+  const db = loadDB();
+  const demoEmail = "demo@greentrack.app";
 
-  // Check if user already has a company linked
-  let userRecord = await getUserCompany(userId);
-  if (userRecord) {
-    // Already set up — just redirect to dashboard
+  // Idempotent: reuse existing demo user if present
+  let demoUser = db.users.find((u) => u.email === demoEmail);
+  if (demoUser) {
+    createSession(demoUser.id);
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
-  const DEMO_COMPANY_ID = `co_demo_${userId.slice(0, 8)}`;
-
+  const companyId = uid("co_");
   const company: Company = {
-    id: DEMO_COMPANY_ID,
+    id: companyId,
     name: "Pacific Coast Logistics",
     industry: "Logistics",
     headcountRange: "150_350",
@@ -55,12 +55,22 @@ export async function GET(request: Request) {
       rec_certificate_name: "2025 Green-e REC certificate",
       qb_data_reviewed: true, commute_avg_miles: 24, commute_mode: "Drive alone", commute_days_in_office: 4,
       waste_landfill_tons: 86, waste_recycled_tons: 41, waste_composted_tons: 12,
-      scope3_other_categories: { "Capital goods": "industry_average", "Fuel- and energy-related activities": "industry_average", "Downstream transportation": "na", "Use of sold products": "na", "End-of-life treatment of sold products": "na", "Leased assets": "na" },
+      scope3_other_categories: {
+        "Capital goods": "industry_average", "Fuel- and energy-related activities": "industry_average",
+        "Downstream transportation": "na", "Use of sold products": "na",
+        "End-of-life treatment of sold products": "na", "Leased assets": "na",
+      },
       social_total_employees: 240, social_new_hires: 38, social_departures: 29,
       social_lost_time_injuries: 2, social_osha_recordables: 5, social_near_misses: 14,
       social_days_lost: 22, social_training_hours: 2900, social_demographics_uploaded: true,
-      gov_leadership: { "C-Suite": { womenPct: 25, minorityPct: 25 }, "VP/Director": { womenPct: 33, minorityPct: 30 }, "Manager": { womenPct: 41, minorityPct: 38 }, "Individual Contributor": { womenPct: 36, minorityPct: 52 } },
-      gov_policies: { "Code of conduct": true, "Whistleblower policy": false, "Anti-bribery policy": false, "Data privacy policy": true, "Environmental policy": false, "Equal opportunity policy": true },
+      gov_leadership: {
+        "C-Suite": { womenPct: 25, minorityPct: 25 }, "VP/Director": { womenPct: 33, minorityPct: 30 },
+        "Manager": { womenPct: 41, minorityPct: 38 }, "Individual Contributor": { womenPct: 36, minorityPct: 52 },
+      },
+      gov_policies: {
+        "Code of conduct": true, "Whistleblower policy": false, "Anti-bribery policy": false,
+        "Data privacy policy": true, "Environmental policy": false, "Equal opportunity policy": true,
+      },
       gov_ccpa_compliant: true, gov_public_privacy_policy: true, gov_data_breaches: false,
     },
     calcs: [],
@@ -76,13 +86,31 @@ export async function GET(request: Request) {
   company.reportGeneratedAt = new Date().toISOString();
   refreshSectionStatus(company);
 
-  await saveCompany(company);
-  await createUserCompany(userId, company.id, "Demo User", "demo@example.com");
-  await appendAudit({
-    id: uid("aud_"), ts: new Date().toISOString(), companyId: company.id,
-    userId, userName: "Demo User", section: "setup", field: "demo_seed",
-    prev: "—", next: "Demo company seeded with Pacific Coast Logistics data",
-  });
+  const user: User = {
+    id: uid("u_"),
+    name: "Demo User",
+    email: demoEmail,
+    passHash: hashPassword("demo-password-not-used"),
+    companyId: company.id,
+    role: "company",
+    createdAt: new Date().toISOString(),
+  };
 
+  db.companies.push(company);
+  db.users.push(user);
+  db.auditLog.push({
+    id: uid("aud_"),
+    ts: new Date().toISOString(),
+    companyId: company.id,
+    userId: user.id,
+    userName: user.name,
+    section: "setup",
+    field: "demo_seed",
+    prev: "—",
+    next: "Demo company seeded with Pacific Coast Logistics data",
+  });
+  saveDB();
+
+  createSession(user.id);
   return NextResponse.redirect(new URL("/dashboard", request.url));
 }

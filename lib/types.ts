@@ -144,7 +144,25 @@ export interface User {
   email: string;
   passHash: string;
   companyId: string;
+  role?: "company" | "consultant";
   createdAt: string;
+}
+
+export interface ConsultantClient {
+  id: string;
+  consultantId: string;
+  companyId: string;
+  addedAt: string;
+  archivedAt: string | null;
+}
+
+export interface InviteToken {
+  token: string;
+  consultantId: string;
+  companyId: string;
+  createdAt: string;
+  expiresAt: string;
+  usedAt: string | null;
 }
 
 export interface EmissionFactor {
@@ -164,4 +182,6 @@ export interface DB {
   companies: Company[];
   auditLog: AuditRow[];
   factors: EmissionFactor[];
+  consultantClients: ConsultantClient[];
+  inviteTokens: InviteToken[];
 }

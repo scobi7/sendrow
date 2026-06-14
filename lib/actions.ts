@@ -1,21 +1,31 @@
 "use server";
 
+import crypto from "crypto";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { loadDB, saveDB, uid, getCompany } from "./store";
 import { createSession, currentUser, destroySession, hashPassword, verifyPassword } from "./auth";
-import { Company, HeadcountRange, Industry, User } from "./types";
+import { Company, ConsultantClient, HeadcountRange, Industry, InviteToken, User } from "./types";
 import { egridForState } from "./factors";
 import { generateQBTransactions, generateUtilityData } from "./mockdata";
 import { recalcCompany } from "./calc";
 import { refreshSectionStatus } from "./progress";
 import { logChange } from "./audit";
+import { checkRateLimit, resetRateLimit } from "./ratelimit";
+import { sendWelcomeEmail } from "./email";
+import { createCompanyRecord } from "./newcompany";
 
 function requireUser(): { user: User; company: Company } {
   const user = currentUser();
   if (!user) redirect("/login");
   const company = getCompany(user.companyId);
   return { user, company };
+}
+
+function requireConsultant(): User {
+  const user = currentUser();
+  if (!user || user.role !== "consultant") redirect("/login");
+  return user;
 }
 
 function persist(company: Company) {
@@ -31,49 +41,74 @@ export async function signup(formData: FormData) {
   const db = loadDB();
   const name = String(formData.get("name") ?? "").trim();
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
-  const companyName = String(formData.get("company") ?? "").trim();
   const password = String(formData.get("password") ?? "");
-  if (!name || !email || !companyName || password.length < 8) {
+  const role = (String(formData.get("role") ?? "company") || "company") as "company" | "consultant";
+
+  if (!name || !email || password.length < 8) {
     redirect("/signup?error=" + encodeURIComponent("All fields required; password must be 8+ characters."));
   }
   if (db.users.some((u) => u.email === email)) {
     redirect("/signup?error=" + encodeURIComponent("An account with that email already exists."));
   }
-  const company: Company = {
-    id: uid("co_"),
-    name: companyName,
-    industry: null,
-    headcountRange: null,
-    locations: [],
-    fiscalYearEndMonth: null,
-    setupComplete: false,
+
+  if (role === "consultant") {
+    const user: User = {
+      id: uid("u_"),
+      name,
+      email,
+      passHash: hashPassword(password),
+      companyId: "",
+      role: "consultant",
+      createdAt: new Date().toISOString(),
+    };
+    db.users.push(user);
+    saveDB();
+    createSession(user.id);
+    sendWelcomeEmail(name, email);
+    redirect("/consultant");
+  }
+
+  const companyName = String(formData.get("company") ?? "").trim();
+  if (!companyName) {
+    redirect("/signup?error=" + encodeURIComponent("Company name is required."));
+  }
+
+  const company = createCompanyRecord(companyName);
+  const user: User = {
+    id: uid("u_"),
+    name,
+    email,
+    passHash: hashPassword(password),
+    companyId: company.id,
+    role: "company",
     createdAt: new Date().toISOString(),
-    connections: { quickbooks: { connected: false, lastSynced: null }, utility: { connected: false, lastSynced: null } },
-    qbTransactions: [],
-    utilityData: [],
-    inputs: {},
-    calcs: [],
-    sectionStatus: { connections: "not_started", scope1: "not_started", scope2: "not_started", scope3: "not_started", social: "not_started", governance: "not_started", reports: "not_started" },
-    reportGeneratedAt: null,
-    actionPlan: null,
   };
-  const user: User = { id: uid("u_"), name, email, passHash: hashPassword(password), companyId: company.id, createdAt: new Date().toISOString() };
   db.companies.push(company);
   db.users.push(user);
   saveDB();
   createSession(user.id);
+  sendWelcomeEmail(name, email);
   redirect("/setup");
 }
 
 export async function login(formData: FormData) {
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const password = String(formData.get("password") ?? "");
+
+  if (!checkRateLimit(`login:${email}`, 10, 60 * 60 * 1000)) {
+    redirect("/login?error=" + encodeURIComponent("Too many failed attempts. Try again in 1 hour."));
+  }
+
   const user = loadDB().users.find((u) => u.email === email);
   if (!user || !verifyPassword(password, user.passHash)) {
     redirect("/login?error=" + encodeURIComponent("Invalid email or password."));
   }
-  createSession(user!.id);
-  const company = getCompany(user!.companyId);
+
+  resetRateLimit(`login:${email}`);
+  createSession(user.id);
+
+  if (user.role === "consultant") redirect("/consultant");
+  const company = getCompany(user.companyId);
   redirect(company.setupComplete ? "/dashboard" : "/setup");
 }
 
@@ -176,7 +211,7 @@ const BOOL_FIELDS = new Set([
 export async function saveFields(formData: FormData) {
   const { user, company } = requireUser();
   const inputs = company.inputs as Record<string, unknown>;
-  for (const [key, raw] of formData.entries()) {
+  for (const [key, raw] of Array.from(formData.entries())) {
     if (key.startsWith("$") || key === "redirect_to") continue;
     if (!(key in FIELD_SECTIONS)) continue;
     const section = FIELD_SECTIONS[key];
@@ -187,7 +222,6 @@ export async function saveFields(formData: FormData) {
     inputs[key] = value;
   }
   persist(company);
-  // log resulting formulas for emissions fields into audit trail
   const dest = String(formData.get("redirect_to") ?? "");
   if (dest) redirect(dest);
 }
@@ -232,7 +266,7 @@ export async function generateReport() {
   const { user, company } = requireUser();
   const s = company.sectionStatus;
   if (!(s.connections === "complete" && s.scope1 === "complete" && s.scope2 === "complete")) {
-    return; // pre-flight hard gate, validated server-side
+    return;
   }
   company.reportGeneratedAt = new Date().toISOString();
   logChange({ user, companyId: company.id, section: "reports", field: "ghg_inventory_report", prev: "—", next: `generated ${company.reportGeneratedAt}` });
@@ -263,4 +297,114 @@ export async function updateProfile(formData: FormData) {
   }
   persist(company);
   redirect("/settings?saved=1");
+}
+
+export async function deleteAccount() {
+  const user = currentUser();
+  if (!user) redirect("/login");
+  const db = loadDB();
+  db.users = db.users.filter((u) => u.id !== user.id);
+  saveDB();
+  destroySession();
+  redirect("/");
+}
+
+// ─────────── Consultant platform ───────────
+
+export async function consultantAddClient(formData: FormData) {
+  const consultant = requireConsultant();
+  const db = loadDB();
+  const name = String(formData.get("name") ?? "").trim();
+  const industry = String(formData.get("industry") ?? "") as Industry;
+  const headcount = String(formData.get("headcount") ?? "") as HeadcountRange;
+
+  if (!name) redirect("/consultant/clients/new?error=" + encodeURIComponent("Client name is required."));
+
+  const company = createCompanyRecord(name);
+  if (industry) company.industry = industry;
+  if (headcount) company.headcountRange = headcount;
+
+  const link: ConsultantClient = {
+    id: uid("cc_"),
+    consultantId: consultant.id,
+    companyId: company.id,
+    addedAt: new Date().toISOString(),
+    archivedAt: null,
+  };
+
+  db.companies.push(company);
+  db.consultantClients.push(link);
+  saveDB();
+  redirect(`/consultant/clients/${company.id}`);
+}
+
+export async function generateInviteToken(companyId: string) {
+  const consultant = requireConsultant();
+  const db = loadDB();
+
+  const link = db.consultantClients.find(
+    (cc) => cc.consultantId === consultant.id && cc.companyId === companyId && !cc.archivedAt
+  );
+  if (!link) redirect("/consultant");
+
+  const token = crypto.randomBytes(24).toString("hex");
+  const invite: InviteToken = {
+    token,
+    consultantId: consultant.id,
+    companyId,
+    createdAt: new Date().toISOString(),
+    expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+    usedAt: null,
+  };
+  db.inviteTokens.push(invite);
+  saveDB();
+  redirect(`/consultant/clients/${companyId}?invite=${token}`);
+}
+
+export async function archiveClient(companyId: string) {
+  const consultant = requireConsultant();
+  const db = loadDB();
+  const link = db.consultantClients.find(
+    (cc) => cc.consultantId === consultant.id && cc.companyId === companyId
+  );
+  if (link) {
+    link.archivedAt = new Date().toISOString();
+    saveDB();
+  }
+  redirect("/consultant");
+}
+
+export async function acceptInvite(token: string, formData: FormData) {
+  const db = loadDB();
+  const invite = db.inviteTokens.find((t) => t.token === token && !t.usedAt);
+
+  if (!invite || new Date(invite.expiresAt) < new Date()) {
+    redirect(`/connect/${token}?error=` + encodeURIComponent("This invite link has expired or is invalid."));
+  }
+
+  const name = String(formData.get("name") ?? "").trim();
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  const password = String(formData.get("password") ?? "");
+
+  if (!name || !email || password.length < 8) {
+    redirect(`/connect/${token}?error=` + encodeURIComponent("All fields required; password must be 8+ characters."));
+  }
+  if (db.users.some((u) => u.email === email)) {
+    redirect(`/connect/${token}?error=` + encodeURIComponent("An account with that email already exists. Log in instead."));
+  }
+
+  const user: User = {
+    id: uid("u_"),
+    name,
+    email,
+    passHash: hashPassword(password),
+    companyId: invite.companyId,
+    role: "company",
+    createdAt: new Date().toISOString(),
+  };
+  db.users.push(user);
+  invite.usedAt = new Date().toISOString();
+  saveDB();
+  createSession(user.id);
+  redirect("/setup");
 }
