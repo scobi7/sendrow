@@ -1,21 +1,20 @@
 import Link from "next/link";
 import { currentUser } from "@/lib/auth";
-import { ensureDB, getCompany } from "@/lib/store";
+import { loadCompany } from "@/lib/store";
 import { generateReport } from "@/lib/actions";
 import { totals } from "@/lib/calc";
 import { canGenerateReport } from "@/lib/progress";
 import { PageHeader } from "@/components/ui";
 import { questionnaireMapping, QUESTIONNAIRE_FORMATS } from "@/lib/mapping";
 
-export default async function Reports({ searchParams }: { searchParams: { format?: string } }) {
-  await ensureDB();
-  const user = currentUser()!;
-  const company = getCompany(user.companyId);
+export default async function Reports({ searchParams }: { searchParams: Promise<{ format?: string }> }) {
+  const [{ format: rawFormat }, user] = await Promise.all([searchParams, currentUser()]);
+  const company = await loadCompany(user!.companyId);
   const t = totals(company);
   const ready = canGenerateReport(company);
   const s = company.sectionStatus;
   const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 1 });
-  const format = searchParams.format && QUESTIONNAIRE_FORMATS.includes(searchParams.format) ? searchParams.format : null;
+  const format = rawFormat && QUESTIONNAIRE_FORMATS.includes(rawFormat) ? rawFormat : null;
   const mapping = format ? questionnaireMapping(company, format) : null;
 
   const checks: [string, boolean, string][] = [

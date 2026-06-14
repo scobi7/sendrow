@@ -1,13 +1,13 @@
 import { redirect } from "next/navigation";
 import { currentUser } from "@/lib/auth";
-import { ensureDB, getCompany } from "@/lib/store";
+import { loadCompany } from "@/lib/store";
 import SetupWizard from "./wizard";
 
 export default async function SetupPage() {
-  await ensureDB();
-  const user = currentUser();
+  const user = await currentUser();
   if (!user) redirect("/login");
-  const company = getCompany(user.companyId);
+  if (!user.companyId) redirect("/onboarding");
+  const company = await loadCompany(user.companyId);
   if (company.setupComplete) redirect("/dashboard");
   return <SetupWizard companyName={company.name} />;
 }

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { currentUser } from "@/lib/auth";
-import { ensureDB, getCompany } from "@/lib/store";
+import { loadCompany } from "@/lib/store";
 import { totals } from "@/lib/calc";
 import { canGenerateReport, progressPercent } from "@/lib/progress";
 import { PageHeader, ProgressBar, StatusDot } from "@/components/ui";
@@ -17,9 +17,8 @@ const SECTIONS: [SectionName, string, string, string][] = [
 ];
 
 export default async function Dashboard() {
-  await ensureDB();
-  const user = currentUser()!;
-  const company = getCompany(user.companyId);
+  const user = (await currentUser())!;
+  const company = await loadCompany(user.companyId);
   const pct = progressPercent(company);
   const t = totals(company);
   const ready = canGenerateReport(company);
@@ -38,13 +37,13 @@ export default async function Dashboard() {
 
       <div className="mb-2 flex items-center justify-between text-sm">
         <span className="font-medium text-slate-600">Overall progress</span>
-        <span className="font-bold text-navy-900">{pct}%</span>
+        <span className="font-bold text-slate-900">{pct}%</span>
       </div>
       <ProgressBar percent={pct} className="mb-8" />
 
       {firstTime && (
-        <Link href="/connections" className="mb-6 block rounded-xl border border-brand-200 bg-brand-50 px-5 py-4 text-sm font-medium text-brand-800 hover:bg-brand-100">
-          👉 Start here — connect your QuickBooks and utility account. The two connections do most of the work for you.
+        <Link href="/connections" className="mb-6 block rounded-xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm font-medium text-emerald-800 hover:bg-emerald-100">
+          Start here — connect your QuickBooks and utility account. The two connections do most of the work for you.
         </Link>
       )}
 
@@ -57,7 +56,7 @@ export default async function Dashboard() {
                 <div className="flex items-center gap-3">
                   <StatusDot status={status} />
                   <div>
-                    <p className="text-sm font-semibold text-navy-900">{name}</p>
+                    <p className="text-sm font-semibold text-slate-900">{name}</p>
                     <p className="text-xs text-slate-400">{help}</p>
                   </div>
                 </div>
@@ -78,12 +77,12 @@ export default async function Dashboard() {
             <div className="flex justify-between"><dt className="text-slate-600">Scope 2 (market)</dt><dd className="font-semibold">{fmt(t.scope2Market)} t</dd></div>
             <div className="flex justify-between"><dt className="text-slate-600">Scope 3</dt><dd className="font-semibold">{fmt(t.scope3)} t</dd></div>
             <div className="flex justify-between border-t border-slate-200 pt-3 text-base">
-              <dt className="font-bold text-navy-900">Total CO2e</dt>
-              <dd className="font-bold text-brand-700">{fmt(t.total)} t</dd>
+              <dt className="font-bold text-slate-900">Total CO2e</dt>
+              <dd className="font-bold text-emerald-700">{fmt(t.total)} t</dd>
             </div>
           </dl>
           <p className="mt-4 text-xs text-slate-400">
-            Updates in real time as you enter data. All calculations are performed server-side and logged to your audit trail.
+            Updates in real time as you enter data.
           </p>
         </div>
       </div>

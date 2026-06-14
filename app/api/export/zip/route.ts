@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { deflateRawSync } from "zlib";
 import { currentUser } from "@/lib/auth";
-import { ensureDB, getCompany } from "@/lib/store";
+import { loadCompany } from "@/lib/store";
 import { auditForCompany } from "@/lib/audit";
 
 function crc32(data: Buffer): number {
@@ -58,7 +58,6 @@ function zipEntry(name: string, content: string): { local: Buffer; central: Buff
   central.writeUInt16LE(0, 34);
   central.writeUInt16LE(0, 36);
   central.writeUInt32LE(0, 38);
-  // offset filled in by caller
   nameBytes.copy(central, 46);
 
   return { local, central, size: local.length };
@@ -111,11 +110,10 @@ function toCSV(rows: Record<string, unknown>[]): string {
 }
 
 export async function GET() {
-  await ensureDB();
-  const user = currentUser();
+  const user = await currentUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const company = getCompany(user.companyId);
-  const audit = auditForCompany(company.id);
+  const company = await loadCompany(user.companyId);
+  const audit = await auditForCompany(company.id);
 
   const zip = buildZip([
     {

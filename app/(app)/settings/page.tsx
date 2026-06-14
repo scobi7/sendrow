@@ -1,5 +1,5 @@
 import { currentUser } from "@/lib/auth";
-import { ensureDB, getCompany } from "@/lib/store";
+import { loadCompany } from "@/lib/store";
 import { updateProfile, deleteAccount } from "@/lib/actions";
 import { PageHeader } from "@/components/ui";
 
@@ -8,16 +8,16 @@ const MONTHS = [
   "July", "August", "September", "October", "November", "December",
 ];
 
-export default async function Settings({ searchParams }: { searchParams: { saved?: string } }) {
-  await ensureDB();
-  const user = currentUser()!;
-  const company = getCompany(user.companyId);
+export default async function Settings({ searchParams }: { searchParams: Promise<{ saved?: string }> }) {
+  const [{ saved }, user] = await Promise.all([searchParams, currentUser()]);
+  const company = await loadCompany(user!.companyId);
+  const u = user!;
 
   return (
     <div className="mx-auto max-w-2xl">
       <PageHeader title="Settings" subtitle="Manage your company profile, account, and data." />
 
-      {searchParams.saved && (
+      {saved && (
         <p className="mb-4 rounded-lg bg-brand-50 px-4 py-2 text-sm text-brand-800">✓ Changes saved.</p>
       )}
 
@@ -56,11 +56,11 @@ export default async function Settings({ searchParams }: { searchParams: { saved
         <dl className="mt-3 space-y-2 text-sm">
           <div className="flex justify-between">
             <dt className="text-slate-500">Name</dt>
-            <dd className="font-medium">{user.name}</dd>
+            <dd className="font-medium">{u.name}</dd>
           </div>
           <div className="flex justify-between">
             <dt className="text-slate-500">Email</dt>
-            <dd className="font-medium">{user.email}</dd>
+            <dd className="font-medium">{u.email}</dd>
           </div>
         </dl>
         <p className="mt-3 text-xs text-slate-400">

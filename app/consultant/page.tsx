@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { currentUser } from "@/lib/auth";
-import { ensureDB, loadDB, getCompany } from "@/lib/store";
+import { db } from "@/lib/db";
+import { consultantClients } from "@/lib/db/schema";
+import { eq, isNull } from "drizzle-orm";
+import { loadCompany } from "@/lib/store";
 import { totals } from "@/lib/calc";
 import { progressPercent } from "@/lib/progress";
 import { PageHeader, StatusDot } from "@/components/ui";
@@ -21,34 +24,34 @@ const DATA_SECTIONS: SectionName[] = ["connections", "scope1", "scope2", "scope3
 export default async function ConsultantDashboard({
   searchParams,
 }: {
-  searchParams: { filter?: string };
+  searchParams: Promise<{ filter?: string }>;
 }) {
-  await ensureDB();
-  const user = currentUser()!;
-  const db = loadDB();
+  const [{ filter: rawFilter }, rawUser] = await Promise.all([searchParams, currentUser()]);
+  const user = rawUser!;
 
-  const activeLinks = db.consultantClients.filter(
-    (cc) => cc.consultantId === user.id && !cc.archivedAt
+  const activeLinks = await db
+    .select()
+    .from(consultantClients)
+    .where(eq(consultantClients.consultantId, user.id));
+
+  const filtered_links = activeLinks.filter((cc) => !cc.archivedAt);
+
+  const clientResults = await Promise.allSettled(
+    filtered_links.map(async (link) => {
+      const company = await loadCompany(link.companyId);
+      const pct = progressPercent(company);
+      const t = totals(company);
+      const needsAttention = DATA_SECTIONS.some((s) => company.sectionStatus[s] === "not_started");
+      return { company, pct, t, needsAttention };
+    })
   );
 
-  const clients = activeLinks
-    .map((link) => {
-      try {
-        const company = getCompany(link.companyId);
-        const pct = progressPercent(company);
-        const t = totals(company);
-        const needsAttention = DATA_SECTIONS.some(
-          (s) => company.sectionStatus[s] === "not_started"
-        );
-        return { company, pct, t, needsAttention };
-      } catch {
-        return null;
-      }
-    })
-    .filter(Boolean) as { company: ReturnType<typeof getCompany>; pct: number; t: ReturnType<typeof totals>; needsAttention: boolean }[];
+  const clients = clientResults
+    .filter((r): r is PromiseFulfilledResult<{ company: Awaited<ReturnType<typeof loadCompany>>; pct: number; t: ReturnType<typeof totals>; needsAttention: boolean }> => r.status === "fulfilled")
+    .map((r) => r.value);
 
-  const showFilter = searchParams.filter === "attention";
-  const filtered = showFilter ? clients.filter((c) => c.needsAttention) : clients;
+  const showFilter = rawFilter === "attention";
+  const displayed = showFilter ? clients.filter((c) => c.needsAttention) : clients;
   const attentionCount = clients.filter((c) => c.needsAttention).length;
   const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 1 });
 
@@ -84,7 +87,7 @@ export default async function ConsultantDashboard({
         </div>
       )}
 
-      {filtered.length === 0 ? (
+      {displayed.length === 0 ? (
         <div className="card py-12 text-center text-slate-400">
           {showFilter
             ? "No clients need attention right now."
@@ -107,7 +110,7 @@ export default async function ConsultantDashboard({
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {filtered.map(({ company, pct, t, needsAttention }) => (
+              {displayed.map(({ company, pct, t, needsAttention }) => (
                 <tr key={company.id} className="hover:bg-slate-50">
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
@@ -115,7 +118,7 @@ export default async function ConsultantDashboard({
                         <span className="h-2 w-2 rounded-full bg-amber-400" title="Needs attention" />
                       )}
                       <div>
-                        <p className="font-medium text-navy-900">{company.name}</p>
+                        <p className="font-medium text-slate-900">{company.name}</p>
                         <p className="text-xs text-slate-400">{company.industry ?? "—"}</p>
                       </div>
                     </div>
@@ -133,7 +136,7 @@ export default async function ConsultantDashboard({
                   <td className="px-4 py-3 text-right">
                     <span
                       className={`text-xs font-semibold ${
-                        pct === 100 ? "text-brand-600" : pct > 50 ? "text-amber-600" : "text-slate-400"
+                        pct === 100 ? "text-emerald-600" : pct > 50 ? "text-amber-600" : "text-slate-400"
                       }`}
                     >
                       {pct}%

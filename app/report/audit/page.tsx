@@ -1,28 +1,27 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { currentUser } from "@/lib/auth";
-import { ensureDB, getCompany } from "@/lib/store";
+import { loadCompany } from "@/lib/store";
 import { auditForCompany } from "@/lib/audit";
 import { fiscalPeriodLabel } from "@/lib/mapping";
 import PrintButton from "../print-button";
 
 export default async function AuditTrail() {
-  await ensureDB();
-  const user = currentUser();
+  const user = await currentUser();
   if (!user) redirect("/login");
-  const company = getCompany(user.companyId);
-  const rows = auditForCompany(company.id);
+  const company = await loadCompany(user.companyId);
+  const rows = await auditForCompany(company.id);
 
   return (
     <main className="mx-auto max-w-4xl bg-white px-8 py-10 text-slate-800">
       <div className="no-print mb-6 flex items-center justify-between">
-        <Link href="/reports" className="text-sm text-brand-700 hover:underline">← Back to reports</Link>
+        <Link href="/reports" className="text-sm text-emerald-700 hover:underline">← Back to reports</Link>
         <PrintButton label="Download PDF" />
       </div>
 
-      <header className="border-b-4 border-navy-900 pb-6">
+      <header className="border-b-4 border-slate-900 pb-6">
         <p className="text-sm font-semibold uppercase tracking-widest text-slate-500">Audit Trail Document</p>
-        <h1 className="mt-2 text-3xl font-bold text-navy-900">{company.name}</h1>
+        <h1 className="mt-2 text-3xl font-bold text-slate-900">{company.name}</h1>
         <p className="mt-1 text-slate-500">Reporting period: {fiscalPeriodLabel(company)} · {rows.length} logged changes</p>
         <p className="mt-2 text-xs text-slate-400">
           Append-only log: every data change is recorded with its previous value, new value, the user who made it,
@@ -56,7 +55,7 @@ export default async function AuditTrail() {
       </table>
 
       <section className="mt-8">
-        <h2 className="text-lg font-bold text-navy-900">Current Calculations on Record</h2>
+        <h2 className="text-lg font-bold text-slate-900">Current Calculations on Record</h2>
         <table className="mt-3 w-full text-xs">
           <thead>
             <tr className="border-b-2 border-slate-300 text-left uppercase tracking-wide text-slate-400">

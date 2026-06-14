@@ -1,97 +1,212 @@
-import fs from "fs";
-import path from "path";
-import { DB } from "./types";
+import { eq } from "drizzle-orm";
+import { db } from "./db";
+import {
+  companies,
+  companyInputs,
+  companyConnections,
+  locations,
+  qbTransactions,
+  utilityData,
+  calcs,
+} from "./db/schema";
+import { Company, EmissionFactor, Industry, HeadcountRange, Inputs } from "./types";
 import { SEED_FACTORS } from "./factors";
-
-const g = globalThis as unknown as { __gtdb?: DB };
-
-function emptyDB(): DB {
-  return { users: [], companies: [], auditLog: [], factors: SEED_FACTORS, consultantClients: [], inviteTokens: [] };
-}
-
-// ─── Storage backend ───────────────────────────────────────────────────────
-// Production: set UPSTASH_REDIS_REST_URL + UPSTASH_REDIS_REST_TOKEN in Vercel.
-// Dev: falls back to data/db.json.
-
-const KV_URL = process.env.UPSTASH_REDIS_REST_URL;
-const KV_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
-const DB_KEY = "gt:db";
-const DATA_DIR = path.join(process.cwd(), "data");
-const DB_PATH = path.join(DATA_DIR, "db.json");
-
-async function readStorage(): Promise<DB | null> {
-  if (KV_URL && KV_TOKEN) {
-    const res = await fetch(`${KV_URL}/get/${DB_KEY}`, {
-      headers: { Authorization: `Bearer ${KV_TOKEN}` },
-      cache: "no-store",
-    });
-    const json = (await res.json()) as { result: string | null };
-    return json.result ? (JSON.parse(json.result) as DB) : null;
-  }
-  try {
-    return JSON.parse(fs.readFileSync(DB_PATH, "utf-8")) as DB;
-  } catch {
-    return null;
-  }
-}
-
-async function writeStorage(db: DB): Promise<void> {
-  if (KV_URL && KV_TOKEN) {
-    await fetch(`${KV_URL}/set/${DB_KEY}`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${KV_TOKEN}`, "Content-Type": "text/plain" },
-      body: JSON.stringify(db),
-    });
-    return;
-  }
-  if (process.env.NODE_ENV === "production") {
-    throw new Error(
-      "No KV store configured. Add UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN to Vercel environment variables."
-    );
-  }
-  fs.mkdirSync(DATA_DIR, { recursive: true });
-  fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2));
-}
-
-// ─── Public API ────────────────────────────────────────────────────────────
-
-/**
- * Populate the in-memory cache from storage. Call once at the top of every
- * async Server Component, layout, server action, and route handler before
- * using any sync accessor (loadDB, getCompany, etc.).
- */
-export async function ensureDB(): Promise<void> {
-  if (g.__gtdb) return;
-  const raw = await readStorage();
-  const db = raw ?? emptyDB();
-  if (!db.factors || db.factors.length === 0) db.factors = SEED_FACTORS;
-  if (!db.consultantClients) db.consultantClients = [];
-  if (!db.inviteTokens) db.inviteTokens = [];
-  g.__gtdb = db;
-}
-
-/** Sync accessor — safe to call after ensureDB() has resolved. */
-export function loadDB(): DB {
-  return g.__gtdb ?? emptyDB();
-}
-
-/** Flush the in-memory DB back to storage. */
-export async function saveDB(): Promise<void> {
-  if (g.__gtdb) await writeStorage(g.__gtdb);
-}
 
 export function uid(prefix = ""): string {
   return prefix + Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
 }
 
-export function getFactor(factorId: string) {
-  const f = loadDB().factors.find((f) => f.factor_id === factorId);
+export function getFactor(factorId: string): EmissionFactor {
+  const f = SEED_FACTORS.find((f) => f.factor_id === factorId);
   if (!f) throw new Error(`Unknown emission factor: ${factorId}`);
   return f;
 }
 
-export function getCompany(companyId: string) {
-  const c = loadDB().companies.find((c) => c.id === companyId);
-  if (!c) throw new Error("Company not found");
-  return c;
+export async function loadCompany(companyId: string): Promise<Company> {
+  const [companyRows, inputRows, connRows, locRows, txnRows, utilRows, calcRows] =
+    await Promise.all([
+      db.select().from(companies).where(eq(companies.id, companyId)),
+      db.select().from(companyInputs).where(eq(companyInputs.companyId, companyId)),
+      db.select().from(companyConnections).where(eq(companyConnections.companyId, companyId)),
+      db.select().from(locations).where(eq(locations.companyId, companyId)),
+      db.select().from(qbTransactions).where(eq(qbTransactions.companyId, companyId)),
+      db.select().from(utilityData).where(eq(utilityData.companyId, companyId)),
+      db.select().from(calcs).where(eq(calcs.companyId, companyId)),
+    ]);
+
+  const c = companyRows[0];
+  if (!c) throw new Error(`Company not found: ${companyId}`);
+  const conn = connRows[0];
+
+  return {
+    id: c.id,
+    name: c.name,
+    industry: c.industry as Industry,
+    headcountRange: c.headcountRange as HeadcountRange,
+    fiscalYearEndMonth: c.fiscalYearEndMonth ?? 12,
+    setupComplete: c.setupComplete,
+    createdAt: c.createdAt,
+    sectionStatus: (c.sectionStatus ?? {
+      connections: "not_started",
+      scope1: "not_started",
+      scope2: "not_started",
+      scope3: "not_started",
+      social: "not_started",
+      governance: "not_started",
+      reports: "not_started",
+    }) as Company["sectionStatus"],
+    reportGeneratedAt: c.reportGeneratedAt ?? null,
+    actionPlan: (c.actionPlan as string[] | null) ?? null,
+    inputs: ((inputRows[0]?.data ?? {}) as Inputs),
+    connections: {
+      quickbooks: {
+        connected: conn?.qbConnected ?? false,
+        lastSynced: conn?.qbLastSynced ?? null,
+      },
+      utility: {
+        connected: conn?.utilityConnected ?? false,
+        lastSynced: conn?.utilityLastSynced ?? null,
+      },
+    },
+    locations: locRows.map((l) => ({
+      id: l.id,
+      address: l.address,
+      city: l.city,
+      state: l.state,
+      zip: l.zip,
+      egridSubregion: l.egridSubregion,
+    })),
+    qbTransactions: txnRows.map((t) => ({
+      id: t.id,
+      vendor: t.vendor,
+      category: t.category,
+      amount: Number(t.amount),
+      date: t.date,
+    })),
+    utilityData: utilRows.map((u) => ({
+      id: String(u.id),
+      locationId: u.locationId,
+      month: u.month,
+      kwh: Number(u.kwh),
+      therms: Number(u.therms),
+    })),
+    calcs: calcRows.map((c) => ({
+      id: c.id,
+      scope: c.scope as 1 | 2 | 3,
+      category: c.category,
+      co2eTons: Number(c.co2eTons),
+      factorId: c.factorId ?? null,
+      formula: c.formula,
+      basis: c.basis as "measured" | "spend_based" | "estimated",
+      marketBasedTons: c.marketBasedTons != null ? Number(c.marketBasedTons) : undefined,
+    })),
+  };
+}
+
+// Alias for backward compat
+export const getCompany = loadCompany;
+
+export async function persistCompany(company: Company): Promise<void> {
+  const id = company.id;
+
+  await Promise.all([
+    db
+      .update(companies)
+      .set({
+        name: company.name,
+        industry: company.industry ?? null,
+        headcountRange: company.headcountRange ?? null,
+        fiscalYearEndMonth: company.fiscalYearEndMonth,
+        setupComplete: company.setupComplete,
+        sectionStatus: company.sectionStatus,
+        reportGeneratedAt: company.reportGeneratedAt ?? null,
+        actionPlan: company.actionPlan ?? null,
+      })
+      .where(eq(companies.id, id)),
+
+    db
+      .insert(companyInputs)
+      .values({ companyId: id, data: company.inputs as Record<string, unknown> })
+      .onConflictDoUpdate({
+        target: companyInputs.companyId,
+        set: { data: company.inputs as Record<string, unknown> },
+      }),
+
+    db
+      .insert(companyConnections)
+      .values({
+        companyId: id,
+        qbConnected: company.connections.quickbooks.connected,
+        qbLastSynced: company.connections.quickbooks.lastSynced ?? null,
+        utilityConnected: company.connections.utility.connected,
+        utilityLastSynced: company.connections.utility.lastSynced ?? null,
+      })
+      .onConflictDoUpdate({
+        target: companyConnections.companyId,
+        set: {
+          qbConnected: company.connections.quickbooks.connected,
+          qbLastSynced: company.connections.quickbooks.lastSynced ?? null,
+          utilityConnected: company.connections.utility.connected,
+          utilityLastSynced: company.connections.utility.lastSynced ?? null,
+        },
+      }),
+  ]);
+
+  // Replace calcs — recalculated every persist
+  await db.delete(calcs).where(eq(calcs.companyId, id));
+  if (company.calcs.length > 0) {
+    await db.insert(calcs).values(
+      company.calcs.map((c) => ({
+        id: c.id,
+        companyId: id,
+        scope: c.scope,
+        category: c.category,
+        co2eTons: String(c.co2eTons),
+        factorId: c.factorId ?? null,
+        formula: c.formula,
+        basis: c.basis,
+        marketBasedTons: c.marketBasedTons != null ? String(c.marketBasedTons) : null,
+      }))
+    );
+  }
+}
+
+export async function saveLocations(
+  companyId: string,
+  locs: Company["locations"]
+): Promise<void> {
+  await db.delete(locations).where(eq(locations.companyId, companyId));
+  if (locs.length > 0) {
+    await db.insert(locations).values(locs.map((l) => ({ ...l, companyId })));
+  }
+}
+
+export async function saveQBTransactions(
+  companyId: string,
+  txns: Company["qbTransactions"]
+): Promise<void> {
+  await db.delete(qbTransactions).where(eq(qbTransactions.companyId, companyId));
+  if (txns.length > 0) {
+    await db.insert(qbTransactions).values(
+      txns.map((t) => ({ ...t, companyId, amount: String(t.amount) }))
+    );
+  }
+}
+
+export async function saveUtilityData(
+  companyId: string,
+  data: Company["utilityData"]
+): Promise<void> {
+  await db.delete(utilityData).where(eq(utilityData.companyId, companyId));
+  if (data.length > 0) {
+    await db.insert(utilityData).values(
+      data.map((u) => ({
+        companyId,
+        locationId: u.locationId,
+        month: u.month,
+        kwh: String(u.kwh),
+        therms: String(u.therms),
+      }))
+    );
+  }
 }

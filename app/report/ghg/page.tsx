@@ -1,16 +1,15 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { currentUser } from "@/lib/auth";
-import { ensureDB, getCompany, getFactor } from "@/lib/store";
+import { loadCompany, getFactor } from "@/lib/store";
 import { totals } from "@/lib/calc";
 import { fiscalPeriodLabel } from "@/lib/mapping";
 import PrintButton from "../print-button";
 
 export default async function GHGReport() {
-  await ensureDB();
-  const user = currentUser();
+  const user = await currentUser();
   if (!user) redirect("/login");
-  const company = getCompany(user.companyId);
+  const company = await loadCompany(user.companyId);
   const t = totals(company);
   const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 2 });
   const s1 = company.calcs.filter((c) => c.scope === 1);
@@ -22,26 +21,26 @@ export default async function GHGReport() {
   return (
     <main className="mx-auto max-w-3xl bg-white px-8 py-10 text-slate-800">
       <div className="no-print mb-6 flex items-center justify-between">
-        <Link href="/reports" className="text-sm text-brand-700 hover:underline">← Back to reports</Link>
+        <Link href="/reports" className="text-sm text-emerald-700 hover:underline">← Back to reports</Link>
         <PrintButton label="Download PDF" />
       </div>
 
-      <header className="border-b-4 border-brand-600 pb-6">
-        <p className="text-sm font-semibold uppercase tracking-widest text-brand-700">Greenhouse Gas Inventory Report</p>
-        <h1 className="mt-2 text-3xl font-bold text-navy-900">{company.name}</h1>
+      <header className="border-b-4 border-emerald-600 pb-6">
+        <p className="text-sm font-semibold uppercase tracking-widest text-emerald-700">Greenhouse Gas Inventory Report</p>
+        <h1 className="mt-2 text-3xl font-bold text-slate-900">{company.name}</h1>
         <p className="mt-1 text-slate-500">Reporting period: {fiscalPeriodLabel(company)} · Industry: {company.industry}</p>
         <p className="text-xs text-slate-400">Prepared with GreenTrack · Generated {company.reportGeneratedAt ? new Date(company.reportGeneratedAt).toLocaleDateString() : new Date().toLocaleDateString()}</p>
       </header>
 
       <section className="mt-8">
-        <h2 className="text-lg font-bold text-navy-900">Summary of Emissions</h2>
+        <h2 className="text-lg font-bold text-slate-900">Summary of Emissions</h2>
         <table className="mt-3 w-full text-sm">
           <tbody>
             <tr className="border-b border-slate-200"><td className="py-2">Scope 1 — Direct emissions</td><td className="py-2 text-right font-semibold">{fmt(t.scope1)} tCO2e</td></tr>
             <tr className="border-b border-slate-200"><td className="py-2">Scope 2 — Electricity (location-based)</td><td className="py-2 text-right font-semibold">{fmt(t.scope2Location)} tCO2e</td></tr>
             <tr className="border-b border-slate-200"><td className="py-2">Scope 2 — Electricity (market-based)</td><td className="py-2 text-right font-semibold">{fmt(t.scope2Market)} tCO2e</td></tr>
             <tr className="border-b border-slate-200"><td className="py-2">Scope 3 — Value chain</td><td className="py-2 text-right font-semibold">{fmt(t.scope3)} tCO2e</td></tr>
-            <tr><td className="py-3 font-bold text-navy-900">Total (Scope 1 + 2 location-based + 3)</td><td className="py-3 text-right text-lg font-bold text-brand-700">{fmt(t.total)} tCO2e</td></tr>
+            <tr><td className="py-3 font-bold text-slate-900">Total (Scope 1 + 2 location-based + 3)</td><td className="py-3 text-right text-lg font-bold text-emerald-700">{fmt(t.total)} tCO2e</td></tr>
           </tbody>
         </table>
       </section>
@@ -52,7 +51,7 @@ export default async function GHGReport() {
         ["Scope 3 — Value Chain by Category", s3],
       ].map(([title, rows]) => (
         <section key={title as string} className="mt-8">
-          <h2 className="text-lg font-bold text-navy-900">{title as string}</h2>
+          <h2 className="text-lg font-bold text-slate-900">{title as string}</h2>
           {(rows as typeof s1).length === 0 ? (
             <p className="mt-2 text-sm text-slate-400">No emissions recorded in this scope.</p>
           ) : (
@@ -82,7 +81,7 @@ export default async function GHGReport() {
       ))}
 
       <section className="mt-8">
-        <h2 className="text-lg font-bold text-navy-900">Methodology Statement</h2>
+        <h2 className="text-lg font-bold text-slate-900">Methodology Statement</h2>
         <p className="mt-2 text-sm leading-relaxed text-slate-600">
           This inventory was prepared in accordance with the GHG Protocol Corporate Accounting and Reporting Standard.
           Scope 2 emissions are reported using both the location-based and market-based methods per the GHG Protocol
@@ -90,7 +89,7 @@ export default async function GHGReport() {
           sector emission intensities. Activity data was sourced from utility records, accounting system exports, and
           management estimates as noted. All calculations are traceable in the accompanying Audit Trail document.
         </p>
-        <h3 className="mt-4 text-sm font-bold text-navy-900">Emission factors used</h3>
+        <h3 className="mt-4 text-sm font-bold text-slate-900">Emission factors used</h3>
         <ul className="mt-2 space-y-1 text-xs text-slate-500">
           {factorIds.map((fid) => {
             const f = getFactor(fid);
@@ -100,7 +99,7 @@ export default async function GHGReport() {
       </section>
 
       <section className="mt-8">
-        <h2 className="text-lg font-bold text-navy-900">Data Quality Notes</h2>
+        <h2 className="text-lg font-bold text-slate-900">Data Quality Notes</h2>
         {estimates.length === 0 ? (
           <p className="mt-2 text-sm text-slate-600">All reported values are based on measured activity data.</p>
         ) : (
@@ -118,7 +117,7 @@ export default async function GHGReport() {
 
       <footer className="mt-10 border-t border-slate-200 pt-4 text-xs text-slate-400">
         {company.name} — GHG Inventory — {fiscalPeriodLabel(company)} — Page generated by GreenTrack.
-        Demo build: emission factors are representative published values; verify against cited sources before external submission.
+        Emission factors are representative published values; verify against cited sources before external submission.
       </footer>
     </main>
   );

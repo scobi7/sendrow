@@ -1,13 +1,12 @@
 import { currentUser } from "@/lib/auth";
-import { ensureDB, getCompany, getFactor } from "@/lib/store";
+import { loadCompany, getFactor } from "@/lib/store";
 import { saveFields } from "@/lib/actions";
 import { PageHeader } from "@/components/ui";
 import Link from "next/link";
 
 export default async function Scope2() {
-  await ensureDB();
-  const user = currentUser()!;
-  const company = getCompany(user.companyId);
+  const user = (await currentUser())!;
+  const company = await loadCompany(user.companyId);
   const inp = company.inputs;
   const connected = company.connections.utility.connected;
   const num = (n: number, d = 1) => n.toLocaleString("en-US", { maximumFractionDigits: d });

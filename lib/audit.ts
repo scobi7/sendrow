@@ -1,13 +1,13 @@
-import { loadDB, uid } from "./store";
+import { eq, desc } from "drizzle-orm";
+import { db } from "./db";
+import { auditLog } from "./db/schema";
+import { uid } from "./store";
 import { User } from "./types";
 
-/**
- * Append-only audit log. Every write to any data field inserts a row —
- * previous value, new value, factor used, formula, user, timestamp.
- * The Audit Trail export reads and formats this log; nothing is ever
- * overwritten or deleted.
- */
-export function logChange(opts: {
+const show = (v: unknown) =>
+  v === undefined || v === null || v === "" ? "—" : typeof v === "object" ? JSON.stringify(v) : String(v);
+
+export async function logChange(opts: {
   user: User;
   companyId: string;
   section: string;
@@ -16,11 +16,9 @@ export function logChange(opts: {
   next: unknown;
   factorId?: string;
   formula?: string;
-}) {
-  const show = (v: unknown) =>
-    v === undefined || v === null || v === "" ? "—" : typeof v === "object" ? JSON.stringify(v) : String(v);
-  if (show(opts.prev) === show(opts.next)) return; // no actual change
-  loadDB().auditLog.push({
+}): Promise<void> {
+  if (show(opts.prev) === show(opts.next)) return;
+  await db.insert(auditLog).values({
     id: uid("aud_"),
     ts: new Date().toISOString(),
     companyId: opts.companyId,
@@ -30,13 +28,15 @@ export function logChange(opts: {
     field: opts.field,
     prev: show(opts.prev),
     next: show(opts.next),
-    factorId: opts.factorId,
-    formula: opts.formula,
+    factorId: opts.factorId ?? null,
+    formula: opts.formula ?? null,
   });
 }
 
-export function auditForCompany(companyId: string) {
-  return loadDB()
-    .auditLog.filter((r) => r.companyId === companyId)
-    .sort((a, b) => b.ts.localeCompare(a.ts));
+export async function auditForCompany(companyId: string) {
+  return db
+    .select()
+    .from(auditLog)
+    .where(eq(auditLog.companyId, companyId))
+    .orderBy(desc(auditLog.ts));
 }

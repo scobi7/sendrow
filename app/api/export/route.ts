@@ -1,17 +1,16 @@
 import { NextResponse } from "next/server";
 import { currentUser } from "@/lib/auth";
-import { ensureDB, getCompany } from "@/lib/store";
+import { loadCompany } from "@/lib/store";
 import { auditForCompany } from "@/lib/audit";
 
 export async function GET() {
-  await ensureDB();
-  const user = currentUser();
+  const user = await currentUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const company = getCompany(user.companyId);
+  const company = await loadCompany(user.companyId);
   const payload = {
     exportedAt: new Date().toISOString(),
     company,
-    auditLog: auditForCompany(company.id),
+    auditLog: await auditForCompany(company.id),
   };
   return new NextResponse(JSON.stringify(payload, null, 2), {
     headers: {

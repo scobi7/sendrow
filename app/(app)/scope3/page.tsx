@@ -1,14 +1,13 @@
 import Link from "next/link";
 import { currentUser } from "@/lib/auth";
-import { ensureDB, getCompany } from "@/lib/store";
+import { loadCompany } from "@/lib/store";
 import { saveFields, saveScope3Decision } from "@/lib/actions";
 import { CO2eBox, InfoTip, PageHeader } from "@/components/ui";
 import { SCOPE3_OTHER_CATEGORIES } from "@/lib/factors";
 
 export default async function Scope3() {
-  await ensureDB();
-  const user = currentUser()!;
-  const company = getCompany(user.companyId);
+  const user = (await currentUser())!;
+  const company = await loadCompany(user.companyId);
   const inp = company.inputs;
   const qbConnected = company.connections.quickbooks.connected;
   const calcs = company.calcs.filter((c) => c.scope === 3);

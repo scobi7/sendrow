@@ -3,27 +3,38 @@
 import crypto from "crypto";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { ensureDB, loadDB, saveDB, uid, getCompany } from "./store";
-import { createSession, currentUser, destroySession, hashPassword, verifyPassword } from "./auth";
-import { Company, ConsultantClient, HeadcountRange, Industry, InviteToken, User } from "./types";
+import { auth, currentUser as getClerkUser } from "@clerk/nextjs/server";
+import { and, eq, isNull } from "drizzle-orm";
+import { db } from "./db";
+import { companies, userCompanies, consultantClients, inviteTokens } from "./db/schema";
+import {
+  loadCompany,
+  persistCompany,
+  saveLocations,
+  saveQBTransactions,
+  saveUtilityData,
+  uid,
+} from "./store";
+import { currentUser } from "./auth";
+import { Company, HeadcountRange, Industry, User } from "./types";
 import { egridForState } from "./factors";
 import { generateQBTransactions, generateUtilityData } from "./mockdata";
 import { recalcCompany } from "./calc";
 import { refreshSectionStatus } from "./progress";
 import { logChange } from "./audit";
-import { checkRateLimit, resetRateLimit } from "./ratelimit";
-import { sendWelcomeEmail } from "./email";
 import { createCompanyRecord } from "./newcompany";
+import { sendWelcomeEmail } from "./email";
 
-function requireUser(): { user: User; company: Company } {
-  const user = currentUser();
+async function requireUser(): Promise<{ user: User; company: Company }> {
+  const user = await currentUser();
   if (!user) redirect("/login");
-  const company = getCompany(user.companyId);
+  if (!user.companyId) redirect("/onboarding");
+  const company = await loadCompany(user.companyId);
   return { user, company };
 }
 
-function requireConsultant(): User {
-  const user = currentUser();
+async function requireConsultant(): Promise<User> {
+  const user = await currentUser();
   if (!user || user.role !== "consultant") redirect("/login");
   return user;
 }
@@ -31,121 +42,98 @@ function requireConsultant(): User {
 async function persist(company: Company) {
   recalcCompany(company);
   refreshSectionStatus(company);
-  await saveDB();
+  await persistCompany(company);
   revalidatePath("/", "layout");
 }
 
-// ─────────── Auth ───────────
+// ─────────── Onboarding (after Clerk signup) ───────────
 
-export async function signup(formData: FormData) {
-  await ensureDB();
-  const db = loadDB();
-  const name = String(formData.get("name") ?? "").trim();
-  const email = String(formData.get("email") ?? "").trim().toLowerCase();
-  const password = String(formData.get("password") ?? "");
-  const role = (String(formData.get("role") ?? "company") || "company") as "company" | "consultant";
+export async function onboardAsCompany(formData: FormData) {
+  const { userId } = await auth();
+  if (!userId) redirect("/login");
 
-  if (!name || !email || password.length < 8) {
-    redirect("/signup?error=" + encodeURIComponent("All fields required; password must be 8+ characters."));
-  }
-  if (db.users.some((u) => u.email === email)) {
-    redirect("/signup?error=" + encodeURIComponent("An account with that email already exists."));
-  }
-
-  if (role === "consultant") {
-    const user: User = {
-      id: uid("u_"),
-      name,
-      email,
-      passHash: hashPassword(password),
-      companyId: "",
-      role: "consultant",
-      createdAt: new Date().toISOString(),
-    };
-    db.users.push(user);
-    await saveDB();
-    createSession(user.id);
-    sendWelcomeEmail(name, email);
-    redirect("/consultant");
-  }
-
+  const clerkUser = await getClerkUser();
   const companyName = String(formData.get("company") ?? "").trim();
   if (!companyName) {
-    redirect("/signup?error=" + encodeURIComponent("Company name is required."));
+    redirect("/onboarding?error=" + encodeURIComponent("Company name is required."));
   }
 
   const company = createCompanyRecord(companyName);
-  const user: User = {
-    id: uid("u_"),
-    name,
-    email,
-    passHash: hashPassword(password),
+
+  await db.insert(companies).values({
+    id: company.id,
+    name: company.name,
+    createdAt: company.createdAt,
+    setupComplete: false,
+    sectionStatus: company.sectionStatus,
+  });
+
+  await db.insert(userCompanies).values({
+    clerkId: userId,
     companyId: company.id,
+    name: clerkUser?.fullName ?? clerkUser?.firstName ?? "User",
+    email: clerkUser?.emailAddresses[0]?.emailAddress ?? "",
     role: "company",
     createdAt: new Date().toISOString(),
-  };
-  db.companies.push(company);
-  db.users.push(user);
-  await saveDB();
-  createSession(user.id);
-  sendWelcomeEmail(name, email);
+  });
+
+  const name = clerkUser?.fullName ?? clerkUser?.firstName ?? "";
+  const email = clerkUser?.emailAddresses[0]?.emailAddress ?? "";
+  if (name && email) sendWelcomeEmail(name, email);
+
   redirect("/setup");
 }
 
-export async function login(formData: FormData) {
-  await ensureDB();
-  const email = String(formData.get("email") ?? "").trim().toLowerCase();
-  const password = String(formData.get("password") ?? "");
+export async function onboardAsConsultant() {
+  const { userId } = await auth();
+  if (!userId) redirect("/login");
 
-  if (!checkRateLimit(`login:${email}`, 10, 60 * 60 * 1000)) {
-    redirect("/login?error=" + encodeURIComponent("Too many failed attempts. Try again in 1 hour."));
-  }
+  const clerkUser = await getClerkUser();
+  const name = clerkUser?.fullName ?? clerkUser?.firstName ?? "User";
+  const email = clerkUser?.emailAddresses[0]?.emailAddress ?? "";
 
-  const user = loadDB().users.find((u) => u.email === email);
-  if (!user || !verifyPassword(password, user.passHash)) {
-    redirect("/login?error=" + encodeURIComponent("Invalid email or password."));
-  }
+  await db.insert(userCompanies).values({
+    clerkId: userId,
+    companyId: null,
+    name,
+    email,
+    role: "consultant",
+    createdAt: new Date().toISOString(),
+  });
 
-  resetRateLimit(`login:${email}`);
-  createSession(user.id);
-
-  if (user.role === "consultant") redirect("/consultant");
-  const company = getCompany(user.companyId);
-  redirect(company.setupComplete ? "/dashboard" : "/setup");
-}
-
-export async function logout() {
-  destroySession();
-  redirect("/");
+  if (email) sendWelcomeEmail(name, email);
+  redirect("/consultant");
 }
 
 // ─────────── Setup wizard ───────────
 
 export async function saveSetup(formData: FormData) {
-  await ensureDB();
-  const { user, company } = requireUser();
+  const { user, company } = await requireUser();
   const industry = String(formData.get("industry") ?? "") as Industry;
   const headcount = String(formData.get("headcount") ?? "") as HeadcountRange;
   const fyEnd = Number(formData.get("fiscal_year_end"));
   const locCount = Number(formData.get("location_count"));
 
-  logChange({ user, companyId: company.id, section: "setup", field: "industry", prev: company.industry, next: industry });
-  logChange({ user, companyId: company.id, section: "setup", field: "headcount_range", prev: company.headcountRange, next: headcount });
-  logChange({ user, companyId: company.id, section: "setup", field: "fiscal_year_end", prev: company.fiscalYearEndMonth, next: fyEnd });
+  await logChange({ user, companyId: company.id, section: "setup", field: "industry", prev: company.industry, next: industry });
+  await logChange({ user, companyId: company.id, section: "setup", field: "headcount_range", prev: company.headcountRange, next: headcount });
+  await logChange({ user, companyId: company.id, section: "setup", field: "fiscal_year_end", prev: company.fiscalYearEndMonth, next: fyEnd });
 
   company.industry = industry;
   company.headcountRange = headcount;
   company.fiscalYearEndMonth = fyEnd;
   company.locations = [];
+
   for (let i = 0; i < locCount; i++) {
     const address = String(formData.get(`loc_${i}_address`) ?? "").trim();
     const city = String(formData.get(`loc_${i}_city`) ?? "").trim();
     const state = String(formData.get(`loc_${i}_state`) ?? "CA").trim();
     const zip = String(formData.get(`loc_${i}_zip`) ?? "").trim();
     company.locations.push({ id: uid("loc_"), address, city, state, zip, egridSubregion: egridForState(state) });
-    logChange({ user, companyId: company.id, section: "setup", field: `location_${i + 1}`, prev: null, next: `${address}, ${city}, ${state} ${zip}` });
+    await logChange({ user, companyId: company.id, section: "setup", field: `location_${i + 1}`, prev: null, next: `${address}, ${city}, ${state} ${zip}` });
   }
+
   company.setupComplete = true;
+  await saveLocations(company.id, company.locations);
   await persist(company);
   redirect("/setup/complete");
 }
@@ -153,34 +141,35 @@ export async function saveSetup(formData: FormData) {
 // ─────────── Connections (simulated OAuth) ───────────
 
 export async function connectQuickBooks() {
-  await ensureDB();
-  const { user, company } = requireUser();
+  const { user, company } = await requireUser();
   company.connections.quickbooks = { connected: true, lastSynced: new Date().toISOString() };
   company.qbTransactions = generateQBTransactions(company);
-  logChange({ user, companyId: company.id, section: "connections", field: "quickbooks", prev: "disconnected", next: `connected — ${company.qbTransactions.length} transactions pulled (demo data)` });
+  await logChange({ user, companyId: company.id, section: "connections", field: "quickbooks", prev: "disconnected", next: `connected — ${company.qbTransactions.length} transactions pulled (demo data)` });
+  await saveQBTransactions(company.id, company.qbTransactions);
   await persist(company);
 }
 
 export async function connectUtility() {
-  await ensureDB();
-  const { user, company } = requireUser();
+  const { user, company } = await requireUser();
   company.connections.utility = { connected: true, lastSynced: new Date().toISOString() };
   company.utilityData = generateUtilityData(company);
-  logChange({ user, companyId: company.id, section: "connections", field: "utility", prev: "disconnected", next: `connected — ${company.utilityData.length} meter-months pulled (demo data)` });
+  await logChange({ user, companyId: company.id, section: "connections", field: "utility", prev: "disconnected", next: `connected — ${company.utilityData.length} meter-months pulled (demo data)` });
+  await saveUtilityData(company.id, company.utilityData);
   await persist(company);
 }
 
 export async function resync(which: "quickbooks" | "utility") {
-  await ensureDB();
-  const { user, company } = requireUser();
+  const { user, company } = await requireUser();
   if (which === "quickbooks") {
     company.qbTransactions = generateQBTransactions(company);
     company.connections.quickbooks.lastSynced = new Date().toISOString();
+    await saveQBTransactions(company.id, company.qbTransactions);
   } else {
     company.utilityData = generateUtilityData(company);
     company.connections.utility.lastSynced = new Date().toISOString();
+    await saveUtilityData(company.id, company.utilityData);
   }
-  logChange({ user, companyId: company.id, section: "connections", field: which, prev: "synced", next: `resynced ${new Date().toISOString()}` });
+  await logChange({ user, companyId: company.id, section: "connections", field: which, prev: "synced", next: `resynced ${new Date().toISOString()}` });
   await persist(company);
 }
 
@@ -215,8 +204,7 @@ const BOOL_FIELDS = new Set([
 ]);
 
 export async function saveFields(formData: FormData) {
-  await ensureDB();
-  const { user, company } = requireUser();
+  const { user, company } = await requireUser();
   const inputs = company.inputs as Record<string, unknown>;
   for (const [key, raw] of Array.from(formData.entries())) {
     if (key.startsWith("$") || key === "redirect_to") continue;
@@ -225,7 +213,7 @@ export async function saveFields(formData: FormData) {
     let value: unknown = String(raw);
     if (NUMBER_FIELDS.has(key)) value = raw === "" ? null : Number(raw);
     if (BOOL_FIELDS.has(key)) value = raw === "true" || raw === "on" || raw === "yes" ? true : raw === "false" || raw === "no" ? false : null;
-    logChange({ user, companyId: company.id, section, field: key, prev: inputs[key], next: value });
+    await logChange({ user, companyId: company.id, section, field: key, prev: inputs[key], next: value });
     inputs[key] = value;
   }
   await persist(company);
@@ -234,28 +222,25 @@ export async function saveFields(formData: FormData) {
 }
 
 export async function saveScope3Decision(category: string, decision: "na" | "industry_average") {
-  await ensureDB();
-  const { user, company } = requireUser();
+  const { user, company } = await requireUser();
   const map = company.inputs.scope3_other_categories ?? {};
-  logChange({ user, companyId: company.id, section: "scope3", field: `other_category:${category}`, prev: map[category], next: decision === "na" ? "Not applicable" : "Estimated with industry average (low confidence)" });
+  await logChange({ user, companyId: company.id, section: "scope3", field: `other_category:${category}`, prev: map[category], next: decision === "na" ? "Not applicable" : "Estimated with industry average (low confidence)" });
   map[category] = decision;
   company.inputs.scope3_other_categories = map;
   await persist(company);
 }
 
 export async function savePolicy(policy: string, value: boolean) {
-  await ensureDB();
-  const { user, company } = requireUser();
+  const { user, company } = await requireUser();
   const map = company.inputs.gov_policies ?? {};
-  logChange({ user, companyId: company.id, section: "governance", field: `policy:${policy}`, prev: map[policy], next: value });
+  await logChange({ user, companyId: company.id, section: "governance", field: `policy:${policy}`, prev: map[policy], next: value });
   map[policy] = value;
   company.inputs.gov_policies = map;
   await persist(company);
 }
 
 export async function saveLeadership(formData: FormData) {
-  await ensureDB();
-  const { user, company } = requireUser();
+  const { user, company } = await requireUser();
   const levels = ["C-Suite", "VP/Director", "Manager", "Individual Contributor"];
   const map: Record<string, { womenPct?: number | null; minorityPct?: number | null }> = {};
   for (const lvl of levels) {
@@ -265,7 +250,7 @@ export async function saveLeadership(formData: FormData) {
       map[lvl] = { womenPct: w === "" || w === null ? null : Number(w), minorityPct: m === "" || m === null ? null : Number(m) };
     }
   }
-  logChange({ user, companyId: company.id, section: "governance", field: "leadership_diversity", prev: company.inputs.gov_leadership, next: map });
+  await logChange({ user, companyId: company.id, section: "governance", field: "leadership_diversity", prev: company.inputs.gov_leadership, next: map });
   company.inputs.gov_leadership = map;
   await persist(company);
 }
@@ -273,39 +258,34 @@ export async function saveLeadership(formData: FormData) {
 // ─────────── Reports ───────────
 
 export async function generateReport() {
-  await ensureDB();
-  const { user, company } = requireUser();
+  const { user, company } = await requireUser();
   const s = company.sectionStatus;
-  if (!(s.connections === "complete" && s.scope1 === "complete" && s.scope2 === "complete")) {
-    return;
-  }
+  if (!(s.connections === "complete" && s.scope1 === "complete" && s.scope2 === "complete")) return;
   company.reportGeneratedAt = new Date().toISOString();
-  logChange({ user, companyId: company.id, section: "reports", field: "ghg_inventory_report", prev: "—", next: `generated ${company.reportGeneratedAt}` });
+  await logChange({ user, companyId: company.id, section: "reports", field: "ghg_inventory_report", prev: "—", next: `generated ${company.reportGeneratedAt}` });
   await persist(company);
   redirect("/report/ghg");
 }
 
 export async function saveActionPlan(gaps: string[]) {
-  await ensureDB();
-  const { user, company } = requireUser();
+  const { user, company } = await requireUser();
   company.actionPlan = gaps;
-  logChange({ user, companyId: company.id, section: "reports", field: "action_plan", prev: "—", next: `${gaps.length} items saved for next reporting cycle` });
+  await logChange({ user, companyId: company.id, section: "reports", field: "action_plan", prev: "—", next: `${gaps.length} items saved for next reporting cycle` });
   await persist(company);
 }
 
 // ─────────── Settings ───────────
 
 export async function updateProfile(formData: FormData) {
-  await ensureDB();
-  const { user, company } = requireUser();
+  const { user, company } = await requireUser();
   const name = String(formData.get("company_name") ?? "").trim();
   if (name) {
-    logChange({ user, companyId: company.id, section: "settings", field: "company_name", prev: company.name, next: name });
+    await logChange({ user, companyId: company.id, section: "settings", field: "company_name", prev: company.name, next: name });
     company.name = name;
   }
   const fy = Number(formData.get("fiscal_year_end"));
   if (fy >= 1 && fy <= 12 && fy !== company.fiscalYearEndMonth) {
-    logChange({ user, companyId: company.id, section: "settings", field: "fiscal_year_end", prev: company.fiscalYearEndMonth, next: fy });
+    await logChange({ user, companyId: company.id, section: "settings", field: "fiscal_year_end", prev: company.fiscalYearEndMonth, next: fy });
     company.fiscalYearEndMonth = fy;
   }
   await persist(company);
@@ -313,22 +293,16 @@ export async function updateProfile(formData: FormData) {
 }
 
 export async function deleteAccount() {
-  await ensureDB();
-  const user = currentUser();
-  if (!user) redirect("/login");
-  const db = loadDB();
-  db.users = db.users.filter((u) => u.id !== user.id);
-  await saveDB();
-  destroySession();
+  const { userId } = await auth();
+  if (!userId) redirect("/login");
+  await db.delete(userCompanies).where(eq(userCompanies.clerkId, userId));
   redirect("/");
 }
 
 // ─────────── Consultant platform ───────────
 
 export async function consultantAddClient(formData: FormData) {
-  await ensureDB();
-  const consultant = requireConsultant();
-  const db = loadDB();
+  const consultant = await requireConsultant();
   const name = String(formData.get("name") ?? "").trim();
   const industry = String(formData.get("industry") ?? "") as Industry;
   const headcount = String(formData.get("headcount") ?? "") as HeadcountRange;
@@ -339,90 +313,100 @@ export async function consultantAddClient(formData: FormData) {
   if (industry) company.industry = industry;
   if (headcount) company.headcountRange = headcount;
 
-  const link: ConsultantClient = {
+  await db.insert(companies).values({
+    id: company.id,
+    name: company.name,
+    industry: company.industry ?? null,
+    headcountRange: company.headcountRange ?? null,
+    createdAt: company.createdAt,
+    setupComplete: false,
+    sectionStatus: company.sectionStatus,
+  });
+
+  await db.insert(consultantClients).values({
     id: uid("cc_"),
     consultantId: consultant.id,
     companyId: company.id,
     addedAt: new Date().toISOString(),
     archivedAt: null,
-  };
+  });
 
-  db.companies.push(company);
-  db.consultantClients.push(link);
-  await saveDB();
   redirect(`/consultant/clients/${company.id}`);
 }
 
 export async function generateInviteToken(companyId: string) {
-  await ensureDB();
-  const consultant = requireConsultant();
-  const db = loadDB();
+  const consultant = await requireConsultant();
 
-  const link = db.consultantClients.find(
-    (cc) => cc.consultantId === consultant.id && cc.companyId === companyId && !cc.archivedAt
-  );
+  const link = await db.query.consultantClients.findFirst({
+    where: and(
+      eq(consultantClients.consultantId, consultant.id),
+      eq(consultantClients.companyId, companyId),
+      isNull(consultantClients.archivedAt)
+    ),
+  });
   if (!link) redirect("/consultant");
 
   const token = crypto.randomBytes(24).toString("hex");
-  const invite: InviteToken = {
+  await db.insert(inviteTokens).values({
     token,
     consultantId: consultant.id,
     companyId,
     createdAt: new Date().toISOString(),
     expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
     usedAt: null,
-  };
-  db.inviteTokens.push(invite);
-  await saveDB();
+  });
+
   redirect(`/consultant/clients/${companyId}?invite=${token}`);
 }
 
 export async function archiveClient(companyId: string) {
-  await ensureDB();
-  const consultant = requireConsultant();
-  const db = loadDB();
-  const link = db.consultantClients.find(
-    (cc) => cc.consultantId === consultant.id && cc.companyId === companyId
-  );
-  if (link) {
-    link.archivedAt = new Date().toISOString();
-    await saveDB();
-  }
+  const consultant = await requireConsultant();
+  await db
+    .update(consultantClients)
+    .set({ archivedAt: new Date().toISOString() })
+    .where(
+      and(
+        eq(consultantClients.consultantId, consultant.id),
+        eq(consultantClients.companyId, companyId)
+      )
+    );
   redirect("/consultant");
 }
 
-export async function acceptInvite(token: string, formData: FormData) {
-  await ensureDB();
-  const db = loadDB();
-  const invite = db.inviteTokens.find((t) => t.token === token && !t.usedAt);
+export async function acceptInvite(token: string) {
+  const { userId } = await auth();
+  if (!userId) redirect(`/login?redirect_url=/connect/${token}`);
 
-  if (!invite || new Date(invite.expiresAt) < new Date()) {
+  const existing = await db.query.userCompanies.findFirst({
+    where: eq(userCompanies.clerkId, userId),
+  });
+  if (existing?.companyId) redirect("/dashboard");
+
+  const invite = await db.query.inviteTokens.findFirst({
+    where: eq(inviteTokens.token, token),
+  });
+
+  if (!invite || invite.usedAt || new Date(invite.expiresAt) < new Date()) {
     redirect(`/connect/${token}?error=` + encodeURIComponent("This invite link has expired or is invalid."));
   }
 
-  const name = String(formData.get("name") ?? "").trim();
-  const email = String(formData.get("email") ?? "").trim().toLowerCase();
-  const password = String(formData.get("password") ?? "");
+  const clerkUser = await getClerkUser();
+  const name = clerkUser?.fullName ?? clerkUser?.firstName ?? "User";
+  const email = clerkUser?.emailAddresses[0]?.emailAddress ?? "";
 
-  if (!name || !email || password.length < 8) {
-    redirect(`/connect/${token}?error=` + encodeURIComponent("All fields required; password must be 8+ characters."));
-  }
-  if (db.users.some((u) => u.email === email)) {
-    redirect(`/connect/${token}?error=` + encodeURIComponent("An account with that email already exists. Log in instead."));
+  if (existing) {
+    await db.update(userCompanies).set({ companyId: invite.companyId }).where(eq(userCompanies.clerkId, userId));
+  } else {
+    await db.insert(userCompanies).values({
+      clerkId: userId,
+      companyId: invite.companyId,
+      name,
+      email,
+      role: "company",
+      createdAt: new Date().toISOString(),
+    });
   }
 
-  const user: User = {
-    id: uid("u_"),
-    name,
-    email,
-    passHash: hashPassword(password),
-    companyId: invite.companyId,
-    role: "company",
-    createdAt: new Date().toISOString(),
-  };
-  db.users.push(user);
-  invite.usedAt = new Date().toISOString();
-  await saveDB();
-  createSession(user.id);
+  await db.update(inviteTokens).set({ usedAt: new Date().toISOString() }).where(eq(inviteTokens.token, token));
   redirect("/setup");
 }

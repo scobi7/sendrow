@@ -2,16 +2,15 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Logo } from "@/components/ui";
 import { currentUser } from "@/lib/auth";
-import { ensureDB } from "@/lib/store";
 
 export default async function SetupComplete() {
-  await ensureDB();
-  if (!currentUser()) redirect("/login");
+  const user = await currentUser();
+  if (!user) redirect("/login");
   return (
-    <main className="mx-auto flex min-h-screen max-w-xl flex-col items-center justify-center px-6 text-center">
+    <main className="mx-auto flex min-h-screen max-w-xl flex-col items-center justify-center px-6 text-center bg-slate-50">
       <Logo />
-      <div className="mt-8 flex h-16 w-16 items-center justify-center rounded-full bg-brand-100 text-3xl">✓</div>
-      <h1 className="mt-4 text-2xl font-bold text-navy-900">You are all set</h1>
+      <div className="mt-8 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-3xl">✓</div>
+      <h1 className="mt-4 text-2xl font-bold text-slate-900">You are all set</h1>
       <p className="mt-2 text-slate-600">Connect your accounts, answer a few questions, and we handle the rest.</p>
       <div className="mt-8 grid w-full grid-cols-3 gap-4">
         {[
@@ -21,7 +20,7 @@ export default async function SetupComplete() {
         ].map(([icon, title]) => (
           <div key={title} className="card py-4 text-center">
             <div className="text-xl">{icon}</div>
-            <div className="mt-1 text-xs font-semibold text-navy-900">{title}</div>
+            <div className="mt-1 text-xs font-semibold text-slate-900">{title}</div>
           </div>
         ))}
       </div>

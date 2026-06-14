@@ -1,45 +1,46 @@
 import Link from "next/link";
 import { Logo } from "@/components/ui";
-import { ensureDB, loadDB, getCompany } from "@/lib/store";
+import { db } from "@/lib/db";
+import { inviteTokens } from "@/lib/db/schema";
+import { eq } from "drizzle-orm";
+import { loadCompany } from "@/lib/store";
 import { acceptInvite } from "@/lib/actions";
+import { auth } from "@clerk/nextjs/server";
 
 export default async function ConnectPage({
   params,
   searchParams,
 }: {
-  params: { token: string };
-  searchParams: { error?: string };
+  params: Promise<{ token: string }>;
+  searchParams: Promise<{ error?: string }>;
 }) {
-  await ensureDB();
-  const db = loadDB();
-  const invite = db.inviteTokens.find(
-    (t) => t.token === params.token && !t.usedAt
-  );
+  const [{ token }, { error }, { userId }] = await Promise.all([params, searchParams, auth()]);
 
-  const expired = !invite || new Date(invite.expiresAt) < new Date();
+  const invite = await db.query.inviteTokens.findFirst({
+    where: eq(inviteTokens.token, token),
+  });
+
+  const expired = !invite || invite.usedAt || new Date(invite.expiresAt) < new Date();
 
   let company;
-  let consultantName;
-  if (invite) {
+  if (invite && !expired) {
     try {
-      company = getCompany(invite.companyId);
-      const consultant = db.users.find((u) => u.id === invite.consultantId);
-      consultantName = consultant?.name ?? "your ESG consultant";
+      company = await loadCompany(invite.companyId);
     } catch {
       // company not found
     }
   }
 
-  const boundAccept = acceptInvite.bind(null, params.token);
+  const boundAccept = acceptInvite.bind(null, token);
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center px-6">
+    <main className="flex min-h-screen flex-col items-center justify-center px-6 bg-slate-50">
       <Logo />
 
       <div className="card mt-6 w-full max-w-md">
         {expired ? (
           <>
-            <h1 className="text-xl font-bold text-navy-900">Invite link expired</h1>
+            <h1 className="text-xl font-bold text-slate-900">Invite link expired</h1>
             <p className="mt-2 text-sm text-slate-500">
               This invite link is no longer valid. Ask your consultant to generate a new one.
             </p>
@@ -49,44 +50,46 @@ export default async function ConnectPage({
           </>
         ) : (
           <>
-            <h1 className="text-xl font-bold text-navy-900">
-              You've been invited to GreenTrack
+            <h1 className="text-xl font-bold text-slate-900">
+              You&rsquo;ve been invited to GreenTrack
             </h1>
             <p className="mt-2 text-sm text-slate-500">
-              <strong>{consultantName}</strong> has set up a GreenTrack account for{" "}
-              <strong>{company?.name ?? "your company"}</strong>. Create your account to start
-              entering your ESG data.
+              Your ESG consultant has set up a GreenTrack account for{" "}
+              <strong>{company?.name ?? "your company"}</strong>.
+              {userId
+                ? " Click below to accept the invite and get started."
+                : " Create an account or log in to accept."}
             </p>
 
-            {searchParams.error && (
+            {error && (
               <p className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
-                {searchParams.error}
+                {error}
               </p>
             )}
 
-            <form action={boundAccept} className="mt-5 space-y-4">
-              <div>
-                <label className="label">Your name</label>
-                <input name="name" required className="input" placeholder="Jordan Alvarez" />
+            {userId ? (
+              <form action={boundAccept} className="mt-5">
+                <button className="btn-primary w-full">Accept Invite & Get Started</button>
+              </form>
+            ) : (
+              <div className="mt-5 space-y-3">
+                <Link
+                  href={`/signup?redirect_url=/connect/${token}`}
+                  className="btn-primary block w-full text-center"
+                >
+                  Create Account & Accept
+                </Link>
+                <Link
+                  href={`/login?redirect_url=/connect/${token}`}
+                  className="btn-secondary block w-full text-center"
+                >
+                  Log In & Accept
+                </Link>
               </div>
-              <div>
-                <label className="label">Work email</label>
-                <input name="email" type="email" required className="input" />
-              </div>
-              <div>
-                <label className="label">Password (8+ characters)</label>
-                <input name="password" type="password" minLength={8} required className="input" />
-              </div>
-              <button type="submit" className="btn-primary w-full">
-                Create Account & Get Started
-              </button>
-            </form>
+            )}
 
-            <p className="mt-4 text-center text-sm text-slate-500">
-              Already have an account?{" "}
-              <Link href="/login" className="font-medium text-brand-700 hover:underline">
-                Log in
-              </Link>
+            <p className="mt-4 text-center text-xs text-slate-400">
+              This invite link expires on {new Date(invite!.expiresAt).toLocaleDateString()}.
             </p>
           </>
         )}

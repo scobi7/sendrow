@@ -139,10 +139,9 @@ export interface Company {
 }
 
 export interface User {
-  id: string;
+  id: string;       // Clerk user ID
   name: string;
   email: string;
-  passHash: string;
   companyId: string;
   role?: "company" | "consultant";
   createdAt: string;

@@ -1,12 +1,11 @@
 import { currentUser } from "@/lib/auth";
-import { ensureDB, getCompany } from "@/lib/store";
+import { loadCompany } from "@/lib/store";
 import { saveFields } from "@/lib/actions";
 import { CO2eBox, InfoTip, PageHeader } from "@/components/ui";
 
 export default async function Scope1() {
-  await ensureDB();
-  const user = currentUser()!;
-  const company = getCompany(user.companyId);
+  const user = (await currentUser())!;
+  const company = await loadCompany(user.companyId);
   const inp = company.inputs;
   const calcs = company.calcs.filter((c) => c.scope === 1);
   const sub = (prefix: string) =>

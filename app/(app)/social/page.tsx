@@ -1,12 +1,11 @@
 import { currentUser } from "@/lib/auth";
-import { ensureDB, getCompany } from "@/lib/store";
+import { loadCompany } from "@/lib/store";
 import { saveFields } from "@/lib/actions";
 import { InfoTip, PageHeader } from "@/components/ui";
 
 export default async function Social() {
-  await ensureDB();
-  const user = currentUser()!;
-  const company = getCompany(user.companyId);
+  const user = (await currentUser())!;
+  const company = await loadCompany(user.companyId);
   const inp = company.inputs;
   const turnover =
     inp.social_departures != null && inp.social_total_employees

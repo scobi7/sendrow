@@ -1,12 +1,11 @@
 import { currentUser } from "@/lib/auth";
-import { ensureDB, getCompany } from "@/lib/store";
+import { loadCompany } from "@/lib/store";
 import { connectQuickBooks, connectUtility, resync } from "@/lib/actions";
 import { PageHeader } from "@/components/ui";
 
 export default async function Connections() {
-  await ensureDB();
-  const user = currentUser()!;
-  const company = getCompany(user.companyId);
+  const user = (await currentUser())!;
+  const company = await loadCompany(user.companyId);
   const qb = company.connections.quickbooks;
   const util = company.connections.utility;
 

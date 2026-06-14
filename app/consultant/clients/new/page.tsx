@@ -19,20 +19,21 @@ const HEADCOUNTS = [
   { value: "350_500", label: "350–500" },
 ];
 
-export default function NewClientPage({
+export default async function NewClientPage({
   searchParams,
 }: {
-  searchParams: { error?: string };
+  searchParams: Promise<{ error?: string }>;
 }) {
+  const { error } = await searchParams;
   return (
     <div className="mx-auto max-w-lg">
-      <Link href="/consultant" className="mb-4 inline-block text-sm text-brand-700 hover:underline">
+      <Link href="/consultant" className="mb-4 inline-block text-sm text-emerald-700 hover:underline">
         ← Back to clients
       </Link>
       <PageHeader title="Add New Client" subtitle="Create a client profile and generate an invite link." />
 
-      {searchParams.error && (
-        <p className="mb-4 rounded-lg bg-red-50 px-4 py-2 text-sm text-red-700">{searchParams.error}</p>
+      {error && (
+        <p className="mb-4 rounded-lg bg-red-50 px-4 py-2 text-sm text-red-700">{error}</p>
       )}
 
       <form action={consultantAddClient} className="card space-y-4">
