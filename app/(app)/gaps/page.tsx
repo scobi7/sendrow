@@ -1,10 +1,11 @@
 import { currentUser } from "@/lib/auth";
-import { getCompany } from "@/lib/store";
+import { ensureDB, getCompany } from "@/lib/store";
 import { gapAnalysis } from "@/lib/progress";
 import { saveActionPlan } from "@/lib/actions";
 import { PageHeader } from "@/components/ui";
 
-export default function Gaps() {
+export default async function Gaps() {
+  await ensureDB();
   const user = currentUser()!;
   const company = getCompany(user.companyId);
   const gaps = gapAnalysis(company);

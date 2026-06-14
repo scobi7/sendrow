@@ -1,10 +1,11 @@
 import { currentUser } from "@/lib/auth";
-import { getCompany, getFactor } from "@/lib/store";
+import { ensureDB, getCompany, getFactor } from "@/lib/store";
 import { saveFields } from "@/lib/actions";
 import { PageHeader } from "@/components/ui";
 import Link from "next/link";
 
-export default function Scope2() {
+export default async function Scope2() {
+  await ensureDB();
   const user = currentUser()!;
   const company = getCompany(user.companyId);
   const inp = company.inputs;

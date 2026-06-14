@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { currentUser } from "@/lib/auth";
-import { getCompany } from "@/lib/store";
+import { ensureDB, getCompany } from "@/lib/store";
 import { totals } from "@/lib/calc";
 import { canGenerateReport, progressPercent } from "@/lib/progress";
 import { PageHeader, ProgressBar, StatusDot } from "@/components/ui";
@@ -16,7 +16,8 @@ const SECTIONS: [SectionName, string, string, string][] = [
   ["reports", "Reports", "/reports", "Generate your GHG inventory and questionnaire answers"],
 ];
 
-export default function Dashboard() {
+export default async function Dashboard() {
+  await ensureDB();
   const user = currentUser()!;
   const company = getCompany(user.companyId);
   const pct = progressPercent(company);

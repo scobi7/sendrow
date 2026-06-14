@@ -1,5 +1,5 @@
 import { currentUser } from "@/lib/auth";
-import { getCompany } from "@/lib/store";
+import { ensureDB, getCompany } from "@/lib/store";
 import { saveFields, saveLeadership, savePolicy } from "@/lib/actions";
 import { PageHeader } from "@/components/ui";
 
@@ -13,7 +13,8 @@ const POLICIES = [
 ];
 const LEVELS = ["C-Suite", "VP/Director", "Manager", "Individual Contributor"];
 
-export default function Governance() {
+export default async function Governance() {
+  await ensureDB();
   const user = currentUser()!;
   const company = getCompany(user.companyId);
   const inp = company.inputs;

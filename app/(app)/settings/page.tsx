@@ -1,5 +1,5 @@
 import { currentUser } from "@/lib/auth";
-import { getCompany } from "@/lib/store";
+import { ensureDB, getCompany } from "@/lib/store";
 import { updateProfile, deleteAccount } from "@/lib/actions";
 import { PageHeader } from "@/components/ui";
 
@@ -8,7 +8,8 @@ const MONTHS = [
   "July", "August", "September", "October", "November", "December",
 ];
 
-export default function Settings({ searchParams }: { searchParams: { saved?: string } }) {
+export default async function Settings({ searchParams }: { searchParams: { saved?: string } }) {
+  await ensureDB();
   const user = currentUser()!;
   const company = getCompany(user.companyId);
 

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { currentUser } from "@/lib/auth";
-import { loadDB, getCompany } from "@/lib/store";
+import { ensureDB, loadDB, getCompany } from "@/lib/store";
 import { totals } from "@/lib/calc";
 import { auditForCompany } from "@/lib/audit";
 import { generateInviteToken, archiveClient } from "@/lib/actions";
@@ -25,13 +25,14 @@ const STATUS_LABEL: Record<string, string> = {
   complete: "Complete",
 };
 
-export default function ClientDetailPage({
+export default async function ClientDetailPage({
   params,
   searchParams,
 }: {
   params: { id: string };
   searchParams: { invite?: string };
 }) {
+  await ensureDB();
   const user = currentUser()!;
   const db = loadDB();
 

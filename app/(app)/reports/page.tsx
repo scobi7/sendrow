@@ -1,13 +1,14 @@
 import Link from "next/link";
 import { currentUser } from "@/lib/auth";
-import { getCompany } from "@/lib/store";
+import { ensureDB, getCompany } from "@/lib/store";
 import { generateReport } from "@/lib/actions";
 import { totals } from "@/lib/calc";
 import { canGenerateReport } from "@/lib/progress";
 import { PageHeader } from "@/components/ui";
 import { questionnaireMapping, QUESTIONNAIRE_FORMATS } from "@/lib/mapping";
 
-export default function Reports({ searchParams }: { searchParams: { format?: string } }) {
+export default async function Reports({ searchParams }: { searchParams: { format?: string } }) {
+  await ensureDB();
   const user = currentUser()!;
   const company = getCompany(user.companyId);
   const t = totals(company);

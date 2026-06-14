@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { currentUser } from "@/lib/auth";
-import { loadDB, getCompany } from "@/lib/store";
+import { ensureDB, loadDB, getCompany } from "@/lib/store";
 import { totals } from "@/lib/calc";
 import { progressPercent } from "@/lib/progress";
 import { PageHeader, StatusDot } from "@/components/ui";
@@ -18,11 +18,12 @@ const SECTION_LABELS: Record<SectionName, string> = {
 
 const DATA_SECTIONS: SectionName[] = ["connections", "scope1", "scope2", "scope3", "social", "governance"];
 
-export default function ConsultantDashboard({
+export default async function ConsultantDashboard({
   searchParams,
 }: {
   searchParams: { filter?: string };
 }) {
+  await ensureDB();
   const user = currentUser()!;
   const db = loadDB();
 

@@ -1,15 +1,16 @@
 import Link from "next/link";
 import { Logo } from "@/components/ui";
-import { loadDB, getCompany } from "@/lib/store";
+import { ensureDB, loadDB, getCompany } from "@/lib/store";
 import { acceptInvite } from "@/lib/actions";
 
-export default function ConnectPage({
+export default async function ConnectPage({
   params,
   searchParams,
 }: {
   params: { token: string };
   searchParams: { error?: string };
 }) {
+  await ensureDB();
   const db = loadDB();
   const invite = db.inviteTokens.find(
     (t) => t.token === params.token && !t.usedAt

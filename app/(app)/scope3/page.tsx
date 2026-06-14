@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { currentUser } from "@/lib/auth";
-import { getCompany } from "@/lib/store";
+import { ensureDB, getCompany } from "@/lib/store";
 import { saveFields, saveScope3Decision } from "@/lib/actions";
 import { CO2eBox, InfoTip, PageHeader } from "@/components/ui";
 import { SCOPE3_OTHER_CATEGORIES } from "@/lib/factors";
 
-export default function Scope3() {
+export default async function Scope3() {
+  await ensureDB();
   const user = currentUser()!;
   const company = getCompany(user.companyId);
   const inp = company.inputs;

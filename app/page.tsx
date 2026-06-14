@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { Logo } from "@/components/ui";
 import { currentUser } from "@/lib/auth";
+import { ensureDB } from "@/lib/store";
 import { redirect } from "next/navigation";
 
-export default function Landing() {
+export default async function Landing() {
+  await ensureDB();
   if (currentUser()) redirect("/dashboard");
   return (
     <main className="flex min-h-screen flex-col">

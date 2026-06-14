@@ -1,9 +1,10 @@
 import { currentUser } from "@/lib/auth";
-import { getCompany } from "@/lib/store";
+import { ensureDB, getCompany } from "@/lib/store";
 import { saveFields } from "@/lib/actions";
 import { InfoTip, PageHeader } from "@/components/ui";
 
-export default function Social() {
+export default async function Social() {
+  await ensureDB();
   const user = currentUser()!;
   const company = getCompany(user.companyId);
   const inp = company.inputs;

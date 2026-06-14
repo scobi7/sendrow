@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import { currentUser } from "@/lib/auth";
-import { getCompany } from "@/lib/store";
+import { ensureDB, getCompany } from "@/lib/store";
 import { auditForCompany } from "@/lib/audit";
 
 export async function GET() {
+  await ensureDB();
   const user = currentUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const company = getCompany(user.companyId);

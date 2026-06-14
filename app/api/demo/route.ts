@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { loadDB, saveDB, uid } from "@/lib/store";
+import { ensureDB, loadDB, saveDB, uid } from "@/lib/store";
 import { egridForState } from "@/lib/factors";
 import { generateQBTransactions, generateUtilityData } from "@/lib/mockdata";
 import { recalcCompany } from "@/lib/calc";
@@ -18,6 +18,7 @@ export async function GET(request: Request) {
     return new Response("Not Found", { status: 404 });
   }
 
+  await ensureDB();
   const db = loadDB();
   const demoEmail = "demo@greentrack.app";
 
@@ -109,7 +110,7 @@ export async function GET(request: Request) {
     prev: "—",
     next: "Demo company seeded with Pacific Coast Logistics data",
   });
-  saveDB();
+  await saveDB();
 
   createSession(user.id);
   return NextResponse.redirect(new URL("/dashboard", request.url));

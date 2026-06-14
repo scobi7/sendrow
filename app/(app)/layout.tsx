@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Logo } from "@/components/ui";
 import { currentUser } from "@/lib/auth";
-import { getCompany } from "@/lib/store";
+import { ensureDB, getCompany } from "@/lib/store";
 import { logout } from "@/lib/actions";
 
 const NAV: [string, string][] = [
@@ -18,7 +18,8 @@ const NAV: [string, string][] = [
   ["/settings", "Settings"],
 ];
 
-export default function AppLayout({ children }: { children: React.ReactNode }) {
+export default async function AppLayout({ children }: { children: React.ReactNode }) {
+  await ensureDB();
   const user = currentUser();
   if (!user) redirect("/login");
   if (user.role === "consultant") redirect("/consultant");

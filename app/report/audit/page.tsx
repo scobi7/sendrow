@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { currentUser } from "@/lib/auth";
-import { getCompany } from "@/lib/store";
+import { ensureDB, getCompany } from "@/lib/store";
 import { auditForCompany } from "@/lib/audit";
 import { fiscalPeriodLabel } from "@/lib/mapping";
 import PrintButton from "../print-button";
 
-export default function AuditTrail() {
+export default async function AuditTrail() {
+  await ensureDB();
   const user = currentUser();
   if (!user) redirect("/login");
   const company = getCompany(user.companyId);

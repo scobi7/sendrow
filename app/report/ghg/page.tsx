@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { currentUser } from "@/lib/auth";
-import { getCompany, getFactor } from "@/lib/store";
+import { ensureDB, getCompany, getFactor } from "@/lib/store";
 import { totals } from "@/lib/calc";
 import { fiscalPeriodLabel } from "@/lib/mapping";
 import PrintButton from "../print-button";
 
-export default function GHGReport() {
+export default async function GHGReport() {
+  await ensureDB();
   const user = currentUser();
   if (!user) redirect("/login");
   const company = getCompany(user.companyId);

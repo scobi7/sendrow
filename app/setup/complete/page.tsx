@@ -2,8 +2,10 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Logo } from "@/components/ui";
 import { currentUser } from "@/lib/auth";
+import { ensureDB } from "@/lib/store";
 
-export default function SetupComplete() {
+export default async function SetupComplete() {
+  await ensureDB();
   if (!currentUser()) redirect("/login");
   return (
     <main className="mx-auto flex min-h-screen max-w-xl flex-col items-center justify-center px-6 text-center">
