@@ -22,7 +22,10 @@ export default async function GHGReport() {
     <main className="mx-auto max-w-3xl bg-white px-8 py-10 text-slate-800">
       <div className="no-print mb-6 flex items-center justify-between">
         <Link href="/reports" className="text-sm text-emerald-700 hover:underline">← Back to reports</Link>
-        <PrintButton label="Download PDF" />
+        <div className="flex gap-2 no-print">
+          <PrintButton label="Print" />
+          <a href="/api/report/pdf" download className="btn-primary text-sm px-4 py-2">Download PDF</a>
+        </div>
       </div>
 
       <header className="border-b-4 border-emerald-600 pb-6">

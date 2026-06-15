@@ -62,7 +62,10 @@ export default async function Reports({ searchParams }: { searchParams: Promise<
             <p className="mt-1 text-sm text-slate-500">Audit-ready PDF: Scope 1, 2 (dual reporting), 3, methodology, and data quality notes.</p>
           </div>
           {company.reportGeneratedAt ? (
-            <Link href="/report/ghg" className="btn-primary">View / Download</Link>
+            <div className="flex flex-col gap-2 items-end">
+              <Link href="/report/ghg" className="btn-secondary text-sm">View report</Link>
+              <a href="/api/report/pdf" download className="btn-primary text-sm">Download PDF</a>
+            </div>
           ) : (
             <form action={generateReport}>
               <button className="btn-primary" disabled={!ready}>Generate PDF</button>

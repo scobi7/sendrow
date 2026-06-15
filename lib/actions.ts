@@ -9,6 +9,7 @@ import { db } from "./db";
 import { companies, userCompanies, consultantClients, inviteTokens } from "./db/schema";
 import {
   loadCompany,
+  loadFactors,
   persistCompany,
   saveLocations,
   saveQBTransactions,
@@ -40,7 +41,8 @@ async function requireConsultant(): Promise<User> {
 }
 
 async function persist(company: Company) {
-  recalcCompany(company);
+  const overrides = await loadFactors();
+  recalcCompany(company, overrides);
   refreshSectionStatus(company);
   await persistCompany(company);
   revalidatePath("/", "layout");

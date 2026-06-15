@@ -8,6 +8,7 @@ import {
   qbTransactions,
   utilityData,
   calcs,
+  emissionFactors,
 } from "./db/schema";
 import { Company, EmissionFactor, Industry, HeadcountRange, Inputs } from "./types";
 import { SEED_FACTORS } from "./factors";
@@ -20,6 +21,25 @@ export function getFactor(factorId: string): EmissionFactor {
   const f = SEED_FACTORS.find((f) => f.factor_id === factorId);
   if (!f) throw new Error(`Unknown emission factor: ${factorId}`);
   return f;
+}
+
+export async function loadFactors(): Promise<EmissionFactor[]> {
+  try {
+    const rows = await db.select().from(emissionFactors);
+    return rows.map((r) => ({
+      factor_id: r.factorId,
+      factor_name: r.factorName,
+      category: r.category,
+      value: Number(r.value),
+      unit: r.unit,
+      source: r.source,
+      source_url: r.sourceUrl,
+      year_effective: r.yearEffective,
+      year_retired: r.yearRetired ?? null,
+    }));
+  } catch {
+    return [];
+  }
 }
 
 export async function loadCompany(companyId: string): Promise<Company> {

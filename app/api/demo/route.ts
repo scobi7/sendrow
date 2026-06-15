@@ -7,7 +7,7 @@ import { egridForState } from "@/lib/factors";
 import { generateQBTransactions, generateUtilityData } from "@/lib/mockdata";
 import { recalcCompany } from "@/lib/calc";
 import { refreshSectionStatus } from "@/lib/progress";
-import { persistCompany, saveLocations, saveQBTransactions, saveUtilityData, uid } from "@/lib/store";
+import { persistCompany, saveLocations, saveQBTransactions, saveUtilityData, uid, loadFactors } from "@/lib/store";
 import { Company } from "@/lib/types";
 
 const DEMO_EMAIL = "demo@greentrack.app";
@@ -105,7 +105,8 @@ export async function GET(request: Request) {
 
     company.qbTransactions = generateQBTransactions(company);
     company.utilityData = generateUtilityData(company);
-    recalcCompany(company);
+    const overrides = await loadFactors();
+    recalcCompany(company, overrides);
     refreshSectionStatus(company);
     company.reportGeneratedAt = new Date().toISOString();
     refreshSectionStatus(company);

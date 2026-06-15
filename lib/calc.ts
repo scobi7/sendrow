@@ -1,4 +1,4 @@
-import { CalcResult, Company } from "./types";
+import { CalcResult, Company, EmissionFactor } from "./types";
 import { getFactor, uid } from "./store";
 import { COMMUTE_FACTOR, QB_CATEGORY_TO_USEEIO, REFRIGERANT_FACTOR } from "./factors";
 
@@ -19,9 +19,14 @@ export function headcountMidpoint(company: Company): number {
   ];
 }
 
-export function recalcCompany(company: Company): void {
+export function recalcCompany(company: Company, factorOverrides: EmissionFactor[] = []): void {
   const results: CalcResult[] = [];
   const inp = company.inputs;
+
+  const getF = (id: string): EmissionFactor => {
+    const override = factorOverrides.find((f) => f.factor_id === id);
+    return override ?? getFactor(id);
+  };
 
   const add = (
     scope: 1 | 2 | 3,
@@ -44,7 +49,7 @@ export function recalcCompany(company: Company): void {
     ];
     for (const [name, gal, fid] of fuels) {
       if (gal && gal > 0) {
-        const f = getFactor(fid);
+        const f = getF(fid);
         add(1, `Fleet fuel — ${name}`, gal * f.value, fid,
           `${fmt(gal)} gal ${name} × ${f.value} ${f.unit} = ${fmt(r2(gal * f.value))} tCO2e`);
       }
@@ -54,7 +59,7 @@ export function recalcCompany(company: Company): void {
     const utilityTherms = company.utilityData.reduce((s, m) => s + m.therms, 0);
     const therms = inp.natgas_therms_override ?? (utilityTherms > 0 ? utilityTherms : null);
     if (therms && therms > 0) {
-      const f = getFactor("natgas.therm.2025");
+      const f = getF("natgas.therm.2025");
       const src = inp.natgas_therms_override != null ? "manual entry" : "utility connection";
       add(1, "Natural gas", therms * f.value, f.factor_id,
         `${fmt(therms)} therms (${src}) × ${f.value} ${f.unit} = ${fmt(r2(therms * f.value))} tCO2e`);
@@ -63,7 +68,7 @@ export function recalcCompany(company: Company): void {
   if (!inp.refrigerant_na && inp.refrigerant_kg && inp.refrigerant_kg > 0 && inp.refrigerant_type) {
     const fid = REFRIGERANT_FACTOR[inp.refrigerant_type];
     if (fid) {
-      const f = getFactor(fid);
+      const f = getF(fid);
       const tons = (inp.refrigerant_kg * f.value) / 1000;
       add(1, `Refrigerant — ${inp.refrigerant_type}`, tons, fid,
         `${fmt(inp.refrigerant_kg)} kg ${inp.refrigerant_type} × GWP ${f.value} ÷ 1000 = ${fmt(r2(tons))} tCO2e`);
@@ -71,19 +76,19 @@ export function recalcCompany(company: Company): void {
   }
   if (!inp.equipment_na && inp.equipment_gal && inp.equipment_gal > 0 && inp.equipment_fuel_type) {
     const fid = `equip.${inp.equipment_fuel_type.toLowerCase()}.2025`;
-    const f = getFactor(fid);
+    const f = getF(fid);
     add(1, `On-site equipment — ${inp.equipment_fuel_type.toLowerCase()}`, inp.equipment_gal * f.value, fid,
       `${fmt(inp.equipment_gal)} gal × ${f.value} ${f.unit} = ${fmt(r2(inp.equipment_gal * f.value))} tCO2e`);
   }
 
   // ───────────── Scope 2 ─────────────
   if (company.connections.utility.connected && company.utilityData.length > 0) {
-    const residual = getFactor("residual.WECC.2024");
+    const residual = getF("residual.WECC.2024");
     const recPct = inp.has_recs ? Math.min(Math.max(inp.rec_coverage_pct ?? 0, 0), 100) : 0;
     for (const loc of company.locations) {
       const kwh = company.utilityData.filter((m) => m.locationId === loc.id).reduce((s, m) => s + m.kwh, 0);
       if (kwh <= 0) continue;
-      const f = getFactor(loc.egridSubregion);
+      const f = getF(loc.egridSubregion);
       const locBased = kwh * f.value;
       const mktBased = kwh * residual.value * (1 - recPct / 100);
       add(2, `Electricity — ${loc.city || loc.address}`, locBased, f.factor_id,
@@ -105,7 +110,7 @@ export function recalcCompany(company: Company): void {
     for (const [cat, spend] of Object.entries(byCategory)) {
       const map = QB_CATEGORY_TO_USEEIO[cat];
       if (!map) continue;
-      const f = getFactor(map.factorId);
+      const f = getF(map.factorId);
       const tons = spend * f.value;
       const b = buckets[map.bucket];
       b.tons += tons;
@@ -126,7 +131,7 @@ export function recalcCompany(company: Company): void {
   if (inp.commute_avg_miles && inp.commute_mode && inp.commute_days_in_office != null) {
     const fid = COMMUTE_FACTOR[inp.commute_mode];
     if (fid) {
-      const f = getFactor(fid);
+      const f = getF(fid);
       const employees = headcountMidpoint(company);
       const annualDays = Math.round(235 * ((inp.commute_days_in_office ?? 5) / 5));
       const tons = employees * inp.commute_avg_miles * annualDays * f.value;
@@ -143,7 +148,7 @@ export function recalcCompany(company: Company): void {
   ];
   for (const [name, tons, fid] of wasteRows) {
     if (tons && tons > 0) {
-      const f = getFactor(fid);
+      const f = getF(fid);
       add(3, `Waste — ${name}`, tons * f.value, fid,
         `${fmt(tons)} short tons ${name} × ${f.value} ${f.unit} = ${fmt(r2(tons * f.value))} tCO2e`);
     }

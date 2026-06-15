@@ -105,3 +105,16 @@ export const inviteTokens = pgTable("gt_invite_tokens", {
   expiresAt: text("expires_at").notNull(),
   usedAt: text("used_at"),
 });
+
+export const emissionFactors = pgTable("gt_emission_factors", {
+  factorId: text("factor_id").primaryKey(),
+  factorName: text("factor_name").notNull(),
+  category: text("category").notNull(),
+  value: numeric("value", { precision: 16, scale: 8 }).notNull(),
+  unit: text("unit").notNull(),
+  source: text("source").notNull().default(""),
+  sourceUrl: text("source_url").notNull().default(""),
+  yearEffective: integer("year_effective").notNull(),
+  yearRetired: integer("year_retired"),
+  updatedAt: text("updated_at").notNull(),
+});
