@@ -21,8 +21,8 @@ export function LandingNav() {
           <Link href="/login" className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors">
             Sign in
           </Link>
-          <Link href="/signup" className="btn-primary text-sm px-4 py-2">
-            Get started
+          <Link href="/demo" className="btn-primary text-sm px-4 py-2">
+            Request a demo
           </Link>
         </nav>
         <button
@@ -44,18 +44,10 @@ export function LandingNav() {
       {open && (
         <div className="border-t border-slate-100 bg-white px-6 py-5 sm:hidden">
           <nav className="flex flex-col gap-5">
-            <a href="#how-it-works" onClick={() => setOpen(false)} className="text-sm font-medium text-slate-600">
-              How it works
-            </a>
-            <a href="#about" onClick={() => setOpen(false)} className="text-sm font-medium text-slate-600">
-              About
-            </a>
-            <Link href="/login" className="text-sm font-medium text-slate-600">
-              Sign in
-            </Link>
-            <Link href="/signup" className="btn-primary text-sm text-center px-4 py-2">
-              Get started
-            </Link>
+            <a href="#how-it-works" onClick={() => setOpen(false)} className="text-sm font-medium text-slate-600">How it works</a>
+            <a href="#about" onClick={() => setOpen(false)} className="text-sm font-medium text-slate-600">About</a>
+            <Link href="/login" className="text-sm font-medium text-slate-600">Sign in</Link>
+            <Link href="/demo" className="btn-primary text-sm text-center px-4 py-2">Request a demo</Link>
           </nav>
         </div>
       )}
