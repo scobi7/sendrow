@@ -178,16 +178,49 @@ export async function connectUtility() {
 
 export async function startUtilityConnect(formData: FormData) {
   const email = String(formData.get("email") ?? "").trim();
-  if (!email) return;
+  const utility = String(formData.get("utility") ?? "").trim();
+  if (!email || !utility) return;
   const { company } = await requireUser();
-  const authUid = await createAuthorization(email);
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
+  const { uid, authUrl } = await createAuthorization(email, utility, appUrl ? `${appUrl}/connections` : undefined);
   company.connections.utility = {
     ...company.connections.utility,
-    authUid,
+    authUid: uid,
     authEmail: email,
   };
   await persist(company);
-  revalidatePath("/connections");
+  redirect(authUrl);
+}
+
+export async function startUtilityConnectForClient(companyId: string, formData: FormData) {
+  const consultant = await requireConsultant();
+  const email = String(formData.get("email") ?? "").trim();
+  const utility = String(formData.get("utility") ?? "").trim();
+  if (!email || !utility) return;
+
+  const link = await db.query.consultantClients.findFirst({
+    where: and(
+      eq(consultantClients.consultantId, consultant.id),
+      eq(consultantClients.companyId, companyId),
+      isNull(consultantClients.archivedAt)
+    ),
+  });
+  if (!link) return;
+
+  const company = await loadCompany(companyId);
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
+  const { uid, authUrl } = await createAuthorization(email, utility, appUrl ? `${appUrl}/connections` : undefined);
+  company.connections.utility = {
+    ...company.connections.utility,
+    authUid: uid,
+    authEmail: email,
+  };
+  const overrides = await loadFactors();
+  recalcCompany(company, overrides);
+  refreshSectionStatus(company);
+  await persistCompany(company);
+  revalidatePath("/consultant");
+  redirect(authUrl);
 }
 
 export async function syncUtilityNow() {

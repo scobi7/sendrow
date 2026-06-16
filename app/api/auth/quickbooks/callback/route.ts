@@ -5,7 +5,7 @@ import { loadCompany, loadFactors, persistCompany, saveQBTransactions } from "@/
 import { recalcCompany } from "@/lib/calc";
 import { refreshSectionStatus } from "@/lib/progress";
 
-const BASE_URL = process.env.QUICKBOOKS_REDIRECT_URI!.replace("/api/auth/quickbooks/callback", "");
+const BASE_URL = (process.env.QUICKBOOKS_REDIRECT_URI ?? "").replace("/api/auth/quickbooks/callback", "");
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);

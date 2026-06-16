@@ -10,7 +10,7 @@ export default function SignupPage() {
             card: "rounded-2xl shadow-sm border border-slate-200",
           },
         }}
-        afterSignUpUrl="/onboarding"
+        fallbackRedirectUrl="/onboarding"
         signInUrl="/login"
       />
     </main>

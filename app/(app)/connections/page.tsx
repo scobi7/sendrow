@@ -80,6 +80,14 @@ export default async function Connections() {
             </div>
           ) : process.env.UTILITYAPI_KEY ? (
             <form action={startUtilityConnect} className="mt-4 space-y-2">
+              <select name="utility" required className="input w-full">
+                <option value="">Select your utility company</option>
+                <option value="pge-ca">PG&amp;E (Pacific Gas &amp; Electric)</option>
+                <option value="sce-ca">SCE (Southern California Edison)</option>
+                <option value="sdge-ca">SDG&amp;E (San Diego Gas &amp; Electric)</option>
+                <option value="ladwp-ca">LADWP (Los Angeles DWP)</option>
+                <option value="smud-ca">SMUD (Sacramento Municipal)</option>
+              </select>
               <input
                 name="email"
                 type="email"
@@ -87,7 +95,7 @@ export default async function Connections() {
                 placeholder="Email on your utility account"
                 className="input w-full"
               />
-              <button type="submit" className="btn-primary w-full">Send Authorization Email</button>
+              <button type="submit" className="btn-primary w-full">Connect Utility Account</button>
             </form>
           ) : (
             <form action={connectUtility} className="mt-4">

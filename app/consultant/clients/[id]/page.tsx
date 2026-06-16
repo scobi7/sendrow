@@ -7,7 +7,7 @@ import { consultantClients } from "@/lib/db/schema";
 import { loadCompany } from "@/lib/store";
 import { totals } from "@/lib/calc";
 import { auditForCompany } from "@/lib/audit";
-import { generateInviteToken, archiveClient } from "@/lib/actions";
+import { generateInviteToken, archiveClient, startUtilityConnectForClient } from "@/lib/actions";
 import { PageHeader, StatusDot } from "@/components/ui";
 import { SectionName } from "@/lib/types";
 import { CopyButton } from "./copy-link";
@@ -60,8 +60,9 @@ export default async function ClientDetailPage({
   const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 2 });
   const recent = recentAudit.slice(0, 10);
 
+  // TODO: update NEXT_PUBLIC_APP_URL to real domain when available
   const inviteUrl = inviteToken
-    ? `${process.env.NEXT_PUBLIC_APP_URL ?? "https://greentrack.app"}/connect/${inviteToken}`
+    ? `${process.env.NEXT_PUBLIC_APP_URL ?? "https://greentrack-sigma.vercel.app"}/connect/${inviteToken}`
     : null;
 
   const boundGenerate = generateInviteToken.bind(null, id);
@@ -129,6 +130,77 @@ export default async function ClientDetailPage({
                 <button className="btn-secondary text-sm">Generate invite link</button>
               </form>
             )}
+          </div>
+
+          <div className="card">
+            <h2 className="text-sm font-bold uppercase tracking-wide text-slate-400">Data Connections</h2>
+            <div className="mt-4 space-y-4">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-sm font-medium text-slate-900">🧾 QuickBooks</p>
+                  {company.connections.quickbooks.connected ? (
+                    <p className="text-xs text-emerald-700">
+                      ✓ Connected — last synced {company.connections.quickbooks.lastSynced
+                        ? new Date(company.connections.quickbooks.lastSynced).toLocaleDateString()
+                        : "—"}
+                    </p>
+                  ) : (
+                    <p className="text-xs text-slate-400">Not connected</p>
+                  )}
+                </div>
+                {!company.connections.quickbooks.connected && process.env.QUICKBOOKS_CLIENT_ID && (
+                  <a
+                    href={`/api/auth/quickbooks/redirect?for=${company.id}`}
+                    className="btn-secondary shrink-0 px-3 py-1.5 text-xs"
+                  >
+                    Connect QB
+                  </a>
+                )}
+              </div>
+
+              <div className="border-t border-slate-100 pt-4">
+                <p className="text-sm font-medium text-slate-900">⚡ Utility Account</p>
+                {company.connections.utility.connected ? (
+                  <p className="text-xs text-emerald-700">
+                    ✓ Connected — last synced {company.connections.utility.lastSynced
+                      ? new Date(company.connections.utility.lastSynced).toLocaleDateString()
+                      : "—"}
+                  </p>
+                ) : company.connections.utility.authUid ? (
+                  <p className="text-xs text-amber-700">
+                    Pending — auth sent to {company.connections.utility.authEmail}
+                  </p>
+                ) : process.env.UTILITYAPI_KEY ? (
+                  <form
+                    action={startUtilityConnectForClient.bind(null, company.id)}
+                    className="mt-2 space-y-2"
+                  >
+                    <select name="utility" required className="input w-full text-xs">
+                      <option value="">Select utility</option>
+                      <option value="pge-ca">PG&amp;E</option>
+                      <option value="sce-ca">SCE</option>
+                      <option value="sdge-ca">SDG&amp;E</option>
+                      <option value="ladwp-ca">LADWP</option>
+                      <option value="smud-ca">SMUD</option>
+                    </select>
+                    <div className="flex gap-2">
+                      <input
+                        name="email"
+                        type="email"
+                        required
+                        placeholder="Client utility email"
+                        className="input flex-1 text-xs"
+                      />
+                      <button type="submit" className="btn-secondary shrink-0 px-3 py-1.5 text-xs">
+                        Connect
+                      </button>
+                    </div>
+                  </form>
+                ) : (
+                  <p className="text-xs text-slate-400">Not connected</p>
+                )}
+              </div>
+            </div>
           </div>
 
           <div className="card">

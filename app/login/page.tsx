@@ -10,7 +10,7 @@ export default function LoginPage() {
             card: "rounded-2xl shadow-sm border border-slate-200",
           },
         }}
-        afterSignInUrl="/dashboard"
+        fallbackRedirectUrl="/dashboard"
         signUpUrl="/signup"
       />
     </main>

@@ -7,22 +7,30 @@ function authHeaders() {
   };
 }
 
-export async function createAuthorization(email: string): Promise<string> {
+export async function createAuthorization(
+  email: string,
+  utility: string,
+  redirectUri?: string
+): Promise<{ uid: string; authUrl: string }> {
+  const body: Record<string, unknown> = {
+    utility,
+    email,
+    scope: ["bills"],
+    real_name: "GreenTrack",
+  };
+  if (redirectUri) body.redirect_uri = redirectUri;
+
   const res = await fetch(`${BASE}/authorizations`, {
     method: "POST",
     headers: authHeaders(),
-    body: JSON.stringify({
-      email,
-      scope: ["18_months_bill_data"],
-      real_name: "GreenTrack",
-    }),
+    body: JSON.stringify(body),
   });
   if (!res.ok) {
     const text = await res.text();
     throw new Error(`UtilityAPI ${res.status}: ${text}`);
   }
   const data = await res.json();
-  return data.uid as string;
+  return { uid: data.uid as string, authUrl: data.auth_url as string };
 }
 
 export interface UtilityMeter {
