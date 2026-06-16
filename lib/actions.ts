@@ -18,6 +18,8 @@ import {
 } from "./store";
 import { currentUser } from "./auth";
 import { Company, HeadcountRange, Industry, User } from "./types";
+import { createAuthorization, getMeters, getBills } from "./utilityapi";
+import { fetchPurchases, getValidTokens } from "./quickbooks";
 import { egridForState } from "./factors";
 import { generateQBTransactions, generateUtilityData } from "./mockdata";
 import { recalcCompany } from "./calc";
@@ -165,6 +167,7 @@ export async function connectQuickBooks() {
 }
 
 export async function connectUtility() {
+  // Demo mode fallback (no UTILITYAPI_KEY)
   const { user, company } = await requireUser();
   company.connections.utility = { connected: true, lastSynced: new Date().toISOString() };
   company.utilityData = generateUtilityData(company);
@@ -173,14 +176,99 @@ export async function connectUtility() {
   await persist(company);
 }
 
+export async function startUtilityConnect(formData: FormData) {
+  const email = String(formData.get("email") ?? "").trim();
+  if (!email) return;
+  const { company } = await requireUser();
+  const authUid = await createAuthorization(email);
+  company.connections.utility = {
+    ...company.connections.utility,
+    authUid,
+    authEmail: email,
+  };
+  await persist(company);
+  revalidatePath("/connections");
+}
+
+export async function syncUtilityNow() {
+  const { user, company } = await requireUser();
+  const authUid = company.connections.utility.authUid;
+  if (!authUid) return;
+
+  const meters = await getMeters(authUid);
+  if (meters.length === 0) return; // user hasn't authorized yet
+
+  const bills = await getBills(meters.map((m) => m.uid));
+  const defaultLocationId = company.locations[0]?.id ?? "default";
+
+  const monthly: Record<string, { kwh: number; therms: number }> = {};
+  for (const bill of bills) {
+    const month = bill.base.bill_start_date.substring(0, 7);
+    if (!monthly[month]) monthly[month] = { kwh: 0, therms: 0 };
+    monthly[month].kwh += bill.base.kwh ?? 0;
+    monthly[month].therms += bill.base.therms ?? 0;
+  }
+
+  company.utilityData = Object.entries(monthly).map(([month, v]) => ({
+    locationId: defaultLocationId,
+    month,
+    kwh: v.kwh,
+    therms: v.therms,
+  }));
+  company.connections.utility = {
+    ...company.connections.utility,
+    connected: true,
+    lastSynced: new Date().toISOString(),
+  };
+
+  await logChange({ user, companyId: company.id, section: "connections", field: "utility", prev: "pending", next: `connected — ${company.utilityData.length} meter-months pulled via UtilityAPI` });
+  await saveUtilityData(company.id, company.utilityData);
+  await persist(company);
+  revalidatePath("/connections");
+}
+
 export async function resync(which: "quickbooks" | "utility") {
   const { user, company } = await requireUser();
   if (which === "quickbooks") {
-    company.qbTransactions = generateQBTransactions(company);
-    company.connections.quickbooks.lastSynced = new Date().toISOString();
+    const qb = company.connections.quickbooks;
+    if (qb.accessToken && qb.refreshToken && qb.tokenExpiresAt && qb.realmId) {
+      const tokens = await getValidTokens(qb.accessToken, qb.refreshToken, qb.tokenExpiresAt, qb.realmId);
+      const purchases = await fetchPurchases(tokens.accessToken, tokens.realmId);
+      company.connections.quickbooks = { ...qb, ...tokens, connected: true, lastSynced: new Date().toISOString() };
+      company.qbTransactions = purchases.map((p, i) => ({
+        id: `qb-${Date.now()}-${i}`,
+        vendor: p.vendor,
+        category: p.category,
+        amount: p.amount,
+        date: p.date,
+      }));
+    } else {
+      company.qbTransactions = generateQBTransactions(company);
+      company.connections.quickbooks.lastSynced = new Date().toISOString();
+    }
     await saveQBTransactions(company.id, company.qbTransactions);
   } else {
-    company.utilityData = generateUtilityData(company);
+    const authUid = company.connections.utility.authUid;
+    if (authUid) {
+      const meters = await getMeters(authUid);
+      const bills = await getBills(meters.map((m) => m.uid));
+      const defaultLocationId = company.locations[0]?.id ?? "default";
+      const monthly: Record<string, { kwh: number; therms: number }> = {};
+      for (const bill of bills) {
+        const month = bill.base.bill_start_date.substring(0, 7);
+        if (!monthly[month]) monthly[month] = { kwh: 0, therms: 0 };
+        monthly[month].kwh += bill.base.kwh ?? 0;
+        monthly[month].therms += bill.base.therms ?? 0;
+      }
+      company.utilityData = Object.entries(monthly).map(([month, v]) => ({
+        locationId: defaultLocationId,
+        month,
+        kwh: v.kwh,
+        therms: v.therms,
+      }));
+    } else {
+      company.utilityData = generateUtilityData(company);
+    }
     company.connections.utility.lastSynced = new Date().toISOString();
     await saveUtilityData(company.id, company.utilityData);
   }

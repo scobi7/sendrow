@@ -38,6 +38,12 @@ export const companyConnections = pgTable("gt_connections", {
   qbLastSynced: text("qb_last_synced"),
   utilityConnected: boolean("utility_connected").notNull().default(false),
   utilityLastSynced: text("utility_last_synced"),
+  utilityAuthUid: text("utility_auth_uid"),
+  utilityAuthEmail: text("utility_auth_email"),
+  qbAccessToken: text("qb_access_token"),
+  qbRefreshToken: text("qb_refresh_token"),
+  qbRealmId: text("qb_realm_id"),
+  qbTokenExpiresAt: text("qb_token_expires_at"),
 });
 
 export const companyInputs = pgTable("gt_company_inputs", {

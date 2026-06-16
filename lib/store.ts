@@ -82,10 +82,16 @@ export async function loadCompany(companyId: string): Promise<Company> {
       quickbooks: {
         connected: conn?.qbConnected ?? false,
         lastSynced: conn?.qbLastSynced ?? null,
+        accessToken: conn?.qbAccessToken ?? null,
+        refreshToken: conn?.qbRefreshToken ?? null,
+        tokenExpiresAt: conn?.qbTokenExpiresAt ?? null,
+        realmId: conn?.qbRealmId ?? null,
       },
       utility: {
         connected: conn?.utilityConnected ?? false,
         lastSynced: conn?.utilityLastSynced ?? null,
+        authUid: conn?.utilityAuthUid ?? null,
+        authEmail: conn?.utilityAuthEmail ?? null,
       },
     },
     locations: locRows.map((l) => ({
@@ -168,6 +174,12 @@ export async function persistCompany(company: Company): Promise<void> {
           qbLastSynced: company.connections.quickbooks.lastSynced ?? null,
           utilityConnected: company.connections.utility.connected,
           utilityLastSynced: company.connections.utility.lastSynced ?? null,
+          utilityAuthUid: company.connections.utility.authUid ?? null,
+          utilityAuthEmail: company.connections.utility.authEmail ?? null,
+          qbAccessToken: company.connections.quickbooks.accessToken ?? null,
+          qbRefreshToken: company.connections.quickbooks.refreshToken ?? null,
+          qbRealmId: company.connections.quickbooks.realmId ?? null,
+          qbTokenExpiresAt: company.connections.quickbooks.tokenExpiresAt ?? null,
         },
       }),
   ]);

@@ -126,8 +126,8 @@ export interface Company {
   setupComplete: boolean;
   createdAt: string;
   connections: {
-    quickbooks: { connected: boolean; lastSynced: string | null };
-    utility: { connected: boolean; lastSynced: string | null };
+    quickbooks: { connected: boolean; lastSynced: string | null; accessToken?: string | null; refreshToken?: string | null; tokenExpiresAt?: string | null; realmId?: string | null };
+    utility: { connected: boolean; lastSynced: string | null; authUid?: string | null; authEmail?: string | null };
   };
   qbTransactions: QBTransaction[];
   utilityData: UtilityMonth[];

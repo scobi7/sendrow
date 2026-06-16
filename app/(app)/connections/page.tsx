@@ -1,6 +1,6 @@
 import { currentUser } from "@/lib/auth";
 import { loadCompany } from "@/lib/store";
-import { connectQuickBooks, connectUtility, resync } from "@/lib/actions";
+import { connectQuickBooks, connectUtility, startUtilityConnect, syncUtilityNow, resync } from "@/lib/actions";
 import { PageHeader } from "@/components/ui";
 
 export default async function Connections() {
@@ -44,10 +44,16 @@ export default async function Connections() {
               <span className="text-sm font-semibold text-brand-700">✓ Connected — last synced {dateStr(qb.lastSynced)}</span>
               <form action={resync.bind(null, "quickbooks")}><button className="btn-secondary px-3 py-1.5 text-xs">Resync</button></form>
             </div>
+          ) : process.env.QUICKBOOKS_CLIENT_ID ? (
+            <div className="mt-4">
+              <a href="/api/auth/quickbooks/redirect" className="btn-primary w-full block text-center">
+                Connect QuickBooks
+              </a>
+            </div>
           ) : (
             <form action={connectQuickBooks} className="mt-4">
               <button className="btn-primary w-full">Connect QuickBooks</button>
-              <p className="mt-2 text-center text-xs text-slate-400">Demo mode: loads realistic sample data. Production uses Intuit OAuth.</p>
+              <p className="mt-2 text-center text-xs text-slate-400">Demo mode: loads realistic sample data.</p>
             </form>
           )}
         </div>
@@ -63,10 +69,30 @@ export default async function Connections() {
               <span className="text-sm font-semibold text-brand-700">✓ Connected — last synced {dateStr(util.lastSynced)}</span>
               <form action={resync.bind(null, "utility")}><button className="btn-secondary px-3 py-1.5 text-xs">Resync</button></form>
             </div>
+          ) : util.authUid ? (
+            <div className="mt-4 space-y-3">
+              <p className="text-sm text-amber-700 font-medium">
+                Authorization email sent to <strong>{util.authEmail}</strong>. Check your inbox, authorize your utility account, then click below.
+              </p>
+              <form action={syncUtilityNow}>
+                <button className="btn-primary w-full">I authorized — pull my data</button>
+              </form>
+            </div>
+          ) : process.env.UTILITYAPI_KEY ? (
+            <form action={startUtilityConnect} className="mt-4 space-y-2">
+              <input
+                name="email"
+                type="email"
+                required
+                placeholder="Email on your utility account"
+                className="input w-full"
+              />
+              <button type="submit" className="btn-primary w-full">Send Authorization Email</button>
+            </form>
           ) : (
             <form action={connectUtility} className="mt-4">
               <button className="btn-primary w-full">Connect Utility</button>
-              <p className="mt-2 text-center text-xs text-slate-400">Demo mode: loads realistic sample data. Production uses UtilityAPI.</p>
+              <p className="mt-2 text-center text-xs text-slate-400">Demo mode: loads realistic sample data.</p>
             </form>
           )}
         </div>

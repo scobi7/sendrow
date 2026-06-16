@@ -41,11 +41,21 @@ export default async function DemoPage({
             </div>
             <h1 className="mt-5 text-xl font-bold text-slate-900">Request received</h1>
             <p className="mt-2 text-sm text-slate-500">
-              We&rsquo;ll be in touch within one business day to schedule your walkthrough.
+              We&rsquo;ll be in touch shortly. Or pick a time right now:
             </p>
-            <Link href="/" className="mt-6 inline-block text-sm font-medium text-brand-700 hover:underline">
-              ← Back to home
-            </Link>
+            <a
+              href="https://calendly.com/malachinguyenn/30min"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-6 inline-block btn-primary text-sm px-6 py-2.5"
+            >
+              Book a time →
+            </a>
+            <div className="mt-4">
+              <Link href="/" className="text-sm font-medium text-slate-400 hover:text-slate-600">
+                ← Back to home
+              </Link>
+            </div>
           </div>
         ) : (
           <div className="rounded-2xl border border-slate-200 bg-white p-10 shadow-sm">
@@ -71,6 +81,17 @@ export default async function DemoPage({
               </button>
             </form>
             <p className="mt-4 text-center text-xs text-slate-400">
+              Prefer to pick a time directly?{" "}
+              <a
+                href="https://calendly.com/malachinguyenn/30min"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-brand-700 hover:underline"
+              >
+                Book on Calendly
+              </a>
+            </p>
+            <p className="mt-2 text-center text-xs text-slate-400">
               Rather sign up directly?{" "}
               <Link href="/signup" className="text-brand-700 hover:underline">
                 Get started free
