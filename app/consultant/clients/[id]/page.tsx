@@ -170,31 +170,21 @@ export default async function ClientDetailPage({
                   <p className="text-xs text-amber-700">
                     Pending — auth sent to {company.connections.utility.authEmail}
                   </p>
-                ) : process.env.UTILITYAPI_KEY ? (
+                ) : process.env.UTILITYAPI_FORM_URL ? (
                   <form
                     action={startUtilityConnectForClient.bind(null, company.id)}
-                    className="mt-2 space-y-2"
+                    className="mt-2 flex gap-2"
                   >
-                    <select name="utility" required className="input w-full text-xs">
-                      <option value="">Select utility</option>
-                      <option value="pge-ca">PG&amp;E</option>
-                      <option value="sce-ca">SCE</option>
-                      <option value="sdge-ca">SDG&amp;E</option>
-                      <option value="ladwp-ca">LADWP</option>
-                      <option value="smud-ca">SMUD</option>
-                    </select>
-                    <div className="flex gap-2">
-                      <input
-                        name="email"
-                        type="email"
-                        required
-                        placeholder="Client utility email"
-                        className="input flex-1 text-xs"
-                      />
-                      <button type="submit" className="btn-secondary shrink-0 px-3 py-1.5 text-xs">
-                        Connect
-                      </button>
-                    </div>
+                    <input
+                      name="email"
+                      type="email"
+                      required
+                      placeholder="Client utility email"
+                      className="input flex-1 text-xs"
+                    />
+                    <button type="submit" className="btn-secondary shrink-0 px-3 py-1.5 text-xs">
+                      Connect
+                    </button>
                   </form>
                 ) : (
                   <p className="text-xs text-slate-400">Not connected</p>

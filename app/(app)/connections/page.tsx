@@ -69,25 +69,17 @@ export default async function Connections() {
               <span className="text-sm font-semibold text-brand-700">✓ Connected — last synced {dateStr(util.lastSynced)}</span>
               <form action={resync.bind(null, "utility")}><button className="btn-secondary px-3 py-1.5 text-xs">Resync</button></form>
             </div>
-          ) : util.authUid ? (
+          ) : util.authEmail ? (
             <div className="mt-4 space-y-3">
               <p className="text-sm text-amber-700 font-medium">
-                Authorization email sent to <strong>{util.authEmail}</strong>. Check your inbox, authorize your utility account, then click below.
+                Waiting on authorization for <strong>{util.authEmail}</strong>. If you haven&apos;t authorized yet, complete it at your utility&apos;s site, then click below.
               </p>
               <form action={syncUtilityNow}>
                 <button className="btn-primary w-full">I authorized — pull my data</button>
               </form>
             </div>
-          ) : process.env.UTILITYAPI_KEY ? (
+          ) : process.env.UTILITYAPI_FORM_URL ? (
             <form action={startUtilityConnect} className="mt-4 space-y-2">
-              <select name="utility" required className="input w-full">
-                <option value="">Select your utility company</option>
-                <option value="pge-ca">PG&amp;E (Pacific Gas &amp; Electric)</option>
-                <option value="sce-ca">SCE (Southern California Edison)</option>
-                <option value="sdge-ca">SDG&amp;E (San Diego Gas &amp; Electric)</option>
-                <option value="ladwp-ca">LADWP (Los Angeles DWP)</option>
-                <option value="smud-ca">SMUD (Sacramento Municipal)</option>
-              </select>
               <input
                 name="email"
                 type="email"
@@ -96,6 +88,7 @@ export default async function Connections() {
                 className="input w-full"
               />
               <button type="submit" className="btn-primary w-full">Connect Utility Account</button>
+              <p className="text-xs text-slate-400">You&apos;ll be redirected to authorize your utility account.</p>
             </form>
           ) : (
             <form action={connectUtility} className="mt-4">

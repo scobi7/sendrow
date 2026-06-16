@@ -18,7 +18,7 @@ import {
 } from "./store";
 import { currentUser } from "./auth";
 import { Company, HeadcountRange, Industry, User } from "./types";
-import { createAuthorization, getMeters, getBills } from "./utilityapi";
+import { findAuthorizationByEmail, getMeters, getBills } from "./utilityapi";
 import { fetchPurchases, getValidTokens } from "./quickbooks";
 import { egridForState } from "./factors";
 import { generateQBTransactions, generateUtilityData } from "./mockdata";
@@ -178,25 +178,23 @@ export async function connectUtility() {
 
 export async function startUtilityConnect(formData: FormData) {
   const email = String(formData.get("email") ?? "").trim();
-  const utility = String(formData.get("utility") ?? "").trim();
-  if (!email || !utility) return;
+  if (!email) return;
   const { company } = await requireUser();
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
-  const { uid, authUrl } = await createAuthorization(email, utility, appUrl ? `${appUrl}/connections` : undefined);
+  // Store email as pending — user gets redirected to the hosted UtilityAPI form
   company.connections.utility = {
     ...company.connections.utility,
-    authUid: uid,
     authEmail: email,
+    authUid: null,
   };
   await persist(company);
-  redirect(authUrl);
+  const formUrl = process.env.UTILITYAPI_FORM_URL!;
+  redirect(formUrl);
 }
 
 export async function startUtilityConnectForClient(companyId: string, formData: FormData) {
   const consultant = await requireConsultant();
   const email = String(formData.get("email") ?? "").trim();
-  const utility = String(formData.get("utility") ?? "").trim();
-  if (!email || !utility) return;
+  if (!email) return;
 
   const link = await db.query.consultantClients.findFirst({
     where: and(
@@ -208,24 +206,31 @@ export async function startUtilityConnectForClient(companyId: string, formData: 
   if (!link) return;
 
   const company = await loadCompany(companyId);
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
-  const { uid, authUrl } = await createAuthorization(email, utility, appUrl ? `${appUrl}/connections` : undefined);
   company.connections.utility = {
     ...company.connections.utility,
-    authUid: uid,
     authEmail: email,
+    authUid: null,
   };
   const overrides = await loadFactors();
   recalcCompany(company, overrides);
   refreshSectionStatus(company);
   await persistCompany(company);
   revalidatePath("/consultant");
-  redirect(authUrl);
+  const formUrl = process.env.UTILITYAPI_FORM_URL!;
+  redirect(formUrl);
 }
 
 export async function syncUtilityNow() {
   const { user, company } = await requireUser();
-  const authUid = company.connections.utility.authUid;
+  let authUid = company.connections.utility.authUid;
+
+  // If uid not stored yet, look it up by the email the customer used to authorize
+  if (!authUid && company.connections.utility.authEmail) {
+    authUid = await findAuthorizationByEmail(company.connections.utility.authEmail);
+    if (authUid) {
+      company.connections.utility.authUid = authUid;
+    }
+  }
   if (!authUid) return;
 
   const meters = await getMeters(authUid);
