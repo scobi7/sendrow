@@ -187,8 +187,10 @@ export async function startUtilityConnect(formData: FormData) {
     authUid: null,
   };
   await persist(company);
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
   const formUrl = process.env.UTILITYAPI_FORM_URL!;
-  redirect(formUrl);
+  const dest = appUrl ? `${formUrl}?redirect_url=${encodeURIComponent(`${appUrl}/connections`)}` : formUrl;
+  redirect(dest);
 }
 
 export async function startUtilityConnectForClient(companyId: string, formData: FormData) {
@@ -216,8 +218,10 @@ export async function startUtilityConnectForClient(companyId: string, formData: 
   refreshSectionStatus(company);
   await persistCompany(company);
   revalidatePath("/consultant");
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
   const formUrl = process.env.UTILITYAPI_FORM_URL!;
-  redirect(formUrl);
+  const dest = appUrl ? `${formUrl}?redirect_url=${encodeURIComponent(`${appUrl}/connections`)}` : formUrl;
+  redirect(dest);
 }
 
 export async function syncUtilityNow() {
