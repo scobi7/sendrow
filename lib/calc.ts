@@ -19,9 +19,41 @@ export function headcountMidpoint(company: Company): number {
   ];
 }
 
+/** Returns the most recent complete 12-month reporting period based on fiscal year end month. */
+export function reportingPeriod(fiscalYearEndMonth: number): {
+  start: string; // YYYY-MM
+  end: string;   // YYYY-MM
+  label: string;
+} {
+  const now = new Date();
+  const currentMonth = now.getMonth() + 1;
+  const currentYear = now.getFullYear();
+
+  // Use previous year's end if the current FY hasn't closed yet
+  const endYear = currentMonth > fiscalYearEndMonth ? currentYear : currentYear - 1;
+  const endDate = new Date(endYear, fiscalYearEndMonth, 0); // last day of end month
+
+  const startMonth = (fiscalYearEndMonth % 12) + 1; // month after end month (Jan if end=Dec)
+  const startYear = fiscalYearEndMonth === 12 ? endYear : endYear - 1;
+  const startDate = new Date(startYear, startMonth - 1, 1);
+
+  const fmt = (d: Date) => d.toLocaleString("en-US", { month: "short", year: "numeric" });
+  return {
+    start: startDate.toISOString().substring(0, 7),
+    end: endDate.toISOString().substring(0, 7),
+    label: `${fmt(startDate)} – ${fmt(endDate)}`,
+  };
+}
+
 export function recalcCompany(company: Company, factorOverrides: EmissionFactor[] = []): void {
   const results: CalcResult[] = [];
   const inp = company.inputs;
+
+  // Filter all data to the 12-month reporting period
+  const period = reportingPeriod(company.fiscalYearEndMonth ?? 12);
+  const inPeriod = (yyyyMM: string) => yyyyMM >= period.start && yyyyMM <= period.end;
+  const filteredTxns = company.qbTransactions.filter((t) => inPeriod(t.date.substring(0, 7)));
+  const filteredUtility = company.utilityData.filter((u) => inPeriod(u.month));
 
   const getF = (id: string): EmissionFactor => {
     const override = factorOverrides.find((f) => f.factor_id === id);
@@ -56,7 +88,7 @@ export function recalcCompany(company: Company, factorOverrides: EmissionFactor[
     }
   }
   if (!inp.natgas_na) {
-    const utilityTherms = company.utilityData.reduce((s, m) => s + m.therms, 0);
+    const utilityTherms = filteredUtility.reduce((s, m) => s + m.therms, 0);
     const therms = inp.natgas_therms_override ?? (utilityTherms > 0 ? utilityTherms : null);
     if (therms && therms > 0) {
       const f = getF("natgas.therm.2025");
@@ -82,11 +114,11 @@ export function recalcCompany(company: Company, factorOverrides: EmissionFactor[
   }
 
   // ───────────── Scope 2 ─────────────
-  if (company.connections.utility.connected && company.utilityData.length > 0) {
+  if (company.connections.utility.connected && filteredUtility.length > 0) {
     const residual = getF("residual.WECC.2024");
     const recPct = inp.has_recs ? Math.min(Math.max(inp.rec_coverage_pct ?? 0, 0), 100) : 0;
     for (const loc of company.locations) {
-      const kwh = company.utilityData.filter((m) => m.locationId === loc.id).reduce((s, m) => s + m.kwh, 0);
+      const kwh = filteredUtility.filter((m) => m.locationId === loc.id).reduce((s, m) => s + m.kwh, 0);
       if (kwh <= 0) continue;
       const f = getF(loc.egridSubregion);
       const locBased = kwh * f.value;
@@ -99,9 +131,9 @@ export function recalcCompany(company: Company, factorOverrides: EmissionFactor[
   }
 
   // ───────────── Scope 3 ─────────────
-  if (company.connections.quickbooks.connected && company.qbTransactions.length > 0) {
+  if (company.connections.quickbooks.connected && filteredTxns.length > 0) {
     const byCategory: Record<string, number> = {};
-    for (const t of company.qbTransactions) byCategory[t.category] = (byCategory[t.category] ?? 0) + t.amount;
+    for (const t of filteredTxns) byCategory[t.category] = (byCategory[t.category] ?? 0) + t.amount;
     const buckets: Record<string, { tons: number; spend: number; parts: string[] }> = {
       travel: { tons: 0, spend: 0, parts: [] },
       purchased: { tons: 0, spend: 0, parts: [] },

@@ -1,6 +1,7 @@
 import { currentUser } from "@/lib/auth";
 import { loadCompany } from "@/lib/store";
 import { connectQuickBooks, connectUtility, startUtilityConnect, syncUtilityNow, resync, markQBReviewed, markUtilityReviewed } from "@/lib/actions";
+import { reportingPeriod } from "@/lib/calc";
 import { PageHeader } from "@/components/ui";
 
 export default async function Connections() {
@@ -23,6 +24,7 @@ export default async function Connections() {
     };
   }
 
+  const period = reportingPeriod(company.fiscalYearEndMonth ?? 12);
   const money = (n: number) => "$" + n.toLocaleString("en-US", { maximumFractionDigits: 0 });
   const num = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 0 });
   const dateStr = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString() : "");
@@ -101,9 +103,12 @@ export default async function Connections() {
 
       {(qb.connected || util.connected) && (
         <section className="mt-10">
-          <h2 className="mb-4 text-lg font-bold text-navy-900">Review What We Pulled</h2>
+          <div className="mb-4 flex items-baseline justify-between">
+            <h2 className="text-lg font-bold text-navy-900">Review What We Pulled</h2>
+            <span className="text-sm font-medium text-slate-500">Reporting period: <strong>{period.label}</strong></span>
+          </div>
           <p className="mb-4 text-sm text-slate-500">
-            Check the data below before it flows into your calculations. If something looks wrong, flag it and we&rsquo;ll investigate.
+            Only data within the reporting period flows into calculations. If something looks wrong, flag it and we&rsquo;ll investigate.
           </p>
 
           {qb.connected && (
