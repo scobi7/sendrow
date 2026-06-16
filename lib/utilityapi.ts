@@ -12,9 +12,9 @@ export async function findAuthorizationByEmail(email: string): Promise<string | 
   if (!res.ok) return null;
   const data = await res.json();
   const match = (data.authorizations ?? []).find(
-    (a: { email?: string; uid?: string }) => a.email?.toLowerCase() === email.toLowerCase()
+    (a: { email?: string; uid?: string | number }) => a.email?.toLowerCase() === email.toLowerCase()
   );
-  return match?.uid ?? null;
+  return match?.uid != null ? String(match.uid) : null;
 }
 
 export interface UtilityMeter {
