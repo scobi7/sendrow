@@ -1,6 +1,6 @@
 import { currentUser } from "@/lib/auth";
 import { loadCompany } from "@/lib/store";
-import { connectQuickBooks, connectUtility, startUtilityConnect, syncUtilityNow, resync, saveFields } from "@/lib/actions";
+import { connectQuickBooks, connectUtility, startUtilityConnect, syncUtilityNow, resync, markQBReviewed, markUtilityReviewed } from "@/lib/actions";
 import { PageHeader } from "@/components/ui";
 
 export default async function Connections() {
@@ -123,11 +123,7 @@ export default async function Connections() {
                   ))}
                 </tbody>
               </table>
-              <PanelFooter
-                reviewField="qb_data_reviewed"
-                reviewed={!!company.inputs.qb_data_reviewed}
-                saveAction={saveFields}
-              />
+              <PanelFooter reviewed={!!company.inputs.qb_data_reviewed} reviewAction={markQBReviewed} />
             </details>
           )}
 
@@ -149,11 +145,7 @@ export default async function Connections() {
                   ))}
                 </tbody>
               </table>
-              <PanelFooter
-                reviewField="scope2_reviewed"
-                reviewed={!!company.inputs.scope2_reviewed}
-                saveAction={saveFields}
-              />
+              <PanelFooter reviewed={!!company.inputs.scope2_reviewed} reviewAction={markUtilityReviewed} />
             </details>
           )}
         </section>
@@ -163,27 +155,23 @@ export default async function Connections() {
 }
 
 function PanelFooter({
-  reviewField,
   reviewed,
-  saveAction,
+  reviewAction,
 }: {
-  reviewField: string;
   reviewed: boolean;
-  saveAction: (formData: FormData) => Promise<void>;
+  reviewAction: () => Promise<void>;
 }) {
   return (
     <div className="mt-4 flex gap-3">
       {reviewed ? (
         <span className="btn-secondary pointer-events-none px-3 py-1.5 text-xs text-brand-700">✓ Reviewed</span>
       ) : (
-        <form action={saveAction}>
-          <input type="hidden" name={reviewField} value="true" />
-          <input type="hidden" name="redirect_to" value="/connections" />
+        <form action={reviewAction}>
           <button type="submit" className="btn-primary px-3 py-1.5 text-xs">✓ This looks right</button>
         </form>
       )}
       <a
-        href={`mailto:malachinguyenn@gmail.com?subject=GreenTrack data issue&body=Data source: ${reviewField.replace("_reviewed", "").replace("_", " ")}`}
+        href="mailto:malachinguyenn@gmail.com?subject=GreenTrack data issue"
         className="btn-secondary px-3 py-1.5 text-xs"
       >
         Flag an issue

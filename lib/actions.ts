@@ -314,6 +314,22 @@ export async function resync(which: "quickbooks" | "utility") {
   await persist(company);
 }
 
+export async function markQBReviewed() {
+  const { user, company } = await requireUser();
+  await logChange({ user, companyId: company.id, section: "scope3", field: "qb_data_reviewed", prev: false, next: true });
+  company.inputs.qb_data_reviewed = true;
+  await persist(company);
+  revalidatePath("/connections");
+}
+
+export async function markUtilityReviewed() {
+  const { user, company } = await requireUser();
+  await logChange({ user, companyId: company.id, section: "scope2", field: "scope2_reviewed", prev: false, next: true });
+  company.inputs.scope2_reviewed = true;
+  await persist(company);
+  revalidatePath("/connections");
+}
+
 // ─────────── Generic field saver ───────────
 
 const FIELD_SECTIONS: Record<string, string> = {
