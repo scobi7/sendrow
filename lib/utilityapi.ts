@@ -38,6 +38,8 @@ export interface UtilityBill {
   meter_uid: string;
   base: {
     bill_start_date: string;
+    bill_total_kwh?: number;
+    bill_total_therms?: number;
     kwh?: number;
     therms?: number;
   };
