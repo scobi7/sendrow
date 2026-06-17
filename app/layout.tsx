@@ -1,22 +1,20 @@
 import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
-import { Quicksand, Inter, IBM_Plex_Mono } from "next/font/google";
+import { Manrope, Space_Mono } from "next/font/google";
 import "./globals.css";
 
-const quicksand = Quicksand({
+const manrope = Manrope({
   subsets: ["latin"],
-  weight: ["500", "600", "700"],
+  weight: ["300", "400", "500", "600", "700", "800"],
   variable: "--font-display",
+  display: "swap",
 });
-const inter = Inter({
+
+const spaceMono = Space_Mono({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-body",
-});
-const plexMono = IBM_Plex_Mono({
-  subsets: ["latin"],
-  weight: ["500", "600"],
+  weight: ["400", "700"],
   variable: "--font-data",
+  display: "swap",
 });
 
 export const dynamic = "force-dynamic";
@@ -30,10 +28,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <ClerkProvider>
-      <html
-        lang="en"
-        className={`${quicksand.variable} ${inter.variable} ${plexMono.variable}`}
-      >
+      <html lang="en" className={`${manrope.variable} ${spaceMono.variable}`}>
         <body>{children}</body>
       </html>
     </ClerkProvider>

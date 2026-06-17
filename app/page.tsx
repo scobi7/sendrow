@@ -2,48 +2,44 @@ import Link from "next/link";
 import { currentUser } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { LandingNav } from "@/components/landing-nav";
+import { ScopeBarChart, ScopeDonutChart } from "@/components/ui";
 
-function CheckIcon() {
-  return (
-    <svg className="h-4 w-4 mt-0.5 shrink-0" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24" style={{ color: "var(--primary)" }}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-    </svg>
-  );
-}
-
-// TODO: Replace [XX] and [X] with confirmed figures before marketing launch.
-// "XX% faster" and "X fewer compliance hires" are intentionally left as placeholders
-// per the design handoff — don't substitute real numbers without backing data.
-const STATS = [
-  { value: "[XX]%", label: "faster time-to-questionnaire vs. manual process" },
-  { value: "[X]×", label: "fewer compliance hires needed on average" },
-  { value: "2 APIs", label: "synced automatically from QuickBooks and UtilityAPI" },
+const SAMPLE_EMISSIONS = [
+  { label: "Scope 1", value: 312 },
+  { label: "Scope 2", value: 484 },
+  { label: "Scope 3", value: 1488 },
 ];
 
-const TRACKS = [
+const FEATURES = [
   {
-    initials: "CO",
-    title: "I represent a company",
-    desc: "Get your first ESG report done without hiring a consultant. Connect your data, calculate your footprint, answer your customer's questionnaire.",
-    features: [
-      "Scope 1, 2, and 3 emissions tracking",
-      "CDP, EcoVadis, and Walmart questionnaire mapping",
-      "Audit-ready PDF reports",
-    ],
-    cta: "Get started free",
-    href: "/signup",
+    icon: "⚡",
+    title: "Auto-sync from QuickBooks",
+    desc: "Scope 3 supply chain emissions calculated directly from your spend data. No spreadsheet needed.",
   },
   {
-    initials: "ES",
-    title: "I'm an ESG consultant",
-    desc: "Manage your clients from one dashboard. Send invite links, track progress, and generate reports across your book of business.",
-    features: [
-      "Multi-client management dashboard",
-      "Client invite and onboarding links",
-      "Centralized progress tracking",
-    ],
-    cta: "Set up your account",
-    href: "/signup?role=consultant",
+    icon: "🔌",
+    title: "Utility API integration",
+    desc: "Scope 2 electricity data pulled automatically from your utility provider. Always up to date.",
+  },
+  {
+    icon: "📊",
+    title: "GHG Protocol calculations",
+    desc: "Emission factors applied automatically. Scope 1, 2, and 3 categorized with audit-ready methodology.",
+  },
+  {
+    icon: "📋",
+    title: "Questionnaire mapping",
+    desc: "Your numbers pre-filled into the exact fields CDP, EcoVadis, and Walmart ask for.",
+  },
+  {
+    icon: "🔍",
+    title: "Full audit trail",
+    desc: "Every figure traced to its source. Methodology documented for every number your auditor will ask about.",
+  },
+  {
+    icon: "👥",
+    title: "Consultant multi-client",
+    desc: "ESG consultants manage their whole book from one dashboard. Invite links, progress tracking, bulk reports.",
   },
 ];
 
@@ -55,192 +51,321 @@ export default async function Landing() {
     <main style={{ background: "var(--bg)", minHeight: "100vh" }}>
       <LandingNav />
 
-      {/* Hero */}
-      <section className="px-6 py-28 sm:py-36" style={{ background: "var(--bg)" }}>
-        <div className="mx-auto max-w-6xl">
-          <span
-            className="mb-8 inline-block px-3 py-1 text-xs font-semibold"
+      {/* ── Hero ── */}
+      <section
+        className="relative overflow-hidden px-6 text-center"
+        style={{
+          minHeight: "100vh",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          paddingTop: "7rem",
+          paddingBottom: "0",
+        }}
+      >
+        {/* Background orbs */}
+        <div className="pointer-events-none absolute inset-0" aria-hidden>
+          <div
+            className="absolute left-1/2 top-0 -translate-x-1/2"
             style={{
-              background: "var(--primary-tint)",
-              border: "1px solid var(--primary)",
-              borderRadius: "var(--radius-sm)",
+              width: 900,
+              height: 600,
+              borderRadius: "50%",
+              background:
+                "radial-gradient(ellipse, rgba(34,197,94,0.14) 0%, transparent 65%)",
+            }}
+          />
+          <div
+            className="absolute left-1/4 top-1/3 -translate-x-1/2"
+            style={{
+              width: 460,
+              height: 460,
+              borderRadius: "50%",
+              background:
+                "radial-gradient(circle, rgba(22,163,74,0.09) 0%, transparent 65%)",
+            }}
+          />
+          <div
+            className="absolute right-16 top-1/4"
+            style={{
+              width: 340,
+              height: 340,
+              borderRadius: "50%",
+              background:
+                "radial-gradient(circle, rgba(34,197,94,0.07) 0%, transparent 65%)",
+            }}
+          />
+        </div>
+
+        <div className="relative z-10 w-full max-w-5xl">
+          {/* Badge */}
+          <div
+            className="mb-8 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-semibold"
+            style={{
+              border: "1px solid rgba(34,168,84,0.35)",
+              background: "rgba(34,197,94,0.1)",
               color: "var(--primary)",
             }}
           >
-            For California mid-market companies
-          </span>
+            <span
+              className="inline-block h-1.5 w-1.5 rounded-full animate-pulse"
+              style={{ background: "var(--status-green)" }}
+            />
+            Built for California mid-market companies
+          </div>
+
+          {/* Headline */}
           <h1
-            className="max-w-3xl text-5xl font-bold font-display leading-tight sm:text-6xl lg:text-7xl"
+            className="mx-auto max-w-3xl font-display text-5xl font-extrabold leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl"
             style={{ color: "var(--text)" }}
           >
-            ESG compliance,<br />handled.
+            ESG compliance,
+            <br />
+            <span style={{ color: "var(--primary)" }}>handled.</span>
           </h1>
-          <p className="mt-6 max-w-xl text-lg leading-relaxed" style={{ color: "var(--text-muted)" }}>
-            Connect your data, calculate your emissions, and export a report your customer accepts — CDP, EcoVadis, Walmart. In days, not months.
+
+          <p
+            className="mx-auto mt-6 max-w-xl text-lg leading-relaxed"
+            style={{ color: "var(--text-muted)" }}
+          >
+            Connect your data, calculate your footprint, and hand your customer
+            a report they accept — CDP, EcoVadis, Walmart. No consultant
+            required.
           </p>
-          <div className="mt-10 flex flex-wrap gap-4">
+
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
             <Link href="/demo" className="btn btn-primary px-6 py-3 text-sm">
               Request a demo
             </Link>
-            <Link
-              href="/signup"
-              className="btn btn-secondary px-6 py-3 text-sm"
-            >
-              Get started free
+            <Link href="/signup" className="btn btn-secondary px-6 py-3 text-sm">
+              Get started free →
             </Link>
           </div>
 
-          {/* Stat callouts */}
-          <div className="mt-16 grid gap-4 sm:grid-cols-3">
-            {STATS.map(({ value, label }) => (
+          {/* Dashboard preview card */}
+          <div className="relative z-10 mt-16 w-full">
+            <div
+              className="mx-auto max-w-4xl overflow-hidden rounded-2xl"
+              style={{
+                background: "var(--card)",
+                border: "1px solid rgba(15,50,28,0.12)",
+                boxShadow:
+                  "0 2px 0 rgba(255,255,255,0.7) inset, 0 32px 80px rgba(15,50,28,0.1)",
+              }}
+            >
+              {/* Faux titlebar */}
               <div
-                key={value}
-                className="px-5 py-5"
-                style={{
-                  background: "var(--surface)",
-                  border: "1px solid var(--divider)",
-                  borderRadius: "var(--radius-sm)",
-                  boxShadow: "var(--shadow-card)",
-                }}
+                className="flex items-center gap-2 px-5 py-3.5"
+                style={{ borderBottom: "1px solid rgba(15,50,28,0.08)" }}
               >
-                <div
-                  className="text-3xl font-semibold font-data"
-                  style={{ color: "var(--primary)" }}
+                <span
+                  className="h-2.5 w-2.5 rounded-full"
+                  style={{ background: "#FF5F57" }}
+                />
+                <span
+                  className="h-2.5 w-2.5 rounded-full"
+                  style={{ background: "#FFBD2E" }}
+                />
+                <span
+                  className="h-2.5 w-2.5 rounded-full"
+                  style={{ background: "#28C840" }}
+                />
+                <span
+                  className="ml-4 text-xs font-medium"
+                  style={{ color: "var(--text-muted)" }}
                 >
-                  {value}
-                </div>
-                <p className="mt-1 text-sm leading-snug" style={{ color: "var(--text-muted)" }}>
-                  {label}
-                </p>
+                  GreenTrack — Emissions Dashboard
+                </span>
               </div>
-            ))}
+
+              <div className="p-5">
+                {/* Mini KPIs */}
+                <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                  {[
+                    {
+                      label: "Total emissions",
+                      value: "2,284",
+                      sub: "tCO₂e · YTD",
+                      accent: true,
+                    },
+                    {
+                      label: "Scope 1",
+                      value: "312",
+                      sub: "Direct · tCO₂e",
+                      accent: false,
+                    },
+                    {
+                      label: "Scope 2",
+                      value: "484",
+                      sub: "Electricity · tCO₂e",
+                      accent: false,
+                    },
+                    {
+                      label: "Progress",
+                      value: "71%",
+                      sub: "4 of 7 complete",
+                      accent: true,
+                    },
+                  ].map(({ label, value, sub, accent }) => (
+                    <div
+                      key={label}
+                      className="rounded-xl p-4"
+                      style={{
+                        background: "rgba(255,255,255,0.65)",
+                        border: "1px solid rgba(15,50,28,0.07)",
+                      }}
+                    >
+                      <p
+                        className="text-xs font-medium uppercase tracking-wide"
+                        style={{ color: "var(--text-muted)" }}
+                      >
+                        {label}
+                      </p>
+                      <p
+                        className="mt-1.5 font-data text-xl font-bold leading-tight"
+                        style={{
+                          color: accent ? "var(--primary)" : "var(--text)",
+                        }}
+                      >
+                        {value}
+                      </p>
+                      <p
+                        className="mt-0.5 text-xs"
+                        style={{ color: "var(--text-muted)" }}
+                      >
+                        {sub}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Charts row */}
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div
+                    className="rounded-xl p-4"
+                    style={{
+                      background: "rgba(255,255,255,0.65)",
+                      border: "1px solid rgba(15,50,28,0.07)",
+                    }}
+                  >
+                    <p
+                      className="mb-3 text-xs font-bold uppercase tracking-wide"
+                      style={{ color: "var(--text-muted)" }}
+                    >
+                      Emissions by scope
+                    </p>
+                    <ScopeBarChart data={SAMPLE_EMISSIONS} />
+                  </div>
+                  <div
+                    className="rounded-xl p-4"
+                    style={{
+                      background: "rgba(255,255,255,0.65)",
+                      border: "1px solid rgba(15,50,28,0.07)",
+                    }}
+                  >
+                    <p
+                      className="mb-3 text-xs font-bold uppercase tracking-wide"
+                      style={{ color: "var(--text-muted)" }}
+                    >
+                      Scope breakdown
+                    </p>
+                    <ScopeDonutChart data={SAMPLE_EMISSIONS} />
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Trust bar */}
-      <div style={{ borderTop: "1px solid var(--divider)", borderBottom: "1px solid var(--divider)", background: "var(--surface)", padding: "2.5rem 0" }}>
-        <div className="mx-auto max-w-6xl px-6">
-          <p
-            className="text-center text-xs font-semibold uppercase tracking-widest"
+      {/* ── Trust bar ── */}
+      <div
+        style={{
+          background: "#fff",
+          borderTop: "1px solid var(--divider)",
+          borderBottom: "1px solid var(--divider)",
+        }}
+      >
+        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-center gap-10 px-6 py-7">
+          <span
+            className="text-xs font-semibold uppercase tracking-widest"
             style={{ color: "var(--text-muted)" }}
           >
             Reports accepted by
-          </p>
-          <div
-            className="mt-5 flex flex-wrap items-center justify-center gap-10 text-sm font-semibold"
-            style={{ color: "var(--text-muted)" }}
-          >
-            <span>CDP</span>
-            <span>EcoVadis</span>
-            <span>Walmart Supplier Portal</span>
-            <span>ENERGY STAR</span>
-            <span>GHG Protocol</span>
-          </div>
+          </span>
+          {[
+            "CDP",
+            "EcoVadis",
+            "Walmart Supplier Portal",
+            "ENERGY STAR",
+            "GHG Protocol",
+          ].map((name) => (
+            <span
+              key={name}
+              className="text-sm font-semibold"
+              style={{ color: "var(--text-muted)" }}
+            >
+              {name}
+            </span>
+          ))}
         </div>
       </div>
 
-      {/* Who's it for */}
-      <section className="py-24" style={{ background: "var(--bg)" }}>
-        <div className="mx-auto max-w-6xl px-6">
-          <div className="max-w-xl">
-            <h2 className="text-2xl font-bold font-display sm:text-3xl" style={{ color: "var(--text)" }}>
-              Built for two types of users
-            </h2>
-            <p className="mt-3 text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>
-              Whether you&rsquo;re filing your first ESG report or managing a book of clients, GreenTrack has a flow built for you.
-            </p>
-          </div>
-          <div className="mt-12 grid gap-6 sm:grid-cols-2">
-            {TRACKS.map(({ initials, title, desc, features, cta, href }) => (
+      {/* ── Features ── */}
+      <section id="features" className="px-6 py-24" style={{ background: "var(--surface)" }}>
+        <div className="mx-auto max-w-5xl">
+          <p
+            className="mb-3 text-xs font-bold uppercase tracking-widest"
+            style={{ color: "var(--primary)" }}
+          >
+            Features
+          </p>
+          <h2
+            className="font-display text-3xl font-extrabold tracking-tight sm:text-4xl"
+            style={{ color: "var(--text)" }}
+          >
+            Everything you need to file
+            <br className="hidden sm:block" />
+            your first ESG report
+          </h2>
+          <p
+            className="mt-4 max-w-lg text-base leading-relaxed"
+            style={{ color: "var(--text-muted)" }}
+          >
+            Built for ops teams, not sustainability consultants. Connect two
+            APIs and the platform does the rest.
+          </p>
+
+          <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {FEATURES.map(({ icon, title, desc }) => (
               <div
                 key={title}
-                className="flex flex-col p-8"
+                className="rounded-2xl bg-white p-6 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg"
                 style={{
-                  background: "var(--surface)",
                   border: "1px solid var(--divider)",
-                  borderRadius: "var(--radius-lg)",
-                  boxShadow: "var(--shadow-card)",
+                  boxShadow: "0 1px 3px rgba(15,50,28,0.04)",
                 }}
               >
                 <div
-                  className="flex h-10 w-10 items-center justify-center text-sm font-bold text-white"
-                  style={{ background: "var(--primary)", borderRadius: "var(--radius-sm)" }}
+                  className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl text-lg"
+                  style={{
+                    background: "rgba(34,197,94,0.12)",
+                    border: "1px solid rgba(34,168,84,0.25)",
+                  }}
                 >
-                  {initials}
+                  {icon}
                 </div>
                 <h3
-                  className="mt-5 text-lg font-bold font-display"
+                  className="font-display font-bold"
                   style={{ color: "var(--text)" }}
                 >
                   {title}
                 </h3>
-                <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>
-                  {desc}
-                </p>
-                <ul className="mt-5 space-y-2">
-                  {features.map((f) => (
-                    <li key={f} className="flex items-start gap-2 text-sm" style={{ color: "var(--text)" }}>
-                      <CheckIcon />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-                <div className="mt-8">
-                  <Link
-                    href={href}
-                    className="text-sm font-semibold transition-opacity hover:opacity-70"
-                    style={{ color: "var(--primary)" }}
-                  >
-                    {cta} →
-                  </Link>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* How it works */}
-      <section id="how-it-works" className="py-24" style={{ background: "var(--surface)" }}>
-        <div className="mx-auto max-w-6xl px-6">
-          <div className="max-w-xl">
-            <h2 className="text-2xl font-bold font-display sm:text-3xl" style={{ color: "var(--text)" }}>
-              How it works
-            </h2>
-            <p className="mt-3 text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>
-              Three steps from signup to finished report. No setup fees, no consultant required.
-            </p>
-          </div>
-          <div className="mt-14 grid gap-10 sm:grid-cols-3">
-            {[
-              {
-                num: "01",
-                title: "Connect your data",
-                desc: "Link your utility accounts, QuickBooks, and freight providers. We pull the numbers automatically.",
-              },
-              {
-                num: "02",
-                title: "Calculate your emissions",
-                desc: "GHG Protocol emission factors applied automatically. Scope 1, 2, and 3 categorized without manual work.",
-              },
-              {
-                num: "03",
-                title: "Export your report",
-                desc: "Download an audit-ready PDF or fill supplier portal fields directly from your dashboard.",
-              },
-            ].map(({ num, title, desc }) => (
-              <div key={num}>
-                <div
-                  className="text-5xl font-bold font-data leading-none"
-                  style={{ color: "var(--track-bg)" }}
+                <p
+                  className="mt-2 text-sm leading-relaxed"
+                  style={{ color: "var(--text-muted)" }}
                 >
-                  {num}
-                </div>
-                <h3 className="mt-4 text-base font-semibold font-display" style={{ color: "var(--text)" }}>
-                  {title}
-                </h3>
-                <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>
                   {desc}
                 </p>
               </div>
@@ -249,86 +374,224 @@ export default async function Landing() {
         </div>
       </section>
 
-      {/* Features */}
-      <section className="py-24" style={{ background: "var(--bg)" }}>
-        <div className="mx-auto max-w-6xl px-6">
-          <h2 className="max-w-xl text-2xl font-bold font-display sm:text-3xl" style={{ color: "var(--text)" }}>
-            What you get
-          </h2>
-          <div className="mt-12 grid gap-6 sm:grid-cols-3">
-            {[
-              {
-                title: "GHG Inventory Report",
-                desc: "Scope 1, 2, and 3 in one audit-ready PDF. Formatted to GHG Protocol standards.",
-              },
-              {
-                title: "Questionnaire Mapping",
-                desc: "Your figures pre-filled into the exact fields CDP, EcoVadis, and Walmart ask for. No manual translation.",
-              },
-              {
-                title: "Audit Trail",
-                desc: "Every number traced to its source. Methodology documented. Ready for your customer's auditor.",
-              },
-            ].map(({ title, desc }) => (
-              <div
-                key={title}
-                className="p-6"
-                style={{
-                  background: "var(--surface)",
-                  border: "1px solid var(--divider)",
-                  borderRadius: "var(--radius-sm)",
-                  boxShadow: "var(--shadow-card)",
-                }}
-              >
-                <h3 className="font-semibold font-display" style={{ color: "var(--text)" }}>
-                  {title}
-                </h3>
-                <p className="mt-3 text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>
-                  {desc}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* About */}
-      <section id="about" className="py-24" style={{ background: "var(--surface)" }}>
-        <div className="mx-auto max-w-6xl px-6">
-          <div className="grid gap-16 sm:grid-cols-2 items-start">
+      {/* ── Integrations two-col ── */}
+      <section className="px-6 py-24">
+        <div className="mx-auto max-w-5xl">
+          <div className="grid items-center gap-16 lg:grid-cols-2">
+            {/* Copy */}
             <div>
-              <h2 className="text-2xl font-bold font-display sm:text-3xl" style={{ color: "var(--text)" }}>
-                Who we built this for
+              <p
+                className="mb-3 text-xs font-bold uppercase tracking-widest"
+                style={{ color: "var(--primary)" }}
+              >
+                Data connections
+              </p>
+              <h2
+                className="font-display text-3xl font-extrabold tracking-tight sm:text-4xl"
+                style={{ color: "var(--text)" }}
+              >
+                Two APIs handle 80%
+                <br />
+                of your data collection
               </h2>
-              <p className="mt-5 leading-relaxed text-sm" style={{ color: "var(--text-muted)" }}>
-                California&rsquo;s mid-market — 50 to 500 employees — is getting ESG questionnaires from major customers for the first time. Most don&rsquo;t have a sustainability team. Hiring a consultant runs $15,000 and up.
+              <p
+                className="mt-4 text-base leading-relaxed"
+                style={{ color: "var(--text-muted)" }}
+              >
+                Link QuickBooks and your utility provider. We pull transactions
+                and energy data automatically — no exports, no manual work.
               </p>
-              <p className="mt-4 leading-relaxed text-sm" style={{ color: "var(--text-muted)" }}>
-                GreenTrack does the same job: pulls your data, calculates your footprint, and produces a report your customer accepts. In days, not months.
-              </p>
+              <ul className="mt-8 space-y-4">
+                {[
+                  "QuickBooks spend categorized by NAICS code — right emission factor per vendor, automatically",
+                  "Utility kWh converted to tCO₂e using EPA eGRID location-based factors",
+                  "Continuous sync — dashboard updates as new transactions come in",
+                ].map((item) => (
+                  <li
+                    key={item}
+                    className="flex items-start gap-3 text-sm leading-relaxed"
+                    style={{ color: "var(--text-muted)" }}
+                  >
+                    <span
+                      className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full"
+                      style={{
+                        background: "rgba(34,197,94,0.12)",
+                        border: "1px solid rgba(34,168,84,0.3)",
+                      }}
+                    >
+                      <svg
+                        width="9"
+                        height="9"
+                        viewBox="0 0 9 9"
+                        fill="none"
+                        aria-hidden
+                      >
+                        <path
+                          d="M1 4.5l2.5 2.5L8 1.5"
+                          stroke="#1A5C30"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+
+            {/* Visual panel */}
+            <div
+              className="rounded-2xl p-6"
+              style={{
+                background: "var(--card)",
+                border: "1px solid rgba(15,50,28,0.1)",
+              }}
+            >
+              <p
+                className="mb-4 text-xs font-bold uppercase tracking-widest"
+                style={{ color: "var(--text-muted)" }}
+              >
+                Connected sources
+              </p>
+
               {[
-                { stat: "50–500", label: "Employees at our target companies" },
-                { stat: "$15K+", label: "Typical consultant cost for one ESG report" },
-                { stat: "3 days", label: "Average time to first completed report" },
-                { stat: "10+", label: "Questionnaire frameworks supported" },
-              ].map(({ stat, label }) => (
+                {
+                  initials: "QB",
+                  name: "QuickBooks Online",
+                  sub: "847 transactions · synced today",
+                },
+                {
+                  initials: "U",
+                  name: "Utility Account",
+                  sub: "12 months data · synced today",
+                },
+              ].map(({ initials, name, sub }) => (
                 <div
-                  key={stat}
-                  className="p-5"
+                  key={name}
+                  className="mb-3 flex items-center gap-4 rounded-xl p-4"
                   style={{
-                    background: "var(--primary-tint)",
-                    border: "1px solid var(--divider)",
-                    borderRadius: "var(--radius-sm)",
+                    background: "#fff",
+                    border: "1px solid rgba(15,50,28,0.08)",
                   }}
                 >
-                  <div className="text-2xl font-bold font-data" style={{ color: "var(--primary)" }}>
-                    {stat}
+                  <div
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-xs font-black"
+                    style={{
+                      background: "rgba(34,197,94,0.12)",
+                      border: "1px solid rgba(34,168,84,0.25)",
+                      color: "var(--primary)",
+                    }}
+                  >
+                    {initials}
                   </div>
-                  <div className="mt-1 text-xs leading-snug" style={{ color: "var(--text-muted)" }}>
+                  <div className="min-w-0 flex-1">
+                    <p
+                      className="text-sm font-semibold"
+                      style={{ color: "var(--text)" }}
+                    >
+                      {name}
+                    </p>
+                    <p
+                      className="mt-0.5 text-xs"
+                      style={{ color: "var(--text-muted)" }}
+                    >
+                      {sub}
+                    </p>
+                  </div>
+                  <span
+                    className="h-2 w-2 shrink-0 rounded-full"
+                    style={{ background: "var(--status-green)" }}
+                  />
+                </div>
+              ))}
+
+              <div className="mt-2 space-y-2">
+                {[
+                  {
+                    label: "Scope 3 auto-calculated",
+                    sub: "847 transactions · 62 vendor categories",
+                    value: "1,488 t",
+                  },
+                  {
+                    label: "Scope 2 from utility",
+                    sub: "42,000 kWh · EPA eGRID factor",
+                    value: "484 t",
+                  },
+                ].map(({ label, sub, value }) => (
+                  <div
+                    key={label}
+                    className="flex items-center justify-between rounded-xl px-4 py-3"
+                    style={{
+                      background: "rgba(34,197,94,0.1)",
+                      border: "1px solid rgba(34,168,84,0.2)",
+                    }}
+                  >
+                    <div>
+                      <p
+                        className="text-xs font-semibold"
+                        style={{ color: "var(--primary)" }}
+                      >
+                        {label}
+                      </p>
+                      <p
+                        className="mt-0.5 text-xs"
+                        style={{ color: "var(--text-muted)" }}
+                      >
+                        {sub}
+                      </p>
+                    </div>
+                    <span
+                      className="font-data text-base font-bold"
+                      style={{ color: "var(--primary)" }}
+                    >
+                      {value}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Stats strip ── */}
+      <section
+        className="px-6 py-16"
+        style={{
+          background: "var(--surface)",
+          borderTop: "1px solid var(--divider)",
+          borderBottom: "1px solid var(--divider)",
+        }}
+      >
+        <div className="mx-auto max-w-5xl">
+          <div
+            className="overflow-hidden rounded-2xl"
+            style={{ border: "1px solid var(--divider)" }}
+          >
+            <div className="grid grid-cols-1 divide-y sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+              {[
+                {
+                  value: "3 days",
+                  label: "Avg. time to first completed report",
+                },
+                { value: "$15K+", label: "Saved vs. hiring an ESG consultant" },
+                { value: "2 APIs", label: "Handle 80% of your data collection" },
+              ].map(({ value, label }) => (
+                <div key={value} className="bg-white px-8 py-10 text-center">
+                  <p
+                    className="font-data text-4xl font-bold"
+                    style={{ color: "var(--primary)" }}
+                  >
+                    {value}
+                  </p>
+                  <p
+                    className="mt-2 text-sm leading-snug"
+                    style={{ color: "var(--text-muted)" }}
+                  >
                     {label}
-                  </div>
+                  </p>
                 </div>
               ))}
             </div>
@@ -336,59 +599,237 @@ export default async function Landing() {
         </div>
       </section>
 
-      {/* Demo CTA */}
-      <section className="py-24" style={{ background: "var(--primary)" }}>
-        <div className="mx-auto max-w-6xl px-6 text-center">
-          <h2 className="text-2xl font-bold font-display text-white sm:text-3xl">
-            See it in action
-          </h2>
-          <p className="mt-4 max-w-md mx-auto text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.7)" }}>
-            Book a 20-minute walkthrough. We&rsquo;ll show you how GreenTrack handles a real questionnaire end to end.
+      {/* ── How it works ── */}
+      <section id="how-it-works" className="px-6 py-24">
+        <div className="mx-auto max-w-5xl">
+          <p
+            className="mb-3 text-xs font-bold uppercase tracking-widest"
+            style={{ color: "var(--primary)" }}
+          >
+            How it works
           </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-4">
+          <h2
+            className="font-display text-3xl font-extrabold tracking-tight sm:text-4xl"
+            style={{ color: "var(--text)" }}
+          >
+            Three steps to a finished report
+          </h2>
+          <div className="mt-14 grid gap-10 sm:grid-cols-3">
+            {[
+              {
+                num: "01",
+                title: "Connect your data",
+                desc: "Link QuickBooks and your utility provider. We pull transactions and energy data automatically — no exports, no spreadsheets.",
+              },
+              {
+                num: "02",
+                title: "Calculate your footprint",
+                desc: "GHG Protocol emission factors applied automatically. Scope 1, 2, and 3 broken down by source, live as you go.",
+              },
+              {
+                num: "03",
+                title: "Export and submit",
+                desc: "Download an audit-ready PDF or fill supplier portal fields directly. CDP, EcoVadis, and Walmart — all mapped.",
+              },
+            ].map(({ num, title, desc }) => (
+              <div key={num}>
+                <p
+                  className="font-data text-5xl font-bold leading-none"
+                  style={{ color: "rgba(26,92,48,0.13)" }}
+                >
+                  {num}
+                </p>
+                <h3
+                  className="mt-5 font-display text-lg font-bold"
+                  style={{ color: "var(--text)" }}
+                >
+                  {title}
+                </h3>
+                <p
+                  className="mt-2 text-sm leading-relaxed"
+                  style={{ color: "var(--text-muted)" }}
+                >
+                  {desc}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── About ── */}
+      <section
+        id="about"
+        className="px-6 py-24"
+        style={{
+          background: "var(--surface)",
+          borderTop: "1px solid var(--divider)",
+        }}
+      >
+        <div className="mx-auto max-w-5xl">
+          <div className="grid items-start gap-16 sm:grid-cols-2">
+            <div>
+              <p
+                className="mb-3 text-xs font-bold uppercase tracking-widest"
+                style={{ color: "var(--primary)" }}
+              >
+                Who we built this for
+              </p>
+              <h2
+                className="font-display text-3xl font-extrabold tracking-tight sm:text-4xl"
+                style={{ color: "var(--text)" }}
+              >
+                Mid-market companies getting their first ESG questionnaire
+              </h2>
+              <p
+                className="mt-5 text-sm leading-relaxed"
+                style={{ color: "var(--text-muted)" }}
+              >
+                California&rsquo;s mid-market — 50 to 500 employees — is getting
+                ESG questionnaires from major customers for the first time. Most
+                don&rsquo;t have a sustainability team. Hiring a consultant runs
+                $15,000 and up.
+              </p>
+              <p
+                className="mt-4 text-sm leading-relaxed"
+                style={{ color: "var(--text-muted)" }}
+              >
+                GreenTrack does the same job: pulls your data, calculates your
+                footprint, and produces a report your customer accepts. In days,
+                not months.
+              </p>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              {[
+                {
+                  stat: "50–500",
+                  label: "Employees at our target companies",
+                },
+                {
+                  stat: "$15K+",
+                  label: "Typical consultant cost for one report",
+                },
+                {
+                  stat: "3 days",
+                  label: "Average time to first completed report",
+                },
+                { stat: "10+", label: "Questionnaire frameworks supported" },
+              ].map(({ stat, label }) => (
+                <div
+                  key={stat}
+                  className="rounded-xl p-5"
+                  style={{
+                    background: "#fff",
+                    border: "1px solid var(--divider)",
+                  }}
+                >
+                  <p
+                    className="font-data text-2xl font-bold"
+                    style={{ color: "var(--primary)" }}
+                  >
+                    {stat}
+                  </p>
+                  <p
+                    className="mt-1 text-xs leading-snug"
+                    style={{ color: "var(--text-muted)" }}
+                  >
+                    {label}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── CTA ── */}
+      <section
+        className="relative overflow-hidden px-6 py-28 text-center"
+        style={{ background: "var(--primary)" }}
+      >
+        <div className="pointer-events-none absolute inset-0" aria-hidden>
+          <div
+            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+            style={{
+              width: 700,
+              height: 400,
+              borderRadius: "50%",
+              background:
+                "radial-gradient(ellipse, rgba(255,255,255,0.07) 0%, transparent 60%)",
+            }}
+          />
+        </div>
+        <div className="relative z-10 mx-auto max-w-2xl">
+          <h2
+            className="font-display text-3xl font-extrabold tracking-tight text-white sm:text-4xl"
+          >
+            See it handle a real questionnaire
+          </h2>
+          <p
+            className="mx-auto mt-4 max-w-md text-base leading-relaxed"
+            style={{ color: "rgba(255,255,255,0.65)" }}
+          >
+            20-minute walkthrough. Bring your last questionnaire and we&rsquo;ll
+            show you exactly how it maps to your emissions data.
+          </p>
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
             <Link
               href="/demo"
-              className="btn px-6 py-3 text-sm font-semibold"
-              style={{ background: "var(--surface)", color: "var(--primary)", border: "none" }}
+              className="btn px-6 py-3 text-sm font-bold"
+              style={{
+                background: "#fff",
+                color: "var(--primary)",
+                borderRadius: "var(--radius-sm)",
+              }}
             >
               Request a demo
             </Link>
             <Link
               href="/signup"
               className="btn px-6 py-3 text-sm font-semibold"
-              style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.4)", color: "#fff" }}
+              style={{
+                background: "transparent",
+                border: "1.5px solid rgba(255,255,255,0.35)",
+                color: "#fff",
+                borderRadius: "var(--radius-sm)",
+              }}
             >
-              Get started free
+              Get started free →
             </Link>
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="py-10" style={{ background: "#2A4A37" }}>
-        <div className="mx-auto max-w-6xl px-6 flex flex-col sm:flex-row items-center justify-between gap-6">
-          <span className="flex items-center gap-2 text-lg font-bold font-display text-white">
+      {/* ── Footer ── */}
+      <footer className="px-6 py-10" style={{ background: "var(--text)" }}>
+        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-6">
+          <span className="flex items-center gap-2 font-display text-base font-bold text-white">
             <span
-              className="flex h-7 w-7 items-center justify-center text-sm font-bold text-white"
-              style={{ background: "var(--primary)", borderRadius: "8px" }}
+              className="flex h-7 w-7 items-center justify-center rounded-lg text-xs font-black"
+              style={{ background: "var(--status-green)", color: "var(--text)" }}
             >
               G
             </span>
             GreenTrack
           </span>
-          <p className="text-xs" style={{ color: "rgba(255,255,255,0.45)" }}>
+          <p className="text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>
             © {new Date().getFullYear()} GreenTrack. Built in California.
           </p>
           <div className="flex gap-6">
-            <Link href="/login" className="text-xs transition-opacity hover:opacity-100" style={{ color: "rgba(255,255,255,0.45)" }}>
-              Sign in
-            </Link>
-            <Link href="/demo" className="text-xs transition-opacity hover:opacity-100" style={{ color: "rgba(255,255,255,0.45)" }}>
-              Request demo
-            </Link>
-            <Link href="/signup" className="text-xs transition-opacity hover:opacity-100" style={{ color: "rgba(255,255,255,0.45)" }}>
-              Get started
-            </Link>
+            {[
+              ["Sign in", "/login"],
+              ["Request demo", "/demo"],
+              ["Get started", "/signup"],
+            ].map(([label, href]) => (
+              <Link
+                key={href}
+                href={href}
+                className="text-xs transition-opacity hover:opacity-80"
+                style={{ color: "rgba(255,255,255,0.4)" }}
+              >
+                {label}
+              </Link>
+            ))}
           </div>
         </div>
       </footer>

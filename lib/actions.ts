@@ -318,6 +318,24 @@ export async function resync(which: "quickbooks" | "utility") {
   await persist(company);
 }
 
+export async function disconnectQuickBooks() {
+  const { user, company } = await requireUser();
+  company.connections.quickbooks = { connected: false, lastSynced: null };
+  company.qbTransactions = [];
+  await logChange({ user, companyId: company.id, section: "connections", field: "quickbooks", prev: "connected", next: "disconnected" });
+  await saveQBTransactions(company.id, []);
+  await persist(company);
+}
+
+export async function disconnectUtility() {
+  const { user, company } = await requireUser();
+  company.connections.utility = { connected: false, lastSynced: null, authUid: null, authEmail: null };
+  company.utilityData = [];
+  await logChange({ user, companyId: company.id, section: "connections", field: "utility", prev: "connected", next: "disconnected" });
+  await saveUtilityData(company.id, []);
+  await persist(company);
+}
+
 export async function markQBReviewed() {
   const { user, company } = await requireUser();
   await logChange({ user, companyId: company.id, section: "scope3", field: "qb_data_reviewed", prev: false, next: true });

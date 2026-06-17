@@ -23,14 +23,27 @@ export function NavLinks() {
       {NAV.map(([href, label]) => {
         const active = pathname === href || (href !== "/dashboard" && pathname.startsWith(href));
         return (
-          <Link key={href} href={href}
-            className="flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors"
-            style={active
-              ? { background: "var(--brand-light)", color: "var(--brand)" }
-              : { color: "var(--text-2)" }
+          <Link
+            key={href}
+            href={href}
+            className="block rounded-canopy-sm px-3 py-2 text-sm font-medium transition-colors"
+            style={
+              active
+                ? { background: "var(--primary-tint)", color: "var(--primary)" }
+                : { color: "var(--text-muted)" }
             }
-            onMouseEnter={e => { if (!active) { (e.currentTarget as HTMLElement).style.background = "var(--bg)"; (e.currentTarget as HTMLElement).style.color = "var(--text-1)"; } }}
-            onMouseLeave={e => { if (!active) { (e.currentTarget as HTMLElement).style.background = ""; (e.currentTarget as HTMLElement).style.color = "var(--text-2)"; } }}
+            onMouseEnter={(e) => {
+              if (!active) {
+                (e.currentTarget as HTMLElement).style.background = "var(--primary-tint)";
+                (e.currentTarget as HTMLElement).style.color = "var(--primary)";
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!active) {
+                (e.currentTarget as HTMLElement).style.background = "";
+                (e.currentTarget as HTMLElement).style.color = "var(--text-muted)";
+              }
+            }}
           >
             {label}
           </Link>

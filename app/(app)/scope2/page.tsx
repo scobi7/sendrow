@@ -20,20 +20,25 @@ export default async function Scope2() {
 
   return (
     <div className="mx-auto max-w-3xl">
-      <PageHeader title="Scope 2 — Your Electricity Emissions"
-        subtitle="Pre-filled from your utility connection. Review the numbers and add renewable energy credits if you have them." />
+      <PageHeader
+        title="Scope 2 — Your Electricity Emissions"
+        subtitle="Pre-filled from your utility connection. Review the numbers and add renewable energy credits if you have them."
+      />
 
       {!connected ? (
         <div className="card text-center">
-          <p className="text-slate-600">Connect your utility account first — this section fills itself in.</p>
-          <Link href="/connections" className="btn-primary mt-4 inline-flex">Go to Connections</Link>
+          <p style={{ color: "var(--text-muted)" }}>Connect your utility account first — this section fills itself in.</p>
+          <Link href="/connections" className="btn btn-primary mt-4 inline-flex">Go to Connections</Link>
         </div>
       ) : (
         <>
           <div className="card overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-slate-200 text-left text-xs uppercase tracking-wide text-slate-400">
+                <tr
+                  className="text-left text-xs uppercase tracking-wide"
+                  style={{ borderBottom: "1px solid var(--divider)", color: "var(--text-muted)" }}
+                >
                   <th className="pb-2">Location</th>
                   <th className="pb-2">Grid region</th>
                   <th className="pb-2 text-right">kWh</th>
@@ -43,27 +48,30 @@ export default async function Scope2() {
               </thead>
               <tbody>
                 {rows.map(({ loc, kwh, locBased, mktBased, subregion }) => (
-                  <tr key={loc.id} className="border-b border-slate-100">
+                  <tr key={loc.id} style={{ borderBottom: "1px solid var(--divider)" }}>
                     <td className="py-2 font-medium">{loc.city || loc.address}, {loc.state}</td>
-                    <td className="py-2 text-slate-500">{subregion}</td>
-                    <td className="py-2 text-right">{num(kwh, 0)}</td>
-                    <td className="py-2 text-right font-semibold">{num(locBased)} t</td>
-                    <td className="py-2 text-right font-semibold">{num(mktBased)} t</td>
+                    <td className="py-2" style={{ color: "var(--text-muted)" }}>{subregion}</td>
+                    <td className="py-2 text-right font-data">{num(kwh, 0)}</td>
+                    <td className="py-2 text-right font-semibold font-data">{num(locBased)} t</td>
+                    <td className="py-2 text-right font-semibold font-data">{num(mktBased)} t</td>
                   </tr>
                 ))}
               </tbody>
             </table>
-            <p className="mt-4 rounded-lg bg-slate-50 px-4 py-3 text-xs leading-relaxed text-slate-500">
-              <strong>Why two columns?</strong> The GHG Protocol requires both. <em>Location-based</em> uses the average
-              emissions of your regional grid. <em>Market-based</em> reflects the electricity you actually purchased —
-              green tariffs and renewable energy certificates (RECs) lower this number. Many California companies have
-              RECs and don&rsquo;t realize it.
+            <p
+              className="mt-4 rounded-lg px-4 py-3 text-xs leading-relaxed"
+              style={{ background: "var(--bg)", color: "var(--text-muted)" }}
+            >
+              <strong style={{ color: "var(--text)" }}>Why two columns?</strong> The GHG Protocol requires both.{" "}
+              <em>Location-based</em> uses the average emissions of your regional grid. <em>Market-based</em> reflects
+              the electricity you actually purchased — green tariffs and renewable energy certificates (RECs) lower this
+              number. Many California companies have RECs and don&rsquo;t realize it.
             </p>
           </div>
 
           <form action={saveFields} className="card mt-6">
             <input type="hidden" name="redirect_to" value="/scope2" />
-            <h2 className="font-semibold text-navy-900">Renewable Energy Credits</h2>
+            <h2 className="font-semibold font-display" style={{ color: "var(--text)" }}>Renewable Energy Credits</h2>
             <div className="mt-3 flex gap-4 text-sm">
               <label className="flex items-center gap-2">
                 <input type="radio" name="has_recs" value="yes" defaultChecked={inp.has_recs === true} /> Yes, we purchase RECs or are on a green tariff
@@ -82,12 +90,12 @@ export default async function Scope2() {
                 <input name="rec_certificate_name" type="text" className="input" placeholder="e.g. 2025 Green-e certificate" defaultValue={inp.rec_certificate_name ?? ""} />
               </div>
             </div>
-            <label className="mt-5 flex items-center gap-2 text-sm font-medium text-navy-900">
+            <label className="mt-5 flex items-center gap-2 text-sm font-medium" style={{ color: "var(--text)" }}>
               <input type="checkbox" name="scope2_reviewed" value="true" defaultChecked={!!inp.scope2_reviewed} />
               I have reviewed this data and it looks correct
             </label>
             <div className="mt-5 flex justify-end">
-              <button className="btn-primary">Save Scope 2</button>
+              <button className="btn btn-primary">Save Scope 2</button>
             </div>
           </form>
         </>

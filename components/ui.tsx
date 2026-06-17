@@ -63,21 +63,18 @@ export function KpiCard({
     <div
       className="p-5"
       style={{
-        background: "var(--primary-tint)",
-        borderRadius: "var(--radius-sm)",
+        background: "var(--card)",
+        borderRadius: "var(--radius-lg)",
       }}
     >
       <p className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>
         {label}
       </p>
-      <p
-        className="mt-1 text-2xl font-semibold font-data"
-        style={{ color: "var(--text)" }}
-      >
+      <p className="mt-2 text-2xl font-bold font-data leading-tight" style={{ color: "var(--text)" }}>
         {value}
       </p>
       {caption && (
-        <p className="mt-0.5 text-xs" style={{ color: "var(--text-muted)" }}>
+        <p className="mt-1 text-xs" style={{ color: "var(--text-muted)" }}>
           {caption}
         </p>
       )}
@@ -97,7 +94,13 @@ export function IntegrationCard({
   lastSynced?: string | null;
 }) {
   return (
-    <div className="card flex items-center gap-4">
+    <div
+      className="flex items-center gap-4 px-5 py-4"
+      style={{
+        background: "var(--card)",
+        borderRadius: "var(--radius-lg)",
+      }}
+    >
       <div
         className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-bold text-white"
         style={{ background: "var(--primary)" }}
@@ -126,6 +129,8 @@ export function IntegrationCard({
   );
 }
 
+const SCOPE_COLORS = ["var(--scope1)", "var(--scope2)", "var(--scope3)"];
+
 export function ScopeBarChart({
   data,
 }: {
@@ -135,29 +140,87 @@ export function ScopeBarChart({
   const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 1 });
   return (
     <div className="space-y-4">
-      {data.map(({ label, value }) => (
+      {data.map(({ label, value }, i) => (
         <div key={label} className="flex items-center gap-3">
-          <span className="w-20 shrink-0 text-xs font-medium" style={{ color: "var(--text-muted)" }}>
+          <span className="w-16 shrink-0 text-xs font-medium" style={{ color: "var(--text-muted)" }}>
             {label}
           </span>
-          <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: "var(--track-bg)" }}>
+          <div className="flex-1 h-2.5 rounded-full overflow-hidden" style={{ background: "var(--track-bg)" }}>
             <div
               className="h-full rounded-full"
               style={{
                 width: `${(value / max) * 100}%`,
-                background: "var(--primary)",
+                background: SCOPE_COLORS[i] ?? "var(--primary)",
                 transition: "width 0.4s ease",
               }}
             />
           </div>
           <span
-            className="w-20 shrink-0 text-right text-xs font-medium font-data"
+            className="w-16 shrink-0 text-right text-xs font-semibold font-data"
             style={{ color: "var(--text)" }}
           >
-            {fmt(value)} t
+            {fmt(value)}
           </span>
         </div>
       ))}
+    </div>
+  );
+}
+
+export function ScopeDonutChart({
+  data,
+}: {
+  data: { label: string; value: number }[];
+}) {
+  const r = 46;
+  const sw = 16;
+  const C = 2 * Math.PI * r;
+  const total = data.reduce((s, d) => s + d.value, 0) || 1;
+  const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 1 });
+
+  let accumulated = 0;
+  const segments = data.map((d, i) => {
+    const len = (d.value / total) * C;
+    const seg = { len, offset: accumulated, color: SCOPE_COLORS[i] ?? "var(--primary)" };
+    accumulated += len;
+    return seg;
+  });
+
+  return (
+    <div className="flex flex-col items-center gap-5">
+      <svg viewBox="0 0 120 120" width="148" height="148">
+        <circle cx="60" cy="60" r={r} fill="none" stroke="var(--track-bg)" strokeWidth={sw} />
+        <g transform="rotate(-90 60 60)">
+          {segments.map((seg, i) => (
+            <circle
+              key={i}
+              cx="60" cy="60" r={r}
+              fill="none"
+              stroke={seg.color}
+              strokeWidth={sw}
+              strokeDasharray={`${seg.len} ${C - seg.len}`}
+              strokeDashoffset={-seg.offset}
+            />
+          ))}
+        </g>
+        <text x="60" y="55" textAnchor="middle" fontSize="8" fill="var(--text-muted)">Total</text>
+        <text x="60" y="70" textAnchor="middle" fontSize="13" fontWeight="700" fill="var(--text)">
+          {fmt(data.reduce((s, d) => s + d.value, 0))} t
+        </text>
+      </svg>
+      <div className="w-full space-y-2.5">
+        {data.map((d, i) => (
+          <div key={d.label} className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-xs" style={{ color: "var(--text-muted)" }}>
+              <span className="h-2 w-2 rounded-full shrink-0" style={{ background: SCOPE_COLORS[i] }} />
+              {d.label}
+            </div>
+            <span className="text-xs font-semibold font-data" style={{ color: "var(--text)" }}>
+              {fmt(d.value)} t
+            </span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -181,7 +244,7 @@ export function ComplianceTracker({
                 className="flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold border-2 transition-all"
                 style={{
                   borderColor: done || active ? "var(--primary)" : "var(--track-bg)",
-                  background: done ? "var(--primary)" : active ? "var(--surface)" : "var(--track-bg)",
+                  background: done ? "var(--primary)" : active ? "#ffffff" : "var(--track-bg)",
                   color: done ? "#fff" : active ? "var(--primary)" : "var(--text-muted)",
                 }}
               >

@@ -13,23 +13,36 @@ export default async function ConsultantLayout({ children }: { children: React.R
   if (user.role !== "consultant") redirect("/dashboard");
 
   return (
-    <div className="flex min-h-screen bg-slate-50">
-      <aside className="no-print hidden w-56 flex-col border-r border-slate-200 bg-white px-4 py-6 sm:flex">
+    <div className="flex min-h-screen" style={{ background: "var(--bg)" }}>
+      <aside
+        className="no-print hidden w-56 flex-col px-4 py-6 sm:flex"
+        style={{ borderRight: "1px solid var(--divider)", background: "var(--surface)" }}
+      >
         <Logo />
-        <nav className="mt-8 flex-1 space-y-1">
+        <nav className="mt-8 flex-1 space-y-0.5">
           <Link
             href="/consultant"
-            className="block rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:bg-emerald-50 hover:text-emerald-800 transition-colors"
+            className="block rounded-canopy-sm px-3 py-2 text-sm font-medium transition-colors"
+            style={{ color: "var(--text-muted)" }}
+            onMouseOver={(e) => {
+              (e.currentTarget as HTMLElement).style.background = "var(--primary-tint)";
+              (e.currentTarget as HTMLElement).style.color = "var(--primary)";
+            }}
+            onMouseOut={(e) => {
+              (e.currentTarget as HTMLElement).style.background = "";
+              (e.currentTarget as HTMLElement).style.color = "var(--text-muted)";
+            }}
           >
             My Clients
           </Link>
         </nav>
-        <div className="border-t border-slate-100 pt-4">
-          <p className="truncate text-xs font-semibold text-slate-900">{user.name}</p>
-          <p className="truncate text-xs text-slate-400">{user.email}</p>
+        <div className="pt-4" style={{ borderTop: "1px solid var(--divider)" }}>
+          <p className="truncate text-xs font-semibold" style={{ color: "var(--text)" }}>{user.name}</p>
+          <p className="truncate text-xs" style={{ color: "var(--text-muted)" }}>{user.email}</p>
           <Link
             href="/onboarding"
-            className="mt-2 block text-xs text-slate-400 hover:text-slate-600"
+            className="mt-2 block text-xs transition-opacity hover:opacity-70"
+            style={{ color: "var(--text-muted)" }}
           >
             Switch account type
           </Link>

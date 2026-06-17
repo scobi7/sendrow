@@ -23,44 +23,54 @@ export default async function DemoPage({
   }
 
   return (
-    <main className="flex min-h-screen flex-col bg-slate-50">
-      <header className="flex items-center justify-between px-8 py-5 bg-white border-b border-slate-100">
+    <main className="flex min-h-screen flex-col" style={{ background: "var(--bg)" }}>
+      <header
+        className="flex items-center justify-between px-8 py-5"
+        style={{ background: "var(--surface)", borderBottom: "1px solid var(--divider)" }}
+      >
         <Link href="/"><Logo /></Link>
-        <Link href="/signup" className="text-sm font-medium text-slate-600 hover:text-slate-900">
+        <Link
+          href="/signup"
+          className="text-sm font-medium transition-opacity hover:opacity-70"
+          style={{ color: "var(--text-muted)" }}
+        >
           Get started free →
         </Link>
       </header>
 
       <div className="mx-auto flex w-full max-w-lg flex-1 flex-col justify-center px-6 py-16">
         {submitted ? (
-          <div className="rounded-2xl border border-slate-200 bg-white p-10 shadow-sm text-center">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-50 mx-auto">
-              <svg className="h-6 w-6 text-brand-600" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+          <div className="card text-center">
+            <div
+              className="flex h-12 w-12 items-center justify-center rounded-full mx-auto"
+              style={{ background: "var(--primary-tint)" }}
+            >
+              <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" style={{ color: "var(--primary)" }}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
               </svg>
             </div>
-            <h1 className="mt-5 text-xl font-bold text-slate-900">Request received</h1>
-            <p className="mt-2 text-sm text-slate-500">
+            <h1 className="mt-5 text-xl font-bold font-display" style={{ color: "var(--text)" }}>Request received</h1>
+            <p className="mt-2 text-sm" style={{ color: "var(--text-muted)" }}>
               We&rsquo;ll be in touch shortly. Or pick a time right now:
             </p>
             <a
               href="https://calendly.com/malachinguyenn/30min"
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-6 inline-block btn-primary text-sm px-6 py-2.5"
+              className="btn btn-primary mt-6 inline-block text-sm px-6 py-2.5"
             >
               Book a time →
             </a>
             <div className="mt-4">
-              <Link href="/" className="text-sm font-medium text-slate-400 hover:text-slate-600">
+              <Link href="/" className="text-sm font-medium transition-opacity hover:opacity-70" style={{ color: "var(--text-muted)" }}>
                 ← Back to home
               </Link>
             </div>
           </div>
         ) : (
-          <div className="rounded-2xl border border-slate-200 bg-white p-10 shadow-sm">
-            <h1 className="text-2xl font-bold text-slate-900">Request a demo</h1>
-            <p className="mt-2 text-sm text-slate-500">
+          <div className="card">
+            <h1 className="text-2xl font-bold font-display" style={{ color: "var(--text)" }}>Request a demo</h1>
+            <p className="mt-2 text-sm" style={{ color: "var(--text-muted)" }}>
               We&rsquo;ll show you how GreenTrack handles a real questionnaire end to end. Usually 20 minutes.
             </p>
             <form action={requestDemo} className="mt-8 space-y-4">
@@ -76,24 +86,25 @@ export default async function DemoPage({
                 <label className="label">Company name</label>
                 <input name="company" required className="input" placeholder="Pacific Coast Logistics" />
               </div>
-              <button type="submit" className="btn-primary w-full py-3 mt-2">
+              <button type="submit" className="btn btn-primary w-full py-3 mt-2">
                 Request demo
               </button>
             </form>
-            <p className="mt-4 text-center text-xs text-slate-400">
+            <p className="mt-4 text-center text-xs" style={{ color: "var(--text-muted)" }}>
               Prefer to pick a time directly?{" "}
               <a
                 href="https://calendly.com/malachinguyenn/30min"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-brand-700 hover:underline"
+                className="underline transition-opacity hover:opacity-70"
+                style={{ color: "var(--primary)" }}
               >
                 Book on Calendly
               </a>
             </p>
-            <p className="mt-2 text-center text-xs text-slate-400">
+            <p className="mt-2 text-center text-xs" style={{ color: "var(--text-muted)" }}>
               Rather sign up directly?{" "}
-              <Link href="/signup" className="text-brand-700 hover:underline">
+              <Link href="/signup" className="underline transition-opacity hover:opacity-70" style={{ color: "var(--primary)" }}>
                 Get started free
               </Link>
             </p>
