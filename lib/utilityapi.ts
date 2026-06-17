@@ -38,6 +38,9 @@ export interface UtilityBill {
   meter_uid: string;
   base: {
     bill_start_date: string;
+    bill_total_kWh?: number;   // electric kWh (PGE naming from API)
+    bill_total_therms?: number; // gas therms
+    bill_total_ccf?: number;    // gas CCF (some utilities)
     kwh?: number;
     therms?: number;
   };
@@ -50,5 +53,7 @@ export async function getBills(meterUids: string[]): Promise<UtilityBill[]> {
   });
   if (!res.ok) throw new Error(`UtilityAPI ${res.status}`);
   const data = await res.json();
-  return (data.bills ?? []) as UtilityBill[];
+  const bills = data.bills ?? [];
+  if (bills.length > 0) console.log("[UtilityAPI] sample bill fields:", JSON.stringify(bills[0], null, 2));
+  return bills as UtilityBill[];
 }
