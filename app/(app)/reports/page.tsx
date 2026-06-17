@@ -71,7 +71,7 @@ export default async function Reports({ searchParams }: { searchParams: Promise<
       <div className="space-y-4">
         <div className="card flex items-center justify-between">
           <div>
-            <h3 className="font-semibold font-display" style={{ color: "var(--text)" }}>📊 GHG Inventory Report</h3>
+            <h3 className="font-semibold font-display" style={{ color: "var(--text)" }}>GHG Inventory Report</h3>
             <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>
               Audit-ready PDF: Scope 1, 2 (dual reporting), 3, methodology, and data quality notes.
             </p>
@@ -89,7 +89,7 @@ export default async function Reports({ searchParams }: { searchParams: Promise<
         </div>
 
         <div className="card">
-          <h3 className="font-semibold font-display" style={{ color: "var(--text)" }}>🗂️ Questionnaire Helper</h3>
+          <h3 className="font-semibold font-display" style={{ color: "var(--text)" }}>Questionnaire Helper</h3>
           <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>
             Select your customer&rsquo;s questionnaire format to see exactly which of your numbers answers which question. Copy them into their platform.
           </p>
@@ -139,7 +139,7 @@ export default async function Reports({ searchParams }: { searchParams: Promise<
 
         <div className="card flex items-center justify-between">
           <div>
-            <h3 className="font-semibold font-display" style={{ color: "var(--text)" }}>🔍 Audit Trail</h3>
+            <h3 className="font-semibold font-display" style={{ color: "var(--text)" }}>Audit Trail</h3>
             <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>
               Every data point, its source, the emission factor used, and who entered it. Always available.
             </p>

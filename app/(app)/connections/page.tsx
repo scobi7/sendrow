@@ -41,8 +41,7 @@ export default async function Connections() {
           className="card"
           style={qb.connected ? { borderColor: "var(--primary)", background: "var(--primary-tint)" } : {}}
         >
-          <div className="text-2xl">🧾</div>
-          <h2 className="mt-2 font-bold font-display" style={{ color: "var(--text)" }}>QuickBooks</h2>
+          <h2 className="font-bold font-display" style={{ color: "var(--text)" }}>QuickBooks</h2>
           <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>
             We pull your vendor bills and purchases to estimate value-chain (Scope 3) emissions from spend. Read-only access.
           </p>
@@ -73,8 +72,7 @@ export default async function Connections() {
           className="card"
           style={util.connected ? { borderColor: "var(--primary)", background: "var(--primary-tint)" } : {}}
         >
-          <div className="text-2xl">⚡</div>
-          <h2 className="mt-2 font-bold font-display" style={{ color: "var(--text)" }}>Utility Account</h2>
+          <h2 className="font-bold font-display" style={{ color: "var(--text)" }}>Utility Account</h2>
           <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>
             We pull electricity (kWh) and natural gas (therms) by month for each location — the basis of Scope 1 and 2.
           </p>

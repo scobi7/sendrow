@@ -25,7 +25,7 @@ export default async function Gaps() {
 
       {gaps.length === 0 ? (
         <div className="card text-center" style={{ color: "var(--text-muted)" }}>
-          🎉 No gaps detected — your report covers everything we check for. See you next reporting cycle.
+          No gaps detected — your report covers everything we check for. See you next reporting cycle.
         </div>
       ) : (
         <>

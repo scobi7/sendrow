@@ -8,7 +8,7 @@
   --text-muted: #7C8A78;
   --primary: #3F6B4F;
   --primary-tint: #EFF6EC;
-  --track-bg: #E3EEDE;
+  --track-bg: #DDD8CB;
   --divider: #ECE8D9;
   --surface: #FFFFFF;
   --status-green: #2F9E68;
@@ -19,7 +19,7 @@
   --radius-lg: 28px;
   --radius-sm: 18px;
   --shadow-card: 0 24px 60px -28px rgba(63, 107, 79, 0.28);
-  --font-display: 'Quicksand', sans-serif;
+  --font-display: 'Plus Jakarta Sans', sans-serif;
   --font-body: 'Inter', sans-serif;
   --font-data: 'IBM Plex Mono', monospace;
 }

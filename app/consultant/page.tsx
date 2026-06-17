@@ -78,7 +78,7 @@ export default async function ConsultantDashboard({
                 : { background: "var(--warning-tint)", color: "var(--warning)" }
             }
           >
-            ⚠ {attentionCount} Needs Attention
+            {attentionCount} Needs Attention
           </Link>
           {showFilter && (
             <Link

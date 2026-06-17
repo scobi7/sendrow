@@ -43,7 +43,7 @@ export default async function Scope1() {
           <label className="mt-3 flex items-center gap-2 text-sm" style={{ color: "var(--text-muted)" }}>
             <input type="checkbox" name="fleet_na" value="true" defaultChecked={!!inp.fleet_na} /> Not applicable — we have no fleet
           </label>
-          <p className="mt-2 text-xs" style={{ color: "var(--text-muted)" }}>📎 Document upload (fleet card statement) available in production build.</p>
+          <p className="mt-2 text-xs" style={{ color: "var(--text-muted)" }}>Document upload (fleet card statement) available in production build.</p>
           <CO2eBox label="Fleet fuel emissions" tons={sub("fleet")} />
         </details>
 

@@ -40,8 +40,7 @@ export default async function OnboardingPage({
 
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
           <div className="card">
-            <div className="text-2xl">🏢</div>
-            <h2 className="mt-3 font-bold font-display" style={{ color: "var(--text)" }}>I represent a company</h2>
+            <h2 className="font-bold font-display" style={{ color: "var(--text)" }}>I represent a company</h2>
             <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>
               Build your GHG inventory, track ESG metrics, and generate reports for customer questionnaires.
             </p>
@@ -61,8 +60,7 @@ export default async function OnboardingPage({
           </div>
 
           <div className="card">
-            <div className="text-2xl">🌿</div>
-            <h2 className="mt-3 font-bold font-display" style={{ color: "var(--text)" }}>I am an ESG consultant</h2>
+            <h2 className="font-bold font-display" style={{ color: "var(--text)" }}>I am an ESG consultant</h2>
             <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>
               Manage multiple client companies, track their progress, and generate invite links for them to fill in data.
             </p>

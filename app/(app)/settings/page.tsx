@@ -52,7 +52,7 @@ export default async function Settings({ searchParams }: { searchParams: Promise
           </div>
         </div>
         <p className="mt-3 text-xs" style={{ color: "var(--warning)" }}>
-          ⚠ Changing fiscal year end re-scopes all calculations — resync connections afterwards.
+          Changing fiscal year end re-scopes all calculations — resync connections afterwards.
         </p>
         <div className="mt-4 flex justify-end">
           <button className="btn btn-primary">Save profile</button>

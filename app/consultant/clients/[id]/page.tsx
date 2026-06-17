@@ -154,7 +154,7 @@ export default async function ClientDetailPage({
             <div className="mt-4 space-y-4">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-sm font-medium" style={{ color: "var(--text)" }}>🧾 QuickBooks</p>
+                  <p className="text-sm font-medium" style={{ color: "var(--text)" }}>QuickBooks</p>
                   {company.connections.quickbooks.connected ? (
                     <p className="text-xs" style={{ color: "var(--status-green)" }}>
                       ✓ Connected — last synced{" "}
@@ -177,7 +177,7 @@ export default async function ClientDetailPage({
               </div>
 
               <div className="pt-4" style={{ borderTop: "1px solid var(--divider)" }}>
-                <p className="text-sm font-medium" style={{ color: "var(--text)" }}>⚡ Utility Account</p>
+                <p className="text-sm font-medium" style={{ color: "var(--text)" }}>Utility Account</p>
                 {company.connections.utility.connected ? (
                   <p className="text-xs" style={{ color: "var(--status-green)" }}>
                     ✓ Connected — last synced{" "}

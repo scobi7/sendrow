@@ -7,24 +7,27 @@ export default async function SetupComplete() {
   const user = await currentUser();
   if (!user) redirect("/login");
   return (
-    <main className="mx-auto flex min-h-screen max-w-xl flex-col items-center justify-center px-6 text-center bg-slate-50">
+    <main
+      className="mx-auto flex min-h-screen max-w-xl flex-col items-center justify-center px-6 text-center"
+      style={{ background: "var(--bg)" }}
+    >
       <Logo />
-      <div className="mt-8 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-3xl">✓</div>
-      <h1 className="mt-4 text-2xl font-bold text-slate-900">You are all set</h1>
-      <p className="mt-2 text-slate-600">Connect your accounts, answer a few questions, and we handle the rest.</p>
+      <div
+        className="mt-8 flex h-16 w-16 items-center justify-center rounded-full text-2xl font-bold"
+        style={{ background: "var(--primary-tint)", color: "var(--primary)" }}
+      >
+        ✓
+      </div>
+      <h1 className="mt-4 text-2xl font-bold font-display" style={{ color: "var(--text)" }}>You are all set</h1>
+      <p className="mt-2" style={{ color: "var(--text-muted)" }}>Connect your accounts, answer a few questions, and we handle the rest.</p>
       <div className="mt-8 grid w-full grid-cols-3 gap-4">
-        {[
-          ["📊", "GHG Inventory Report"],
-          ["🗂️", "Questionnaire Helper"],
-          ["🔍", "Audit Trail"],
-        ].map(([icon, title]) => (
+        {["GHG Inventory Report", "Questionnaire Helper", "Audit Trail"].map((title) => (
           <div key={title} className="card py-4 text-center">
-            <div className="text-xl">{icon}</div>
-            <div className="mt-1 text-xs font-semibold text-slate-900">{title}</div>
+            <div className="mt-1 text-xs font-semibold" style={{ color: "var(--text)" }}>{title}</div>
           </div>
         ))}
       </div>
-      <Link href="/dashboard" className="btn-primary mt-10 px-8 py-3">Go to My Dashboard</Link>
+      <Link href="/dashboard" className="btn btn-primary mt-10 px-8 py-3">Go to My Dashboard</Link>
     </main>
   );
 }
