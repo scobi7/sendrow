@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GreenTrack — Concept 1C: Canopy Light</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Plus+Jakarta+Sans:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg:          #F5FBF6;   /* near-white, barely-there green tint */
+    --surface:     #EBF5ED;   /* soft sage — alternate section bg */
+    --card:        #DFF0E2;   /* green-tinted card fill */
+    --card-inner:  #F0F9F2;   /* inner cards nested inside card panels */
+    --card-hover:  #D0E9D4;
+    --border:      rgba(15,50,28,0.1);
+    --border-acc:  rgba(34,168,84,0.35);
+    --text:        #0C1F12;   /* deep forest — was the old bg! */
+    --text-muted:  rgba(12,31,18,0.48);
+    --primary:     #1A5C30;   /* forest green for buttons/links */
+    --accent:      #22C55E;   /* bright CTA green */
+    --accent-dark: #166534;
+    --accent-dim:  rgba(34,197,94,0.13);
+    --accent-glow: rgba(34,197,94,0.22);
+    --scope1:      #22C55E;
+    --scope2:      #16A34A;
+    --scope3:      #15532D;
+  }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  /* ── Nav ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 2.5rem; height: 62px;
+    background: rgba(245,251,246,0.88);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+  }
+  .logo { display: flex; align-items: center; gap: 10px; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 1.05rem; color: var(--text); text-decoration: none; }
+  .logo-mark { width: 28px; height: 28px; background: var(--primary); border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; color: #fff; }
+  .nav-links { display: flex; align-items: center; gap: 2rem; }
+  .nav-links a { text-decoration: none; font-size: 0.875rem; color: var(--text-muted); font-weight: 500; transition: color 0.15s; }
+  .nav-links a:hover { color: var(--text); }
+  .btn-ghost { padding: 7px 16px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.875rem; font-weight: 600; color: var(--text); text-decoration: none; background: transparent; transition: background 0.15s, border-color 0.15s; }
+  .btn-ghost:hover { background: var(--card); border-color: var(--border-acc); }
+  .btn-nav-cta { padding: 7px 18px; background: var(--primary); border-radius: 8px; font-size: 0.875rem; font-weight: 700; color: #fff; text-decoration: none; transition: opacity 0.15s; }
+  .btn-nav-cta:hover { opacity: 0.88; }
+
+  /* ── Hero ── */
+  .hero {
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    padding: 8rem 2rem 4rem; position: relative; overflow: hidden; text-align: center;
+    background: var(--bg);
+  }
+  /* Soft green glows — works on light bg */
+  .orb {
+    position: absolute; border-radius: 50%; pointer-events: none;
+  }
+  .orb-1 {
+    top: 10%; left: 50%; transform: translateX(-50%);
+    width: 900px; height: 600px;
+    background: radial-gradient(ellipse, rgba(34,197,94,0.12) 0%, transparent 65%);
+  }
+  .orb-2 {
+    top: 30%; left: 15%;
+    width: 460px; height: 460px;
+    background: radial-gradient(circle, rgba(22,163,74,0.08) 0%, transparent 65%);
+  }
+  .orb-3 {
+    top: 20%; right: 10%;
+    width: 380px; height: 380px;
+    background: radial-gradient(circle, rgba(34,197,94,0.07) 0%, transparent 65%);
+  }
+
+  .badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 14px; border-radius: 100px;
+    border: 1px solid var(--border-acc);
+    background: var(--accent-dim);
+    font-size: 0.75rem; color: var(--primary); font-weight: 600;
+    margin-bottom: 2rem;
+  }
+  .badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
+
+  h1 {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: clamp(2.8rem, 6vw, 5.5rem);
+    font-weight: 800; line-height: 1.05; letter-spacing: -0.03em;
+    max-width: 820px; margin: 0 auto;
+    color: var(--text);
+  }
+  h1 .accent { color: var(--primary); }
+  .hero-sub {
+    font-size: 1.1rem; color: var(--text-muted); line-height: 1.7;
+    max-width: 520px; margin: 1.5rem auto 0;
+  }
+  .hero-ctas { display: flex; gap: 12px; justify-content: center; margin-top: 2.5rem; flex-wrap: wrap; }
+  .btn-primary-lg {
+    padding: 13px 28px; background: var(--primary); border-radius: 10px;
+    font-size: 0.95rem; font-weight: 700; color: #fff; text-decoration: none;
+    transition: opacity 0.2s, transform 0.2s; display: inline-block;
+    box-shadow: 0 4px 20px rgba(26,92,48,0.25);
+  }
+  .btn-primary-lg:hover { opacity: 0.9; transform: translateY(-1px); }
+  .btn-outline-lg {
+    padding: 13px 28px; border: 1.5px solid var(--border); border-radius: 10px;
+    font-size: 0.95rem; font-weight: 600; color: var(--text); text-decoration: none;
+    transition: border-color 0.15s, background 0.15s; display: inline-block;
+    background: rgba(255,255,255,0.6);
+  }
+  .btn-outline-lg:hover { border-color: var(--border-acc); background: var(--card); }
+
+  /* ── Dashboard preview ── */
+  .hero-visual { margin-top: 5rem; position: relative; z-index: 1; }
+  .dashboard-preview {
+    max-width: 900px; margin: 0 auto;
+    background: var(--card);
+    border: 1px solid rgba(15,50,28,0.12);
+    border-radius: 20px; padding: 28px;
+    box-shadow: 0 2px 0 rgba(255,255,255,0.8) inset,
+                0 24px 80px rgba(15,50,28,0.1),
+                0 4px 16px rgba(15,50,28,0.06);
+  }
+  .preview-topbar { display: flex; align-items: center; gap: 8px; margin-bottom: 24px; }
+  .preview-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .kpi-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 20px; }
+  .kpi-card {
+    background: var(--card-inner); border: 1px solid rgba(15,50,28,0.08);
+    border-radius: 12px; padding: 16px;
+  }
+  .kpi-label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 500; }
+  .kpi-value { font-family: 'IBM Plex Mono', monospace; font-size: 1.45rem; font-weight: 600; color: var(--text); margin-top: 6px; }
+  .kpi-value.green { color: var(--primary); }
+  .kpi-sub { font-size: 0.68rem; color: var(--text-muted); margin-top: 4px; }
+  .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .chart-card {
+    background: var(--card-inner); border: 1px solid rgba(15,50,28,0.08);
+    border-radius: 12px; padding: 20px;
+  }
+  .chart-title { font-size: 0.72rem; font-weight: 700; color: var(--text-muted); margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.07em; }
+  .bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .bar-label { font-size: 0.7rem; color: var(--text-muted); width: 48px; font-weight: 500; }
+  .bar-track { flex: 1; height: 8px; border-radius: 99px; background: rgba(15,50,28,0.08); overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 99px; }
+  .bar-val { font-family: 'IBM Plex Mono', monospace; font-size: 0.7rem; color: var(--text); width: 48px; text-align: right; font-weight: 600; }
+  .donut-wrap { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+  .legend-row { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+  .legend-item { display: flex; align-items: center; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted); }
+  .legend-dot { width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; flex-shrink: 0; }
+
+  /* ── Trust bar ── */
+  .trust-bar {
+    border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+    background: #fff;
+    padding: 2.25rem 2rem;
+    display: flex; align-items: center; justify-content: center; gap: 3rem; flex-wrap: wrap;
+  }
+  .trust-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-muted); font-weight: 600; }
+  .trust-item { font-size: 0.875rem; font-weight: 600; color: var(--text-muted); }
+
+  /* ── Sections ── */
+  section { padding: 7rem 2rem; }
+  .section-inner { max-width: 1100px; margin: 0 auto; }
+  .section-tag { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.14em; color: var(--primary); font-weight: 700; margin-bottom: 1rem; }
+  h2 { font-family: 'Plus Jakarta Sans', sans-serif; font-size: clamp(1.8rem, 3.5vw, 2.8rem); font-weight: 800; letter-spacing: -0.025em; line-height: 1.1; color: var(--text); }
+  .section-sub { font-size: 1rem; color: var(--text-muted); line-height: 1.7; max-width: 480px; margin-top: 1rem; }
+
+  /* ── Feature cards ── */
+  .feature-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-top: 3.5rem; }
+  .feature-card {
+    background: #fff; border: 1px solid var(--border);
+    border-radius: 16px; padding: 28px;
+    transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+  }
+  .feature-card:hover {
+    border-color: var(--border-acc);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(15,50,28,0.08);
+  }
+  .feature-icon {
+    width: 40px; height: 40px; border-radius: 10px;
+    background: var(--accent-dim); border: 1px solid var(--border-acc);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; margin-bottom: 1.2rem;
+  }
+  .feature-title { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; font-size: 1rem; margin-bottom: 0.5rem; color: var(--text); }
+  .feature-desc { font-size: 0.85rem; color: var(--text-muted); line-height: 1.6; }
+
+  /* ── Two-col integrations ── */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; }
+  .integration-panel {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 20px; padding: 28px;
+    box-shadow: 0 4px 16px rgba(15,50,28,0.06);
+  }
+  .int-row {
+    display: flex; align-items: center; gap: 14px;
+    background: #fff; border: 1px solid rgba(15,50,28,0.08);
+    border-radius: 14px; padding: 15px; margin-bottom: 10px;
+  }
+  .int-badge {
+    width: 40px; height: 40px; border-radius: 10px;
+    background: var(--accent-dim); border: 1px solid var(--border-acc);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 13px; color: var(--primary); flex-shrink: 0;
+  }
+  .int-name { font-weight: 700; font-size: 0.9rem; color: var(--text); }
+  .int-sub { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
+  .int-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); margin-left: auto; flex-shrink: 0; }
+  .int-result {
+    background: var(--accent-dim); border: 1px solid var(--border-acc);
+    border-radius: 12px; padding: 13px 16px; margin-top: 6px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .int-res-label { font-size: 0.78rem; font-weight: 600; color: var(--primary); }
+  .int-res-sub { font-size: 0.68rem; color: var(--text-muted); margin-top: 2px; }
+  .int-res-val { font-family: 'IBM Plex Mono', monospace; font-size: 1.15rem; font-weight: 700; color: var(--primary); }
+
+  /* ── Stats ── */
+  .stat-strip {
+    display: grid; grid-template-columns: repeat(3,1fr);
+    border-radius: 16px; overflow: hidden;
+    border: 1px solid var(--border); margin-top: 4rem;
+  }
+  .stat-item {
+    background: #fff; padding: 2.5rem; text-align: center;
+    border-right: 1px solid var(--border);
+  }
+  .stat-item:last-child { border-right: none; }
+  .stat-value { font-family: 'IBM Plex Mono', monospace; font-size: 2.8rem; font-weight: 700; color: var(--primary); }
+  .stat-label { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem; }
+
+  /* ── How it works ── */
+  .how-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 2.5rem; margin-top: 3.5rem; }
+  .how-num { font-family: 'IBM Plex Mono', monospace; font-size: 3rem; font-weight: 700; color: rgba(26,92,48,0.15); }
+  .how-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.1rem; font-weight: 700; margin: 1rem 0 0.5rem; color: var(--text); }
+  .how-desc { font-size: 0.875rem; color: var(--text-muted); line-height: 1.65; }
+
+  /* ── CTA ── */
+  .cta-section {
+    text-align: center; padding: 7rem 2rem;
+    background: var(--primary);
+    position: relative; overflow: hidden;
+  }
+  .cta-glow {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+    width: 700px; height: 400px; border-radius: 50%;
+    background: radial-gradient(ellipse, rgba(255,255,255,0.07) 0%, transparent 65%);
+    pointer-events: none;
+  }
+  .cta-section h2 { color: #fff; margin: 0 auto; max-width: 600px; position: relative; z-index: 1; }
+  .cta-sub { font-size: 1rem; color: rgba(255,255,255,0.65); margin: 1rem auto 0; max-width: 400px; line-height: 1.65; position: relative; z-index: 1; }
+  .btn-white { padding: 13px 28px; background: #fff; border-radius: 10px; font-size: 0.95rem; font-weight: 700; color: var(--primary); text-decoration: none; display: inline-block; transition: opacity 0.15s; }
+  .btn-white:hover { opacity: 0.92; }
+  .btn-outline-white { padding: 13px 28px; border: 1.5px solid rgba(255,255,255,0.3); border-radius: 10px; font-size: 0.95rem; font-weight: 600; color: #fff; text-decoration: none; display: inline-block; transition: border-color 0.15s, background 0.15s; }
+  .btn-outline-white:hover { border-color: rgba(255,255,255,0.55); background: rgba(255,255,255,0.07); }
+
+  /* ── Footer ── */
+  footer {
+    background: var(--text); padding: 2.5rem 2rem;
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;
+  }
+  .footer-links { display: flex; gap: 1.5rem; }
+  .footer-links a { font-size: 0.8rem; color: rgba(255,255,255,0.4); text-decoration: none; transition: color 0.15s; }
+  .footer-links a:hover { color: rgba(255,255,255,0.8); }
+  .footer-copy { font-size: 0.78rem; color: rgba(255,255,255,0.3); }
+  .footer-logo { color: rgba(255,255,255,0.85); }
+  .footer-logo .logo-mark { background: var(--accent); color: var(--text); }
+
+  /* ── Ribbon ── */
+  .concept-ribbon {
+    position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 200;
+    background: var(--primary); color: #fff; font-weight: 700; font-size: 0.75rem;
+    padding: 8px 16px; border-radius: 100px; letter-spacing: 0.04em;
+    box-shadow: 0 4px 20px rgba(26,92,48,0.3);
+  }
+
+  /* Checklist helper */
+  .check-list { margin-top: 2rem; display: flex; flex-direction: column; gap: 0.9rem; }
+  .check-item { display: flex; align-items: flex-start; gap: 10px; font-size: 0.875rem; color: var(--text-muted); line-height: 1.55; }
+  .check-icon { width: 18px; height: 18px; border-radius: 50%; background: var(--accent-dim); border: 1px solid var(--border-acc); display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+</style>
+</head>
+<body>
+
+<div class="concept-ribbon">CONCEPT 1C — CANOPY LIGHT</div>
+
+<nav>
+  <a href="#" class="logo">
+    <div class="logo-mark">G</div>
+    GreenTrack
+  </a>
+  <div class="nav-links">
+    <a href="#features">Features</a>
+    <a href="#how">How it works</a>
+    <a href="#about">About</a>
+    <a href="#" class="btn-ghost">Sign in</a>
+    <a href="#" class="btn-nav-cta">Get started</a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+  <div style="position:relative;z-index:1;width:100%">
+    <div class="badge">
+      <div class="badge-dot"></div>
+      Built for California mid-market companies
+    </div>
+    <h1>ESG compliance.<br /><span class="accent">Done in days.</span></h1>
+    <p class="hero-sub">Connect your data, calculate your footprint, and hand your customer a report they accept — CDP, EcoVadis, Walmart. No consultant required.</p>
+    <div class="hero-ctas">
+      <a href="#" class="btn-primary-lg">Request a demo</a>
+      <a href="#" class="btn-outline-lg">Get started free →</a>
+    </div>
+
+    <!-- Dashboard preview -->
+    <div class="hero-visual">
+      <div class="dashboard-preview">
+        <div class="preview-topbar">
+          <div class="preview-dot" style="background:#FF5F57"></div>
+          <div class="preview-dot" style="background:#FFBD2E"></div>
+          <div class="preview-dot" style="background:#28C840"></div>
+        </div>
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-label">Total emissions</div>
+            <div class="kpi-value green">2,284</div>
+            <div class="kpi-sub">tCO₂e · YTD</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Scope 1</div>
+            <div class="kpi-value">312</div>
+            <div class="kpi-sub">Direct · tCO₂e</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Scope 2</div>
+            <div class="kpi-value">484</div>
+            <div class="kpi-sub">Electricity · tCO₂e</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Progress</div>
+            <div class="kpi-value green">71%</div>
+            <div class="kpi-sub">4 of 7 complete</div>
+          </div>
+        </div>
+        <div class="charts-row">
+          <div class="chart-card">
+            <div class="chart-title">Emissions by scope</div>
+            <div class="bar-row">
+              <div class="bar-label">Scope 1</div>
+              <div class="bar-track"><div class="bar-fill" style="width:20%;background:var(--scope1)"></div></div>
+              <div class="bar-val">312 t</div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-label">Scope 2</div>
+              <div class="bar-track"><div class="bar-fill" style="width:32%;background:var(--scope2)"></div></div>
+              <div class="bar-val">484 t</div>
+            </div>
+            <div class="bar-row" style="margin-bottom:0">
+              <div class="bar-label">Scope 3</div>
+              <div class="bar-track"><div class="bar-fill" style="width:100%;background:var(--scope3)"></div></div>
+              <div class="bar-val">1,488 t</div>
+            </div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-title">Scope breakdown</div>
+            <div class="donut-wrap">
+              <svg viewBox="0 0 120 120" width="108" height="108">
+                <circle cx="60" cy="60" r="46" fill="none" stroke="rgba(15,50,28,0.08)" stroke-width="16"/>
+                <g transform="rotate(-90 60 60)">
+                  <circle cx="60" cy="60" r="46" fill="none" stroke="#22C55E" stroke-width="16"
+                    stroke-dasharray="40.5 248.7" stroke-dashoffset="0"/>
+                  <circle cx="60" cy="60" r="46" fill="none" stroke="#16A34A" stroke-width="16"
+                    stroke-dasharray="62.8 226.4" stroke-dashoffset="-40.5"/>
+                  <circle cx="60" cy="60" r="46" fill="none" stroke="#15532D" stroke-width="16"
+                    stroke-dasharray="145.0 144.2" stroke-dashoffset="-103.3"/>
+                </g>
+                <text x="60" y="56" text-anchor="middle" font-size="8" fill="rgba(12,31,18,0.45)">Total</text>
+                <text x="60" y="70" text-anchor="middle" font-size="13" font-weight="700" fill="#0C1F12" font-family="IBM Plex Mono">2,284t</text>
+              </svg>
+              <div class="legend-row">
+                <div class="legend-item">
+                  <span style="display:flex;align-items:center"><span class="legend-dot" style="background:#22C55E"></span>Scope 1</span>
+                  <span style="font-family:monospace;color:var(--text)">312 t</span>
+                </div>
+                <div class="legend-item">
+                  <span style="display:flex;align-items:center"><span class="legend-dot" style="background:#16A34A"></span>Scope 2</span>
+                  <span style="font-family:monospace;color:var(--text)">484 t</span>
+                </div>
+                <div class="legend-item">
+                  <span style="display:flex;align-items:center"><span class="legend-dot" style="background:#15532D"></span>Scope 3</span>
+                  <span style="font-family:monospace;color:var(--text)">1,488 t</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Trust -->
+<div class="trust-bar">
+  <span class="trust-label">Reports accepted by</span>
+  <span class="trust-item">CDP</span>
+  <span class="trust-item">EcoVadis</span>
+  <span class="trust-item">Walmart Supplier Portal</span>
+  <span class="trust-item">ENERGY STAR</span>
+  <span class="trust-item">GHG Protocol</span>
+</div>
+
+<!-- Features -->
+<section id="features" style="background:var(--surface)">
+  <div class="section-inner">
+    <div class="section-tag">Features</div>
+    <h2>Everything you need to<br />file your first ESG report</h2>
+    <p class="section-sub">Built for ops teams, not sustainability PhD holders. Connect two APIs and the platform does the rest.</p>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="feature-icon">⚡</div>
+        <div class="feature-title">Auto-sync from QuickBooks</div>
+        <div class="feature-desc">Scope 3 supply chain emissions calculated directly from your spend data. No spreadsheet needed.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔌</div>
+        <div class="feature-title">Utility API integration</div>
+        <div class="feature-desc">Scope 2 electricity data pulled automatically from your utility provider. Always up to date.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <div class="feature-title">GHG Protocol calculations</div>
+        <div class="feature-desc">Emission factors applied automatically. Scope 1, 2, and 3 categorized with audit-ready methodology.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📋</div>
+        <div class="feature-title">Questionnaire mapping</div>
+        <div class="feature-desc">Your numbers pre-filled into the exact fields CDP, EcoVadis, and Walmart ask for.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔍</div>
+        <div class="feature-title">Full audit trail</div>
+        <div class="feature-desc">Every figure traced to its source. Methodology documented for every number your auditor will ask about.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">👥</div>
+        <div class="feature-title">Consultant multi-client</div>
+        <div class="feature-desc">ESG consultants manage their whole book from one dashboard. Invite links, progress tracking, bulk reports.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Integrations two-col -->
+<section>
+  <div class="section-inner">
+    <div class="two-col">
+      <div>
+        <div class="section-tag">Data connections</div>
+        <h2>Two APIs handle 80% of your data collection</h2>
+        <p class="section-sub">Link QuickBooks and your utility provider. We pull transactions and energy data automatically — no exports, no manual work.</p>
+        <div class="check-list">
+          <div class="check-item">
+            <div class="check-icon">
+              <svg width="9" height="9" viewBox="0 0 9 9"><path d="M1 4.5l2.5 2.5L8 1.5" stroke="#22C55E" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>
+            </div>
+            QuickBooks spend categorized by NAICS code — the right emission factor applied per vendor category automatically
+          </div>
+          <div class="check-item">
+            <div class="check-icon">
+              <svg width="9" height="9" viewBox="0 0 9 9"><path d="M1 4.5l2.5 2.5L8 1.5" stroke="#22C55E" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>
+            </div>
+            Utility kWh converted to tCO₂e using EPA eGRID location-based regional factors
+          </div>
+          <div class="check-item">
+            <div class="check-icon">
+              <svg width="9" height="9" viewBox="0 0 9 9"><path d="M1 4.5l2.5 2.5L8 1.5" stroke="#22C55E" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>
+            </div>
+            Continuous sync — dashboard updates as new transactions come in, no re-import needed
+          </div>
+        </div>
+      </div>
+      <div class="integration-panel">
+        <div style="font-size:0.72rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:16px">Connected sources</div>
+        <div class="int-row">
+          <div class="int-badge">QB</div>
+          <div style="flex:1">
+            <div class="int-name">QuickBooks Online</div>
+            <div class="int-sub">847 transactions · synced today</div>
+          </div>
+          <div class="int-dot"></div>
+        </div>
+        <div class="int-row" style="margin-bottom:14px">
+          <div class="int-badge">U</div>
+          <div style="flex:1">
+            <div class="int-name">Utility Account</div>
+            <div class="int-sub">12 months data · synced today</div>
+          </div>
+          <div class="int-dot"></div>
+        </div>
+        <div class="int-result">
+          <div>
+            <div class="int-res-label">Scope 3 auto-calculated</div>
+            <div class="int-res-sub">847 transactions · 62 vendor categories</div>
+          </div>
+          <div class="int-res-val">1,488 t</div>
+        </div>
+        <div class="int-result" style="margin-top:8px">
+          <div>
+            <div class="int-res-label">Scope 2 from utility</div>
+            <div class="int-res-sub">42,000 kWh · EPA eGRID factor</div>
+          </div>
+          <div class="int-res-val">484 t</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Stats -->
+<section style="background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:5rem 2rem">
+  <div class="section-inner">
+    <div class="stat-strip">
+      <div class="stat-item">
+        <div class="stat-value">3 days</div>
+        <div class="stat-label">Avg. time to first completed report</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value">$15K+</div>
+        <div class="stat-label">Saved vs. typical ESG consultant</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value">2 APIs</div>
+        <div class="stat-label">Handle 80% of your data collection</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- How it works -->
+<section id="how">
+  <div class="section-inner">
+    <div class="section-tag">How it works</div>
+    <h2>Three steps to a finished report</h2>
+    <div class="how-grid">
+      <div>
+        <div class="how-num">01</div>
+        <div class="how-title">Connect your data</div>
+        <div class="how-desc">Link QuickBooks and your utility provider. We pull transactions and energy data automatically — no exports, no spreadsheets.</div>
+      </div>
+      <div>
+        <div class="how-num">02</div>
+        <div class="how-title">Calculate your footprint</div>
+        <div class="how-desc">GHG Protocol factors applied automatically. Scope 1, 2, and 3 broken down by source, with a live dashboard showing your numbers.</div>
+      </div>
+      <div>
+        <div class="how-num">03</div>
+        <div class="how-title">Export and submit</div>
+        <div class="how-desc">Download an audit-ready PDF, or fill supplier portal fields directly from your dashboard. CDP, EcoVadis, Walmart — all mapped.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<div class="cta-section">
+  <div class="cta-glow"></div>
+  <div style="position:relative;z-index:1">
+    <div class="section-tag" style="color:rgba(255,255,255,0.6)">Get started today</div>
+    <h2>See GreenTrack handle a real questionnaire</h2>
+    <p class="cta-sub">20-minute walkthrough. Bring your last questionnaire and we'll show you exactly how it maps.</p>
+    <div style="display:flex;gap:12px;justify-content:center;margin-top:2.5rem;flex-wrap:wrap">
+      <a href="#" class="btn-white">Request a demo</a>
+      <a href="#" class="btn-outline-white">Start free →</a>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<footer>
+  <a href="#" class="logo footer-logo">
+    <div class="logo-mark">G</div>
+    GreenTrack
+  </a>
+  <div class="footer-links">
+    <a href="#">Sign in</a>
+    <a href="#">Demo</a>
+    <a href="#">Privacy</a>
+  </div>
+  <p class="footer-copy">© 2026 GreenTrack · Built in California</p>
+</footer>
+
+</body>
+</html>
