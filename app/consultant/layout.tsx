@@ -22,16 +22,8 @@ export default async function ConsultantLayout({ children }: { children: React.R
         <nav className="mt-8 flex-1 space-y-0.5">
           <Link
             href="/consultant"
-            className="block rounded-canopy-sm px-3 py-2 text-sm font-medium transition-colors"
+            className="nav-link block rounded-canopy-sm px-3 py-2 text-sm font-medium transition-colors"
             style={{ color: "var(--text-muted)" }}
-            onMouseOver={(e) => {
-              (e.currentTarget as HTMLElement).style.background = "var(--primary-tint)";
-              (e.currentTarget as HTMLElement).style.color = "var(--primary)";
-            }}
-            onMouseOut={(e) => {
-              (e.currentTarget as HTMLElement).style.background = "";
-              (e.currentTarget as HTMLElement).style.color = "var(--text-muted)";
-            }}
           >
             My Clients
           </Link>
