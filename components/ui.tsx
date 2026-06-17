@@ -244,7 +244,7 @@ export function ComplianceTracker({
                 className="flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold border-2 transition-all"
                 style={{
                   borderColor: done || active ? "var(--primary)" : "var(--track-bg)",
-                  background: done ? "var(--primary)" : active ? "var(--surface)" : "var(--track-bg)",
+                  background: done ? "var(--primary)" : active ? "#ffffff" : "var(--track-bg)",
                   color: done ? "#fff" : active ? "var(--primary)" : "var(--text-muted)",
                 }}
               >

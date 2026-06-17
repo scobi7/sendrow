@@ -3,28 +3,31 @@
 @tailwind utilities;
 
 :root {
-  --bg: #FFFFFF;
-  --surface: #FFFFFF;
-  --card: #DCE8D3;
-  --text: #2E3A2E;
-  --text-muted: #7C8A78;
-  --primary: #3F6B4F;
-  --primary-tint: #EFF6EC;
-  --track-bg: #E3EEDE;
-  --scope1: #7FB37A;
-  --scope2: #5C9460;
-  --scope3: #3F6B4F;
-  --divider: #ECE8D9;
-  --status-green: #2F9E68;
-  --warning: #B8863A;
+  /* ── Canopy Light palette ── */
+  --bg:           #F5FBF6;   /* page background — near-white, barely-there green */
+  --surface:      #EBF5ED;   /* nav, sidebar, alternate section backgrounds */
+  --card:         #DFF0E2;   /* card / panel fill */
+  --text:         #0C1F12;   /* primary text — deep forest */
+  --text-muted:   #5A7B62;   /* secondary text — readable sage */
+  --primary:      #1A5C30;   /* buttons, links, highlights */
+  --primary-tint: #EBF5ED;   /* light accent fill (inline banners, tags) */
+  --track-bg:     #C8E6CC;   /* progress bars, chart track backgrounds */
+  --scope1:       #22C55E;
+  --scope2:       #16A34A;
+  --scope3:       #15532D;
+  --divider:      #C4DFCA;   /* borders and table rules */
+  --status-green: #22C55E;
+  --warning:      #B8863A;
   --warning-tint: #FBF3E5;
-  --danger: #B8554A;
-  --danger-tint: #FAECEA;
-  --radius-lg: 28px;
-  --radius-sm: 18px;
-  --font-display: 'Plus Jakarta Sans', sans-serif;
-  --font-body: 'Inter', sans-serif;
-  --font-data: 'IBM Plex Mono', monospace;
+  --danger:       #B8554A;
+  --danger-tint:  #FAECEA;
+  --radius-lg:    20px;
+  --radius-sm:    12px;
+  --shadow-card:  0 2px 8px rgba(15,50,28,0.07), 0 1px 2px rgba(15,50,28,0.04);
+
+  /* ── Fonts — populated by next/font at runtime ── */
+  /* --font-display and --font-data are injected by layout.tsx via next/font variables */
+  /* --font-body aliases display so both use Manrope */
 }
 
 html {
@@ -34,7 +37,7 @@ html {
 body {
   background-color: var(--bg);
   color: var(--text);
-  font-family: var(--font-body);
+  font-family: var(--font-display), sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -66,17 +69,18 @@ section[id] {
   width: 100%;
   border: 1px solid var(--divider);
   border-radius: var(--radius-sm);
-  background: var(--surface);
+  background: #ffffff;
   color: var(--text);
   padding: 0.5rem 0.75rem;
   font-size: 0.875rem;
+  font-family: var(--font-display), sans-serif;
   box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.04);
   transition: border-color 0.15s, box-shadow 0.15s;
 }
 .input:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 2px rgba(63, 107, 79, 0.18);
+  box-shadow: 0 0 0 3px rgba(26,92,48,0.12);
 }
 
 .btn {
@@ -87,8 +91,9 @@ section[id] {
   padding: 0.5rem 1rem;
   font-size: 0.875rem;
   font-weight: 600;
+  font-family: var(--font-display), sans-serif;
   border-radius: var(--radius-sm);
-  transition: opacity 0.15s, background-color 0.15s;
+  transition: opacity 0.15s, background-color 0.15s, transform 0.15s;
   cursor: pointer;
 }
 .btn:disabled {
@@ -107,11 +112,12 @@ section[id] {
 
 .btn-secondary {
   border: 1px solid var(--divider);
-  background: var(--surface);
+  background: #ffffff;
   color: var(--text);
 }
 .btn-secondary:hover:not(:disabled) {
-  background-color: var(--track-bg);
+  background-color: var(--card);
+  border-color: rgba(26,92,48,0.2);
 }
 
 .card {
@@ -126,4 +132,5 @@ section[id] {
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--text);
+  font-family: var(--font-display), sans-serif;
 }

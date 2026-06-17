@@ -44,7 +44,7 @@ const config: Config = {
       },
       fontFamily: {
         display: ["var(--font-display)", "sans-serif"],
-        body: ["var(--font-body)", "sans-serif"],
+        body: ["var(--font-display)", "sans-serif"],
         data: ["var(--font-data)", "monospace"],
       },
       boxShadow: {
