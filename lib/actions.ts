@@ -396,6 +396,7 @@ export async function resync(which: "quickbooks" | "utility") {
   }
   await logChange({ user, companyId: company.id, section: "connections", field: which, prev: "synced", next: `resynced ${new Date().toISOString()}` });
   await persist(company);
+  redirect("/connections");
 }
 
 export async function disconnectQuickBooks() {
