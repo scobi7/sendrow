@@ -55,8 +55,8 @@ function aggregateBills(
     const month = bill.base.bill_start_date.substring(0, 7);
     const key = `${locId}|${month}`;
     if (!monthly[key]) monthly[key] = { kwh: 0, therms: 0 };
-    monthly[key].kwh += bill.base.bill_total_kwh ?? bill.base.kwh ?? 0;
-    monthly[key].therms += bill.base.bill_total_therms ?? bill.base.therms ?? 0;
+    monthly[key].kwh += bill.base.bill_total_kWh ?? bill.base.kwh ?? 0;
+    monthly[key].therms += bill.base.bill_total_therms ?? bill.base.bill_total_ccf ?? bill.base.therms ?? 0;
   }
   return Object.entries(monthly).map(([key, v]) => {
     const [locationId, month] = key.split("|");

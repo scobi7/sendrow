@@ -38,8 +38,9 @@ export interface UtilityBill {
   meter_uid: string;
   base: {
     bill_start_date: string;
-    bill_total_kwh?: number;
-    bill_total_therms?: number;
+    bill_total_kWh?: number;   // electric kWh (PGE naming from API)
+    bill_total_therms?: number; // gas therms
+    bill_total_ccf?: number;    // gas CCF (some utilities)
     kwh?: number;
     therms?: number;
   };
