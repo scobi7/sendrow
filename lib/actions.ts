@@ -221,6 +221,57 @@ export async function startUtilityConnectForClient(companyId: string, formData: 
   redirect(dest);
 }
 
+export async function syncUtilityByUid(formData: FormData) {
+  const { user, company } = await requireUser();
+  const uid = String(formData.get("auth_uid") ?? "").trim();
+  if (!uid) redirect("/connections?util_error=not_found");
+
+  company.connections.utility.authUid = uid;
+  await persistCompany(company);
+
+  // Reuse the main sync path now that we have the UID
+  let meters;
+  try {
+    meters = await getMeters(uid);
+  } catch {
+    redirect("/connections?util_error=api_error");
+  }
+  if (!meters || meters.length === 0) redirect("/connections?util_error=pending");
+
+  let bills;
+  try {
+    bills = await getBills(meters.map((m) => m.uid));
+  } catch {
+    redirect("/connections?util_error=api_error");
+  }
+
+  const defaultLocationId = company.locations[0]?.id ?? "default";
+  const monthly: Record<string, { kwh: number; therms: number }> = {};
+  for (const bill of bills) {
+    const month = bill.base.bill_start_date.substring(0, 7);
+    if (!monthly[month]) monthly[month] = { kwh: 0, therms: 0 };
+    monthly[month].kwh += bill.base.kwh ?? 0;
+    monthly[month].therms += bill.base.therms ?? 0;
+  }
+
+  company.utilityData = Object.entries(monthly).map(([month, v]) => ({
+    locationId: defaultLocationId,
+    month,
+    kwh: v.kwh,
+    therms: v.therms,
+  }));
+  company.connections.utility = {
+    ...company.connections.utility,
+    connected: true,
+    lastSynced: new Date().toISOString(),
+  };
+
+  await logChange({ user, companyId: company.id, section: "connections", field: "utility", prev: "pending", next: `connected via UID ${uid} — ${company.utilityData.length} meter-months pulled` });
+  await saveUtilityData(company.id, company.utilityData);
+  await persist(company);
+  redirect("/connections");
+}
+
 export async function syncUtilityNow() {
   const { user, company } = await requireUser();
 
