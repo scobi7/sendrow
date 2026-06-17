@@ -1,6 +1,6 @@
 import { currentUser } from "@/lib/auth";
 import { loadCompany } from "@/lib/store";
-import { connectQuickBooks, connectUtility, startUtilityConnect, syncUtilityNow, resync, markQBReviewed, markUtilityReviewed, disconnectQuickBooks, disconnectUtility } from "@/lib/actions";
+import { connectQuickBooks, connectUtility, startUtilityConnect, syncUtilityNow, syncUtilityByUid, resync, markQBReviewed, markUtilityReviewed, disconnectQuickBooks, disconnectUtility } from "@/lib/actions";
 import { reportingPeriod } from "@/lib/calc";
 import { PageHeader } from "@/components/ui";
 
@@ -34,6 +34,13 @@ export default async function Connections({
       therms: (kwhByLocation[key]?.therms ?? 0) + m.therms,
     };
   }
+
+  // Build the UtilityAPI auth URL server-side (env var not exposed to client)
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
+  const formUrl = process.env.UTILITYAPI_FORM_URL ?? "";
+  const utilityAuthUrl = formUrl
+    ? `${formUrl}?redirect_url=${encodeURIComponent(`${appUrl}/connections`)}`
+    : null;
 
   const period = reportingPeriod(company.fiscalYearEndMonth ?? 12);
   const money = (n: number) => "$" + n.toLocaleString("en-US", { maximumFractionDigits: 0 });
@@ -119,16 +126,39 @@ export default async function Connections({
           ) : util.authEmail ? (
             <div className="mt-4 space-y-3">
               <p className="text-sm font-medium" style={{ color: "var(--warning)" }}>
-                Waiting on authorization for <strong>{util.authEmail}</strong>. Complete authorization at your utility&apos;s site, then click below.
+                Waiting on authorization for <strong>{util.authEmail}</strong>.
               </p>
               {util_error && UTIL_ERRORS[util_error] && (
                 <p className="rounded-lg px-3 py-2 text-xs font-medium" style={{ background: "var(--warning-tint)", color: "var(--warning)" }}>
                   {UTIL_ERRORS[util_error]}
                 </p>
               )}
+              {utilityAuthUrl && (
+                <a
+                  href={utilityAuthUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-secondary w-full block text-center"
+                >
+                  Authorize at your utility →
+                </a>
+              )}
               <form action={syncUtilityNow}>
                 <button className="btn btn-primary w-full">I authorized — pull my data</button>
               </form>
+              <details className="text-xs" style={{ color: "var(--text-muted)" }}>
+                <summary className="cursor-pointer py-1 font-medium">Have your Authorization UID? Enter it manually →</summary>
+                <form action={syncUtilityByUid} className="mt-2 flex gap-2">
+                  <input
+                    name="auth_uid"
+                    className="input flex-1"
+                    placeholder="e.g. 587140"
+                    required
+                  />
+                  <button type="submit" className="btn btn-primary px-4 py-2 text-xs shrink-0">Pull data</button>
+                </form>
+                <p className="mt-1" style={{ color: "var(--text-muted)" }}>Find this on your UtilityAPI authorization receipt under &ldquo;Authorization UID&rdquo;.</p>
+              </details>
               <form action={disconnectUtility}>
                 <button
                   className="w-full px-3 py-2 text-xs font-medium rounded-lg transition-colors"

@@ -3,7 +3,7 @@ import { currentUser } from "@/lib/auth";
 import { loadCompany } from "@/lib/store";
 import { totals } from "@/lib/calc";
 import { canGenerateReport, progressPercent } from "@/lib/progress";
-import { IntegrationCard, ComplianceTracker, StatusDot, ProgressBar, ScopeBarChart, ScopeDonutChart } from "@/components/ui";
+import { ComplianceTracker, StatusDot, ProgressBar, ScopeBarChart, ScopeDonutChart } from "@/components/ui";
 import { SectionName } from "@/lib/types";
 
 const SECTIONS: [SectionName, string, string, string][] = [
@@ -77,20 +77,6 @@ export default async function Dashboard() {
         <ComplianceTracker steps={STEP_LABELS} currentIndex={trackerIndex} />
       </div>
 
-      {firstTime && (
-        <Link
-          href="/connections"
-          className="block px-5 py-4 text-sm font-medium transition-opacity hover:opacity-80"
-          style={{
-            background: "var(--card)",
-            border: "1px solid var(--primary)",
-            borderRadius: "var(--radius-sm)",
-            color: "var(--primary)",
-          }}
-        >
-          Start here → connect your QuickBooks and utility account. The two connections do most of the work for you.
-        </Link>
-      )}
 
       {/* ── KPI cards ── */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
@@ -179,8 +165,43 @@ export default async function Dashboard() {
 
       {/* ── Integration cards ── */}
       <div className="grid gap-3 sm:grid-cols-2">
-        <IntegrationCard name="QuickBooks" initials="QB" connected={qb.connected} lastSynced={qb.lastSynced} />
-        <IntegrationCard name="Utility Account" initials="U" connected={util.connected} lastSynced={util.lastSynced} />
+        {[
+          { name: "QuickBooks", initials: "QB", connected: qb.connected, lastSynced: qb.lastSynced, href: "/connections" },
+          { name: "Utility Account", initials: "U", connected: util.connected, lastSynced: util.lastSynced, href: "/connections" },
+        ].map(({ name, initials, connected, lastSynced, href }) => (
+          <div
+            key={name}
+            className="flex items-center gap-4 px-5 py-4"
+            style={{ background: "var(--card)", borderRadius: "var(--radius-lg)" }}
+          >
+            <div
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-bold text-white"
+              style={{ background: "var(--primary)" }}
+            >
+              {initials}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>{name}</p>
+              {connected ? (
+                <p className="mt-0.5 flex items-center gap-1.5 text-xs" style={{ color: "var(--status-green)" }}>
+                  <span className="inline-block h-1.5 w-1.5 rounded-full" style={{ background: "var(--status-green)" }} />
+                  Connected{lastSynced ? ` · synced ${new Date(lastSynced).toLocaleDateString()}` : ""}
+                </p>
+              ) : (
+                <p className="mt-0.5 text-xs" style={{ color: "var(--text-muted)" }}>Not connected</p>
+              )}
+            </div>
+            {!connected && (
+              <Link
+                href={href}
+                className="shrink-0 rounded-full px-4 py-1.5 text-xs font-semibold transition-colors hover:bg-gray-50"
+                style={{ background: "#fff", color: "var(--primary)", border: "1px solid var(--divider)" }}
+              >
+                Connect
+              </Link>
+            )}
+          </div>
+        ))}
       </div>
 
       {/* ── Section checklist ── */}

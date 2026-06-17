@@ -180,17 +180,14 @@ export async function startUtilityConnect(formData: FormData) {
   const email = String(formData.get("email") ?? "").trim();
   if (!email) return;
   const { company } = await requireUser();
-  // Store email as pending — user gets redirected to the hosted UtilityAPI form
   company.connections.utility = {
     ...company.connections.utility,
     authEmail: email,
     authUid: null,
   };
   await persist(company);
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
-  const formUrl = process.env.UTILITYAPI_FORM_URL!;
-  const dest = appUrl ? `${formUrl}?redirect_url=${encodeURIComponent(`${appUrl}/connections`)}` : formUrl;
-  redirect(dest);
+  // Return to connections page — the page will show the "open UtilityAPI" link in a new tab
+  redirect("/connections");
 }
 
 export async function startUtilityConnectForClient(companyId: string, formData: FormData) {
