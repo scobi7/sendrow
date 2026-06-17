@@ -185,7 +185,7 @@ export default async function Dashboard() {
               {connected ? (
                 <p className="mt-0.5 flex items-center gap-1.5 text-xs" style={{ color: "var(--status-green)" }}>
                   <span className="inline-block h-1.5 w-1.5 rounded-full" style={{ background: "var(--status-green)" }} />
-                  Connected{lastSynced ? ` · synced ${new Date(lastSynced).toLocaleDateString()}` : ""}
+                  Connected{lastSynced ? ` · synced ${new Date(lastSynced).toLocaleString("en-US", { timeZone: "America/Los_Angeles", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}` : ""}
                 </p>
               ) : (
                 <p className="mt-0.5 text-xs" style={{ color: "var(--text-muted)" }}>Not connected</p>

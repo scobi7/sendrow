@@ -120,6 +120,11 @@ section[id] {
   border-color: rgba(26,92,48,0.2);
 }
 
+.nav-link:hover {
+  background: var(--primary-tint);
+  color: var(--primary) !important;
+}
+
 .card {
   padding: 1.5rem;
   background: var(--card);
