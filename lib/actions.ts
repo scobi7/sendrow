@@ -32,7 +32,7 @@ import type { Location } from "./types";
 
 // Match a meter's service_address to the closest location by city or zip.
 function locationForMeter(meter: UtilityMeter, locations: Location[]): string {
-  const addr = meter.service_address.toLowerCase();
+  const addr = (meter.service_address ?? "").toLowerCase();
   for (const loc of locations) {
     if (loc.zip && addr.includes(loc.zip)) return loc.id;
     if (loc.city && addr.includes(loc.city.toLowerCase())) return loc.id;
