@@ -11,8 +11,10 @@ export async function findAuthorizationByEmail(email: string): Promise<string | 
   const res = await fetch(`${BASE}/authorizations`, { headers: authHeaders() });
   if (!res.ok) return null;
   const data = await res.json();
+  // UtilityAPI uses "customer_email" on authorization objects (not "email")
   const match = (data.authorizations ?? []).find(
-    (a: { email?: string; uid?: string | number }) => a.email?.toLowerCase() === email.toLowerCase()
+    (a: { customer_email?: string; email?: string; uid?: string | number }) =>
+      (a.customer_email ?? a.email)?.toLowerCase() === email.toLowerCase()
   );
   return match?.uid != null ? String(match.uid) : null;
 }

@@ -1,6 +1,6 @@
 import { currentUser } from "@/lib/auth";
 import { loadCompany } from "@/lib/store";
-import { connectQuickBooks, connectUtility, startUtilityConnect, syncUtilityNow, resync, markQBReviewed, markUtilityReviewed, disconnectQuickBooks, disconnectUtility } from "@/lib/actions";
+import { connectQuickBooks, connectUtility, startUtilityConnect, syncUtilityNow, syncUtilityByUid, resync, markQBReviewed, markUtilityReviewed, disconnectQuickBooks, disconnectUtility } from "@/lib/actions";
 import { reportingPeriod } from "@/lib/calc";
 import { PageHeader } from "@/components/ui";
 
@@ -146,6 +146,19 @@ export default async function Connections({
               <form action={syncUtilityNow}>
                 <button className="btn btn-primary w-full">I authorized — pull my data</button>
               </form>
+              <details className="text-xs" style={{ color: "var(--text-muted)" }}>
+                <summary className="cursor-pointer py-1 font-medium">Have your Authorization UID? Enter it manually →</summary>
+                <form action={syncUtilityByUid} className="mt-2 flex gap-2">
+                  <input
+                    name="auth_uid"
+                    className="input flex-1"
+                    placeholder="e.g. 587140"
+                    required
+                  />
+                  <button type="submit" className="btn btn-primary px-4 py-2 text-xs shrink-0">Pull data</button>
+                </form>
+                <p className="mt-1" style={{ color: "var(--text-muted)" }}>Find this on your UtilityAPI authorization receipt under &ldquo;Authorization UID&rdquo;.</p>
+              </details>
               <form action={disconnectUtility}>
                 <button
                   className="w-full px-3 py-2 text-xs font-medium rounded-lg transition-colors"
