@@ -44,14 +44,16 @@ export default async function AdminFactorsPage() {
   });
   if (!userRow || userRow.email !== ADMIN_EMAIL) {
     return (
-      <div className="rounded-xl border border-red-200 bg-red-50 p-8 text-center">
-        <p className="font-semibold text-red-700">Access denied</p>
-        <p className="mt-1 text-sm text-red-500">This page is restricted to the platform administrator.</p>
+      <div
+        className="rounded-xl p-8 text-center"
+        style={{ border: "1px solid var(--danger-tint)", background: "var(--danger-tint)" }}
+      >
+        <p className="font-semibold" style={{ color: "var(--danger)" }}>Access denied</p>
+        <p className="mt-1 text-sm" style={{ color: "var(--danger)" }}>This page is restricted to the platform administrator.</p>
       </div>
     );
   }
 
-  // Try to load DB overrides; if table doesn't exist, show migration banner
   let dbOverrides: EmissionFactor[] = [];
   let tableReady = true;
 
@@ -113,7 +115,6 @@ export default async function AdminFactorsPage() {
     revalidatePath("/admin/factors");
   }
 
-  // Group SEED_FACTORS by category
   const grouped = SEED_FACTORS.reduce<Record<string, typeof SEED_FACTORS>>((acc, f) => {
     (acc[f.category] ??= []).push(f);
     return acc;
@@ -124,22 +125,27 @@ export default async function AdminFactorsPage() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-slate-900">Emission Factors</h1>
-        <p className="mt-1 text-sm text-slate-500">
+        <h1 className="text-2xl font-bold font-display" style={{ color: "var(--text)" }}>Emission Factors</h1>
+        <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>
           Override the default hardcoded factor values. Changes take effect on the next calculation run.
           {dbOverrides.length > 0 && (
-            <span className="ml-2 font-medium text-brand-700">{dbOverrides.length} active override{dbOverrides.length !== 1 ? "s" : ""}</span>
+            <span className="ml-2 font-medium" style={{ color: "var(--primary)" }}>
+              {dbOverrides.length} active override{dbOverrides.length !== 1 ? "s" : ""}
+            </span>
           )}
         </p>
       </div>
 
       {!tableReady && (
-        <div className="mb-8 rounded-xl border border-amber-200 bg-amber-50 p-6">
-          <p className="font-semibold text-amber-800">Database table required</p>
-          <p className="mt-1 text-sm text-amber-700">
+        <div
+          className="mb-8 rounded-xl p-6"
+          style={{ border: "1px solid var(--warning)", background: "var(--warning-tint)" }}
+        >
+          <p className="font-semibold" style={{ color: "var(--warning)" }}>Database table required</p>
+          <p className="mt-1 text-sm" style={{ color: "var(--warning)" }}>
             Run this SQL in the Neon console to enable factor overrides:
           </p>
-          <pre className="mt-3 rounded-lg bg-amber-900 p-4 text-xs text-amber-100 overflow-x-auto whitespace-pre-wrap">
+          <pre className="mt-3 rounded-lg p-4 text-xs overflow-x-auto whitespace-pre-wrap" style={{ background: "var(--text)", color: "#fff" }}>
             {MIGRATION_SQL}
           </pre>
         </div>
@@ -148,18 +154,18 @@ export default async function AdminFactorsPage() {
       <div className="space-y-10">
         {Object.entries(grouped).map(([category, factors]) => (
           <div key={category}>
-            <h2 className="mb-3 text-xs font-bold uppercase tracking-widest text-slate-400">
+            <h2 className="mb-3 text-xs font-bold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
               {CATEGORY_LABELS[category] ?? category}
             </h2>
-            <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
+            <div className="overflow-hidden" style={{ border: "1px solid var(--divider)", borderRadius: "var(--radius-sm)", background: "var(--surface)" }}>
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-slate-100 text-xs uppercase tracking-wide text-slate-400">
-                    <th className="px-4 py-3 text-left font-semibold">Factor</th>
-                    <th className="px-4 py-3 text-left font-semibold">Default value</th>
-                    <th className="px-4 py-3 text-left font-semibold">Unit</th>
-                    <th className="px-4 py-3 text-left font-semibold">Source</th>
-                    <th className="px-4 py-3 text-left font-semibold w-56">Override</th>
+                  <tr className="text-left text-xs uppercase tracking-wide" style={{ borderBottom: "1px solid var(--divider)", color: "var(--text-muted)" }}>
+                    <th className="px-4 py-3 font-semibold">Factor</th>
+                    <th className="px-4 py-3 font-semibold">Default value</th>
+                    <th className="px-4 py-3 font-semibold">Unit</th>
+                    <th className="px-4 py-3 font-semibold">Source</th>
+                    <th className="px-4 py-3 font-semibold w-56">Override</th>
                     <th className="px-4 py-3 w-20"></th>
                   </tr>
                 </thead>
@@ -167,14 +173,14 @@ export default async function AdminFactorsPage() {
                   {factors.map((factor) => {
                     const override = overrideMap.get(factor.factor_id);
                     return (
-                      <tr key={factor.factor_id} className="border-b border-slate-50 last:border-0 hover:bg-slate-50">
+                      <tr key={factor.factor_id} style={{ borderBottom: "1px solid var(--divider)" }}>
                         <td className="px-4 py-3">
-                          <p className="font-medium text-slate-800">{factor.factor_name}</p>
-                          <p className="text-xs text-slate-400">{factor.factor_id}</p>
+                          <p className="font-medium" style={{ color: "var(--text)" }}>{factor.factor_name}</p>
+                          <p className="text-xs" style={{ color: "var(--text-muted)" }}>{factor.factor_id}</p>
                         </td>
-                        <td className="px-4 py-3 font-mono text-slate-700">{factor.value}</td>
-                        <td className="px-4 py-3 text-slate-500">{factor.unit}</td>
-                        <td className="px-4 py-3 text-slate-400 text-xs">{factor.source} ({factor.year_effective})</td>
+                        <td className="px-4 py-3 font-mono" style={{ color: "var(--text)" }}>{factor.value}</td>
+                        <td className="px-4 py-3" style={{ color: "var(--text-muted)" }}>{factor.unit}</td>
+                        <td className="px-4 py-3 text-xs" style={{ color: "var(--text-muted)" }}>{factor.source} ({factor.year_effective})</td>
                         <td className="px-4 py-3">
                           {tableReady && (
                             <form action={saveOverride} className="flex gap-2 items-center">
@@ -184,26 +190,24 @@ export default async function AdminFactorsPage() {
                                 name="value"
                                 step="any"
                                 defaultValue={override?.value ?? factor.value}
-                                className="w-32 rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-mono focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100"
+                                className="w-32 input text-sm font-mono"
                               />
-                              <button
-                                type="submit"
-                                className="rounded-lg bg-brand-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-700 transition-colors"
-                              >
-                                Save
-                              </button>
+                              <button type="submit" className="btn btn-primary px-3 py-1.5 text-xs">Save</button>
                             </form>
                           )}
                         </td>
                         <td className="px-4 py-3">
                           {tableReady && override && (
                             <div className="flex flex-col gap-1.5">
-                              <span className="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-700">
+                              <span
+                                className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold"
+                                style={{ background: "var(--warning-tint)", color: "var(--warning)" }}
+                              >
                                 Overridden
                               </span>
                               <form action={resetOverride}>
                                 <input type="hidden" name="factor_id" value={factor.factor_id} />
-                                <button type="submit" className="text-xs text-slate-400 hover:text-red-600 transition-colors">
+                                <button type="submit" className="text-xs transition-opacity hover:opacity-70" style={{ color: "var(--danger)" }}>
                                   Reset
                                 </button>
                               </form>
@@ -220,10 +224,13 @@ export default async function AdminFactorsPage() {
         ))}
       </div>
 
-      <div className="mt-10 rounded-xl border border-slate-200 bg-slate-50 p-6">
-        <p className="text-sm font-semibold text-slate-700">SQL migration</p>
-        <p className="mt-1 text-xs text-slate-500">If this is a new environment, run this in the Neon SQL editor:</p>
-        <pre className="mt-3 rounded-lg bg-slate-800 p-4 text-xs text-slate-200 overflow-x-auto whitespace-pre-wrap">
+      <div
+        className="mt-10 rounded-xl p-6"
+        style={{ border: "1px solid var(--divider)", background: "var(--primary-tint)" }}
+      >
+        <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>SQL migration</p>
+        <p className="mt-1 text-xs" style={{ color: "var(--text-muted)" }}>If this is a new environment, run this in the Neon SQL editor:</p>
+        <pre className="mt-3 rounded-lg p-4 text-xs overflow-x-auto whitespace-pre-wrap" style={{ background: "var(--text)", color: "#fff" }}>
           {MIGRATION_SQL}
         </pre>
       </div>

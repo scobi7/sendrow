@@ -13,17 +13,23 @@ export default async function AuditTrail() {
   const rows = await auditForCompany(company.id);
 
   return (
-    <main className="mx-auto max-w-4xl bg-white px-8 py-10 text-slate-800">
+    <main className="mx-auto max-w-4xl px-8 py-10" style={{ background: "#fff", color: "var(--text)" }}>
       <div className="no-print mb-6 flex items-center justify-between">
-        <Link href="/reports" className="text-sm text-emerald-700 hover:underline">← Back to reports</Link>
+        <Link href="/reports" className="text-sm font-medium hover:opacity-70" style={{ color: "var(--primary)" }}>
+          ← Back to reports
+        </Link>
         <PrintButton label="Download PDF" />
       </div>
 
-      <header className="border-b-4 border-slate-900 pb-6">
-        <p className="text-sm font-semibold uppercase tracking-widest text-slate-500">Audit Trail Document</p>
-        <h1 className="mt-2 text-3xl font-bold text-slate-900">{company.name}</h1>
-        <p className="mt-1 text-slate-500">Reporting period: {fiscalPeriodLabel(company)} · {rows.length} logged changes</p>
-        <p className="mt-2 text-xs text-slate-400">
+      <header className="pb-6" style={{ borderBottom: `4px solid var(--text)` }}>
+        <p className="text-sm font-semibold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
+          Audit Trail Document
+        </p>
+        <h1 className="mt-2 text-3xl font-bold font-display" style={{ color: "var(--text)" }}>{company.name}</h1>
+        <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>
+          Reporting period: {fiscalPeriodLabel(company)} · {rows.length} logged changes
+        </p>
+        <p className="mt-2 text-xs" style={{ color: "var(--text-muted)" }}>
           Append-only log: every data change is recorded with its previous value, new value, the user who made it,
           the emission factor applied, and the calculation performed. Nothing is ever overwritten.
         </p>
@@ -31,7 +37,7 @@ export default async function AuditTrail() {
 
       <table className="mt-6 w-full text-xs">
         <thead>
-          <tr className="border-b-2 border-slate-300 text-left uppercase tracking-wide text-slate-400">
+          <tr className="text-left uppercase tracking-wide" style={{ borderBottom: "2px solid var(--divider)", color: "var(--text-muted)" }}>
             <th className="pb-2 pr-3">Timestamp</th>
             <th className="pb-2 pr-3">User</th>
             <th className="pb-2 pr-3">Section</th>
@@ -42,12 +48,12 @@ export default async function AuditTrail() {
         </thead>
         <tbody>
           {rows.map((r) => (
-            <tr key={r.id} className="border-b border-slate-100 align-top">
-              <td className="py-2 pr-3 whitespace-nowrap text-slate-400">{new Date(r.ts).toLocaleString()}</td>
+            <tr key={r.id} className="align-top" style={{ borderBottom: "1px solid var(--divider)" }}>
+              <td className="py-2 pr-3 whitespace-nowrap" style={{ color: "var(--text-muted)" }}>{new Date(r.ts).toLocaleString()}</td>
               <td className="py-2 pr-3">{r.userName}</td>
               <td className="py-2 pr-3 capitalize">{r.section}</td>
               <td className="py-2 pr-3 font-medium">{r.field}</td>
-              <td className="py-2 pr-3 text-slate-400">{r.prev}</td>
+              <td className="py-2 pr-3" style={{ color: "var(--text-muted)" }}>{r.prev}</td>
               <td className="py-2 font-medium">{r.next}</td>
             </tr>
           ))}
@@ -55,26 +61,26 @@ export default async function AuditTrail() {
       </table>
 
       <section className="mt-8">
-        <h2 className="text-lg font-bold text-slate-900">Current Calculations on Record</h2>
+        <h2 className="text-lg font-bold font-display" style={{ color: "var(--text)" }}>Current Calculations on Record</h2>
         <table className="mt-3 w-full text-xs">
           <thead>
-            <tr className="border-b-2 border-slate-300 text-left uppercase tracking-wide text-slate-400">
+            <tr className="text-left uppercase tracking-wide" style={{ borderBottom: "2px solid var(--divider)", color: "var(--text-muted)" }}>
               <th className="pb-2 pr-3">Category</th>
               <th className="pb-2">Calculation performed</th>
             </tr>
           </thead>
           <tbody>
             {company.calcs.map((c) => (
-              <tr key={c.id} className="border-b border-slate-100 align-top">
+              <tr key={c.id} className="align-top" style={{ borderBottom: "1px solid var(--divider)" }}>
                 <td className="py-2 pr-3 font-medium whitespace-nowrap">{c.category}</td>
-                <td className="py-2 text-slate-500">{c.formula}</td>
+                <td className="py-2" style={{ color: "var(--text-muted)" }}>{c.formula}</td>
               </tr>
             ))}
           </tbody>
         </table>
       </section>
 
-      <footer className="mt-10 border-t border-slate-200 pt-4 text-xs text-slate-400">
+      <footer className="mt-10 pt-4 text-xs" style={{ borderTop: "1px solid var(--divider)", color: "var(--text-muted)" }}>
         {company.name} — Audit Trail — generated by GreenTrack on {new Date().toLocaleDateString()}.
       </footer>
     </main>
