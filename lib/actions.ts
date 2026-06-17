@@ -226,23 +226,55 @@ export async function startUtilityConnectForClient(companyId: string, formData: 
 
 export async function syncUtilityNow() {
   const { user, company } = await requireUser();
+
+  // No API key — fall back to demo data
+  if (!process.env.UTILITYAPI_KEY) {
+    company.connections.utility = { connected: true, lastSynced: new Date().toISOString(), authEmail: null, authUid: null };
+    company.utilityData = generateUtilityData(company);
+    await logChange({ user, companyId: company.id, section: "connections", field: "utility", prev: "pending", next: `connected — demo data loaded` });
+    await saveUtilityData(company.id, company.utilityData);
+    await persist(company);
+    redirect("/connections");
+  }
+
   let authUid = company.connections.utility.authUid;
 
-  // If uid not stored yet, look it up by the email the customer used to authorize
+  // Look up authorization by email if uid not cached yet
   if (!authUid && company.connections.utility.authEmail) {
-    authUid = await findAuthorizationByEmail(company.connections.utility.authEmail);
+    try {
+      authUid = await findAuthorizationByEmail(company.connections.utility.authEmail);
+    } catch {
+      redirect("/connections?util_error=api_error");
+    }
     if (authUid) {
       company.connections.utility.authUid = authUid;
+      await persistCompany(company);
     }
   }
-  if (!authUid) return;
 
-  const meters = await getMeters(authUid);
-  if (meters.length === 0) return; // user hasn't authorized yet
+  if (!authUid) {
+    redirect("/connections?util_error=not_found");
+  }
 
-  const bills = await getBills(meters.map((m) => m.uid));
+  let meters;
+  try {
+    meters = await getMeters(authUid);
+  } catch {
+    redirect("/connections?util_error=api_error");
+  }
+
+  if (meters.length === 0) {
+    redirect("/connections?util_error=pending");
+  }
+
+  let bills;
+  try {
+    bills = await getBills(meters.map((m) => m.uid));
+  } catch {
+    redirect("/connections?util_error=api_error");
+  }
+
   const defaultLocationId = company.locations[0]?.id ?? "default";
-
   const monthly: Record<string, { kwh: number; therms: number }> = {};
   for (const bill of bills) {
     const month = bill.base.bill_start_date.substring(0, 7);
@@ -266,7 +298,7 @@ export async function syncUtilityNow() {
   await logChange({ user, companyId: company.id, section: "connections", field: "utility", prev: "pending", next: `connected — ${company.utilityData.length} meter-months pulled via UtilityAPI` });
   await saveUtilityData(company.id, company.utilityData);
   await persist(company);
-  revalidatePath("/connections");
+  redirect("/connections");
 }
 
 export async function resync(which: "quickbooks" | "utility") {

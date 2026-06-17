@@ -4,7 +4,18 @@ import { connectQuickBooks, connectUtility, startUtilityConnect, syncUtilityNow,
 import { reportingPeriod } from "@/lib/calc";
 import { PageHeader } from "@/components/ui";
 
-export default async function Connections() {
+const UTIL_ERRORS: Record<string, string> = {
+  not_found: "Authorization not found yet — your utility provider may still be processing it. Wait a few minutes and try again.",
+  pending: "Your utility account is authorized but no meters are active yet. This can take up to 24 hours. Try again shortly.",
+  api_error: "We had trouble reaching UtilityAPI. Check that your UTILITYAPI_KEY is set and try again.",
+};
+
+export default async function Connections({
+  searchParams,
+}: {
+  searchParams: Promise<{ util_error?: string }>;
+}) {
+  const { util_error } = await searchParams;
   const user = (await currentUser())!;
   const company = await loadCompany(user.companyId);
   const qb = company.connections.quickbooks;
@@ -108,10 +119,23 @@ export default async function Connections() {
           ) : util.authEmail ? (
             <div className="mt-4 space-y-3">
               <p className="text-sm font-medium" style={{ color: "var(--warning)" }}>
-                Waiting on authorization for <strong>{util.authEmail}</strong>. If you haven&apos;t authorized yet, complete it at your utility&apos;s site, then click below.
+                Waiting on authorization for <strong>{util.authEmail}</strong>. Complete authorization at your utility&apos;s site, then click below.
               </p>
+              {util_error && UTIL_ERRORS[util_error] && (
+                <p className="rounded-lg px-3 py-2 text-xs font-medium" style={{ background: "var(--warning-tint)", color: "var(--warning)" }}>
+                  {UTIL_ERRORS[util_error]}
+                </p>
+              )}
               <form action={syncUtilityNow}>
                 <button className="btn btn-primary w-full">I authorized — pull my data</button>
+              </form>
+              <form action={disconnectUtility}>
+                <button
+                  className="w-full px-3 py-2 text-xs font-medium rounded-lg transition-colors"
+                  style={{ color: "var(--danger)", background: "var(--danger-tint)" }}
+                >
+                  Cancel — start over
+                </button>
               </form>
             </div>
           ) : process.env.UTILITYAPI_FORM_URL ? (
