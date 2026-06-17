@@ -1,31 +1,35 @@
 import { currentUser } from "@/lib/auth";
 import { loadCompany } from "@/lib/store";
-import { updateProfile, deleteAccount } from "@/lib/actions";
+import { updateProfile, deleteAccount, addLocation, removeLocation } from "@/lib/actions";
 import { PageHeader } from "@/components/ui";
+import { DeleteAccountButton } from "./delete-button";
 
 const MONTHS = [
   "January", "February", "March", "April", "May", "June",
   "July", "August", "September", "October", "November", "December",
 ];
 
-export default async function Settings({ searchParams }: { searchParams: Promise<{ saved?: string }> }) {
-  const [{ saved }, user] = await Promise.all([searchParams, currentUser()]);
+export default async function Settings({ searchParams }: { searchParams: Promise<{ saved?: string; error?: string }> }) {
+  const [{ saved, error }, user] = await Promise.all([searchParams, currentUser()]);
   const company = await loadCompany(user!.companyId);
   const u = user!;
 
   return (
     <div className="mx-auto max-w-2xl">
-      <PageHeader title="Settings" subtitle="Manage your company profile, account, and data." />
+      <PageHeader title="Settings" subtitle="Manage your company profile, locations, and account." />
 
       {saved && (
-        <p
-          className="mb-4 rounded-lg px-4 py-2 text-sm"
-          style={{ background: "var(--primary-tint)", color: "var(--primary)" }}
-        >
+        <p className="mb-4 rounded-lg px-4 py-2 text-sm" style={{ background: "var(--primary-tint)", color: "var(--primary)" }}>
           ✓ Changes saved.
         </p>
       )}
+      {error === "location" && (
+        <p className="mb-4 rounded-lg px-4 py-2 text-sm" style={{ background: "var(--warning-tint)", color: "var(--warning)" }}>
+          City and state are required to add a location.
+        </p>
+      )}
 
+      {/* Company Profile */}
       <form action={updateProfile} className="card mb-6">
         <h2 className="font-semibold font-display" style={{ color: "var(--text)" }}>Company Profile</h2>
         <div className="mt-4 grid grid-cols-2 gap-4">
@@ -35,12 +39,7 @@ export default async function Settings({ searchParams }: { searchParams: Promise
           </div>
           <div>
             <label className="label">Industry</label>
-            <input
-              className="input"
-              disabled
-              value={company.industry ?? ""}
-              style={{ background: "var(--bg)" }}
-            />
+            <input className="input" disabled value={company.industry ?? ""} style={{ background: "var(--bg)" }} />
           </div>
           <div>
             <label className="label">Fiscal year end</label>
@@ -59,6 +58,63 @@ export default async function Settings({ searchParams }: { searchParams: Promise
         </div>
       </form>
 
+      {/* Locations */}
+      <div className="card mb-6">
+        <h2 className="font-semibold font-display" style={{ color: "var(--text)" }}>Locations</h2>
+        <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>
+          Each location maps to a separate utility meter. Different grid regions have different emission factors.
+        </p>
+
+        {company.locations.length > 0 && (
+          <div className="mt-4 space-y-2">
+            {company.locations.map((loc) => (
+              <div
+                key={loc.id}
+                className="flex items-center justify-between rounded-xl px-4 py-3"
+                style={{ background: "var(--bg)", border: "1px solid var(--divider)" }}
+              >
+                <div>
+                  <p className="text-sm font-medium" style={{ color: "var(--text)" }}>
+                    {loc.address ? `${loc.address}, ` : ""}{loc.city}, {loc.state} {loc.zip}
+                  </p>
+                  <p className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>
+                    eGRID: {loc.egridSubregion}
+                  </p>
+                </div>
+                <form action={removeLocation}>
+                  <input type="hidden" name="loc_id" value={loc.id} />
+                  <button
+                    type="submit"
+                    className="text-xs font-medium px-3 py-1.5 rounded-lg"
+                    style={{ color: "var(--danger)", background: "var(--danger-tint)" }}
+                  >
+                    Remove
+                  </button>
+                </form>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <form action={addLocation} className="mt-4 rounded-xl p-4" style={{ border: "1px dashed var(--divider)" }}>
+          <p className="mb-3 text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
+            Add a location
+          </p>
+          <div className="grid grid-cols-2 gap-3">
+            <input name="address" className="input col-span-2" placeholder="Street address (optional)" />
+            <input name="city" className="input" placeholder="City" required />
+            <div className="flex gap-2">
+              <input name="state" className="input w-16" placeholder="CA" maxLength={2} defaultValue="CA" />
+              <input name="zip" className="input" placeholder="ZIP" />
+            </div>
+          </div>
+          <div className="mt-3 flex justify-end">
+            <button type="submit" className="btn btn-primary text-sm px-4 py-2">Add location</button>
+          </div>
+        </form>
+      </div>
+
+      {/* User Account */}
       <div className="card mb-6">
         <h2 className="font-semibold font-display" style={{ color: "var(--text)" }}>User Account</h2>
         <dl className="mt-3 space-y-2 text-sm">
@@ -76,6 +132,7 @@ export default async function Settings({ searchParams }: { searchParams: Promise
         </p>
       </div>
 
+      {/* Data Export */}
       <div className="card mb-6">
         <h2 className="font-semibold font-display" style={{ color: "var(--text)" }}>Data Export</h2>
         <p className="mt-2 text-sm" style={{ color: "var(--text-muted)" }}>
@@ -90,27 +147,15 @@ export default async function Settings({ searchParams }: { searchParams: Promise
         </p>
       </div>
 
+      {/* Danger Zone */}
       <div className="card" style={{ borderColor: "var(--danger-tint)" }}>
         <h2 className="font-semibold font-display" style={{ color: "var(--danger)" }}>Danger Zone</h2>
         <p className="mt-2 text-sm" style={{ color: "var(--text-muted)" }}>
           Deleting your account removes your login access. Your company data is retained for 30 days.
         </p>
-        <form action={deleteAccount} className="mt-4">
-          <button
-            className="rounded-lg border px-4 py-2 text-sm font-medium transition-colors"
-            style={{
-              borderColor: "var(--danger-tint)",
-              color: "var(--danger)",
-            }}
-            onMouseOver={(e) => ((e.currentTarget as HTMLElement).style.background = "var(--danger-tint)")}
-            onMouseOut={(e) => ((e.currentTarget as HTMLElement).style.background = "")}
-            onClick={(e) => {
-              if (!confirm("Are you sure? This will delete your account.")) e.preventDefault();
-            }}
-          >
-            Delete my account
-          </button>
-        </form>
+        <div className="mt-4">
+          <DeleteAccountButton action={deleteAccount} />
+        </div>
       </div>
     </div>
   );

@@ -535,6 +535,33 @@ export async function saveActionPlan(gaps: string[]) {
 
 // ─────────── Settings ───────────
 
+export async function addLocation(formData: FormData) {
+  const { user, company } = await requireUser();
+  const address = String(formData.get("address") ?? "").trim();
+  const city = String(formData.get("city") ?? "").trim();
+  const state = String(formData.get("state") ?? "CA").trim().toUpperCase();
+  const zip = String(formData.get("zip") ?? "").trim();
+  if (!city || !state) redirect("/settings?error=location");
+  const newLoc = { id: uid("loc_"), address, city, state, zip, egridSubregion: egridForState(state) };
+  company.locations.push(newLoc);
+  await logChange({ user, companyId: company.id, section: "settings", field: "location_added", prev: null, next: `${city}, ${state}` });
+  await saveLocations(company.id, company.locations);
+  await persist(company);
+  redirect("/settings?saved=1");
+}
+
+export async function removeLocation(formData: FormData) {
+  const { user, company } = await requireUser();
+  const locId = String(formData.get("loc_id") ?? "").trim();
+  if (!locId) return;
+  const removed = company.locations.find((l) => l.id === locId);
+  company.locations = company.locations.filter((l) => l.id !== locId);
+  await logChange({ user, companyId: company.id, section: "settings", field: "location_removed", prev: removed ? `${removed.city}, ${removed.state}` : locId, next: null });
+  await saveLocations(company.id, company.locations);
+  await persist(company);
+  redirect("/settings?saved=1");
+}
+
 export async function updateProfile(formData: FormData) {
   const { user, company } = await requireUser();
   const name = String(formData.get("company_name") ?? "").trim();
