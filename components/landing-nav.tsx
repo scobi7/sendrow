@@ -8,26 +8,50 @@ export function LandingNav() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 bg-white border-b border-slate-100 shadow-sm">
+    <header
+      className="sticky top-0 z-50"
+      style={{
+        background: "var(--surface)",
+        borderBottom: "1px solid var(--divider)",
+        boxShadow: "0 1px 0 0 var(--divider)",
+      }}
+    >
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
         <Logo />
         <nav className="hidden items-center gap-8 sm:flex">
-          <a href="#how-it-works" className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors">
+          <a
+            href="#how-it-works"
+            className="text-sm font-medium transition-colors"
+            style={{ color: "var(--text-muted)" }}
+            onMouseOver={(e) => (e.currentTarget.style.color = "var(--text)")}
+            onMouseOut={(e) => (e.currentTarget.style.color = "var(--text-muted)")}
+          >
             How it works
           </a>
-          <a href="#about" className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors">
+          <a
+            href="#about"
+            className="text-sm font-medium transition-colors"
+            style={{ color: "var(--text-muted)" }}
+            onMouseOver={(e) => (e.currentTarget.style.color = "var(--text)")}
+            onMouseOut={(e) => (e.currentTarget.style.color = "var(--text-muted)")}
+          >
             About
           </a>
-          <Link href="/login" className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors">
+          <Link
+            href="/login"
+            className="text-sm font-medium transition-colors"
+            style={{ color: "var(--text-muted)" }}
+          >
             Sign in
           </Link>
-          <Link href="/demo" className="btn-primary text-sm px-4 py-2">
+          <Link href="/demo" className="btn btn-primary text-sm px-4 py-2">
             Request a demo
           </Link>
         </nav>
         <button
           onClick={() => setOpen(!open)}
-          className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-600 hover:bg-slate-50 transition-colors sm:hidden"
+          className="flex h-9 w-9 items-center justify-center rounded-lg transition-colors sm:hidden"
+          style={{ color: "var(--text-muted)" }}
           aria-label="Toggle menu"
         >
           {open ? (
@@ -42,12 +66,23 @@ export function LandingNav() {
         </button>
       </div>
       {open && (
-        <div className="border-t border-slate-100 bg-white px-6 py-5 sm:hidden">
+        <div
+          className="px-6 py-5 sm:hidden"
+          style={{ borderTop: "1px solid var(--divider)", background: "var(--surface)" }}
+        >
           <nav className="flex flex-col gap-5">
-            <a href="#how-it-works" onClick={() => setOpen(false)} className="text-sm font-medium text-slate-600">How it works</a>
-            <a href="#about" onClick={() => setOpen(false)} className="text-sm font-medium text-slate-600">About</a>
-            <Link href="/login" className="text-sm font-medium text-slate-600">Sign in</Link>
-            <Link href="/demo" className="btn-primary text-sm text-center px-4 py-2">Request a demo</Link>
+            <a href="#how-it-works" onClick={() => setOpen(false)} className="text-sm font-medium" style={{ color: "var(--text-muted)" }}>
+              How it works
+            </a>
+            <a href="#about" onClick={() => setOpen(false)} className="text-sm font-medium" style={{ color: "var(--text-muted)" }}>
+              About
+            </a>
+            <Link href="/login" className="text-sm font-medium" style={{ color: "var(--text-muted)" }}>
+              Sign in
+            </Link>
+            <Link href="/demo" className="btn btn-primary text-sm text-center px-4 py-2">
+              Request a demo
+            </Link>
           </nav>
         </div>
       )}

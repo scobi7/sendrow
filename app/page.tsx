@@ -5,32 +5,24 @@ import { LandingNav } from "@/components/landing-nav";
 
 function CheckIcon() {
   return (
-    <svg className="h-4 w-4 text-brand-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+    <svg className="h-4 w-4 mt-0.5 shrink-0" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24" style={{ color: "var(--primary)" }}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
     </svg>
   );
 }
 
-function BuildingIcon() {
-  return (
-    <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21" />
-    </svg>
-  );
-}
-
-function UsersIcon() {
-  return (
-    <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
-    </svg>
-  );
-}
+// TODO: Replace [XX] and [X] with confirmed figures before marketing launch.
+// "XX% faster" and "X fewer compliance hires" are intentionally left as placeholders
+// per the design handoff — don't substitute real numbers without backing data.
+const STATS = [
+  { value: "[XX]%", label: "faster time-to-questionnaire vs. manual process" },
+  { value: "[X]×", label: "fewer compliance hires needed on average" },
+  { value: "2 APIs", label: "synced automatically from QuickBooks and UtilityAPI" },
+];
 
 const TRACKS = [
   {
-    Icon: BuildingIcon,
-    iconBg: "bg-brand-600",
+    initials: "CO",
     title: "I represent a company",
     desc: "Get your first ESG report done without hiring a consultant. Connect your data, calculate your footprint, answer your customer's questionnaire.",
     features: [
@@ -42,8 +34,7 @@ const TRACKS = [
     href: "/signup",
   },
   {
-    Icon: UsersIcon,
-    iconBg: "bg-navy-800",
+    initials: "ES",
     title: "I'm an ESG consultant",
     desc: "Manage your clients from one dashboard. Send invite links, track progress, and generate reports across your book of business.",
     features: [
@@ -61,45 +52,85 @@ export default async function Landing() {
   if (user) redirect(user.role === "consultant" ? "/consultant" : "/dashboard");
 
   return (
-    <main className="min-h-screen bg-white">
+    <main style={{ background: "var(--bg)", minHeight: "100vh" }}>
       <LandingNav />
 
       {/* Hero */}
-      <section className="bg-brand-950 px-6 py-28 sm:py-36">
+      <section className="px-6 py-28 sm:py-36" style={{ background: "var(--bg)" }}>
         <div className="mx-auto max-w-6xl">
-          <span className="inline-block rounded-full bg-brand-800 px-3 py-1 text-xs font-semibold text-brand-300 mb-8">
+          <span
+            className="mb-8 inline-block px-3 py-1 text-xs font-semibold"
+            style={{
+              background: "var(--primary-tint)",
+              border: "1px solid var(--primary)",
+              borderRadius: "var(--radius-sm)",
+              color: "var(--primary)",
+            }}
+          >
             For California mid-market companies
           </span>
-          <h1 className="text-5xl font-bold text-white sm:text-6xl lg:text-7xl leading-tight max-w-3xl">
+          <h1
+            className="max-w-3xl text-5xl font-bold font-display leading-tight sm:text-6xl lg:text-7xl"
+            style={{ color: "var(--text)" }}
+          >
             ESG compliance,<br />handled.
           </h1>
-          <p className="mt-6 text-lg text-brand-300 max-w-xl leading-relaxed">
+          <p className="mt-6 max-w-xl text-lg leading-relaxed" style={{ color: "var(--text-muted)" }}>
             Connect your data, calculate your emissions, and export a report your customer accepts — CDP, EcoVadis, Walmart. In days, not months.
           </p>
           <div className="mt-10 flex flex-wrap gap-4">
-            <Link
-              href="/demo"
-              className="rounded-lg bg-white px-6 py-3 text-sm font-semibold text-brand-950 hover:bg-brand-50 transition-colors"
-            >
+            <Link href="/demo" className="btn btn-primary px-6 py-3 text-sm">
               Request a demo
             </Link>
             <Link
               href="/signup"
-              className="rounded-lg border border-brand-700 px-6 py-3 text-sm font-semibold text-white hover:bg-brand-800 transition-colors"
+              className="btn btn-secondary px-6 py-3 text-sm"
             >
               Get started free
             </Link>
+          </div>
+
+          {/* Stat callouts */}
+          <div className="mt-16 grid gap-4 sm:grid-cols-3">
+            {STATS.map(({ value, label }) => (
+              <div
+                key={value}
+                className="px-5 py-5"
+                style={{
+                  background: "var(--surface)",
+                  border: "1px solid var(--divider)",
+                  borderRadius: "var(--radius-sm)",
+                  boxShadow: "var(--shadow-card)",
+                }}
+              >
+                <div
+                  className="text-3xl font-semibold font-data"
+                  style={{ color: "var(--primary)" }}
+                >
+                  {value}
+                </div>
+                <p className="mt-1 text-sm leading-snug" style={{ color: "var(--text-muted)" }}>
+                  {label}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* Trust bar */}
-      <div className="border-b border-slate-100 py-10 bg-white">
+      <div style={{ borderTop: "1px solid var(--divider)", borderBottom: "1px solid var(--divider)", background: "var(--surface)", padding: "2.5rem 0" }}>
         <div className="mx-auto max-w-6xl px-6">
-          <p className="text-center text-xs font-semibold uppercase tracking-widest text-slate-400">
+          <p
+            className="text-center text-xs font-semibold uppercase tracking-widest"
+            style={{ color: "var(--text-muted)" }}
+          >
             Reports accepted by
           </p>
-          <div className="mt-5 flex flex-wrap items-center justify-center gap-10 text-sm font-semibold text-slate-400">
+          <div
+            className="mt-5 flex flex-wrap items-center justify-center gap-10 text-sm font-semibold"
+            style={{ color: "var(--text-muted)" }}
+          >
             <span>CDP</span>
             <span>EcoVadis</span>
             <span>Walmart Supplier Portal</span>
@@ -110,25 +141,46 @@ export default async function Landing() {
       </div>
 
       {/* Who's it for */}
-      <section className="py-24 bg-brand-50">
+      <section className="py-24" style={{ background: "var(--bg)" }}>
         <div className="mx-auto max-w-6xl px-6">
           <div className="max-w-xl">
-            <h2 className="text-2xl font-bold text-slate-900 sm:text-3xl">Built for two types of users</h2>
-            <p className="mt-3 text-slate-600">
-              Whether you're filing your first ESG report or managing a book of clients, GreenTrack has a flow built for you.
+            <h2 className="text-2xl font-bold font-display sm:text-3xl" style={{ color: "var(--text)" }}>
+              Built for two types of users
+            </h2>
+            <p className="mt-3 text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>
+              Whether you&rsquo;re filing your first ESG report or managing a book of clients, GreenTrack has a flow built for you.
             </p>
           </div>
           <div className="mt-12 grid gap-6 sm:grid-cols-2">
-            {TRACKS.map(({ Icon, iconBg, title, desc, features, cta, href }) => (
-              <div key={title} className="flex flex-col rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
-                <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${iconBg}`}>
-                  <Icon />
+            {TRACKS.map(({ initials, title, desc, features, cta, href }) => (
+              <div
+                key={title}
+                className="flex flex-col p-8"
+                style={{
+                  background: "var(--surface)",
+                  border: "1px solid var(--divider)",
+                  borderRadius: "var(--radius-lg)",
+                  boxShadow: "var(--shadow-card)",
+                }}
+              >
+                <div
+                  className="flex h-10 w-10 items-center justify-center text-sm font-bold text-white"
+                  style={{ background: "var(--primary)", borderRadius: "var(--radius-sm)" }}
+                >
+                  {initials}
                 </div>
-                <h3 className="mt-5 text-lg font-bold text-slate-900">{title}</h3>
-                <p className="mt-2 text-sm text-slate-600 leading-relaxed">{desc}</p>
+                <h3
+                  className="mt-5 text-lg font-bold font-display"
+                  style={{ color: "var(--text)" }}
+                >
+                  {title}
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>
+                  {desc}
+                </p>
                 <ul className="mt-5 space-y-2">
                   {features.map((f) => (
-                    <li key={f} className="flex items-start gap-2 text-sm text-slate-700">
+                    <li key={f} className="flex items-start gap-2 text-sm" style={{ color: "var(--text)" }}>
                       <CheckIcon />
                       {f}
                     </li>
@@ -137,7 +189,8 @@ export default async function Landing() {
                 <div className="mt-8">
                   <Link
                     href={href}
-                    className="inline-flex items-center text-sm font-semibold text-brand-700 hover:text-brand-900 transition-colors"
+                    className="text-sm font-semibold transition-opacity hover:opacity-70"
+                    style={{ color: "var(--primary)" }}
                   >
                     {cta} →
                   </Link>
@@ -149,11 +202,15 @@ export default async function Landing() {
       </section>
 
       {/* How it works */}
-      <section id="how-it-works" className="py-24 bg-white">
+      <section id="how-it-works" className="py-24" style={{ background: "var(--surface)" }}>
         <div className="mx-auto max-w-6xl px-6">
           <div className="max-w-xl">
-            <h2 className="text-2xl font-bold text-slate-900 sm:text-3xl">How it works</h2>
-            <p className="mt-3 text-slate-600">Three steps from signup to finished report. No setup fees, no consultant required.</p>
+            <h2 className="text-2xl font-bold font-display sm:text-3xl" style={{ color: "var(--text)" }}>
+              How it works
+            </h2>
+            <p className="mt-3 text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>
+              Three steps from signup to finished report. No setup fees, no consultant required.
+            </p>
           </div>
           <div className="mt-14 grid gap-10 sm:grid-cols-3">
             {[
@@ -174,9 +231,18 @@ export default async function Landing() {
               },
             ].map(({ num, title, desc }) => (
               <div key={num}>
-                <div className="text-5xl font-bold text-brand-200 leading-none">{num}</div>
-                <h3 className="mt-4 text-base font-semibold text-slate-900">{title}</h3>
-                <p className="mt-2 text-sm text-slate-600 leading-relaxed">{desc}</p>
+                <div
+                  className="text-5xl font-bold font-data leading-none"
+                  style={{ color: "var(--track-bg)" }}
+                >
+                  {num}
+                </div>
+                <h3 className="mt-4 text-base font-semibold font-display" style={{ color: "var(--text)" }}>
+                  {title}
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>
+                  {desc}
+                </p>
               </div>
             ))}
           </div>
@@ -184,9 +250,11 @@ export default async function Landing() {
       </section>
 
       {/* Features */}
-      <section className="py-24 bg-brand-50">
+      <section className="py-24" style={{ background: "var(--bg)" }}>
         <div className="mx-auto max-w-6xl px-6">
-          <h2 className="text-2xl font-bold text-slate-900 sm:text-3xl max-w-xl">What you get</h2>
+          <h2 className="max-w-xl text-2xl font-bold font-display sm:text-3xl" style={{ color: "var(--text)" }}>
+            What you get
+          </h2>
           <div className="mt-12 grid gap-6 sm:grid-cols-3">
             {[
               {
@@ -202,9 +270,22 @@ export default async function Landing() {
                 desc: "Every number traced to its source. Methodology documented. Ready for your customer's auditor.",
               },
             ].map(({ title, desc }) => (
-              <div key={title} className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-                <h3 className="font-semibold text-slate-900">{title}</h3>
-                <p className="mt-3 text-sm text-slate-600 leading-relaxed">{desc}</p>
+              <div
+                key={title}
+                className="p-6"
+                style={{
+                  background: "var(--surface)",
+                  border: "1px solid var(--divider)",
+                  borderRadius: "var(--radius-sm)",
+                  boxShadow: "var(--shadow-card)",
+                }}
+              >
+                <h3 className="font-semibold font-display" style={{ color: "var(--text)" }}>
+                  {title}
+                </h3>
+                <p className="mt-3 text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>
+                  {desc}
+                </p>
               </div>
             ))}
           </div>
@@ -212,15 +293,17 @@ export default async function Landing() {
       </section>
 
       {/* About */}
-      <section id="about" className="py-24 bg-white">
+      <section id="about" className="py-24" style={{ background: "var(--surface)" }}>
         <div className="mx-auto max-w-6xl px-6">
           <div className="grid gap-16 sm:grid-cols-2 items-start">
             <div>
-              <h2 className="text-2xl font-bold text-slate-900 sm:text-3xl">Who we built this for</h2>
-              <p className="mt-5 text-slate-600 leading-relaxed">
+              <h2 className="text-2xl font-bold font-display sm:text-3xl" style={{ color: "var(--text)" }}>
+                Who we built this for
+              </h2>
+              <p className="mt-5 leading-relaxed text-sm" style={{ color: "var(--text-muted)" }}>
                 California&rsquo;s mid-market — 50 to 500 employees — is getting ESG questionnaires from major customers for the first time. Most don&rsquo;t have a sustainability team. Hiring a consultant runs $15,000 and up.
               </p>
-              <p className="mt-4 text-slate-600 leading-relaxed">
+              <p className="mt-4 leading-relaxed text-sm" style={{ color: "var(--text-muted)" }}>
                 GreenTrack does the same job: pulls your data, calculates your footprint, and produces a report your customer accepts. In days, not months.
               </p>
             </div>
@@ -231,9 +314,21 @@ export default async function Landing() {
                 { stat: "3 days", label: "Average time to first completed report" },
                 { stat: "10+", label: "Questionnaire frameworks supported" },
               ].map(({ stat, label }) => (
-                <div key={stat} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-                  <div className="text-2xl font-bold text-brand-700">{stat}</div>
-                  <div className="mt-1 text-xs text-slate-500 leading-snug">{label}</div>
+                <div
+                  key={stat}
+                  className="p-5"
+                  style={{
+                    background: "var(--primary-tint)",
+                    border: "1px solid var(--divider)",
+                    borderRadius: "var(--radius-sm)",
+                  }}
+                >
+                  <div className="text-2xl font-bold font-data" style={{ color: "var(--primary)" }}>
+                    {stat}
+                  </div>
+                  <div className="mt-1 text-xs leading-snug" style={{ color: "var(--text-muted)" }}>
+                    {label}
+                  </div>
                 </div>
               ))}
             </div>
@@ -242,22 +337,26 @@ export default async function Landing() {
       </section>
 
       {/* Demo CTA */}
-      <section className="bg-brand-800 py-24">
+      <section className="py-24" style={{ background: "var(--primary)" }}>
         <div className="mx-auto max-w-6xl px-6 text-center">
-          <h2 className="text-2xl font-bold text-white sm:text-3xl">See it in action</h2>
-          <p className="mt-4 text-brand-300 max-w-md mx-auto">
+          <h2 className="text-2xl font-bold font-display text-white sm:text-3xl">
+            See it in action
+          </h2>
+          <p className="mt-4 max-w-md mx-auto text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.7)" }}>
             Book a 20-minute walkthrough. We&rsquo;ll show you how GreenTrack handles a real questionnaire end to end.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-4">
             <Link
               href="/demo"
-              className="rounded-lg bg-white px-6 py-3 text-sm font-semibold text-brand-800 hover:bg-brand-50 transition-colors"
+              className="btn px-6 py-3 text-sm font-semibold"
+              style={{ background: "var(--surface)", color: "var(--primary)", border: "none" }}
             >
               Request a demo
             </Link>
             <Link
               href="/signup"
-              className="rounded-lg border border-brand-600 px-6 py-3 text-sm font-semibold text-white hover:bg-brand-700 transition-colors"
+              className="btn px-6 py-3 text-sm font-semibold"
+              style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.4)", color: "#fff" }}
             >
               Get started free
             </Link>
@@ -266,17 +365,30 @@ export default async function Landing() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-brand-900 py-10">
+      <footer className="py-10" style={{ background: "#2A4A37" }}>
         <div className="mx-auto max-w-6xl px-6 flex flex-col sm:flex-row items-center justify-between gap-6">
-          <span className="flex items-center gap-2 text-lg font-bold text-white">
-            <span className="flex h-7 w-7 items-center justify-center rounded-md bg-brand-600 text-sm text-white">G</span>
+          <span className="flex items-center gap-2 text-lg font-bold font-display text-white">
+            <span
+              className="flex h-7 w-7 items-center justify-center text-sm font-bold text-white"
+              style={{ background: "var(--primary)", borderRadius: "8px" }}
+            >
+              G
+            </span>
             GreenTrack
           </span>
-          <p className="text-xs text-brand-400">© {new Date().getFullYear()} GreenTrack. Built in California.</p>
+          <p className="text-xs" style={{ color: "rgba(255,255,255,0.45)" }}>
+            © {new Date().getFullYear()} GreenTrack. Built in California.
+          </p>
           <div className="flex gap-6">
-            <Link href="/login" className="text-xs text-brand-400 hover:text-white transition-colors">Sign in</Link>
-            <Link href="/demo" className="text-xs text-brand-400 hover:text-white transition-colors">Request demo</Link>
-            <Link href="/signup" className="text-xs text-brand-400 hover:text-white transition-colors">Get started</Link>
+            <Link href="/login" className="text-xs transition-opacity hover:opacity-100" style={{ color: "rgba(255,255,255,0.45)" }}>
+              Sign in
+            </Link>
+            <Link href="/demo" className="text-xs transition-opacity hover:opacity-100" style={{ color: "rgba(255,255,255,0.45)" }}>
+              Request demo
+            </Link>
+            <Link href="/signup" className="text-xs transition-opacity hover:opacity-100" style={{ color: "rgba(255,255,255,0.45)" }}>
+              Get started
+            </Link>
           </div>
         </div>
       </footer>

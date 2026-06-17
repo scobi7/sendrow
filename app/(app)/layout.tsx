@@ -21,29 +21,32 @@ const NAV: [string, string][] = [
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const { userId } = await auth();
-  if (!userId) redirect("/login");           // not signed in with Clerk at all
+  if (!userId) redirect("/login");
   const user = await currentUser();
-  if (!user) redirect("/onboarding");        // signed in with Clerk but no DB record yet
+  if (!user) redirect("/onboarding");
   if (user.role === "consultant") redirect("/consultant");
   if (!user.companyId) redirect("/onboarding");
   const company = await loadCompany(user.companyId);
   if (!company.setupComplete) redirect("/setup");
 
   return (
-    <div className="flex min-h-screen bg-slate-50">
-      <aside className="no-print hidden w-56 flex-col border-r border-slate-200 bg-white px-4 py-6 sm:flex">
+    <div className="flex min-h-screen bg-canopy-bg">
+      <aside className="no-print hidden w-56 flex-col border-r border-canopy-divider bg-canopy-surface px-4 py-6 sm:flex">
         <Logo />
-        <nav className="mt-8 flex-1 space-y-1">
+        <nav className="mt-8 flex-1 space-y-0.5">
           {NAV.map(([href, label]) => (
-            <Link key={href} href={href}
-              className="block rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:bg-emerald-50 hover:text-emerald-800 transition-colors">
+            <Link
+              key={href}
+              href={href}
+              className="block rounded-canopy-sm px-3 py-2 text-sm font-medium text-canopy-muted transition-colors hover:bg-canopy-tint hover:text-canopy-primary"
+            >
               {label}
             </Link>
           ))}
         </nav>
-        <div className="border-t border-slate-100 pt-4">
-          <p className="truncate text-xs font-semibold text-slate-900">{company.name}</p>
-          <p className="truncate text-xs text-slate-400">{user.email}</p>
+        <div className="border-t border-canopy-divider pt-4">
+          <p className="truncate text-xs font-semibold text-canopy-text">{company.name}</p>
+          <p className="truncate text-xs text-canopy-muted">{user.email}</p>
           <LogoutButton />
         </div>
       </aside>
