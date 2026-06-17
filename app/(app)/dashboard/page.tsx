@@ -65,7 +65,7 @@ export default async function Dashboard() {
       {/* Reporting status stepper */}
       <div
         className="mb-8 p-5"
-        style={{ background: "var(--primary-tint)", borderRadius: "var(--radius-lg)" }}
+        style={{ background: "var(--card)", borderRadius: "var(--radius-lg)" }}
       >
         <h2 className="mb-4 text-xs font-bold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
           Reporting status
@@ -78,7 +78,7 @@ export default async function Dashboard() {
           href="/connections"
           className="mb-6 block px-5 py-4 text-sm font-medium transition-opacity hover:opacity-80"
           style={{
-            background: "var(--primary-tint)",
+            background: "var(--card)",
             border: "1px solid var(--primary)",
             borderRadius: "var(--radius-sm)",
             color: "var(--primary)",
@@ -118,8 +118,7 @@ export default async function Dashboard() {
                 key={key}
                 className="flex items-center justify-between px-5 py-4"
                 style={{
-                  background: "var(--surface)",
-                  border: "1px solid var(--divider)",
+                  background: "var(--card)",
                   borderRadius: "var(--radius-sm)",
                 }}
               >
@@ -144,7 +143,7 @@ export default async function Dashboard() {
         {/* Scope chart with toggle */}
         <div
           className="h-fit p-5"
-          style={{ background: "var(--primary-tint)", borderRadius: "var(--radius-lg)" }}
+          style={{ background: "var(--card)", borderRadius: "var(--radius-lg)" }}
         >
           <ScopeChartToggle
             data={[

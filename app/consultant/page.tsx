@@ -103,15 +103,14 @@ export default async function ConsultantDashboard({
           className="overflow-hidden"
           style={{
             borderRadius: "var(--radius-lg)",
-            border: "1px solid var(--divider)",
-            background: "var(--surface)",
+            background: "var(--card)",
           }}
         >
           <table className="w-full text-sm">
             <thead>
               <tr
                 className="text-left text-xs font-semibold uppercase tracking-wide"
-                style={{ borderBottom: "1px solid var(--divider)", background: "var(--bg)", color: "var(--text-muted)" }}
+                style={{ borderBottom: "1px solid var(--divider)", background: "var(--card)", color: "var(--text-muted)" }}
               >
                 <th className="px-4 py-3">Client</th>
                 {DATA_SECTIONS.map((s) => (

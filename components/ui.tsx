@@ -63,7 +63,7 @@ export function KpiCard({
     <div
       className="p-5"
       style={{
-        background: "var(--primary-tint)",
+        background: "var(--card)",
         borderRadius: "var(--radius-lg)",
       }}
     >
@@ -97,7 +97,7 @@ export function IntegrationCard({
     <div
       className="flex items-center gap-4 px-5 py-4"
       style={{
-        background: "var(--primary-tint)",
+        background: "var(--card)",
         borderRadius: "var(--radius-lg)",
       }}
     >
