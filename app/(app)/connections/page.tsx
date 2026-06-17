@@ -1,6 +1,6 @@
 import { currentUser } from "@/lib/auth";
 import { loadCompany } from "@/lib/store";
-import { connectQuickBooks, connectUtility, startUtilityConnect, syncUtilityNow, resync, markQBReviewed, markUtilityReviewed } from "@/lib/actions";
+import { connectQuickBooks, connectUtility, startUtilityConnect, syncUtilityNow, resync, markQBReviewed, markUtilityReviewed, disconnectQuickBooks, disconnectUtility } from "@/lib/actions";
 import { reportingPeriod } from "@/lib/calc";
 import { PageHeader } from "@/components/ui";
 
@@ -46,13 +46,23 @@ export default async function Connections() {
             We pull your vendor bills and purchases to estimate value-chain (Scope 3) emissions from spend. Read-only access.
           </p>
           {qb.connected ? (
-            <div className="mt-4 flex items-center justify-between">
-              <span className="text-sm font-semibold" style={{ color: "var(--status-green)" }}>
+            <div className="mt-4 space-y-3">
+              <span className="block text-sm font-semibold" style={{ color: "var(--status-green)" }}>
                 ✓ Connected — last synced {dateStr(qb.lastSynced)}
               </span>
-              <form action={resync.bind(null, "quickbooks")}>
-                <button className="btn-secondary px-3 py-1.5 text-xs">Resync</button>
-              </form>
+              <div className="flex gap-2">
+                <form action={resync.bind(null, "quickbooks")}>
+                  <button className="btn btn-secondary px-3 py-1.5 text-xs">Resync</button>
+                </form>
+                <form action={disconnectQuickBooks}>
+                  <button
+                    className="px-3 py-1.5 text-xs font-medium rounded-lg transition-colors"
+                    style={{ color: "var(--danger)", background: "var(--danger-tint)" }}
+                  >
+                    Disconnect
+                  </button>
+                </form>
+              </div>
             </div>
           ) : process.env.QUICKBOOKS_CLIENT_ID ? (
             <div className="mt-4">
@@ -77,13 +87,23 @@ export default async function Connections() {
             We pull electricity (kWh) and natural gas (therms) by month for each location — the basis of Scope 1 and 2.
           </p>
           {util.connected ? (
-            <div className="mt-4 flex items-center justify-between">
-              <span className="text-sm font-semibold" style={{ color: "var(--status-green)" }}>
+            <div className="mt-4 space-y-3">
+              <span className="block text-sm font-semibold" style={{ color: "var(--status-green)" }}>
                 ✓ Connected — last synced {dateStr(util.lastSynced)}
               </span>
-              <form action={resync.bind(null, "utility")}>
-                <button className="btn-secondary px-3 py-1.5 text-xs">Resync</button>
-              </form>
+              <div className="flex gap-2">
+                <form action={resync.bind(null, "utility")}>
+                  <button className="btn btn-secondary px-3 py-1.5 text-xs">Resync</button>
+                </form>
+                <form action={disconnectUtility}>
+                  <button
+                    className="px-3 py-1.5 text-xs font-medium rounded-lg transition-colors"
+                    style={{ color: "var(--danger)", background: "var(--danger-tint)" }}
+                  >
+                    Disconnect
+                  </button>
+                </form>
+              </div>
             </div>
           ) : util.authEmail ? (
             <div className="mt-4 space-y-3">

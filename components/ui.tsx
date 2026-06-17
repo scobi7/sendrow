@@ -54,30 +54,34 @@ export function KpiCard({
   label,
   value,
   caption,
+  hero = false,
 }: {
   label: string;
   value: string;
   caption?: string;
+  hero?: boolean;
 }) {
   return (
     <div
       className="p-5"
       style={{
-        background: "var(--primary-tint)",
+        background: hero ? "var(--primary)" : "var(--surface)",
+        border: hero ? "none" : "1px solid var(--divider)",
         borderRadius: "var(--radius-sm)",
+        boxShadow: hero ? "0 4px 24px -8px rgba(63,107,79,0.35)" : "0 1px 4px 0 rgba(0,0,0,0.05)",
       }}
     >
-      <p className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>
+      <p className="text-xs font-medium" style={{ color: hero ? "rgba(255,255,255,0.7)" : "var(--text-muted)" }}>
         {label}
       </p>
       <p
-        className="mt-1 text-2xl font-semibold font-data"
-        style={{ color: "var(--text)" }}
+        className="mt-1 text-2xl font-bold font-data"
+        style={{ color: hero ? "#fff" : "var(--text)" }}
       >
         {value}
       </p>
       {caption && (
-        <p className="mt-0.5 text-xs" style={{ color: "var(--text-muted)" }}>
+        <p className="mt-0.5 text-xs" style={{ color: hero ? "rgba(255,255,255,0.6)" : "var(--text-muted)" }}>
           {caption}
         </p>
       )}

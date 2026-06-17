@@ -89,7 +89,7 @@ export default async function Dashboard() {
         <KpiCard label="Scope 1" value={`${fmt(t.scope1)} t`} caption="Direct" />
         <KpiCard label="Scope 2" value={`${fmt(t.scope2Location)} t`} caption="Location-based" />
         <KpiCard label="Scope 3" value={`${fmt(t.scope3)} t`} caption="Value chain" />
-        <KpiCard label="Total CO2e" value={`${fmt(t.total)} t`} caption="All scopes" />
+        <KpiCard label="Total CO2e" value={`${fmt(t.total)} t`} caption="All scopes" hero />
       </div>
 
       {/* Main grid */}
