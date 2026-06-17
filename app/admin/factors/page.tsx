@@ -157,7 +157,7 @@ export default async function AdminFactorsPage() {
             <h2 className="mb-3 text-xs font-bold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
               {CATEGORY_LABELS[category] ?? category}
             </h2>
-            <div className="overflow-hidden" style={{ border: "1px solid var(--divider)", borderRadius: "var(--radius-sm)", background: "var(--surface)" }}>
+            <div className="overflow-hidden" style={{ borderRadius: "var(--radius-sm)", background: "var(--card)" }}>
               <table className="w-full text-sm">
                 <thead>
                   <tr className="text-left text-xs uppercase tracking-wide" style={{ borderBottom: "1px solid var(--divider)", color: "var(--text-muted)" }}>

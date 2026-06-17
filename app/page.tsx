@@ -2,6 +2,7 @@ import Link from "next/link";
 import { currentUser } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { LandingNav } from "@/components/landing-nav";
+import { ScopeBarChart, ScopeDonutChart } from "@/components/ui";
 
 function CheckIcon() {
   return (
@@ -12,8 +13,6 @@ function CheckIcon() {
 }
 
 // TODO: Replace [XX] and [X] with confirmed figures before marketing launch.
-// "XX% faster" and "X fewer compliance hires" are intentionally left as placeholders
-// per the design handoff — don't substitute real numbers without backing data.
 const STATS = [
   { value: "[XX]%", label: "faster time-to-questionnaire vs. manual process" },
   { value: "[X]×", label: "fewer compliance hires needed on average" },
@@ -47,6 +46,19 @@ const TRACKS = [
   },
 ];
 
+const SAMPLE_EMISSIONS = [
+  { label: "Scope 1", value: 312 },
+  { label: "Scope 2", value: 484 },
+  { label: "Scope 3", value: 1488 },
+];
+
+const SAMPLE_KPIS = [
+  { label: "Total emissions", value: "2,284 tCO₂e", caption: "YTD, Scopes 1–3" },
+  { label: "Scope 1", value: "312 tCO₂e", caption: "Direct emissions" },
+  { label: "Scope 2", value: "484 tCO₂e", caption: "Purchased energy" },
+  { label: "Progress", value: "71%", caption: "4 sections complete" },
+];
+
 export default async function Landing() {
   const user = await currentUser();
   if (user) redirect(user.role === "consultant" ? "/consultant" : "/dashboard");
@@ -56,12 +68,12 @@ export default async function Landing() {
       <LandingNav />
 
       {/* Hero */}
-      <section className="px-6 py-28 sm:py-36" style={{ background: "var(--bg)" }}>
+      <section className="px-6 py-28 sm:py-36">
         <div className="mx-auto max-w-6xl">
           <span
             className="mb-8 inline-block px-3 py-1 text-xs font-semibold"
             style={{
-              background: "var(--primary-tint)",
+              background: "var(--card)",
               border: "1px solid var(--primary)",
               borderRadius: "var(--radius-sm)",
               color: "var(--primary)",
@@ -82,10 +94,7 @@ export default async function Landing() {
             <Link href="/demo" className="btn btn-primary px-6 py-3 text-sm">
               Request a demo
             </Link>
-            <Link
-              href="/signup"
-              className="btn btn-secondary px-6 py-3 text-sm"
-            >
+            <Link href="/signup" className="btn btn-secondary px-6 py-3 text-sm">
               Get started free
             </Link>
           </div>
@@ -93,25 +102,9 @@ export default async function Landing() {
           {/* Stat callouts */}
           <div className="mt-16 grid gap-4 sm:grid-cols-3">
             {STATS.map(({ value, label }) => (
-              <div
-                key={value}
-                className="px-5 py-5"
-                style={{
-                  background: "var(--surface)",
-                  border: "1px solid var(--divider)",
-                  borderRadius: "var(--radius-sm)",
-                  boxShadow: "var(--shadow-card)",
-                }}
-              >
-                <div
-                  className="text-3xl font-semibold font-data"
-                  style={{ color: "var(--primary)" }}
-                >
-                  {value}
-                </div>
-                <p className="mt-1 text-sm leading-snug" style={{ color: "var(--text-muted)" }}>
-                  {label}
-                </p>
+              <div key={value} className="px-5 py-5" style={{ background: "var(--card)", borderRadius: "var(--radius-sm)" }}>
+                <div className="text-3xl font-semibold font-data" style={{ color: "var(--primary)" }}>{value}</div>
+                <p className="mt-1 text-sm leading-snug" style={{ color: "var(--text-muted)" }}>{label}</p>
               </div>
             ))}
           </div>
@@ -119,18 +112,12 @@ export default async function Landing() {
       </section>
 
       {/* Trust bar */}
-      <div style={{ borderTop: "1px solid var(--divider)", borderBottom: "1px solid var(--divider)", background: "var(--surface)", padding: "2.5rem 0" }}>
+      <div style={{ borderTop: "1px solid var(--divider)", borderBottom: "1px solid var(--divider)", background: "var(--card)", padding: "2.5rem 0" }}>
         <div className="mx-auto max-w-6xl px-6">
-          <p
-            className="text-center text-xs font-semibold uppercase tracking-widest"
-            style={{ color: "var(--text-muted)" }}
-          >
+          <p className="text-center text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
             Reports accepted by
           </p>
-          <div
-            className="mt-5 flex flex-wrap items-center justify-center gap-10 text-sm font-semibold"
-            style={{ color: "var(--text-muted)" }}
-          >
+          <div className="mt-5 flex flex-wrap items-center justify-center gap-10 text-sm font-semibold" style={{ color: "var(--text-muted)" }}>
             <span>CDP</span>
             <span>EcoVadis</span>
             <span>Walmart Supplier Portal</span>
@@ -141,7 +128,7 @@ export default async function Landing() {
       </div>
 
       {/* Who's it for */}
-      <section className="py-24" style={{ background: "var(--bg)" }}>
+      <section className="py-24">
         <div className="mx-auto max-w-6xl px-6">
           <div className="max-w-xl">
             <h2 className="text-2xl font-bold font-display sm:text-3xl" style={{ color: "var(--text)" }}>
@@ -153,31 +140,15 @@ export default async function Landing() {
           </div>
           <div className="mt-12 grid gap-6 sm:grid-cols-2">
             {TRACKS.map(({ initials, title, desc, features, cta, href }) => (
-              <div
-                key={title}
-                className="flex flex-col p-8"
-                style={{
-                  background: "var(--surface)",
-                  border: "1px solid var(--divider)",
-                  borderRadius: "var(--radius-lg)",
-                  boxShadow: "var(--shadow-card)",
-                }}
-              >
+              <div key={title} className="flex flex-col p-8" style={{ background: "var(--card)", borderRadius: "var(--radius-lg)" }}>
                 <div
                   className="flex h-10 w-10 items-center justify-center text-sm font-bold text-white"
                   style={{ background: "var(--primary)", borderRadius: "var(--radius-sm)" }}
                 >
                   {initials}
                 </div>
-                <h3
-                  className="mt-5 text-lg font-bold font-display"
-                  style={{ color: "var(--text)" }}
-                >
-                  {title}
-                </h3>
-                <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>
-                  {desc}
-                </p>
+                <h3 className="mt-5 text-lg font-bold font-display" style={{ color: "var(--text)" }}>{title}</h3>
+                <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>{desc}</p>
                 <ul className="mt-5 space-y-2">
                   {features.map((f) => (
                     <li key={f} className="flex items-start gap-2 text-sm" style={{ color: "var(--text)" }}>
@@ -187,11 +158,7 @@ export default async function Landing() {
                   ))}
                 </ul>
                 <div className="mt-8">
-                  <Link
-                    href={href}
-                    className="text-sm font-semibold transition-opacity hover:opacity-70"
-                    style={{ color: "var(--primary)" }}
-                  >
+                  <Link href={href} className="text-sm font-semibold transition-opacity hover:opacity-70" style={{ color: "var(--primary)" }}>
                     {cta} →
                   </Link>
                 </div>
@@ -201,48 +168,99 @@ export default async function Landing() {
         </div>
       </section>
 
+      {/* Emissions visualization preview */}
+      <section className="py-24" style={{ background: "var(--card)" }}>
+        <div className="mx-auto max-w-6xl px-6">
+          <div className="grid items-center gap-16 lg:grid-cols-2">
+            {/* Copy */}
+            <div>
+              <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--primary)" }}>
+                Live dashboard
+              </span>
+              <h2 className="mt-3 text-2xl font-bold font-display sm:text-3xl" style={{ color: "var(--text)" }}>
+                Your emissions, visualized in real time
+              </h2>
+              <p className="mt-4 text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>
+                As you connect your data, your dashboard updates instantly. Scope 1, 2, and 3 broken down by source — with the exact numbers your questionnaire asks for.
+              </p>
+              <ul className="mt-6 space-y-3">
+                {[
+                  "Scope 1, 2 & 3 breakdown — bar or donut view",
+                  "KPI cards update as you enter data",
+                  "QuickBooks + utility sync automatically",
+                  "Numbers map directly to CDP, EcoVadis & Walmart fields",
+                ].map((f) => (
+                  <li key={f} className="flex items-start gap-2 text-sm" style={{ color: "var(--text)" }}>
+                    <CheckIcon />
+                    {f}
+                  </li>
+                ))}
+              </ul>
+              <Link href="/signup" className="btn btn-primary mt-8 px-6 py-3 text-sm inline-flex">
+                See your numbers
+              </Link>
+            </div>
+
+            {/* Dashboard preview */}
+            <div className="p-6" style={{ background: "var(--bg)", borderRadius: "var(--radius-lg)" }}>
+              {/* Mini KPI grid */}
+              <div className="mb-4 grid grid-cols-2 gap-3">
+                {SAMPLE_KPIS.map(({ label, value, caption }) => (
+                  <div key={label} className="p-4" style={{ background: "var(--card)", borderRadius: "var(--radius-sm)" }}>
+                    <p className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>{label}</p>
+                    <p className="mt-1 text-lg font-bold font-data leading-tight" style={{ color: "var(--text)" }}>{value}</p>
+                    <p className="text-xs" style={{ color: "var(--text-muted)" }}>{caption}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Bar chart */}
+              <div className="mb-4 p-4" style={{ background: "var(--card)", borderRadius: "var(--radius-sm)" }}>
+                <div className="mb-3 flex items-center justify-between">
+                  <p className="text-xs font-bold font-display" style={{ color: "var(--text)" }}>Emissions by scope</p>
+                  <div className="flex gap-1 rounded-full p-0.5" style={{ background: "rgba(0,0,0,0.06)" }}>
+                    <span className="rounded-full px-2 py-0.5 text-[10px] font-medium" style={{ background: "var(--primary)", color: "#fff" }}>Bar</span>
+                    <span className="px-2 py-0.5 text-[10px] font-medium" style={{ color: "var(--text-muted)" }}>Donut</span>
+                  </div>
+                </div>
+                <ScopeBarChart data={SAMPLE_EMISSIONS} />
+              </div>
+
+              {/* Donut chart */}
+              <div className="p-4" style={{ background: "var(--card)", borderRadius: "var(--radius-sm)" }}>
+                <div className="mb-3 flex items-center justify-between">
+                  <p className="text-xs font-bold font-display" style={{ color: "var(--text)" }}>Emissions by scope</p>
+                  <div className="flex gap-1 rounded-full p-0.5" style={{ background: "rgba(0,0,0,0.06)" }}>
+                    <span className="px-2 py-0.5 text-[10px] font-medium" style={{ color: "var(--text-muted)" }}>Bar</span>
+                    <span className="rounded-full px-2 py-0.5 text-[10px] font-medium" style={{ background: "var(--primary)", color: "#fff" }}>Donut</span>
+                  </div>
+                </div>
+                <ScopeDonutChart data={SAMPLE_EMISSIONS} />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* How it works */}
-      <section id="how-it-works" className="py-24" style={{ background: "var(--surface)" }}>
+      <section id="how-it-works" className="py-24">
         <div className="mx-auto max-w-6xl px-6">
           <div className="max-w-xl">
-            <h2 className="text-2xl font-bold font-display sm:text-3xl" style={{ color: "var(--text)" }}>
-              How it works
-            </h2>
+            <h2 className="text-2xl font-bold font-display sm:text-3xl" style={{ color: "var(--text)" }}>How it works</h2>
             <p className="mt-3 text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>
               Three steps from signup to finished report. No setup fees, no consultant required.
             </p>
           </div>
           <div className="mt-14 grid gap-10 sm:grid-cols-3">
             {[
-              {
-                num: "01",
-                title: "Connect your data",
-                desc: "Link your utility accounts, QuickBooks, and freight providers. We pull the numbers automatically.",
-              },
-              {
-                num: "02",
-                title: "Calculate your emissions",
-                desc: "GHG Protocol emission factors applied automatically. Scope 1, 2, and 3 categorized without manual work.",
-              },
-              {
-                num: "03",
-                title: "Export your report",
-                desc: "Download an audit-ready PDF or fill supplier portal fields directly from your dashboard.",
-              },
+              { num: "01", title: "Connect your data", desc: "Link your utility accounts, QuickBooks, and freight providers. We pull the numbers automatically." },
+              { num: "02", title: "Calculate your emissions", desc: "GHG Protocol emission factors applied automatically. Scope 1, 2, and 3 categorized without manual work." },
+              { num: "03", title: "Export your report", desc: "Download an audit-ready PDF or fill supplier portal fields directly from your dashboard." },
             ].map(({ num, title, desc }) => (
               <div key={num}>
-                <div
-                  className="text-5xl font-bold font-data leading-none"
-                  style={{ color: "var(--track-bg)" }}
-                >
-                  {num}
-                </div>
-                <h3 className="mt-4 text-base font-semibold font-display" style={{ color: "var(--text)" }}>
-                  {title}
-                </h3>
-                <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>
-                  {desc}
-                </p>
+                <div className="text-5xl font-bold font-data leading-none" style={{ color: "var(--track-bg)" }}>{num}</div>
+                <h3 className="mt-4 text-base font-semibold font-display" style={{ color: "var(--text)" }}>{title}</h3>
+                <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>{desc}</p>
               </div>
             ))}
           </div>
@@ -250,42 +268,18 @@ export default async function Landing() {
       </section>
 
       {/* Features */}
-      <section className="py-24" style={{ background: "var(--bg)" }}>
+      <section className="py-24" style={{ background: "var(--card)" }}>
         <div className="mx-auto max-w-6xl px-6">
-          <h2 className="max-w-xl text-2xl font-bold font-display sm:text-3xl" style={{ color: "var(--text)" }}>
-            What you get
-          </h2>
+          <h2 className="max-w-xl text-2xl font-bold font-display sm:text-3xl" style={{ color: "var(--text)" }}>What you get</h2>
           <div className="mt-12 grid gap-6 sm:grid-cols-3">
             {[
-              {
-                title: "GHG Inventory Report",
-                desc: "Scope 1, 2, and 3 in one audit-ready PDF. Formatted to GHG Protocol standards.",
-              },
-              {
-                title: "Questionnaire Mapping",
-                desc: "Your figures pre-filled into the exact fields CDP, EcoVadis, and Walmart ask for. No manual translation.",
-              },
-              {
-                title: "Audit Trail",
-                desc: "Every number traced to its source. Methodology documented. Ready for your customer's auditor.",
-              },
+              { title: "GHG Inventory Report", desc: "Scope 1, 2, and 3 in one audit-ready PDF. Formatted to GHG Protocol standards." },
+              { title: "Questionnaire Mapping", desc: "Your figures pre-filled into the exact fields CDP, EcoVadis, and Walmart ask for. No manual translation." },
+              { title: "Audit Trail", desc: "Every number traced to its source. Methodology documented. Ready for your customer's auditor." },
             ].map(({ title, desc }) => (
-              <div
-                key={title}
-                className="p-6"
-                style={{
-                  background: "var(--surface)",
-                  border: "1px solid var(--divider)",
-                  borderRadius: "var(--radius-sm)",
-                  boxShadow: "var(--shadow-card)",
-                }}
-              >
-                <h3 className="font-semibold font-display" style={{ color: "var(--text)" }}>
-                  {title}
-                </h3>
-                <p className="mt-3 text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>
-                  {desc}
-                </p>
+              <div key={title} className="p-6" style={{ background: "var(--bg)", borderRadius: "var(--radius-sm)" }}>
+                <h3 className="font-semibold font-display" style={{ color: "var(--text)" }}>{title}</h3>
+                <p className="mt-3 text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>{desc}</p>
               </div>
             ))}
           </div>
@@ -293,7 +287,7 @@ export default async function Landing() {
       </section>
 
       {/* About */}
-      <section id="about" className="py-24" style={{ background: "var(--surface)" }}>
+      <section id="about" className="py-24">
         <div className="mx-auto max-w-6xl px-6">
           <div className="grid gap-16 sm:grid-cols-2 items-start">
             <div>
@@ -314,21 +308,9 @@ export default async function Landing() {
                 { stat: "3 days", label: "Average time to first completed report" },
                 { stat: "10+", label: "Questionnaire frameworks supported" },
               ].map(({ stat, label }) => (
-                <div
-                  key={stat}
-                  className="p-5"
-                  style={{
-                    background: "var(--primary-tint)",
-                    border: "1px solid var(--divider)",
-                    borderRadius: "var(--radius-sm)",
-                  }}
-                >
-                  <div className="text-2xl font-bold font-data" style={{ color: "var(--primary)" }}>
-                    {stat}
-                  </div>
-                  <div className="mt-1 text-xs leading-snug" style={{ color: "var(--text-muted)" }}>
-                    {label}
-                  </div>
+                <div key={stat} className="p-5" style={{ background: "var(--card)", borderRadius: "var(--radius-sm)" }}>
+                  <div className="text-2xl font-bold font-data" style={{ color: "var(--primary)" }}>{stat}</div>
+                  <div className="mt-1 text-xs leading-snug" style={{ color: "var(--text-muted)" }}>{label}</div>
                 </div>
               ))}
             </div>
@@ -339,25 +321,15 @@ export default async function Landing() {
       {/* Demo CTA */}
       <section className="py-24" style={{ background: "var(--primary)" }}>
         <div className="mx-auto max-w-6xl px-6 text-center">
-          <h2 className="text-2xl font-bold font-display text-white sm:text-3xl">
-            See it in action
-          </h2>
+          <h2 className="text-2xl font-bold font-display text-white sm:text-3xl">See it in action</h2>
           <p className="mt-4 max-w-md mx-auto text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.7)" }}>
             Book a 20-minute walkthrough. We&rsquo;ll show you how GreenTrack handles a real questionnaire end to end.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-4">
-            <Link
-              href="/demo"
-              className="btn px-6 py-3 text-sm font-semibold"
-              style={{ background: "var(--surface)", color: "var(--primary)", border: "none" }}
-            >
+            <Link href="/demo" className="btn px-6 py-3 text-sm font-semibold" style={{ background: "#fff", color: "var(--primary)", border: "none" }}>
               Request a demo
             </Link>
-            <Link
-              href="/signup"
-              className="btn px-6 py-3 text-sm font-semibold"
-              style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.4)", color: "#fff" }}
-            >
+            <Link href="/signup" className="btn px-6 py-3 text-sm font-semibold" style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.4)", color: "#fff" }}>
               Get started free
             </Link>
           </div>
@@ -368,27 +340,16 @@ export default async function Landing() {
       <footer className="py-10" style={{ background: "#2A4A37" }}>
         <div className="mx-auto max-w-6xl px-6 flex flex-col sm:flex-row items-center justify-between gap-6">
           <span className="flex items-center gap-2 text-lg font-bold font-display text-white">
-            <span
-              className="flex h-7 w-7 items-center justify-center text-sm font-bold text-white"
-              style={{ background: "var(--primary)", borderRadius: "8px" }}
-            >
-              G
-            </span>
+            <span className="flex h-7 w-7 items-center justify-center text-sm font-bold text-white" style={{ background: "var(--primary)", borderRadius: "8px" }}>G</span>
             GreenTrack
           </span>
           <p className="text-xs" style={{ color: "rgba(255,255,255,0.45)" }}>
             © {new Date().getFullYear()} GreenTrack. Built in California.
           </p>
           <div className="flex gap-6">
-            <Link href="/login" className="text-xs transition-opacity hover:opacity-100" style={{ color: "rgba(255,255,255,0.45)" }}>
-              Sign in
-            </Link>
-            <Link href="/demo" className="text-xs transition-opacity hover:opacity-100" style={{ color: "rgba(255,255,255,0.45)" }}>
-              Request demo
-            </Link>
-            <Link href="/signup" className="text-xs transition-opacity hover:opacity-100" style={{ color: "rgba(255,255,255,0.45)" }}>
-              Get started
-            </Link>
+            <Link href="/login" className="text-xs transition-opacity hover:opacity-100" style={{ color: "rgba(255,255,255,0.45)" }}>Sign in</Link>
+            <Link href="/demo" className="text-xs transition-opacity hover:opacity-100" style={{ color: "rgba(255,255,255,0.45)" }}>Request demo</Link>
+            <Link href="/signup" className="text-xs transition-opacity hover:opacity-100" style={{ color: "rgba(255,255,255,0.45)" }}>Get started</Link>
           </div>
         </div>
       </footer>
