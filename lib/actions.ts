@@ -27,6 +27,42 @@ import { refreshSectionStatus } from "./progress";
 import { logChange } from "./audit";
 import { createCompanyRecord } from "./newcompany";
 import { sendWelcomeEmail } from "./email";
+import type { UtilityMeter, UtilityBill } from "./utilityapi";
+import type { Location } from "./types";
+
+// Match a meter's service_address to the closest location by city or zip.
+function locationForMeter(meter: UtilityMeter, locations: Location[]): string {
+  const addr = meter.service_address.toLowerCase();
+  for (const loc of locations) {
+    if (loc.zip && addr.includes(loc.zip)) return loc.id;
+    if (loc.city && addr.includes(loc.city.toLowerCase())) return loc.id;
+  }
+  return locations[0]?.id ?? "default";
+}
+
+// Aggregate bills into monthly kWh/therms keyed by locationId+month.
+function aggregateBills(
+  bills: UtilityBill[],
+  meters: UtilityMeter[],
+  locations: Location[]
+): { locationId: string; month: string; kwh: number; therms: number }[] {
+  const meterLoc: Record<string, string> = {};
+  for (const m of meters) meterLoc[m.uid] = locationForMeter(m, locations);
+
+  const monthly: Record<string, { kwh: number; therms: number }> = {};
+  for (const bill of bills) {
+    const locId = meterLoc[bill.meter_uid] ?? locations[0]?.id ?? "default";
+    const month = bill.base.bill_start_date.substring(0, 7);
+    const key = `${locId}|${month}`;
+    if (!monthly[key]) monthly[key] = { kwh: 0, therms: 0 };
+    monthly[key].kwh += bill.base.kwh ?? 0;
+    monthly[key].therms += bill.base.therms ?? 0;
+  }
+  return Object.entries(monthly).map(([key, v]) => {
+    const [locationId, month] = key.split("|");
+    return { locationId, month, kwh: v.kwh, therms: v.therms };
+  });
+}
 
 async function requireUser(): Promise<{ user: User; company: Company }> {
   const user = await currentUser();
@@ -245,21 +281,7 @@ export async function syncUtilityByUid(formData: FormData) {
     redirect("/connections?util_error=api_error");
   }
 
-  const defaultLocationId = company.locations[0]?.id ?? "default";
-  const monthly: Record<string, { kwh: number; therms: number }> = {};
-  for (const bill of bills) {
-    const month = bill.base.bill_start_date.substring(0, 7);
-    if (!monthly[month]) monthly[month] = { kwh: 0, therms: 0 };
-    monthly[month].kwh += bill.base.kwh ?? 0;
-    monthly[month].therms += bill.base.therms ?? 0;
-  }
-
-  company.utilityData = Object.entries(monthly).map(([month, v]) => ({
-    locationId: defaultLocationId,
-    month,
-    kwh: v.kwh,
-    therms: v.therms,
-  }));
+  company.utilityData = aggregateBills(bills, meters, company.locations);
   company.connections.utility = {
     ...company.connections.utility,
     connected: true,
@@ -322,21 +344,7 @@ export async function syncUtilityNow() {
     redirect("/connections?util_error=api_error");
   }
 
-  const defaultLocationId = company.locations[0]?.id ?? "default";
-  const monthly: Record<string, { kwh: number; therms: number }> = {};
-  for (const bill of bills) {
-    const month = bill.base.bill_start_date.substring(0, 7);
-    if (!monthly[month]) monthly[month] = { kwh: 0, therms: 0 };
-    monthly[month].kwh += bill.base.kwh ?? 0;
-    monthly[month].therms += bill.base.therms ?? 0;
-  }
-
-  company.utilityData = Object.entries(monthly).map(([month, v]) => ({
-    locationId: defaultLocationId,
-    month,
-    kwh: v.kwh,
-    therms: v.therms,
-  }));
+  company.utilityData = aggregateBills(bills, meters, company.locations);
   company.connections.utility = {
     ...company.connections.utility,
     connected: true,
@@ -374,20 +382,7 @@ export async function resync(which: "quickbooks" | "utility") {
     if (authUid) {
       const meters = await getMeters(authUid);
       const bills = await getBills(meters.map((m) => m.uid));
-      const defaultLocationId = company.locations[0]?.id ?? "default";
-      const monthly: Record<string, { kwh: number; therms: number }> = {};
-      for (const bill of bills) {
-        const month = bill.base.bill_start_date.substring(0, 7);
-        if (!monthly[month]) monthly[month] = { kwh: 0, therms: 0 };
-        monthly[month].kwh += bill.base.kwh ?? 0;
-        monthly[month].therms += bill.base.therms ?? 0;
-      }
-      company.utilityData = Object.entries(monthly).map(([month, v]) => ({
-        locationId: defaultLocationId,
-        month,
-        kwh: v.kwh,
-        therms: v.therms,
-      }));
+      company.utilityData = aggregateBills(bills, meters, company.locations);
     } else {
       company.utilityData = generateUtilityData(company);
     }
