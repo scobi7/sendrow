@@ -3,8 +3,7 @@ import { currentUser } from "@/lib/auth";
 import { loadCompany } from "@/lib/store";
 import { totals } from "@/lib/calc";
 import { canGenerateReport, progressPercent } from "@/lib/progress";
-import { KpiCard, IntegrationCard, ComplianceTracker, StatusDot, ProgressBar } from "@/components/ui";
-import { ScopeChartToggle } from "@/components/scope-chart";
+import { IntegrationCard, ComplianceTracker, StatusDot, ProgressBar, ScopeBarChart, ScopeDonutChart } from "@/components/ui";
 import { SectionName } from "@/lib/types";
 
 const SECTIONS: [SectionName, string, string, string][] = [
@@ -35,13 +34,19 @@ export default async function Dashboard() {
   const qb = company.connections.quickbooks;
   const util = company.connections.utility;
 
+  const chartData = [
+    { label: "Scope 1", value: t.scope1 },
+    { label: "Scope 2", value: t.scope2Location },
+    { label: "Scope 3", value: t.scope3 },
+  ];
+
   return (
-    <div className="mx-auto max-w-5xl">
+    <div className="mx-auto max-w-5xl space-y-6">
 
       {/* Header */}
-      <div className="mb-8 flex items-start justify-between">
+      <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold font-display" style={{ color: "var(--text)" }}>
+          <h1 className="text-2xl font-extrabold font-display" style={{ color: "var(--text)" }}>
             Welcome back, {user.name.split(" ")[0]}
           </h1>
           <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>{company.name}</p>
@@ -55,20 +60,19 @@ export default async function Dashboard() {
         </Link>
       </div>
 
-      {/* Progress bar */}
-      <div className="mb-2 flex items-center justify-between text-sm">
-        <span className="font-medium" style={{ color: "var(--text-muted)" }}>Overall progress</span>
-        <span className="font-semibold font-data" style={{ color: "var(--text)" }}>{pct}%</span>
+      {/* Progress */}
+      <div>
+        <div className="mb-2 flex items-center justify-between text-sm">
+          <span className="font-medium" style={{ color: "var(--text-muted)" }}>Overall progress</span>
+          <span className="font-semibold font-data" style={{ color: "var(--text)" }}>{pct}%</span>
+        </div>
+        <ProgressBar percent={pct} />
       </div>
-      <ProgressBar percent={pct} className="mb-6" />
 
-      {/* Reporting status stepper */}
-      <div
-        className="mb-8 p-5"
-        style={{ background: "var(--card)", borderRadius: "var(--radius-lg)" }}
-      >
-        <h2 className="mb-4 text-xs font-bold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
-          Reporting status
+      {/* Stepper */}
+      <div className="p-5" style={{ background: "var(--card)", borderRadius: "var(--radius-lg)" }}>
+        <h2 className="mb-4 text-xs font-bold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
+          Reporting Status
         </h2>
         <ComplianceTracker steps={STEP_LABELS} currentIndex={trackerIndex} />
       </div>
@@ -76,7 +80,7 @@ export default async function Dashboard() {
       {firstTime && (
         <Link
           href="/connections"
-          className="mb-6 block px-5 py-4 text-sm font-medium transition-opacity hover:opacity-80"
+          className="block px-5 py-4 text-sm font-medium transition-opacity hover:opacity-80"
           style={{
             background: "var(--card)",
             border: "1px solid var(--primary)",
@@ -88,73 +92,125 @@ export default async function Dashboard() {
         </Link>
       )}
 
-      {/* KPI strip — 4 cards */}
-      <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <KpiCard label="Total emissions" value={`${fmt(t.total)} tCO₂e`} caption="YTD, Scopes 1–3" />
-        <KpiCard label="Scope 1" value={`${fmt(t.scope1)} tCO₂e`} caption="Direct emissions" />
-        <KpiCard label="Scope 2" value={`${fmt(t.scope2Location)} tCO₂e`} caption="Purchased energy" />
-        <KpiCard
-          label="Progress"
-          value={`${pct}%`}
-          caption={remaining > 0 ? `${remaining} section${remaining !== 1 ? "s" : ""} remaining` : "All sections complete"}
-        />
+      {/* ── KPI cards ── */}
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        {[
+          {
+            label: "Total Emissions",
+            value: fmt(t.total),
+            caption: "tCO₂e · YTD",
+            accent: false,
+          },
+          {
+            label: "Scope 1",
+            value: fmt(t.scope1),
+            caption: "Direct · tCO₂e",
+            accent: false,
+          },
+          {
+            label: "Scope 2",
+            value: fmt(t.scope2Location),
+            caption: "Electricity · tCO₂e",
+            accent: false,
+          },
+          {
+            label: "Progress",
+            value: `${pct}%`,
+            caption: remaining > 0
+              ? `${remaining} of 7 complete`
+              : "All sections complete",
+            accent: true,
+          },
+        ].map(({ label, value, caption, accent }) => (
+          <div
+            key={label}
+            className="flex flex-col justify-between rounded-2xl p-6"
+            style={{ background: "var(--card)", border: "1px solid rgba(15,50,28,0.06)" }}
+          >
+            <p
+              className="text-xs font-bold uppercase tracking-widest"
+              style={{ color: "var(--text-muted)" }}
+            >
+              {label}
+            </p>
+            <p
+              className="mt-3 font-data text-4xl font-extrabold leading-none sm:text-5xl"
+              style={{ color: accent ? "var(--primary)" : "var(--text)" }}
+            >
+              {value}
+            </p>
+            <p className="mt-2 text-xs" style={{ color: "var(--text-muted)" }}>
+              {caption}
+            </p>
+          </div>
+        ))}
       </div>
 
-      {/* Integration cards */}
-      <div className="mb-8 grid gap-3 sm:grid-cols-2">
+      {/* ── Chart panels ── */}
+      <div className="grid gap-4 sm:grid-cols-2">
+        {/* Bar chart */}
+        <div
+          className="rounded-2xl p-6"
+          style={{ background: "var(--card)", border: "1px solid rgba(15,50,28,0.06)" }}
+        >
+          <p
+            className="mb-5 text-xs font-bold uppercase tracking-widest"
+            style={{ color: "var(--text-muted)" }}
+          >
+            Emissions by Scope
+          </p>
+          <ScopeBarChart data={chartData} />
+        </div>
+
+        {/* Donut chart */}
+        <div
+          className="rounded-2xl p-6"
+          style={{ background: "var(--card)", border: "1px solid rgba(15,50,28,0.06)" }}
+        >
+          <p
+            className="mb-5 text-xs font-bold uppercase tracking-widest"
+            style={{ color: "var(--text-muted)" }}
+          >
+            Scope Breakdown
+          </p>
+          <ScopeDonutChart data={chartData} />
+        </div>
+      </div>
+
+      {/* ── Integration cards ── */}
+      <div className="grid gap-3 sm:grid-cols-2">
         <IntegrationCard name="QuickBooks" initials="QB" connected={qb.connected} lastSynced={qb.lastSynced} />
         <IntegrationCard name="Utility Account" initials="U" connected={util.connected} lastSynced={util.lastSynced} />
       </div>
 
-      {/* Main grid — checklist + chart */}
-      <div className="grid gap-6 lg:grid-cols-3">
-
-        {/* Section checklist */}
-        <div className="space-y-3 lg:col-span-2">
-          {SECTIONS.map(([key, name, href, help]) => {
-            const status = company.sectionStatus[key];
-            return (
-              <div
-                key={key}
-                className="flex items-center justify-between px-5 py-4"
-                style={{
-                  background: "var(--card)",
-                  borderRadius: "var(--radius-sm)",
-                }}
-              >
-                <div className="flex items-center gap-3">
-                  <StatusDot status={status} />
-                  <div>
-                    <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>{name}</p>
-                    <p className="text-xs" style={{ color: "var(--text-muted)" }}>{help}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-4">
-                  <span className="text-xs font-medium capitalize" style={{ color: "var(--text-muted)" }}>
-                    {status.replace("_", " ")}
-                  </span>
-                  <Link href={href} className="btn btn-secondary px-3 py-1.5 text-xs">Go</Link>
+      {/* ── Section checklist ── */}
+      <div className="space-y-3">
+        {SECTIONS.map(([key, name, href, help]) => {
+          const status = company.sectionStatus[key];
+          return (
+            <div
+              key={key}
+              className="flex items-center justify-between px-5 py-4"
+              style={{ background: "var(--card)", borderRadius: "var(--radius-sm)" }}
+            >
+              <div className="flex items-center gap-3">
+                <StatusDot status={status} />
+                <div>
+                  <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>{name}</p>
+                  <p className="text-xs" style={{ color: "var(--text-muted)" }}>{help}</p>
                 </div>
               </div>
-            );
-          })}
-        </div>
-
-        {/* Scope chart with toggle */}
-        <div
-          className="h-fit p-5"
-          style={{ background: "var(--card)", borderRadius: "var(--radius-lg)" }}
-        >
-          <ScopeChartToggle
-            data={[
-              { label: "Scope 1", value: t.scope1 },
-              { label: "Scope 2", value: t.scope2Location },
-              { label: "Scope 3", value: t.scope3 },
-            ]}
-          />
-        </div>
-
+              <div className="flex items-center gap-4">
+                <span className="text-xs font-medium capitalize" style={{ color: "var(--text-muted)" }}>
+                  {status.replace("_", " ")}
+                </span>
+                <Link href={href} className="btn btn-secondary px-3 py-1.5 text-xs">Go</Link>
+              </div>
+            </div>
+          );
+        })}
       </div>
+
     </div>
   );
 }
