@@ -27,13 +27,22 @@ export default async function NewClientPage({
   const { error } = await searchParams;
   return (
     <div className="mx-auto max-w-lg">
-      <Link href="/consultant" className="mb-4 inline-block text-sm text-emerald-700 hover:underline">
+      <Link
+        href="/consultant"
+        className="mb-4 inline-block text-sm font-medium transition-opacity hover:opacity-70"
+        style={{ color: "var(--primary)" }}
+      >
         ← Back to clients
       </Link>
       <PageHeader title="Add New Client" subtitle="Create a client profile and generate an invite link." />
 
       {error && (
-        <p className="mb-4 rounded-lg bg-red-50 px-4 py-2 text-sm text-red-700">{error}</p>
+        <p
+          className="mb-4 rounded-lg px-4 py-2 text-sm"
+          style={{ background: "var(--danger-tint)", color: "var(--danger)" }}
+        >
+          {error}
+        </p>
       )}
 
       <form action={consultantAddClient} className="card space-y-4">
@@ -46,9 +55,7 @@ export default async function NewClientPage({
           <select name="industry" className="input">
             <option value="">Select industry…</option>
             {INDUSTRIES.map((i) => (
-              <option key={i} value={i}>
-                {i}
-              </option>
+              <option key={i} value={i}>{i}</option>
             ))}
           </select>
         </div>
@@ -57,22 +64,16 @@ export default async function NewClientPage({
           <select name="headcount" className="input">
             <option value="">Select range…</option>
             {HEADCOUNTS.map((h) => (
-              <option key={h.value} value={h.value}>
-                {h.label}
-              </option>
+              <option key={h.value} value={h.value}>{h.label}</option>
             ))}
           </select>
         </div>
-        <p className="text-xs text-slate-400">
+        <p className="text-xs" style={{ color: "var(--text-muted)" }}>
           After adding the client, you'll be able to generate an invite link for them to connect their account.
         </p>
         <div className="flex justify-end gap-3">
-          <Link href="/consultant" className="btn-secondary">
-            Cancel
-          </Link>
-          <button type="submit" className="btn-primary">
-            Add Client
-          </button>
+          <Link href="/consultant" className="btn btn-secondary">Cancel</Link>
+          <button type="submit" className="btn btn-primary">Add Client</button>
         </div>
       </form>
     </div>

@@ -13,28 +13,48 @@ export function MobileNav({ companyName, email }: { companyName: string; email: 
 
   return (
     <>
-      <header className="flex items-center justify-between px-4 py-3 sm:hidden no-print"
-        style={{ borderBottom: "1px solid var(--border)", background: "var(--surface)" }}>
+      <header
+        className="flex items-center justify-between px-4 py-3 sm:hidden no-print"
+        style={{ borderBottom: "1px solid var(--divider)", background: "var(--surface)" }}
+      >
         <Logo />
-        <button onClick={() => setOpen(true)} aria-label="Open menu"
+        <button
+          onClick={() => setOpen(true)}
+          aria-label="Open menu"
           className="flex h-9 w-9 items-center justify-center rounded-lg transition-colors"
-          style={{ color: "var(--text-2)" }}>
+          style={{ color: "var(--text-muted)" }}
+        >
           <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </button>
       </header>
 
-      {open && <div className="fixed inset-0 z-40 bg-black/40 sm:hidden" onClick={() => setOpen(false)} aria-hidden />}
+      {open && (
+        <div
+          className="fixed inset-0 z-40 bg-black/40 sm:hidden"
+          onClick={() => setOpen(false)}
+          aria-hidden
+        />
+      )}
 
-      <div className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col shadow-xl transition-transform duration-200 sm:hidden ${open ? "translate-x-0" : "-translate-x-full"}`}
-        style={{ background: "var(--surface)" }}>
-        <div className="flex h-14 items-center justify-between px-4"
-          style={{ borderBottom: "1px solid var(--border-soft)" }}>
+      <div
+        className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col shadow-xl transition-transform duration-200 sm:hidden ${
+          open ? "translate-x-0" : "-translate-x-full"
+        }`}
+        style={{ background: "var(--surface)" }}
+      >
+        <div
+          className="flex h-14 items-center justify-between px-4"
+          style={{ borderBottom: "1px solid var(--divider)" }}
+        >
           <Logo />
-          <button onClick={() => setOpen(false)} aria-label="Close menu"
+          <button
+            onClick={() => setOpen(false)}
+            aria-label="Close menu"
             className="flex h-8 w-8 items-center justify-center rounded-lg"
-            style={{ color: "var(--text-3)" }}>
+            style={{ color: "var(--text-muted)" }}
+          >
             <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -43,9 +63,9 @@ export function MobileNav({ companyName, email }: { companyName: string; email: 
         <div className="flex flex-1 flex-col overflow-y-auto px-3 py-3">
           <NavLinks />
         </div>
-        <div className="px-4 py-3" style={{ borderTop: "1px solid var(--border-soft)" }}>
-          <p className="truncate text-xs font-semibold" style={{ color: "var(--text-1)" }}>{companyName}</p>
-          <p className="truncate text-xs" style={{ color: "var(--text-3)" }}>{email}</p>
+        <div className="px-4 py-3" style={{ borderTop: "1px solid var(--divider)" }}>
+          <p className="truncate text-xs font-semibold" style={{ color: "var(--text)" }}>{companyName}</p>
+          <p className="truncate text-xs" style={{ color: "var(--text-muted)" }}>{email}</p>
           <LogoutButton />
         </div>
       </div>

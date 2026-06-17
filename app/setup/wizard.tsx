@@ -54,58 +54,81 @@ export default function SetupWizard({ companyName }: { companyName: string }) {
   }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-xl flex-col px-6 py-10">
+    <main className="mx-auto flex min-h-screen max-w-xl flex-col px-6 py-10" style={{ background: "var(--bg)" }}>
       <div className="mb-8 flex justify-center"><Logo /></div>
-      <p className="mb-2 text-center text-sm text-slate-500">Step {step} of 4 — {companyName}</p>
+      <p className="mb-2 text-center text-sm" style={{ color: "var(--text-muted)" }}>
+        Step {step} of 4 — {companyName}
+      </p>
       <ProgressBar percent={(step / 4) * 100} className="mb-10" />
 
       {step === 1 && (
         <div className="card">
-          <h1 className="text-lg font-bold text-navy-900">What industry is your company in?</h1>
-          <p className="mt-1 text-sm text-slate-500">This determines which emissions categories matter most for you.</p>
+          <h1 className="text-lg font-bold font-display" style={{ color: "var(--text)" }}>
+            What industry is your company in?
+          </h1>
+          <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>
+            This determines which emissions categories matter most for you.
+          </p>
           <select className="input mt-4" value={industry} onChange={(e) => setIndustry(e.target.value)}>
             <option value="">Select an industry…</option>
             {INDUSTRIES.map((i) => <option key={i}>{i}</option>)}
           </select>
           <div className="mt-6 flex justify-end">
-            <button className="btn-primary" disabled={!industry} onClick={() => setStep(2)}>Next</button>
+            <button className="btn btn-primary" disabled={!industry} onClick={() => setStep(2)}>Next</button>
           </div>
         </div>
       )}
 
       {step === 2 && (
         <div className="card">
-          <h1 className="text-lg font-bold text-navy-900">How many employees does your company have?</h1>
+          <h1 className="text-lg font-bold font-display" style={{ color: "var(--text)" }}>
+            How many employees does your company have?
+          </h1>
           <div className="mt-4 grid grid-cols-2 gap-3">
             {HEADCOUNTS.map(([value, label]) => (
               <button
                 key={value}
                 onClick={() => setHeadcount(value)}
-                className={`rounded-lg border px-4 py-4 text-sm font-medium transition ${
-                  headcount === value ? "border-brand-600 bg-brand-50 text-brand-800" : "border-slate-300 bg-white text-slate-700 hover:border-brand-400"
-                }`}
+                className="rounded-lg border px-4 py-4 text-sm font-medium transition-colors"
+                style={
+                  headcount === value
+                    ? { border: "1px solid var(--primary)", background: "var(--primary-tint)", color: "var(--primary)" }
+                    : { border: "1px solid var(--divider)", background: "var(--surface)", color: "var(--text)" }
+                }
               >
                 {label}
               </button>
             ))}
           </div>
           <div className="mt-6 flex justify-between">
-            <button className="btn-secondary" onClick={() => setStep(1)}>Back</button>
-            <button className="btn-primary" disabled={!headcount} onClick={() => setStep(3)}>Next</button>
+            <button className="btn btn-secondary" onClick={() => setStep(1)}>Back</button>
+            <button className="btn btn-primary" disabled={!headcount} onClick={() => setStep(3)}>Next</button>
           </div>
         </div>
       )}
 
       {step === 3 && (
         <div className="card">
-          <h1 className="text-lg font-bold text-navy-900">How many physical locations does your company operate?</h1>
-          <p className="mt-1 text-sm text-slate-500">Each location will need its own electricity and gas data. Different grid regions have different emission factors.</p>
-          <input type="number" min={1} max={20} className="input mt-4 w-28" value={locCount}
-            onChange={(e) => updateLocCount(Number(e.target.value))} />
+          <h1 className="text-lg font-bold font-display" style={{ color: "var(--text)" }}>
+            How many physical locations does your company operate?
+          </h1>
+          <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>
+            Each location will need its own electricity and gas data. Different grid regions have different emission factors.
+          </p>
+          <input
+            type="number"
+            min={1}
+            max={20}
+            className="input mt-4 w-28"
+            value={locCount}
+            onChange={(e) => updateLocCount(Number(e.target.value))}
+          />
           <div className="mt-4 space-y-4">
             {locations.map((l, i) => (
-              <div key={i} className="rounded-lg border border-slate-200 p-4">
-                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Location {i + 1}</p>
+              <div key={i} className="rounded-lg p-4" style={{ border: "1px solid var(--divider)" }}>
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
+                  Location {i + 1}
+                </p>
                 <div className="grid grid-cols-2 gap-3">
                   <input className="input col-span-2" placeholder="Street address" value={l.address} onChange={(e) => setLocField(i, "address", e.target.value)} />
                   <input className="input" placeholder="City" value={l.city} onChange={(e) => setLocField(i, "city", e.target.value)} />
@@ -118,22 +141,26 @@ export default function SetupWizard({ companyName }: { companyName: string }) {
             ))}
           </div>
           <div className="mt-6 flex justify-between">
-            <button className="btn-secondary" onClick={() => setStep(2)}>Back</button>
-            <button className="btn-primary" disabled={locations.some((l) => !l.city || !l.state)} onClick={() => setStep(4)}>Next</button>
+            <button className="btn btn-secondary" onClick={() => setStep(2)}>Back</button>
+            <button className="btn btn-primary" disabled={locations.some((l) => !l.city || !l.state)} onClick={() => setStep(4)}>Next</button>
           </div>
         </div>
       )}
 
       {step === 4 && (
         <div className="card">
-          <h1 className="text-lg font-bold text-navy-900">When does your fiscal year end?</h1>
-          <p className="mt-1 text-sm text-slate-500">All data collection and calculations cover the 12 months ending on this month.</p>
+          <h1 className="text-lg font-bold font-display" style={{ color: "var(--text)" }}>
+            When does your fiscal year end?
+          </h1>
+          <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>
+            All data collection and calculations cover the 12 months ending on this month.
+          </p>
           <select className="input mt-4" value={fyEnd} onChange={(e) => setFyEnd(Number(e.target.value))}>
             {MONTHS.map((m, i) => <option key={m} value={i + 1}>{m}</option>)}
           </select>
           <div className="mt-6 flex justify-between">
-            <button className="btn-secondary" onClick={() => setStep(3)}>Back</button>
-            <button className="btn-primary" disabled={submitting} onClick={finish}>
+            <button className="btn btn-secondary" onClick={() => setStep(3)}>Back</button>
+            <button className="btn btn-primary" disabled={submitting} onClick={finish}>
               {submitting ? "Saving…" : "Finish Setup"}
             </button>
           </div>

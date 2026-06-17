@@ -16,44 +16,62 @@ export default async function Scope3() {
 
   return (
     <div className="mx-auto max-w-3xl">
-      <PageHeader title="Scope 3 — Your Value Chain Emissions"
-        subtitle="Usually the largest part of your footprint. We have pre-filled what we can from your QuickBooks data." />
+      <PageHeader
+        title="Scope 3 — Your Value Chain Emissions"
+        subtitle="Usually the largest part of your footprint. We have pre-filled what we can from your QuickBooks data."
+      />
 
       {!qbConnected && (
-        <Link href="/connections" className="mb-6 block rounded-xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm font-medium text-amber-800 hover:bg-amber-100">
+        <Link
+          href="/connections"
+          className="mb-6 block px-5 py-4 text-sm font-medium transition-opacity hover:opacity-80"
+          style={{
+            borderRadius: "var(--radius-sm)",
+            border: "1px solid var(--warning-tint)",
+            background: "var(--warning-tint)",
+            color: "var(--warning)",
+          }}
+        >
           Connect QuickBooks to pre-fill business travel, purchased goods, and freight automatically →
         </Link>
       )}
 
       {qbConnected && (
         <div className="card mb-5">
-          <h2 className="font-semibold text-navy-900">Pre-filled from QuickBooks</h2>
+          <h2 className="font-semibold font-display" style={{ color: "var(--text)" }}>Pre-filled from QuickBooks</h2>
           <div className="mt-3 space-y-2 text-sm">
             {[
               ["Business travel", "Airlines, hotels, and car rentals from your vendor spend", find("business travel")],
               ["Purchased goods & services", "All other vendor spend, by expense category", find("purchased goods")],
               ["Upstream freight", "Freight and delivery vendor spend", find("upstream freight")],
             ].map(([title, desc, tons]) => (
-              <div key={title as string} className="flex items-center justify-between rounded-lg bg-slate-50 px-4 py-3">
+              <div
+                key={title as string}
+                className="flex items-center justify-between rounded-lg px-4 py-3"
+                style={{ background: "var(--bg)" }}
+              >
                 <div>
-                  <p className="font-medium text-navy-900">{title}</p>
-                  <p className="text-xs text-slate-400">{desc}</p>
+                  <p className="font-medium" style={{ color: "var(--text)" }}>{title}</p>
+                  <p className="text-xs" style={{ color: "var(--text-muted)" }}>{desc}</p>
                 </div>
-                <span className="font-bold text-brand-700">{(tons as number).toLocaleString("en-US", { maximumFractionDigits: 1 })} tCO2e</span>
+                <span className="font-bold font-data" style={{ color: "var(--primary)" }}>
+                  {(tons as number).toLocaleString("en-US", { maximumFractionDigits: 1 })} tCO2e
+                </span>
               </div>
             ))}
           </div>
-          <p className="mt-3 text-xs text-slate-400">
+          <p className="mt-3 text-xs" style={{ color: "var(--text-muted)" }}>
             Calculated with spend-based USEEIO emission factors. Review category totals on the{" "}
-            <Link href="/connections" className="text-brand-700 underline">Connections page</Link> and correct miscategorized vendors in QuickBooks.
+            <Link href="/connections" className="underline" style={{ color: "var(--primary)" }}>Connections page</Link>{" "}
+            and correct miscategorized vendors in QuickBooks.
           </p>
           <form action={saveFields}>
             <input type="hidden" name="redirect_to" value="/scope3" />
-            <label className="mt-4 flex items-center gap-2 text-sm font-medium text-navy-900">
+            <label className="mt-4 flex items-center gap-2 text-sm font-medium" style={{ color: "var(--text)" }}>
               <input type="checkbox" name="qb_data_reviewed" value="true" defaultChecked={!!inp.qb_data_reviewed} />
               I have reviewed the pre-filled data and corrected any miscategorizations
             </label>
-            <button className="btn-secondary mt-3 px-3 py-1.5 text-xs">Save review status</button>
+            <button className="btn btn-secondary mt-3 px-3 py-1.5 text-xs">Save review status</button>
           </form>
         </div>
       )}
@@ -62,7 +80,7 @@ export default async function Scope3() {
         <input type="hidden" name="redirect_to" value="/scope3" />
 
         <div className="card">
-          <h2 className="font-semibold text-navy-900">
+          <h2 className="font-semibold font-display" style={{ color: "var(--text)" }}>
             Employee Commuting <InfoTip text="A rough average is fine — most companies estimate this. We use EPA per-mile factors and 235 working days, adjusted for office days per week." />
           </h2>
           <div className="mt-4 grid grid-cols-3 gap-4">
@@ -86,7 +104,7 @@ export default async function Scope3() {
         </div>
 
         <div className="card">
-          <h2 className="font-semibold text-navy-900">
+          <h2 className="font-semibold font-display" style={{ color: "var(--text)" }}>
             Waste Disposal <InfoTip text="Annual tons by disposal method — your waste hauler invoice has this. Estimates are acceptable for first-time reporters." />
           </h2>
           <div className="mt-4 grid grid-cols-3 gap-4">
@@ -107,32 +125,39 @@ export default async function Scope3() {
         </div>
 
         <div className="flex justify-end">
-          <button className="btn-primary">Save Scope 3</button>
+          <button className="btn btn-primary">Save Scope 3</button>
         </div>
       </form>
 
       <div className="card mt-5">
-        <h2 className="font-semibold text-navy-900">Remaining Categories</h2>
-        <p className="mt-1 text-sm text-slate-500">
+        <h2 className="font-semibold font-display" style={{ color: "var(--text)" }}>Remaining Categories</h2>
+        <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>
           First-time reporters typically skip these with documented justification — standard practice accepted by CDP and EcoVadis.
         </p>
         <div className="mt-4 space-y-2">
           {SCOPE3_OTHER_CATEGORIES.map((cat) => {
             const d = decisions[cat];
             return (
-              <div key={cat} className="flex items-center justify-between rounded-lg border border-slate-100 px-4 py-2.5 text-sm">
-                <span className="font-medium text-slate-700">{cat}</span>
+              <div
+                key={cat}
+                className="flex items-center justify-between rounded-lg px-4 py-2.5 text-sm"
+                style={{ border: "1px solid var(--divider)" }}
+              >
+                <span className="font-medium" style={{ color: "var(--text)" }}>{cat}</span>
                 {d ? (
-                  <span className={`text-xs font-semibold ${d === "na" ? "text-slate-400" : "text-amber-600"}`}>
+                  <span
+                    className="text-xs font-semibold"
+                    style={{ color: d === "na" ? "var(--text-muted)" : "var(--warning)" }}
+                  >
                     {d === "na" ? "Marked not applicable" : "Industry average estimate (low confidence)"}
                   </span>
                 ) : (
                   <span className="flex gap-2">
                     <form action={saveScope3Decision.bind(null, cat, "na")}>
-                      <button className="btn-secondary px-2.5 py-1 text-xs">Not applicable</button>
+                      <button className="btn btn-secondary px-2.5 py-1 text-xs">Not applicable</button>
                     </form>
                     <form action={saveScope3Decision.bind(null, cat, "industry_average")}>
-                      <button className="btn-secondary px-2.5 py-1 text-xs">Estimate w/ industry avg</button>
+                      <button className="btn btn-secondary px-2.5 py-1 text-xs">Estimate w/ industry avg</button>
                     </form>
                   </span>
                 )}

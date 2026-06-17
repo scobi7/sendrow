@@ -60,7 +60,6 @@ export default async function ClientDetailPage({
   const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 2 });
   const recent = recentAudit.slice(0, 10);
 
-  // TODO: update NEXT_PUBLIC_APP_URL to real domain when available
   const inviteUrl = inviteToken
     ? `${process.env.NEXT_PUBLIC_APP_URL ?? "https://greentrack-sigma.vercel.app"}/connect/${inviteToken}`
     : null;
@@ -70,27 +69,38 @@ export default async function ClientDetailPage({
 
   return (
     <div className="mx-auto max-w-4xl">
-      <Link href="/consultant" className="mb-4 inline-block text-sm text-emerald-700 hover:underline">
+      <Link
+        href="/consultant"
+        className="mb-4 inline-block text-sm font-medium transition-opacity hover:opacity-70"
+        style={{ color: "var(--primary)" }}
+      >
         ← Back to clients
       </Link>
 
       <div className="mb-6 flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">{company.name}</h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <h1 className="text-2xl font-bold font-display" style={{ color: "var(--text)" }}>{company.name}</h1>
+          <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>
             {company.industry ?? "Industry not set"} ·{" "}
             {company.headcountRange ? company.headcountRange.replace(/_/g, "–") : "Headcount not set"} employees
           </p>
         </div>
         <form action={boundArchive}>
-          <button className="text-xs text-slate-400 hover:text-red-600">Archive client</button>
+          <button className="text-xs transition-opacity hover:opacity-70" style={{ color: "var(--text-muted)" }}>
+            Archive client
+          </button>
         </form>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="space-y-4 lg:col-span-2">
           <div className="card">
-            <h2 className="text-sm font-bold uppercase tracking-wide text-slate-400">Section Progress</h2>
+            <h2
+              className="text-sm font-bold uppercase tracking-wide"
+              style={{ color: "var(--text-muted)" }}
+            >
+              Section Progress
+            </h2>
             <div className="mt-4 space-y-2">
               {SECTIONS.map(({ key, label, desc }) => {
                 const status = company.sectionStatus[key];
@@ -99,11 +109,11 @@ export default async function ClientDetailPage({
                     <div className="flex items-center gap-3">
                       <StatusDot status={status} />
                       <div>
-                        <p className="text-sm font-medium text-slate-900">{label}</p>
-                        <p className="text-xs text-slate-400">{desc}</p>
+                        <p className="text-sm font-medium" style={{ color: "var(--text)" }}>{label}</p>
+                        <p className="text-xs" style={{ color: "var(--text-muted)" }}>{desc}</p>
                       </div>
                     </div>
-                    <span className="text-xs font-medium capitalize text-slate-400">
+                    <span className="text-xs font-medium capitalize" style={{ color: "var(--text-muted)" }}>
                       {STATUS_LABEL[status] ?? status}
                     </span>
                   </div>
@@ -113,61 +123,70 @@ export default async function ClientDetailPage({
           </div>
 
           <div className="card">
-            <h2 className="text-sm font-bold uppercase tracking-wide text-slate-400">Client Invite Link</h2>
-            <p className="mt-2 text-sm text-slate-500">
+            <h2 className="text-sm font-bold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
+              Client Invite Link
+            </h2>
+            <p className="mt-2 text-sm" style={{ color: "var(--text-muted)" }}>
               Generate a 7-day invite link so your client can create their account and start entering data.
             </p>
             {inviteUrl ? (
               <div className="mt-3 space-y-2">
-                <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
-                  <span className="flex-1 truncate text-xs text-slate-600">{inviteUrl}</span>
+                <div
+                  className="flex items-center gap-2 rounded-lg px-3 py-2"
+                  style={{ border: "1px solid var(--divider)", background: "var(--bg)" }}
+                >
+                  <span className="flex-1 truncate text-xs" style={{ color: "var(--text)" }}>{inviteUrl}</span>
                   <CopyButton value={inviteUrl} />
                 </div>
-                <p className="text-xs text-slate-400">This link expires in 7 days.</p>
+                <p className="text-xs" style={{ color: "var(--text-muted)" }}>This link expires in 7 days.</p>
               </div>
             ) : (
               <form action={boundGenerate} className="mt-3">
-                <button className="btn-secondary text-sm">Generate invite link</button>
+                <button className="btn btn-secondary text-sm">Generate invite link</button>
               </form>
             )}
           </div>
 
           <div className="card">
-            <h2 className="text-sm font-bold uppercase tracking-wide text-slate-400">Data Connections</h2>
+            <h2 className="text-sm font-bold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
+              Data Connections
+            </h2>
             <div className="mt-4 space-y-4">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-sm font-medium text-slate-900">🧾 QuickBooks</p>
+                  <p className="text-sm font-medium" style={{ color: "var(--text)" }}>🧾 QuickBooks</p>
                   {company.connections.quickbooks.connected ? (
-                    <p className="text-xs text-emerald-700">
-                      ✓ Connected — last synced {company.connections.quickbooks.lastSynced
+                    <p className="text-xs" style={{ color: "var(--status-green)" }}>
+                      ✓ Connected — last synced{" "}
+                      {company.connections.quickbooks.lastSynced
                         ? new Date(company.connections.quickbooks.lastSynced).toLocaleDateString()
                         : "—"}
                     </p>
                   ) : (
-                    <p className="text-xs text-slate-400">Not connected</p>
+                    <p className="text-xs" style={{ color: "var(--text-muted)" }}>Not connected</p>
                   )}
                 </div>
                 {!company.connections.quickbooks.connected && process.env.QUICKBOOKS_CLIENT_ID && (
                   <a
                     href={`/api/auth/quickbooks/redirect?for=${company.id}`}
-                    className="btn-secondary shrink-0 px-3 py-1.5 text-xs"
+                    className="btn btn-secondary shrink-0 px-3 py-1.5 text-xs"
                   >
                     Connect QB
                   </a>
                 )}
               </div>
 
-              <div className="border-t border-slate-100 pt-4">
-                <p className="text-sm font-medium text-slate-900">⚡ Utility Account</p>
+              <div className="pt-4" style={{ borderTop: "1px solid var(--divider)" }}>
+                <p className="text-sm font-medium" style={{ color: "var(--text)" }}>⚡ Utility Account</p>
                 {company.connections.utility.connected ? (
-                  <p className="text-xs text-emerald-700">
-                    ✓ Connected — last synced {company.connections.utility.lastSynced
+                  <p className="text-xs" style={{ color: "var(--status-green)" }}>
+                    ✓ Connected — last synced{" "}
+                    {company.connections.utility.lastSynced
                       ? new Date(company.connections.utility.lastSynced).toLocaleDateString()
                       : "—"}
                   </p>
                 ) : company.connections.utility.authUid ? (
-                  <p className="text-xs text-amber-700">
+                  <p className="text-xs" style={{ color: "var(--warning)" }}>
                     Pending — auth sent to {company.connections.utility.authEmail}
                   </p>
                 ) : process.env.UTILITYAPI_FORM_URL ? (
@@ -182,34 +201,42 @@ export default async function ClientDetailPage({
                       placeholder="Client utility email"
                       className="input flex-1 text-xs"
                     />
-                    <button type="submit" className="btn-secondary shrink-0 px-3 py-1.5 text-xs">
+                    <button type="submit" className="btn btn-secondary shrink-0 px-3 py-1.5 text-xs">
                       Connect
                     </button>
                   </form>
                 ) : (
-                  <p className="text-xs text-slate-400">Not connected</p>
+                  <p className="text-xs" style={{ color: "var(--text-muted)" }}>Not connected</p>
                 )}
               </div>
             </div>
           </div>
 
           <div className="card">
-            <h2 className="text-sm font-bold uppercase tracking-wide text-slate-400">Recent Activity</h2>
+            <h2 className="text-sm font-bold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
+              Recent Activity
+            </h2>
             {recent.length === 0 ? (
-              <p className="mt-3 text-sm text-slate-400">No activity yet — client hasn't started filling in data.</p>
+              <p className="mt-3 text-sm" style={{ color: "var(--text-muted)" }}>
+                No activity yet — client hasn't started filling in data.
+              </p>
             ) : (
               <div className="mt-3 space-y-2">
                 {recent.map((row) => (
-                  <div key={row.id} className="flex items-start justify-between gap-4 border-b border-slate-100 pb-2 last:border-0">
+                  <div
+                    key={row.id}
+                    className="flex items-start justify-between gap-4 pb-2 last:border-0"
+                    style={{ borderBottom: "1px solid var(--divider)" }}
+                  >
                     <div>
-                      <span className="text-xs font-medium text-slate-700 capitalize">{row.section}</span>
-                      <span className="mx-1 text-slate-300">·</span>
-                      <span className="text-xs text-slate-500">{row.field}</span>
-                      <p className="text-xs text-slate-400">
+                      <span className="text-xs font-medium capitalize" style={{ color: "var(--text)" }}>{row.section}</span>
+                      <span className="mx-1" style={{ color: "var(--divider)" }}>·</span>
+                      <span className="text-xs" style={{ color: "var(--text-muted)" }}>{row.field}</span>
+                      <p className="text-xs" style={{ color: "var(--text-muted)" }}>
                         {row.prev} → {row.next}
                       </p>
                     </div>
-                    <span className="shrink-0 text-xs text-slate-300">
+                    <span className="shrink-0 text-xs" style={{ color: "var(--text-muted)" }}>
                       {new Date(row.ts).toLocaleDateString()}
                     </span>
                   </div>
@@ -220,30 +247,30 @@ export default async function ClientDetailPage({
         </div>
 
         <div className="card h-fit">
-          <h2 className="text-sm font-bold uppercase tracking-wide text-slate-400">Emissions Summary</h2>
+          <h2 className="text-sm font-bold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
+            Emissions Summary
+          </h2>
           <dl className="mt-4 space-y-3 text-sm">
-            <div className="flex justify-between">
-              <dt className="text-slate-600">Scope 1</dt>
-              <dd className="font-semibold">{fmt(t.scope1)} t</dd>
-            </div>
-            <div className="flex justify-between">
-              <dt className="text-slate-600">Scope 2 (location)</dt>
-              <dd className="font-semibold">{fmt(t.scope2Location)} t</dd>
-            </div>
-            <div className="flex justify-between">
-              <dt className="text-slate-600">Scope 2 (market)</dt>
-              <dd className="font-semibold">{fmt(t.scope2Market)} t</dd>
-            </div>
-            <div className="flex justify-between">
-              <dt className="text-slate-600">Scope 3</dt>
-              <dd className="font-semibold">{fmt(t.scope3)} t</dd>
-            </div>
-            <div className="flex justify-between border-t border-slate-200 pt-3 text-base">
-              <dt className="font-bold text-slate-900">Total CO2e</dt>
-              <dd className="font-bold text-emerald-700">{fmt(t.total)} t</dd>
+            {[
+              ["Scope 1", fmt(t.scope1)],
+              ["Scope 2 (location)", fmt(t.scope2Location)],
+              ["Scope 2 (market)", fmt(t.scope2Market)],
+              ["Scope 3", fmt(t.scope3)],
+            ].map(([label, val]) => (
+              <div key={label} className="flex justify-between">
+                <dt style={{ color: "var(--text-muted)" }}>{label}</dt>
+                <dd className="font-semibold font-data" style={{ color: "var(--text)" }}>{val} t</dd>
+              </div>
+            ))}
+            <div
+              className="flex justify-between pt-3 text-base"
+              style={{ borderTop: "1px solid var(--divider)" }}
+            >
+              <dt className="font-bold" style={{ color: "var(--text)" }}>Total CO2e</dt>
+              <dd className="font-bold font-data" style={{ color: "var(--primary)" }}>{fmt(t.total)} t</dd>
             </div>
           </dl>
-          <p className="mt-4 text-xs text-slate-400">Updates as client enters data.</p>
+          <p className="mt-4 text-xs" style={{ color: "var(--text-muted)" }}>Updates as client enters data.</p>
         </div>
       </div>
     </div>

@@ -31,53 +31,69 @@ export default async function Connections() {
 
   return (
     <div className="mx-auto max-w-4xl">
-      <PageHeader title="Connect Your Data Sources"
-        subtitle="These two connections do the majority of the heavy lifting. You approve access — we never see your passwords." />
+      <PageHeader
+        title="Connect Your Data Sources"
+        subtitle="These two connections do the majority of the heavy lifting. You approve access — we never see your passwords."
+      />
 
       <div className="grid gap-6 sm:grid-cols-2">
-        <div className={`card ${qb.connected ? "border-brand-300 bg-brand-50/50" : ""}`}>
+        <div
+          className="card"
+          style={qb.connected ? { borderColor: "var(--primary)", background: "var(--primary-tint)" } : {}}
+        >
           <div className="text-2xl">🧾</div>
-          <h2 className="mt-2 font-bold text-navy-900">QuickBooks</h2>
-          <p className="mt-1 text-sm text-slate-500">
+          <h2 className="mt-2 font-bold font-display" style={{ color: "var(--text)" }}>QuickBooks</h2>
+          <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>
             We pull your vendor bills and purchases to estimate value-chain (Scope 3) emissions from spend. Read-only access.
           </p>
           {qb.connected ? (
             <div className="mt-4 flex items-center justify-between">
-              <span className="text-sm font-semibold text-brand-700">✓ Connected — last synced {dateStr(qb.lastSynced)}</span>
-              <form action={resync.bind(null, "quickbooks")}><button className="btn-secondary px-3 py-1.5 text-xs">Resync</button></form>
+              <span className="text-sm font-semibold" style={{ color: "var(--status-green)" }}>
+                ✓ Connected — last synced {dateStr(qb.lastSynced)}
+              </span>
+              <form action={resync.bind(null, "quickbooks")}>
+                <button className="btn-secondary px-3 py-1.5 text-xs">Resync</button>
+              </form>
             </div>
           ) : process.env.QUICKBOOKS_CLIENT_ID ? (
             <div className="mt-4">
-              <a href="/api/auth/quickbooks/redirect" className="btn-primary w-full block text-center">
+              <a href="/api/auth/quickbooks/redirect" className="btn btn-primary w-full block text-center">
                 Connect QuickBooks
               </a>
             </div>
           ) : (
             <form action={connectQuickBooks} className="mt-4">
-              <button className="btn-primary w-full">Connect QuickBooks</button>
-              <p className="mt-2 text-center text-xs text-slate-400">Demo mode: loads realistic sample data.</p>
+              <button className="btn btn-primary w-full">Connect QuickBooks</button>
+              <p className="mt-2 text-center text-xs" style={{ color: "var(--text-muted)" }}>Demo mode: loads realistic sample data.</p>
             </form>
           )}
         </div>
 
-        <div className={`card ${util.connected ? "border-brand-300 bg-brand-50/50" : ""}`}>
+        <div
+          className="card"
+          style={util.connected ? { borderColor: "var(--primary)", background: "var(--primary-tint)" } : {}}
+        >
           <div className="text-2xl">⚡</div>
-          <h2 className="mt-2 font-bold text-navy-900">Utility Account</h2>
-          <p className="mt-1 text-sm text-slate-500">
+          <h2 className="mt-2 font-bold font-display" style={{ color: "var(--text)" }}>Utility Account</h2>
+          <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>
             We pull electricity (kWh) and natural gas (therms) by month for each location — the basis of Scope 1 and 2.
           </p>
           {util.connected ? (
             <div className="mt-4 flex items-center justify-between">
-              <span className="text-sm font-semibold text-brand-700">✓ Connected — last synced {dateStr(util.lastSynced)}</span>
-              <form action={resync.bind(null, "utility")}><button className="btn-secondary px-3 py-1.5 text-xs">Resync</button></form>
+              <span className="text-sm font-semibold" style={{ color: "var(--status-green)" }}>
+                ✓ Connected — last synced {dateStr(util.lastSynced)}
+              </span>
+              <form action={resync.bind(null, "utility")}>
+                <button className="btn-secondary px-3 py-1.5 text-xs">Resync</button>
+              </form>
             </div>
           ) : util.authEmail ? (
             <div className="mt-4 space-y-3">
-              <p className="text-sm text-amber-700 font-medium">
+              <p className="text-sm font-medium" style={{ color: "var(--warning)" }}>
                 Waiting on authorization for <strong>{util.authEmail}</strong>. If you haven&apos;t authorized yet, complete it at your utility&apos;s site, then click below.
               </p>
               <form action={syncUtilityNow}>
-                <button className="btn-primary w-full">I authorized — pull my data</button>
+                <button className="btn btn-primary w-full">I authorized — pull my data</button>
               </form>
             </div>
           ) : process.env.UTILITYAPI_FORM_URL ? (
@@ -89,13 +105,13 @@ export default async function Connections() {
                 placeholder="Email on your utility account"
                 className="input w-full"
               />
-              <button type="submit" className="btn-primary w-full">Connect Utility Account</button>
-              <p className="text-xs text-slate-400">You&apos;ll be redirected to authorize your utility account.</p>
+              <button type="submit" className="btn btn-primary w-full">Connect Utility Account</button>
+              <p className="text-xs" style={{ color: "var(--text-muted)" }}>You&apos;ll be redirected to authorize your utility account.</p>
             </form>
           ) : (
             <form action={connectUtility} className="mt-4">
-              <button className="btn-primary w-full">Connect Utility</button>
-              <p className="mt-2 text-center text-xs text-slate-400">Demo mode: loads realistic sample data.</p>
+              <button className="btn btn-primary w-full">Connect Utility</button>
+              <p className="mt-2 text-center text-xs" style={{ color: "var(--text-muted)" }}>Demo mode: loads realistic sample data.</p>
             </form>
           )}
         </div>
@@ -104,26 +120,35 @@ export default async function Connections() {
       {(qb.connected || util.connected) && (
         <section className="mt-10">
           <div className="mb-4 flex items-baseline justify-between">
-            <h2 className="text-lg font-bold text-navy-900">Review What We Pulled</h2>
-            <span className="text-sm font-medium text-slate-500">Reporting period: <strong>{period.label}</strong></span>
+            <h2 className="text-lg font-bold font-display" style={{ color: "var(--text)" }}>Review What We Pulled</h2>
+            <span className="text-sm font-medium" style={{ color: "var(--text-muted)" }}>
+              Reporting period: <strong style={{ color: "var(--text)" }}>{period.label}</strong>
+            </span>
           </div>
-          <p className="mb-4 text-sm text-slate-500">
+          <p className="mb-4 text-sm" style={{ color: "var(--text-muted)" }}>
             Only data within the reporting period flows into calculations. If something looks wrong, flag it and we&rsquo;ll investigate.
           </p>
 
           {qb.connected && (
             <details className="card mb-4" open>
-              <summary className="cursor-pointer font-semibold text-navy-900">
+              <summary className="cursor-pointer font-semibold font-display" style={{ color: "var(--text)" }}>
                 QuickBooks — vendor spend by expense category ({company.qbTransactions.length} transactions)
               </summary>
               <table className="mt-4 w-full text-sm">
-                <thead><tr className="border-b border-slate-200 text-left text-xs uppercase tracking-wide text-slate-400">
-                  <th className="pb-2">Expense category</th><th className="pb-2 text-right">Annual spend</th></tr></thead>
+                <thead>
+                  <tr
+                    className="text-left text-xs uppercase tracking-wide"
+                    style={{ borderBottom: "1px solid var(--divider)", color: "var(--text-muted)" }}
+                  >
+                    <th className="pb-2">Expense category</th>
+                    <th className="pb-2 text-right">Annual spend</th>
+                  </tr>
+                </thead>
                 <tbody>
                   {Object.entries(spendByCategory).sort((a, b) => b[1] - a[1]).map(([cat, amt]) => (
-                    <tr key={cat} className="border-b border-slate-100">
+                    <tr key={cat} style={{ borderBottom: "1px solid var(--divider)" }}>
                       <td className="py-2">{cat}</td>
-                      <td className="py-2 text-right font-medium">{money(amt)}</td>
+                      <td className="py-2 text-right font-medium font-data">{money(amt)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -134,18 +159,26 @@ export default async function Connections() {
 
           {util.connected && (
             <details className="card" open>
-              <summary className="cursor-pointer font-semibold text-navy-900">
+              <summary className="cursor-pointer font-semibold font-display" style={{ color: "var(--text)" }}>
                 Utility — annual usage by location ({company.utilityData.length} meter-months)
               </summary>
               <table className="mt-4 w-full text-sm">
-                <thead><tr className="border-b border-slate-200 text-left text-xs uppercase tracking-wide text-slate-400">
-                  <th className="pb-2">Location</th><th className="pb-2 text-right">kWh</th><th className="pb-2 text-right">Therms</th></tr></thead>
+                <thead>
+                  <tr
+                    className="text-left text-xs uppercase tracking-wide"
+                    style={{ borderBottom: "1px solid var(--divider)", color: "var(--text-muted)" }}
+                  >
+                    <th className="pb-2">Location</th>
+                    <th className="pb-2 text-right">kWh</th>
+                    <th className="pb-2 text-right">Therms</th>
+                  </tr>
+                </thead>
                 <tbody>
                   {Object.entries(kwhByLocation).map(([loc, v]) => (
-                    <tr key={loc} className="border-b border-slate-100">
+                    <tr key={loc} style={{ borderBottom: "1px solid var(--divider)" }}>
                       <td className="py-2">{loc}</td>
-                      <td className="py-2 text-right font-medium">{num(v.kwh)}</td>
-                      <td className="py-2 text-right font-medium">{num(v.therms)}</td>
+                      <td className="py-2 text-right font-medium font-data">{num(v.kwh)}</td>
+                      <td className="py-2 text-right font-medium font-data">{num(v.therms)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -169,15 +202,17 @@ function PanelFooter({
   return (
     <div className="mt-4 flex gap-3">
       {reviewed ? (
-        <span className="btn-secondary pointer-events-none px-3 py-1.5 text-xs text-brand-700">✓ Reviewed</span>
+        <span className="btn btn-secondary pointer-events-none px-3 py-1.5 text-xs" style={{ color: "var(--status-green)" }}>
+          ✓ Reviewed
+        </span>
       ) : (
         <form action={reviewAction}>
-          <button type="submit" className="btn-primary px-3 py-1.5 text-xs">✓ This looks right</button>
+          <button type="submit" className="btn btn-primary px-3 py-1.5 text-xs">✓ This looks right</button>
         </form>
       )}
       <a
         href="mailto:malachinguyenn@gmail.com?subject=GreenTrack data issue"
-        className="btn-secondary px-3 py-1.5 text-xs"
+        className="btn btn-secondary px-3 py-1.5 text-xs"
       >
         Flag an issue
       </a>

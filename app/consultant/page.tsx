@@ -2,7 +2,7 @@ import Link from "next/link";
 import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { consultantClients } from "@/lib/db/schema";
-import { eq, isNull } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { loadCompany } from "@/lib/store";
 import { totals } from "@/lib/calc";
 import { progressPercent } from "@/lib/progress";
@@ -62,7 +62,7 @@ export default async function ConsultantDashboard({
           title={`Welcome back, ${user.name.split(" ")[0]}`}
           subtitle={`${clients.length} active client${clients.length !== 1 ? "s" : ""}`}
         />
-        <Link href="/consultant/clients/new" className="btn-primary">
+        <Link href="/consultant/clients/new" className="btn btn-primary">
           + Add Client
         </Link>
       </div>
@@ -71,16 +71,21 @@ export default async function ConsultantDashboard({
         <div className="mb-4 flex items-center gap-3">
           <Link
             href={showFilter ? "/consultant" : "/consultant?filter=attention"}
-            className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+            className="rounded-full px-3 py-1 text-xs font-medium transition-colors"
+            style={
               showFilter
-                ? "bg-amber-500 text-white"
-                : "bg-amber-100 text-amber-700 hover:bg-amber-200"
-            }`}
+                ? { background: "var(--warning)", color: "#fff" }
+                : { background: "var(--warning-tint)", color: "var(--warning)" }
+            }
           >
             ⚠ {attentionCount} Needs Attention
           </Link>
           {showFilter && (
-            <Link href="/consultant" className="text-xs text-slate-400 hover:underline">
+            <Link
+              href="/consultant"
+              className="text-xs transition-opacity hover:opacity-70"
+              style={{ color: "var(--text-muted)" }}
+            >
               Show all
             </Link>
           )}
@@ -88,38 +93,53 @@ export default async function ConsultantDashboard({
       )}
 
       {displayed.length === 0 ? (
-        <div className="card py-12 text-center text-slate-400">
+        <div className="card py-12 text-center" style={{ color: "var(--text-muted)" }}>
           {showFilter
             ? "No clients need attention right now."
             : "No clients yet. Add your first client to get started."}
         </div>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+        <div
+          className="overflow-hidden"
+          style={{
+            borderRadius: "var(--radius-lg)",
+            border: "1px solid var(--divider)",
+            background: "var(--surface)",
+          }}
+        >
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-400">
+              <tr
+                className="text-left text-xs font-semibold uppercase tracking-wide"
+                style={{ borderBottom: "1px solid var(--divider)", background: "var(--bg)", color: "var(--text-muted)" }}
+              >
                 <th className="px-4 py-3">Client</th>
                 {DATA_SECTIONS.map((s) => (
-                  <th key={s} className="px-2 py-3 text-center">
-                    {SECTION_LABELS[s]}
-                  </th>
+                  <th key={s} className="px-2 py-3 text-center">{SECTION_LABELS[s]}</th>
                 ))}
                 <th className="px-4 py-3 text-right">Total CO2e</th>
                 <th className="px-4 py-3 text-right">Progress</th>
                 <th className="px-4 py-3" />
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody>
               {displayed.map(({ company, pct, t, needsAttention }) => (
-                <tr key={company.id} className="hover:bg-slate-50">
+                <tr
+                  key={company.id}
+                  style={{ borderBottom: "1px solid var(--divider)" }}
+                >
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
                       {needsAttention && (
-                        <span className="h-2 w-2 rounded-full bg-amber-400" title="Needs attention" />
+                        <span
+                          className="h-2 w-2 rounded-full shrink-0"
+                          title="Needs attention"
+                          style={{ background: "var(--warning)" }}
+                        />
                       )}
                       <div>
-                        <p className="font-medium text-slate-900">{company.name}</p>
-                        <p className="text-xs text-slate-400">{company.industry ?? "—"}</p>
+                        <p className="font-medium" style={{ color: "var(--text)" }}>{company.name}</p>
+                        <p className="text-xs" style={{ color: "var(--text-muted)" }}>{company.industry ?? "—"}</p>
                       </div>
                     </div>
                   </td>
@@ -130,14 +150,15 @@ export default async function ConsultantDashboard({
                       </span>
                     </td>
                   ))}
-                  <td className="px-4 py-3 text-right font-medium text-slate-700">
+                  <td className="px-4 py-3 text-right font-medium font-data" style={{ color: "var(--text)" }}>
                     {fmt(t.total)} t
                   </td>
                   <td className="px-4 py-3 text-right">
                     <span
-                      className={`text-xs font-semibold ${
-                        pct === 100 ? "text-emerald-600" : pct > 50 ? "text-amber-600" : "text-slate-400"
-                      }`}
+                      className="text-xs font-semibold font-data"
+                      style={{
+                        color: pct === 100 ? "var(--status-green)" : pct > 50 ? "var(--warning)" : "var(--text-muted)",
+                      }}
                     >
                       {pct}%
                     </span>
@@ -145,7 +166,7 @@ export default async function ConsultantDashboard({
                   <td className="px-4 py-3 text-right">
                     <Link
                       href={`/consultant/clients/${company.id}`}
-                      className="btn-secondary px-3 py-1 text-xs"
+                      className="btn btn-secondary px-3 py-1 text-xs"
                     >
                       View
                     </Link>

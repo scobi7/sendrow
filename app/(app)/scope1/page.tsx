@@ -14,15 +14,16 @@ export default async function Scope1() {
 
   return (
     <div className="mx-auto max-w-3xl">
-      <PageHeader title="Scope 1 — Your Direct Emissions"
-        subtitle="Emissions from fuel and energy your company directly owns or controls. Fill in each subsection, or mark it Not Applicable." />
+      <PageHeader
+        title="Scope 1 — Your Direct Emissions"
+        subtitle="Emissions from fuel and energy your company directly owns or controls. Fill in each subsection, or mark it Not Applicable."
+      />
 
       <form action={saveFields} className="space-y-5">
         <input type="hidden" name="redirect_to" value="/scope1" />
 
-        {/* Fleet Fuel */}
         <details className="card" open>
-          <summary className="cursor-pointer font-semibold text-navy-900">
+          <summary className="cursor-pointer font-semibold font-display" style={{ color: "var(--text)" }}>
             Fleet Fuel <InfoTip text="Fuel burned in vehicles your company owns or leases. Find totals on your fleet card statement or fuel receipts." />
           </summary>
           <div className="mt-4 grid grid-cols-3 gap-4">
@@ -39,20 +40,19 @@ export default async function Scope1() {
               <input name="fleet_propane_gal" type="number" step="any" min={0} className="input" defaultValue={inp.fleet_propane_gal ?? ""} />
             </div>
           </div>
-          <label className="mt-3 flex items-center gap-2 text-sm text-slate-500">
+          <label className="mt-3 flex items-center gap-2 text-sm" style={{ color: "var(--text-muted)" }}>
             <input type="checkbox" name="fleet_na" value="true" defaultChecked={!!inp.fleet_na} /> Not applicable — we have no fleet
           </label>
-          <p className="mt-2 text-xs text-slate-400">📎 Document upload (fleet card statement) available in production build.</p>
+          <p className="mt-2 text-xs" style={{ color: "var(--text-muted)" }}>📎 Document upload (fleet card statement) available in production build.</p>
           <CO2eBox label="Fleet fuel emissions" tons={sub("fleet")} />
         </details>
 
-        {/* Natural Gas */}
         <details className="card" open>
-          <summary className="cursor-pointer font-semibold text-navy-900">
+          <summary className="cursor-pointer font-semibold font-display" style={{ color: "var(--text)" }}>
             Natural Gas <InfoTip text="Pre-filled from your utility connection. Enter a value only to override." />
           </summary>
           {utilityTherms > 0 && (
-            <p className="mt-3 rounded-lg bg-brand-50 px-3 py-2 text-sm text-brand-800">
+            <p className="mt-3 rounded-lg px-3 py-2 text-sm" style={{ background: "var(--primary-tint)", color: "var(--primary)" }}>
               ✓ Pre-filled from your utility connection: {utilityTherms.toLocaleString()} therms across all locations.
             </p>
           )}
@@ -60,15 +60,14 @@ export default async function Scope1() {
             <label className="label">Override (therms/yr) — leave blank to use utility data</label>
             <input name="natgas_therms_override" type="number" step="any" min={0} className="input w-48" defaultValue={inp.natgas_therms_override ?? ""} />
           </div>
-          <label className="mt-3 flex items-center gap-2 text-sm text-slate-500">
+          <label className="mt-3 flex items-center gap-2 text-sm" style={{ color: "var(--text-muted)" }}>
             <input type="checkbox" name="natgas_na" value="true" defaultChecked={!!inp.natgas_na} /> Not applicable — no natural gas service
           </label>
           <CO2eBox label="Natural gas emissions" tons={sub("natural gas")} />
         </details>
 
-        {/* Refrigerants */}
         <details className="card" open>
-          <summary className="cursor-pointer font-semibold text-navy-900">
+          <summary className="cursor-pointer font-semibold font-display" style={{ color: "var(--text)" }}>
             Refrigerants <InfoTip text="Refrigerant gases topped up in your HVAC or refrigeration systems this year. Ask your HVAC service vendor — it's on the service invoice." />
           </summary>
           <div className="mt-4 grid grid-cols-2 gap-4">
@@ -84,15 +83,14 @@ export default async function Scope1() {
               <input name="refrigerant_kg" type="number" step="any" min={0} className="input" defaultValue={inp.refrigerant_kg ?? ""} />
             </div>
           </div>
-          <label className="mt-3 flex items-center gap-2 text-sm text-slate-500">
+          <label className="mt-3 flex items-center gap-2 text-sm" style={{ color: "var(--text-muted)" }}>
             <input type="checkbox" name="refrigerant_na" value="true" defaultChecked={!!inp.refrigerant_na} /> Not applicable / no top-ups this year
           </label>
           <CO2eBox label="Refrigerant emissions" tons={sub("refrigerant")} />
         </details>
 
-        {/* On-Site Equipment */}
         <details className="card" open>
-          <summary className="cursor-pointer font-semibold text-navy-900">
+          <summary className="cursor-pointer font-semibold font-display" style={{ color: "var(--text)" }}>
             On-Site Equipment <InfoTip text="Generators, forklifts, and other fuel-burning equipment at your facilities." />
           </summary>
           <div className="mt-4 grid grid-cols-2 gap-4">
@@ -108,14 +106,14 @@ export default async function Scope1() {
               <input name="equipment_gal" type="number" step="any" min={0} className="input" defaultValue={inp.equipment_gal ?? ""} />
             </div>
           </div>
-          <label className="mt-3 flex items-center gap-2 text-sm text-slate-500">
+          <label className="mt-3 flex items-center gap-2 text-sm" style={{ color: "var(--text-muted)" }}>
             <input type="checkbox" name="equipment_na" value="true" defaultChecked={!!inp.equipment_na} /> Not applicable
           </label>
           <CO2eBox label="Equipment emissions" tons={sub("on-site")} />
         </details>
 
         <div className="flex justify-end gap-3">
-          <button type="submit" className="btn-primary">Save Scope 1</button>
+          <button type="submit" className="btn btn-primary">Save Scope 1</button>
         </div>
       </form>
     </div>

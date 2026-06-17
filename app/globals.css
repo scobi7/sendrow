@@ -12,6 +12,10 @@
   --divider: #ECE8D9;
   --surface: #FFFFFF;
   --status-green: #2F9E68;
+  --warning: #B8863A;
+  --warning-tint: #FBF3E5;
+  --danger: #B8554A;
+  --danger-tint: #FAECEA;
   --radius-lg: 28px;
   --radius-sm: 18px;
   --shadow-card: 0 24px 60px -28px rgba(63, 107, 79, 0.28);

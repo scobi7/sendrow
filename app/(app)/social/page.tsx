@@ -14,15 +14,18 @@ export default async function Social() {
 
   return (
     <div className="mx-auto max-w-3xl">
-      <PageHeader title="Social — Your Workforce Data"
-        subtitle="Mostly numbers your operations manager knows without looking anything up. None of this affects your CO2e — it feeds the ESG report and questionnaire answers." />
+      <PageHeader
+        title="Social — Your Workforce Data"
+        subtitle="Mostly numbers your operations manager knows without looking anything up. None of this affects your CO2e — it feeds the ESG report and questionnaire answers."
+      />
 
       <form action={saveFields} className="space-y-5">
         <input type="hidden" name="redirect_to" value="/social" />
 
         <div className="card">
-          <h2 className="font-semibold text-navy-900">
-            Headcount &amp; Turnover <InfoTip text="Customers ask for turnover because high churn correlates with labor issues. A normal number here is a good answer." />
+          <h2 className="font-semibold font-display" style={{ color: "var(--text)" }}>
+            Headcount &amp; Turnover{" "}
+            <InfoTip text="Customers ask for turnover because high churn correlates with labor issues. A normal number here is a good answer." />
           </h2>
           <div className="mt-4 grid grid-cols-3 gap-4">
             <div>
@@ -39,13 +42,16 @@ export default async function Social() {
             </div>
           </div>
           {turnover !== null && (
-            <p className="mt-3 rounded-lg bg-brand-50 px-3 py-2 text-sm text-brand-800">Turnover rate (auto-calculated): <strong>{turnover}%</strong></p>
+            <p className="mt-3 rounded-lg px-3 py-2 text-sm" style={{ background: "var(--primary-tint)", color: "var(--primary)" }}>
+              Turnover rate (auto-calculated): <strong>{turnover}%</strong>
+            </p>
           )}
         </div>
 
         <div className="card">
-          <h2 className="font-semibold text-navy-900">
-            Health &amp; Safety <InfoTip text="ESG frameworks treat worker safety as a core metric. These come straight from your OSHA 300 log." />
+          <h2 className="font-semibold font-display" style={{ color: "var(--text)" }}>
+            Health &amp; Safety{" "}
+            <InfoTip text="ESG frameworks treat worker safety as a core metric. These come straight from your OSHA 300 log." />
           </h2>
           <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
             <div>
@@ -68,8 +74,9 @@ export default async function Social() {
         </div>
 
         <div className="card">
-          <h2 className="font-semibold text-navy-900">
-            Training Hours <InfoTip text="Total formal training hours across all staff this year. Industry average for mid-market companies is roughly 8–20 hours per employee." />
+          <h2 className="font-semibold font-display" style={{ color: "var(--text)" }}>
+            Training Hours{" "}
+            <InfoTip text="Total formal training hours across all staff this year. Industry average for mid-market companies is roughly 8–20 hours per employee." />
           </h2>
           <div className="mt-4">
             <label className="label">Total training hours this year</label>
@@ -78,21 +85,22 @@ export default async function Social() {
         </div>
 
         <div className="card">
-          <h2 className="font-semibold text-navy-900">
-            Workforce Demographics <InfoTip text="Used for EcoVadis Labor & Human Rights scoring. The Excel template keeps individual data out of the platform — only aggregates are stored." />
+          <h2 className="font-semibold font-display" style={{ color: "var(--text)" }}>
+            Workforce Demographics{" "}
+            <InfoTip text="Used for EcoVadis Labor & Human Rights scoring. The Excel template keeps individual data out of the platform — only aggregates are stored." />
           </h2>
-          <p className="mt-2 text-sm text-slate-500">
+          <p className="mt-2 text-sm" style={{ color: "var(--text-muted)" }}>
             Download the Excel template, fill in role level, gender, and ethnicity columns, and upload it back.
             (Template download/upload wired to S3 in the production build.)
           </p>
-          <label className="mt-3 flex items-center gap-2 text-sm text-slate-600">
+          <label className="mt-3 flex items-center gap-2 text-sm" style={{ color: "var(--text)" }}>
             <input type="checkbox" name="social_demographics_uploaded" value="true" defaultChecked={!!inp.social_demographics_uploaded} />
             Demographics template completed and uploaded
           </label>
         </div>
 
         <div className="flex justify-end">
-          <button className="btn-primary">Save Social</button>
+          <button className="btn btn-primary">Save Social</button>
         </div>
       </form>
     </div>
