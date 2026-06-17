@@ -35,6 +35,13 @@ export default async function Connections({
     };
   }
 
+  // Build the UtilityAPI auth URL server-side (env var not exposed to client)
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
+  const formUrl = process.env.UTILITYAPI_FORM_URL ?? "";
+  const utilityAuthUrl = formUrl
+    ? `${formUrl}?redirect_url=${encodeURIComponent(`${appUrl}/connections`)}`
+    : null;
+
   const period = reportingPeriod(company.fiscalYearEndMonth ?? 12);
   const money = (n: number) => "$" + n.toLocaleString("en-US", { maximumFractionDigits: 0 });
   const num = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 0 });
@@ -119,12 +126,22 @@ export default async function Connections({
           ) : util.authEmail ? (
             <div className="mt-4 space-y-3">
               <p className="text-sm font-medium" style={{ color: "var(--warning)" }}>
-                Waiting on authorization for <strong>{util.authEmail}</strong>. Complete authorization at your utility&apos;s site, then click below.
+                Waiting on authorization for <strong>{util.authEmail}</strong>.
               </p>
               {util_error && UTIL_ERRORS[util_error] && (
                 <p className="rounded-lg px-3 py-2 text-xs font-medium" style={{ background: "var(--warning-tint)", color: "var(--warning)" }}>
                   {UTIL_ERRORS[util_error]}
                 </p>
+              )}
+              {utilityAuthUrl && (
+                <a
+                  href={utilityAuthUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-secondary w-full block text-center"
+                >
+                  Authorize at your utility →
+                </a>
               )}
               <form action={syncUtilityNow}>
                 <button className="btn btn-primary w-full">I authorized — pull my data</button>
