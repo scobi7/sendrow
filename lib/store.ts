@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { eq } from "drizzle-orm";
 import { db } from "./db";
 import {
@@ -42,7 +43,7 @@ export async function loadFactors(): Promise<EmissionFactor[]> {
   }
 }
 
-export async function loadCompany(companyId: string): Promise<Company> {
+export const loadCompany = cache(async (companyId: string): Promise<Company> => {
   const [companyRows, inputRows, connRows, locRows, txnRows, utilRows, calcRows] =
     await Promise.all([
       db.select().from(companies).where(eq(companies.id, companyId)),
@@ -127,10 +128,7 @@ export async function loadCompany(companyId: string): Promise<Company> {
       marketBasedTons: c.marketBasedTons != null ? Number(c.marketBasedTons) : undefined,
     })),
   };
-}
-
-// Alias for backward compat
-export const getCompany = loadCompany;
+});
 
 export async function persistCompany(company: Company): Promise<void> {
   const id = company.id;

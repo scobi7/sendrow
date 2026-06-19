@@ -126,7 +126,7 @@ export async function onboardAsCompany(formData: FormData) {
       set: { companyId: company.id, name: uname, email: uemail, role: "company" },
     });
 
-  if (uname && uemail) sendWelcomeEmail(uname, uemail);
+  if (uname && uemail) sendWelcomeEmail(uname, uemail).catch(() => {});
 
   redirect("/setup");
 }
@@ -154,7 +154,7 @@ export async function onboardAsConsultant() {
       set: { companyId: null, name, email, role: "consultant" },
     });
 
-  if (email) sendWelcomeEmail(name, email);
+  if (email) sendWelcomeEmail(name, email).catch(() => {});
   redirect("/consultant");
 }
 
@@ -419,7 +419,6 @@ export async function markQBReviewed() {
   await logChange({ user, companyId: company.id, section: "scope3", field: "qb_data_reviewed", prev: false, next: true });
   company.inputs.qb_data_reviewed = true;
   await persist(company);
-  revalidatePath("/connections");
 }
 
 export async function markUtilityReviewed() {
@@ -427,7 +426,6 @@ export async function markUtilityReviewed() {
   await logChange({ user, companyId: company.id, section: "scope2", field: "scope2_reviewed", prev: false, next: true });
   company.inputs.scope2_reviewed = true;
   await persist(company);
-  revalidatePath("/connections");
 }
 
 // ─────────── Generic field saver ───────────

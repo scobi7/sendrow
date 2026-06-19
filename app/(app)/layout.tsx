@@ -1,5 +1,4 @@
 import { redirect } from "next/navigation";
-import { auth } from "@clerk/nextjs/server";
 import { Logo } from "@/components/ui";
 import { NavLinks } from "@/components/nav";
 import { MobileNav } from "@/components/mobile-nav";
@@ -8,10 +7,8 @@ import { loadCompany } from "@/lib/store";
 import { LogoutButton } from "@/components/logout-button";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  const { userId } = await auth();
-  if (!userId) redirect("/login");
   const user = await currentUser();
-  if (!user) redirect("/onboarding");
+  if (!user) redirect("/login");
   if (user.role === "consultant") redirect("/consultant");
   if (!user.companyId) redirect("/onboarding");
   const company = await loadCompany(user.companyId);

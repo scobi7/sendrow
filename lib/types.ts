@@ -176,11 +176,3 @@ export interface EmissionFactor {
   year_retired: number | null;
 }
 
-export interface DB {
-  users: User[];
-  companies: Company[];
-  auditLog: AuditRow[];
-  factors: EmissionFactor[];
-  consultantClients: ConsultantClient[];
-  inviteTokens: InviteToken[];
-}

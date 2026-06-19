@@ -2,7 +2,7 @@ import Link from "next/link";
 import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { consultantClients } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, isNull } from "drizzle-orm";
 import { loadCompany } from "@/lib/store";
 import { totals } from "@/lib/calc";
 import { progressPercent } from "@/lib/progress";
@@ -29,12 +29,10 @@ export default async function ConsultantDashboard({
   const [{ filter: rawFilter }, rawUser] = await Promise.all([searchParams, currentUser()]);
   const user = rawUser!;
 
-  const activeLinks = await db
+  const filtered_links = await db
     .select()
     .from(consultantClients)
-    .where(eq(consultantClients.consultantId, user.id));
-
-  const filtered_links = activeLinks.filter((cc) => !cc.archivedAt);
+    .where(eq(consultantClients.consultantId, user.id) && isNull(consultantClients.archivedAt));
 
   const clientResults = await Promise.allSettled(
     filtered_links.map(async (link) => {

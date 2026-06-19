@@ -53,15 +53,13 @@ export default async function ClientDetailPage({
     notFound();
   }
 
-  const [t, recentAudit] = await Promise.all([
-    Promise.resolve(totals(company)),
-    auditForCompany(company.id),
-  ]);
+  const t = totals(company);
+  const recentAudit = await auditForCompany(company.id);
   const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 2 });
   const recent = recentAudit.slice(0, 10);
 
   const inviteUrl = inviteToken
-    ? `${process.env.NEXT_PUBLIC_APP_URL ?? "https://greentrack-sigma.vercel.app"}/connect/${inviteToken}`
+    ? `${process.env.NEXT_PUBLIC_APP_URL}/connect/${inviteToken}`
     : null;
 
   const boundGenerate = generateInviteToken.bind(null, id);
