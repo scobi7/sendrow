@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { SectionStatus } from "@/lib/types";
 
 export function Logo({ light = false }: { light?: boolean }) {
@@ -50,84 +49,6 @@ export function ProgressBar({ percent, className = "" }: { percent: number; clas
   );
 }
 
-export function KpiCard({
-  label,
-  value,
-  caption,
-}: {
-  label: string;
-  value: string;
-  caption?: string;
-}) {
-  return (
-    <div
-      className="p-5"
-      style={{
-        background: "var(--card)",
-        borderRadius: "var(--radius-lg)",
-      }}
-    >
-      <p className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>
-        {label}
-      </p>
-      <p className="mt-2 text-2xl font-bold font-data leading-tight" style={{ color: "var(--text)" }}>
-        {value}
-      </p>
-      {caption && (
-        <p className="mt-1 text-xs" style={{ color: "var(--text-muted)" }}>
-          {caption}
-        </p>
-      )}
-    </div>
-  );
-}
-
-export function IntegrationCard({
-  name,
-  initials,
-  connected,
-  lastSynced,
-}: {
-  name: string;
-  initials: string;
-  connected: boolean;
-  lastSynced?: string | null;
-}) {
-  return (
-    <div
-      className="flex items-center gap-4 px-5 py-4"
-      style={{
-        background: "var(--card)",
-        borderRadius: "var(--radius-lg)",
-      }}
-    >
-      <div
-        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-bold text-white"
-        style={{ background: "var(--primary)" }}
-      >
-        {initials}
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>
-          {name}
-        </p>
-        {connected ? (
-          <p className="mt-0.5 flex items-center gap-1.5 text-xs" style={{ color: "var(--status-green)" }}>
-            <span
-              className="inline-block h-1.5 w-1.5 rounded-full"
-              style={{ background: "var(--status-green)" }}
-            />
-            Connected{lastSynced ? ` · synced ${new Date(lastSynced).toLocaleDateString()}` : ""}
-          </p>
-        ) : (
-          <p className="mt-0.5 text-xs" style={{ color: "var(--text-muted)" }}>
-            Not connected
-          </p>
-        )}
-      </div>
-    </div>
-  );
-}
 
 const SCOPE_COLORS = ["var(--scope1)", "var(--scope2)", "var(--scope3)"];
 
@@ -323,14 +244,3 @@ export function InfoTip({ text }: { text: string }) {
   );
 }
 
-export function BackLink({ href = "/dashboard", label = "Back to dashboard" }: { href?: string; label?: string }) {
-  return (
-    <Link
-      href={href}
-      className="mb-4 inline-block text-sm font-medium no-print transition-opacity hover:opacity-70"
-      style={{ color: "var(--primary)" }}
-    >
-      ← {label}
-    </Link>
-  );
-}

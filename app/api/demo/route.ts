@@ -107,7 +107,6 @@ export async function GET(request: Request) {
     company.utilityData = generateUtilityData(company);
     const overrides = await loadFactors();
     recalcCompany(company, overrides);
-    refreshSectionStatus(company);
     company.reportGeneratedAt = new Date().toISOString();
     refreshSectionStatus(company);
 

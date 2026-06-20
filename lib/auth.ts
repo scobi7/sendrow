@@ -1,10 +1,12 @@
+import { cache } from "react";
 import { auth, currentUser as getClerkUser } from "@clerk/nextjs/server";
 import { eq } from "drizzle-orm";
 import { db } from "./db";
 import { userCompanies } from "./db/schema";
 import { User } from "./types";
 
-export async function currentUser(): Promise<User | null> {
+// cache() deduplicates calls within a single render pass (layout + page share one DB hit)
+export const currentUser = cache(async (): Promise<User | null> => {
   const { userId } = await auth();
   if (!userId) return null;
   const record = await db.query.userCompanies.findFirst({
@@ -19,6 +21,6 @@ export async function currentUser(): Promise<User | null> {
     companyId: record.companyId ?? "",
     createdAt: record.createdAt,
   };
-}
+});
 
 export { getClerkUser };
