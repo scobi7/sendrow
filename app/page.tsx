@@ -1,7 +1,13 @@
 import Link from "next/link";
 import { currentUser } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { Logo } from "@/components/ui";
+import { Logo, ScopeBarChart, ScopeDonutChart } from "@/components/ui";
+
+const SAMPLE_EMISSIONS = [
+  { label: "Scope 1", value: 312 },
+  { label: "Scope 2", value: 484 },
+  { label: "Scope 3", value: 1488 },
+];
 
 export default async function Home() {
   const user = await currentUser();
@@ -152,6 +158,82 @@ export default async function Home() {
               Sign in
             </Link>
           </p>
+
+          {/* Dashboard preview */}
+          <div className="relative z-10 mt-16 w-full">
+            <div
+              className="mx-auto max-w-4xl overflow-hidden rounded-2xl"
+              style={{
+                background: "var(--card)",
+                border: "1px solid rgba(15,50,28,0.12)",
+                boxShadow: "0 2px 0 rgba(255,255,255,0.7) inset, 0 32px 80px rgba(15,50,28,0.1)",
+              }}
+            >
+              {/* Faux titlebar */}
+              <div
+                className="flex items-center gap-2 px-5 py-3.5"
+                style={{ borderBottom: "1px solid rgba(15,50,28,0.08)" }}
+              >
+                <span className="h-2.5 w-2.5 rounded-full" style={{ background: "#FF5F57" }} />
+                <span className="h-2.5 w-2.5 rounded-full" style={{ background: "#FFBD2E" }} />
+                <span className="h-2.5 w-2.5 rounded-full" style={{ background: "#28C840" }} />
+                <span className="ml-4 text-xs font-medium" style={{ color: "var(--text-muted)" }}>
+                  GreenTrack &mdash; Emissions Dashboard
+                </span>
+              </div>
+
+              <div className="p-5">
+                {/* Mini KPIs */}
+                <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                  {[
+                    { label: "Total emissions", value: "2,284", sub: "tCO₂e · YTD", accent: true },
+                    { label: "Scope 1", value: "312", sub: "Direct · tCO₂e", accent: false },
+                    { label: "Scope 2", value: "484", sub: "Electricity · tCO₂e", accent: false },
+                    { label: "Progress", value: "71%", sub: "4 of 7 complete", accent: true },
+                  ].map(({ label, value, sub, accent }) => (
+                    <div
+                      key={label}
+                      className="rounded-xl p-4"
+                      style={{ background: "rgba(255,255,255,0.65)", border: "1px solid rgba(15,50,28,0.07)" }}
+                    >
+                      <p className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
+                        {label}
+                      </p>
+                      <p
+                        className="mt-1.5 font-data text-xl font-bold leading-tight"
+                        style={{ color: accent ? "var(--primary)" : "var(--text)" }}
+                      >
+                        {value}
+                      </p>
+                      <p className="mt-0.5 text-xs" style={{ color: "var(--text-muted)" }}>{sub}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Charts */}
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div
+                    className="rounded-xl p-4"
+                    style={{ background: "rgba(255,255,255,0.65)", border: "1px solid rgba(15,50,28,0.07)" }}
+                  >
+                    <p className="mb-3 text-xs font-bold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
+                      Emissions by scope
+                    </p>
+                    <ScopeBarChart data={SAMPLE_EMISSIONS} />
+                  </div>
+                  <div
+                    className="rounded-xl p-4"
+                    style={{ background: "rgba(255,255,255,0.65)", border: "1px solid rgba(15,50,28,0.07)" }}
+                  >
+                    <p className="mb-3 text-xs font-bold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
+                      Scope breakdown
+                    </p>
+                    <ScopeDonutChart data={SAMPLE_EMISSIONS} />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
