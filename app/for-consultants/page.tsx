@@ -440,45 +440,6 @@ export default function ForConsultants() {
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="relative overflow-hidden px-6 py-28 text-center" style={{ background: "var(--primary)" }}>
-        <div className="pointer-events-none absolute inset-0" aria-hidden>
-          <div
-            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
-            style={{
-              width: 700,
-              height: 400,
-              borderRadius: "50%",
-              background: "radial-gradient(ellipse, rgba(255,255,255,0.07) 0%, transparent 60%)",
-            }}
-          />
-        </div>
-        <div className="relative z-10 mx-auto max-w-2xl">
-          <h2 className="font-display text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-            See how it runs with your clients
-          </h2>
-          <p className="mx-auto mt-4 max-w-md text-base leading-relaxed" style={{ color: "rgba(255,255,255,0.65)" }}>
-            20-minute walkthrough. Bring a current client and we&rsquo;ll show you exactly how onboarding, data collection, and reporting works end to end.
-          </p>
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-            <Link
-              href="/demo"
-              className="btn px-6 py-3 text-sm font-bold"
-              style={{ background: "#fff", color: "var(--primary)", borderRadius: "var(--radius-sm)" }}
-            >
-              Request a demo
-            </Link>
-            <Link
-              href="/signup"
-              className="btn px-6 py-3 text-sm font-semibold"
-              style={{ background: "transparent", border: "1.5px solid rgba(255,255,255,0.35)", color: "#fff", borderRadius: "var(--radius-sm)" }}
-            >
-              Get started free &rarr;
-            </Link>
-          </div>
-        </div>
-      </section>
-
       {/* Footer */}
       <footer className="px-6 py-10" style={{ background: "var(--text)" }}>
         <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-6">

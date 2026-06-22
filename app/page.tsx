@@ -314,7 +314,7 @@ export default async function Home() {
             <div className="grid grid-cols-1 divide-y sm:grid-cols-3 sm:divide-x sm:divide-y-0">
               {[
                 { value: "3 days", label: "Average time to first completed report" },
-                { value: "$15K+", label: "Typical cost to hire a consultant for one report" },
+                { value: "80%", label: "Of emissions data collected automatically via connected accounts" },
                 { value: "5+", label: "Questionnaire frameworks supported" },
               ].map(({ value, label }) => (
                 <div key={value} className="bg-white px-8 py-10 text-center">
