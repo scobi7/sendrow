@@ -1,807 +1,146 @@
 import Link from "next/link";
 import { currentUser } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { LandingNav } from "@/components/landing-nav";
-import { ScopeBarChart, ScopeDonutChart } from "@/components/ui";
+import { Logo } from "@/components/ui";
 
-const SAMPLE_EMISSIONS = [
-  { label: "Scope 1", value: 312 },
-  { label: "Scope 2", value: 484 },
-  { label: "Scope 3", value: 1488 },
-];
-
-const FEATURES = [
-  {
-    icon: "⚡",
-    title: "Auto-sync from QuickBooks",
-    desc: "Scope 3 supply chain emissions calculated directly from your spend data. No spreadsheet needed.",
-  },
-  {
-    icon: "🔌",
-    title: "Utility API integration",
-    desc: "Scope 2 electricity data pulled automatically from your utility provider. Always up to date.",
-  },
-  {
-    icon: "📊",
-    title: "GHG Protocol calculations",
-    desc: "Emission factors applied automatically. Scope 1, 2, and 3 categorized with audit-ready methodology.",
-  },
-  {
-    icon: "📋",
-    title: "Questionnaire mapping",
-    desc: "Your numbers pre-filled into the exact fields CDP, EcoVadis, and Walmart ask for.",
-  },
-  {
-    icon: "🔍",
-    title: "Full audit trail",
-    desc: "Every figure traced to its source. Methodology documented for every number your auditor will ask about.",
-  },
-  {
-    icon: "👥",
-    title: "Consultant multi-client",
-    desc: "ESG consultants manage their whole book from one dashboard. Invite links, progress tracking, bulk reports.",
-  },
-];
-
-export default async function Landing() {
+export default async function Home() {
   const user = await currentUser();
   if (user) redirect(user.role === "consultant" ? "/consultant" : "/dashboard");
 
   return (
-    <main style={{ background: "var(--bg)", minHeight: "100vh" }}>
-      <LandingNav />
-
-      {/* ── Hero ── */}
-      <section
-        className="relative overflow-hidden px-6 text-center"
-        style={{
-          minHeight: "100vh",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          paddingTop: "7rem",
-          paddingBottom: "0",
-        }}
+    <main style={{ background: "var(--bg)", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+      {/* Header */}
+      <header
+        className="flex items-center justify-between px-8 py-5"
+        style={{ background: "var(--surface)", borderBottom: "1px solid var(--divider)" }}
       >
-        {/* Background orbs */}
-        <div className="pointer-events-none absolute inset-0" aria-hidden>
-          <div
-            className="absolute left-1/2 top-0 -translate-x-1/2"
-            style={{
-              width: 900,
-              height: 600,
-              borderRadius: "50%",
-              background:
-                "radial-gradient(ellipse, rgba(34,197,94,0.14) 0%, transparent 65%)",
-            }}
-          />
-          <div
-            className="absolute left-1/4 top-1/3 -translate-x-1/2"
-            style={{
-              width: 460,
-              height: 460,
-              borderRadius: "50%",
-              background:
-                "radial-gradient(circle, rgba(22,163,74,0.09) 0%, transparent 65%)",
-            }}
-          />
-          <div
-            className="absolute right-16 top-1/4"
-            style={{
-              width: 340,
-              height: 340,
-              borderRadius: "50%",
-              background:
-                "radial-gradient(circle, rgba(34,197,94,0.07) 0%, transparent 65%)",
-            }}
-          />
-        </div>
-
-        <div className="relative z-10 w-full max-w-5xl">
-          {/* Badge */}
-          <div
-            className="mb-8 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-semibold"
-            style={{
-              border: "1px solid rgba(34,168,84,0.35)",
-              background: "rgba(34,197,94,0.1)",
-              color: "var(--primary)",
-            }}
-          >
-            <span
-              className="inline-block h-1.5 w-1.5 rounded-full animate-pulse"
-              style={{ background: "var(--status-green)" }}
-            />
-            Built for California mid-market companies
-          </div>
-
-          {/* Headline */}
-          <h1
-            className="mx-auto max-w-3xl font-display text-5xl font-extrabold leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl"
-            style={{ color: "var(--text)" }}
-          >
-            ESG compliance,
-            <br />
-            <span style={{ color: "var(--primary)" }}>handled.</span>
-          </h1>
-
-          <p
-            className="mx-auto mt-6 max-w-xl text-lg leading-relaxed"
+        <Logo />
+        <div className="flex items-center gap-6">
+          <Link
+            href="/login"
+            className="text-sm font-medium transition-opacity hover:opacity-70"
             style={{ color: "var(--text-muted)" }}
           >
-            Connect your data, calculate your footprint, and hand your customer
-            a report they accept — CDP, EcoVadis, Walmart. No consultant
-            required.
-          </p>
-
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
-            <Link href="/demo" className="btn btn-primary px-6 py-3 text-sm">
-              Request a demo
-            </Link>
-            <Link href="/signup" className="btn btn-secondary px-6 py-3 text-sm">
-              Get started free →
-            </Link>
-          </div>
-
-          {/* Dashboard preview card */}
-          <div className="relative z-10 mt-16 w-full">
-            <div
-              className="mx-auto max-w-4xl overflow-hidden rounded-2xl"
-              style={{
-                background: "var(--card)",
-                border: "1px solid rgba(15,50,28,0.12)",
-                boxShadow:
-                  "0 2px 0 rgba(255,255,255,0.7) inset, 0 32px 80px rgba(15,50,28,0.1)",
-              }}
-            >
-              {/* Faux titlebar */}
-              <div
-                className="flex items-center gap-2 px-5 py-3.5"
-                style={{ borderBottom: "1px solid rgba(15,50,28,0.08)" }}
-              >
-                <span
-                  className="h-2.5 w-2.5 rounded-full"
-                  style={{ background: "#FF5F57" }}
-                />
-                <span
-                  className="h-2.5 w-2.5 rounded-full"
-                  style={{ background: "#FFBD2E" }}
-                />
-                <span
-                  className="h-2.5 w-2.5 rounded-full"
-                  style={{ background: "#28C840" }}
-                />
-                <span
-                  className="ml-4 text-xs font-medium"
-                  style={{ color: "var(--text-muted)" }}
-                >
-                  GreenTrack — Emissions Dashboard
-                </span>
-              </div>
-
-              <div className="p-5">
-                {/* Mini KPIs */}
-                <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-                  {[
-                    {
-                      label: "Total emissions",
-                      value: "2,284",
-                      sub: "tCO₂e · YTD",
-                      accent: true,
-                    },
-                    {
-                      label: "Scope 1",
-                      value: "312",
-                      sub: "Direct · tCO₂e",
-                      accent: false,
-                    },
-                    {
-                      label: "Scope 2",
-                      value: "484",
-                      sub: "Electricity · tCO₂e",
-                      accent: false,
-                    },
-                    {
-                      label: "Progress",
-                      value: "71%",
-                      sub: "4 of 7 complete",
-                      accent: true,
-                    },
-                  ].map(({ label, value, sub, accent }) => (
-                    <div
-                      key={label}
-                      className="rounded-xl p-4"
-                      style={{
-                        background: "rgba(255,255,255,0.65)",
-                        border: "1px solid rgba(15,50,28,0.07)",
-                      }}
-                    >
-                      <p
-                        className="text-xs font-medium uppercase tracking-wide"
-                        style={{ color: "var(--text-muted)" }}
-                      >
-                        {label}
-                      </p>
-                      <p
-                        className="mt-1.5 font-data text-xl font-bold leading-tight"
-                        style={{
-                          color: accent ? "var(--primary)" : "var(--text)",
-                        }}
-                      >
-                        {value}
-                      </p>
-                      <p
-                        className="mt-0.5 text-xs"
-                        style={{ color: "var(--text-muted)" }}
-                      >
-                        {sub}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Charts row */}
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <div
-                    className="rounded-xl p-4"
-                    style={{
-                      background: "rgba(255,255,255,0.65)",
-                      border: "1px solid rgba(15,50,28,0.07)",
-                    }}
-                  >
-                    <p
-                      className="mb-3 text-xs font-bold uppercase tracking-wide"
-                      style={{ color: "var(--text-muted)" }}
-                    >
-                      Emissions by scope
-                    </p>
-                    <ScopeBarChart data={SAMPLE_EMISSIONS} />
-                  </div>
-                  <div
-                    className="rounded-xl p-4"
-                    style={{
-                      background: "rgba(255,255,255,0.65)",
-                      border: "1px solid rgba(15,50,28,0.07)",
-                    }}
-                  >
-                    <p
-                      className="mb-3 text-xs font-bold uppercase tracking-wide"
-                      style={{ color: "var(--text-muted)" }}
-                    >
-                      Scope breakdown
-                    </p>
-                    <ScopeDonutChart data={SAMPLE_EMISSIONS} />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+            Sign in
+          </Link>
+          <Link href="/demo" className="btn btn-primary text-sm px-4 py-2">
+            Request a demo
+          </Link>
         </div>
-      </section>
+      </header>
 
-      {/* ── Trust bar ── */}
-      <div
-        style={{
-          background: "#fff",
-          borderTop: "1px solid var(--divider)",
-          borderBottom: "1px solid var(--divider)",
-        }}
-      >
-        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-center gap-10 px-6 py-7">
-          <span
-            className="text-xs font-semibold uppercase tracking-widest"
-            style={{ color: "var(--text-muted)" }}
-          >
-            Reports accepted by
-          </span>
-          {[
-            "CDP",
-            "EcoVadis",
-            "Walmart Supplier Portal",
-            "ENERGY STAR",
-            "GHG Protocol",
-          ].map((name) => (
-            <span
-              key={name}
-              className="text-sm font-semibold"
-              style={{ color: "var(--text-muted)" }}
-            >
-              {name}
-            </span>
-          ))}
-        </div>
+      {/* Background */}
+      <div className="pointer-events-none fixed inset-0 overflow-hidden" aria-hidden>
+        <div
+          className="absolute left-1/2 top-0 -translate-x-1/2"
+          style={{
+            width: 900,
+            height: 600,
+            borderRadius: "50%",
+            background: "radial-gradient(ellipse, rgba(34,197,94,0.1) 0%, transparent 65%)",
+          }}
+        />
       </div>
 
-      {/* ── Features ── */}
-      <section id="features" className="px-6 py-24" style={{ background: "var(--surface)" }}>
-        <div className="mx-auto max-w-5xl">
-          <p
-            className="mb-3 text-xs font-bold uppercase tracking-widest"
-            style={{ color: "var(--primary)" }}
-          >
-            Features
-          </p>
-          <h2
-            className="font-display text-3xl font-extrabold tracking-tight sm:text-4xl"
-            style={{ color: "var(--text)" }}
-          >
-            Everything you need to file
-            <br className="hidden sm:block" />
-            your first ESG report
-          </h2>
-          <p
-            className="mt-4 max-w-lg text-base leading-relaxed"
-            style={{ color: "var(--text-muted)" }}
-          >
-            Built for ops teams, not sustainability consultants. Connect two
-            APIs and the platform does the rest.
-          </p>
+      {/* Main */}
+      <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-1 flex-col items-center justify-center px-6 py-20 text-center">
+        <h1
+          className="font-display text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl"
+          style={{ color: "var(--text)" }}
+        >
+          ESG compliance,
+          <br />
+          <span style={{ color: "var(--primary)" }}>done right.</span>
+        </h1>
+        <p
+          className="mx-auto mt-5 max-w-lg text-base leading-relaxed"
+          style={{ color: "var(--text-muted)" }}
+        >
+          Whether you&rsquo;re filing your first report or managing a book of clients, GreenTrack handles the data work so you can focus on what matters.
+        </p>
 
-          <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {FEATURES.map(({ icon, title, desc }) => (
-              <div
-                key={title}
-                className="rounded-2xl bg-white p-6 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg"
-                style={{
-                  border: "1px solid var(--divider)",
-                  boxShadow: "0 1px 3px rgba(15,50,28,0.04)",
-                }}
-              >
-                <div
-                  className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl text-lg"
-                  style={{
-                    background: "rgba(34,197,94,0.12)",
-                    border: "1px solid rgba(34,168,84,0.25)",
-                  }}
-                >
-                  {icon}
-                </div>
-                <h3
-                  className="font-display font-bold"
-                  style={{ color: "var(--text)" }}
-                >
-                  {title}
-                </h3>
-                <p
-                  className="mt-2 text-sm leading-relaxed"
-                  style={{ color: "var(--text-muted)" }}
-                >
-                  {desc}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Integrations two-col ── */}
-      <section className="px-6 py-24">
-        <div className="mx-auto max-w-5xl">
-          <div className="grid items-center gap-16 lg:grid-cols-2">
-            {/* Copy */}
-            <div>
-              <p
-                className="mb-3 text-xs font-bold uppercase tracking-widest"
-                style={{ color: "var(--primary)" }}
-              >
-                Data connections
-              </p>
-              <h2
-                className="font-display text-3xl font-extrabold tracking-tight sm:text-4xl"
-                style={{ color: "var(--text)" }}
-              >
-                Two APIs handle 80%
-                <br />
-                of your data collection
-              </h2>
-              <p
-                className="mt-4 text-base leading-relaxed"
-                style={{ color: "var(--text-muted)" }}
-              >
-                Link QuickBooks and your utility provider. We pull transactions
-                and energy data automatically — no exports, no manual work.
-              </p>
-              <ul className="mt-8 space-y-4">
-                {[
-                  "QuickBooks spend categorized by NAICS code — right emission factor per vendor, automatically",
-                  "Utility kWh converted to tCO₂e using EPA eGRID location-based factors",
-                  "Continuous sync — dashboard updates as new transactions come in",
-                ].map((item) => (
-                  <li
-                    key={item}
-                    className="flex items-start gap-3 text-sm leading-relaxed"
-                    style={{ color: "var(--text-muted)" }}
-                  >
-                    <span
-                      className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full"
-                      style={{
-                        background: "rgba(34,197,94,0.12)",
-                        border: "1px solid rgba(34,168,84,0.3)",
-                      }}
-                    >
-                      <svg
-                        width="9"
-                        height="9"
-                        viewBox="0 0 9 9"
-                        fill="none"
-                        aria-hidden
-                      >
-                        <path
-                          d="M1 4.5l2.5 2.5L8 1.5"
-                          stroke="#1A5C30"
-                          strokeWidth="1.5"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    </span>
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Visual panel */}
-            <div
-              className="rounded-2xl p-6"
-              style={{
-                background: "var(--card)",
-                border: "1px solid rgba(15,50,28,0.1)",
-              }}
-            >
-              <p
-                className="mb-4 text-xs font-bold uppercase tracking-widest"
-                style={{ color: "var(--text-muted)" }}
-              >
-                Connected sources
-              </p>
-
-              {[
-                {
-                  initials: "QB",
-                  name: "QuickBooks Online",
-                  sub: "847 transactions · synced today",
-                },
-                {
-                  initials: "U",
-                  name: "Utility Account",
-                  sub: "12 months data · synced today",
-                },
-              ].map(({ initials, name, sub }) => (
-                <div
-                  key={name}
-                  className="mb-3 flex items-center gap-4 rounded-xl p-4"
-                  style={{
-                    background: "#fff",
-                    border: "1px solid rgba(15,50,28,0.08)",
-                  }}
-                >
-                  <div
-                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-xs font-black"
-                    style={{
-                      background: "rgba(34,197,94,0.12)",
-                      border: "1px solid rgba(34,168,84,0.25)",
-                      color: "var(--primary)",
-                    }}
-                  >
-                    {initials}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p
-                      className="text-sm font-semibold"
-                      style={{ color: "var(--text)" }}
-                    >
-                      {name}
-                    </p>
-                    <p
-                      className="mt-0.5 text-xs"
-                      style={{ color: "var(--text-muted)" }}
-                    >
-                      {sub}
-                    </p>
-                  </div>
-                  <span
-                    className="h-2 w-2 shrink-0 rounded-full"
-                    style={{ background: "var(--status-green)" }}
-                  />
-                </div>
-              ))}
-
-              <div className="mt-2 space-y-2">
-                {[
-                  {
-                    label: "Scope 3 auto-calculated",
-                    sub: "847 transactions · 62 vendor categories",
-                    value: "1,488 t",
-                  },
-                  {
-                    label: "Scope 2 from utility",
-                    sub: "42,000 kWh · EPA eGRID factor",
-                    value: "484 t",
-                  },
-                ].map(({ label, sub, value }) => (
-                  <div
-                    key={label}
-                    className="flex items-center justify-between rounded-xl px-4 py-3"
-                    style={{
-                      background: "rgba(34,197,94,0.1)",
-                      border: "1px solid rgba(34,168,84,0.2)",
-                    }}
-                  >
-                    <div>
-                      <p
-                        className="text-xs font-semibold"
-                        style={{ color: "var(--primary)" }}
-                      >
-                        {label}
-                      </p>
-                      <p
-                        className="mt-0.5 text-xs"
-                        style={{ color: "var(--text-muted)" }}
-                      >
-                        {sub}
-                      </p>
-                    </div>
-                    <span
-                      className="font-data text-base font-bold"
-                      style={{ color: "var(--primary)" }}
-                    >
-                      {value}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Stats strip ── */}
-      <section
-        className="px-6 py-16"
-        style={{
-          background: "var(--surface)",
-          borderTop: "1px solid var(--divider)",
-          borderBottom: "1px solid var(--divider)",
-        }}
-      >
-        <div className="mx-auto max-w-5xl">
-          <div
-            className="overflow-hidden rounded-2xl"
-            style={{ border: "1px solid var(--divider)" }}
-          >
-            <div className="grid grid-cols-1 divide-y sm:grid-cols-3 sm:divide-x sm:divide-y-0">
-              {[
-                {
-                  value: "3 days",
-                  label: "Avg. time to first completed report",
-                },
-                { value: "$15K+", label: "Saved vs. hiring an ESG consultant" },
-                { value: "2 APIs", label: "Handle 80% of your data collection" },
-              ].map(({ value, label }) => (
-                <div key={value} className="bg-white px-8 py-10 text-center">
-                  <p
-                    className="font-data text-4xl font-bold"
-                    style={{ color: "var(--primary)" }}
-                  >
-                    {value}
-                  </p>
-                  <p
-                    className="mt-2 text-sm leading-snug"
-                    style={{ color: "var(--text-muted)" }}
-                  >
-                    {label}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── How it works ── */}
-      <section id="how-it-works" className="px-6 py-24">
-        <div className="mx-auto max-w-5xl">
-          <p
-            className="mb-3 text-xs font-bold uppercase tracking-widest"
-            style={{ color: "var(--primary)" }}
-          >
-            How it works
-          </p>
-          <h2
-            className="font-display text-3xl font-extrabold tracking-tight sm:text-4xl"
-            style={{ color: "var(--text)" }}
-          >
-            Three steps to a finished report
-          </h2>
-          <div className="mt-14 grid gap-10 sm:grid-cols-3">
-            {[
-              {
-                num: "01",
-                title: "Connect your data",
-                desc: "Link QuickBooks and your utility provider. We pull transactions and energy data automatically — no exports, no spreadsheets.",
-              },
-              {
-                num: "02",
-                title: "Calculate your footprint",
-                desc: "GHG Protocol emission factors applied automatically. Scope 1, 2, and 3 broken down by source, live as you go.",
-              },
-              {
-                num: "03",
-                title: "Export and submit",
-                desc: "Download an audit-ready PDF or fill supplier portal fields directly. CDP, EcoVadis, and Walmart — all mapped.",
-              },
-            ].map(({ num, title, desc }) => (
-              <div key={num}>
-                <p
-                  className="font-data text-5xl font-bold leading-none"
-                  style={{ color: "rgba(26,92,48,0.13)" }}
-                >
-                  {num}
-                </p>
-                <h3
-                  className="mt-5 font-display text-lg font-bold"
-                  style={{ color: "var(--text)" }}
-                >
-                  {title}
-                </h3>
-                <p
-                  className="mt-2 text-sm leading-relaxed"
-                  style={{ color: "var(--text-muted)" }}
-                >
-                  {desc}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── About ── */}
-      <section
-        id="about"
-        className="px-6 py-24"
-        style={{
-          background: "var(--surface)",
-          borderTop: "1px solid var(--divider)",
-        }}
-      >
-        <div className="mx-auto max-w-5xl">
-          <div className="grid items-start gap-16 sm:grid-cols-2">
-            <div>
-              <p
-                className="mb-3 text-xs font-bold uppercase tracking-widest"
-                style={{ color: "var(--primary)" }}
-              >
-                Who we built this for
-              </p>
-              <h2
-                className="font-display text-3xl font-extrabold tracking-tight sm:text-4xl"
-                style={{ color: "var(--text)" }}
-              >
-                Mid-market companies getting their first ESG questionnaire
-              </h2>
-              <p
-                className="mt-5 text-sm leading-relaxed"
-                style={{ color: "var(--text-muted)" }}
-              >
-                California&rsquo;s mid-market — 50 to 500 employees — is getting
-                ESG questionnaires from major customers for the first time. Most
-                don&rsquo;t have a sustainability team. Hiring a consultant runs
-                $15,000 and up.
-              </p>
-              <p
-                className="mt-4 text-sm leading-relaxed"
-                style={{ color: "var(--text-muted)" }}
-              >
-                GreenTrack does the same job: pulls your data, calculates your
-                footprint, and produces a report your customer accepts. In days,
-                not months.
-              </p>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              {[
-                {
-                  stat: "50–500",
-                  label: "Employees at our target companies",
-                },
-                {
-                  stat: "$15K+",
-                  label: "Typical consultant cost for one report",
-                },
-                {
-                  stat: "3 days",
-                  label: "Average time to first completed report",
-                },
-                { stat: "10+", label: "Questionnaire frameworks supported" },
-              ].map(({ stat, label }) => (
-                <div
-                  key={stat}
-                  className="rounded-xl p-5"
-                  style={{
-                    background: "#fff",
-                    border: "1px solid var(--divider)",
-                  }}
-                >
-                  <p
-                    className="font-data text-2xl font-bold"
-                    style={{ color: "var(--primary)" }}
-                  >
-                    {stat}
-                  </p>
-                  <p
-                    className="mt-1 text-xs leading-snug"
-                    style={{ color: "var(--text-muted)" }}
-                  >
-                    {label}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── CTA ── */}
-      <section
-        className="relative overflow-hidden px-6 py-28 text-center"
-        style={{ background: "var(--primary)" }}
-      >
-        <div className="pointer-events-none absolute inset-0" aria-hidden>
-          <div
-            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+        <div className="mt-14 grid w-full max-w-2xl gap-4 sm:grid-cols-2">
+          <Link
+            href="/for-companies"
+            className="group rounded-2xl p-8 text-left transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg"
             style={{
-              width: 700,
-              height: 400,
-              borderRadius: "50%",
-              background:
-                "radial-gradient(ellipse, rgba(255,255,255,0.07) 0%, transparent 60%)",
+              background: "var(--card)",
+              border: "1px solid var(--divider)",
+              boxShadow: "0 1px 4px rgba(15,50,28,0.05)",
             }}
-          />
-        </div>
-        <div className="relative z-10 mx-auto max-w-2xl">
-          <h2
-            className="font-display text-3xl font-extrabold tracking-tight text-white sm:text-4xl"
           >
-            See it handle a real questionnaire
-          </h2>
-          <p
-            className="mx-auto mt-4 max-w-md text-base leading-relaxed"
-            style={{ color: "rgba(255,255,255,0.65)" }}
-          >
-            20-minute walkthrough. Bring your last questionnaire and we&rsquo;ll
-            show you exactly how it maps to your emissions data.
-          </p>
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-            <Link
-              href="/demo"
-              className="btn px-6 py-3 text-sm font-bold"
-              style={{
-                background: "#fff",
-                color: "var(--primary)",
-                borderRadius: "var(--radius-sm)",
-              }}
+            <p
+              className="text-xs font-bold uppercase tracking-widest"
+              style={{ color: "var(--primary)" }}
             >
-              Request a demo
-            </Link>
-            <Link
-              href="/signup"
-              className="btn px-6 py-3 text-sm font-semibold"
-              style={{
-                background: "transparent",
-                border: "1.5px solid rgba(255,255,255,0.35)",
-                color: "#fff",
-                borderRadius: "var(--radius-sm)",
-              }}
+              For companies
+            </p>
+            <h2
+              className="mt-3 font-display text-lg font-bold leading-snug"
+              style={{ color: "var(--text)" }}
             >
-              Get started free →
-            </Link>
-          </div>
-        </div>
-      </section>
+              Got an ESG questionnaire from a customer?
+            </h2>
+            <p
+              className="mt-2 text-sm leading-relaxed"
+              style={{ color: "var(--text-muted)" }}
+            >
+              Connect your accounts. We calculate your footprint and map your numbers to whatever framework they&rsquo;re asking for.
+            </p>
+            <span
+              className="mt-6 inline-flex items-center gap-1 text-sm font-semibold"
+              style={{ color: "var(--primary)" }}
+            >
+              See how it works &rarr;
+            </span>
+          </Link>
 
-      {/* ── Footer ── */}
-      <footer className="px-6 py-10" style={{ background: "var(--text)" }}>
+          <Link
+            href="/for-consultants"
+            className="group rounded-2xl p-8 text-left transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg"
+            style={{
+              background: "var(--card)",
+              border: "1px solid var(--divider)",
+              boxShadow: "0 1px 4px rgba(15,50,28,0.05)",
+            }}
+          >
+            <p
+              className="text-xs font-bold uppercase tracking-widest"
+              style={{ color: "var(--primary)" }}
+            >
+              For consultants
+            </p>
+            <h2
+              className="mt-3 font-display text-lg font-bold leading-snug"
+              style={{ color: "var(--text)" }}
+            >
+              Managing clients across spreadsheets?
+            </h2>
+            <p
+              className="mt-2 text-sm leading-relaxed"
+              style={{ color: "var(--text-muted)" }}
+            >
+              Run your entire book from one platform. Clients connect their own accounts. You review, report, and deliver.
+            </p>
+            <span
+              className="mt-6 inline-flex items-center gap-1 text-sm font-semibold"
+              style={{ color: "var(--primary)" }}
+            >
+              See how it works &rarr;
+            </span>
+          </Link>
+        </div>
+
+        <p className="mt-8 text-xs" style={{ color: "var(--text-muted)" }}>
+          Already have an account?{" "}
+          <Link href="/login" className="underline" style={{ color: "var(--primary)" }}>
+            Sign in
+          </Link>
+        </p>
+      </div>
+
+      {/* Footer */}
+      <footer className="px-6 py-8" style={{ background: "var(--text)" }}>
         <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-6">
           <span className="flex items-center gap-2 font-display text-base font-bold text-white">
             <span
@@ -813,7 +152,7 @@ export default async function Landing() {
             GreenTrack
           </span>
           <p className="text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>
-            © {new Date().getFullYear()} GreenTrack. Built in California.
+            &copy; {new Date().getFullYear()} GreenTrack. Built in California.
           </p>
           <div className="flex gap-6">
             {[

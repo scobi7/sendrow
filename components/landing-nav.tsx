@@ -17,26 +17,22 @@ export function LandingNav() {
       }}
     >
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-        <Logo />
+        <Link href="/"><Logo /></Link>
         <nav className="hidden items-center gap-8 sm:flex">
-          <a
-            href="#how-it-works"
+          <Link
+            href="/for-companies"
             className="text-sm font-medium transition-colors"
             style={{ color: "var(--text-muted)" }}
-            onMouseOver={(e) => (e.currentTarget.style.color = "var(--text)")}
-            onMouseOut={(e) => (e.currentTarget.style.color = "var(--text-muted)")}
           >
-            How it works
-          </a>
-          <a
-            href="#about"
+            For companies
+          </Link>
+          <Link
+            href="/for-consultants"
             className="text-sm font-medium transition-colors"
             style={{ color: "var(--text-muted)" }}
-            onMouseOver={(e) => (e.currentTarget.style.color = "var(--text)")}
-            onMouseOut={(e) => (e.currentTarget.style.color = "var(--text-muted)")}
           >
-            About
-          </a>
+            For consultants
+          </Link>
           <Link
             href="/login"
             className="text-sm font-medium transition-colors"
@@ -71,12 +67,12 @@ export function LandingNav() {
           style={{ borderTop: "1px solid var(--divider)", background: "var(--surface)" }}
         >
           <nav className="flex flex-col gap-5">
-            <a href="#how-it-works" onClick={() => setOpen(false)} className="text-sm font-medium" style={{ color: "var(--text-muted)" }}>
-              How it works
-            </a>
-            <a href="#about" onClick={() => setOpen(false)} className="text-sm font-medium" style={{ color: "var(--text-muted)" }}>
-              About
-            </a>
+            <Link href="/for-companies" onClick={() => setOpen(false)} className="text-sm font-medium" style={{ color: "var(--text-muted)" }}>
+              For companies
+            </Link>
+            <Link href="/for-consultants" onClick={() => setOpen(false)} className="text-sm font-medium" style={{ color: "var(--text-muted)" }}>
+              For consultants
+            </Link>
             <Link href="/login" className="text-sm font-medium" style={{ color: "var(--text-muted)" }}>
               Sign in
             </Link>
