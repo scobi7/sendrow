@@ -304,26 +304,53 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* ── Stats strip ── */}
-      <section
-        className="px-6 py-16"
-        style={{ borderTop: "1px solid var(--divider)", borderBottom: "1px solid var(--divider)" }}
-      >
+      {/* ── Stats ── */}
+      <section className="px-6 py-16">
         <div className="mx-auto max-w-5xl">
-          <div className="overflow-hidden rounded-2xl" style={{ border: "1px solid var(--divider)" }}>
-            <div className="grid grid-cols-1 divide-y sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+          <div className="overflow-hidden rounded-3xl p-10 sm:p-14" style={{ background: "#0D2018" }}>
+            <h2 className="mb-10 text-center font-display text-2xl font-bold text-white sm:text-3xl">
+              Less manual work. Faster reports.
+            </h2>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               {[
-                { value: "3 days", label: "Average time to first completed report" },
-                { value: "80%", label: "Of emissions data collected automatically via connected accounts" },
-                { value: "5+", label: "Questionnaire frameworks supported" },
-              ].map(({ value, label }) => (
-                <div key={value} className="bg-white px-8 py-10 text-center">
-                  <p className="font-data text-4xl font-bold" style={{ color: "var(--primary)" }}>
-                    {value}
-                  </p>
-                  <p className="mt-2 text-sm leading-snug" style={{ color: "var(--text-muted)" }}>
+                {
+                  label: "Reduction in manual data collection",
+                  value: "80%",
+                  arrow: true,
+                },
+                {
+                  label: "Average time from setup to first completed report",
+                  value: "3 days",
+                  arrow: false,
+                },
+                {
+                  label: "Questionnaire frameworks supported out of the box",
+                  value: "5+",
+                  arrow: false,
+                },
+              ].map(({ label, value, arrow }) => (
+                <div
+                  key={value}
+                  className="flex flex-col justify-between rounded-2xl p-6"
+                  style={{ background: "#162B1C", minHeight: 200 }}
+                >
+                  <p className="text-sm leading-snug" style={{ color: "rgba(255,255,255,0.5)" }}>
                     {label}
                   </p>
+                  <div className="mt-8 flex items-end gap-2">
+                    <p className="font-data text-5xl font-bold text-white">{value}</p>
+                    {arrow && (
+                      <svg width="22" height="22" viewBox="0 0 22 22" fill="none" className="mb-1.5" aria-hidden>
+                        <path
+                          d="M11 4v14M5 12l6 6 6-6"
+                          stroke="#22C55E"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
@@ -331,25 +358,65 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* ── Platform overview ── */}
+      {/* ── How it works + Platform ── */}
       <section className="px-6 py-24" style={{ background: "var(--surface)" }}>
         <div className="mx-auto max-w-5xl">
           <p className="mb-3 text-xs font-bold uppercase tracking-widest" style={{ color: "var(--primary)" }}>
-            The platform
+            How it works
           </p>
           <h2
             className="font-display text-3xl font-extrabold tracking-tight sm:text-4xl"
             style={{ color: "var(--text)" }}
           >
+            From raw data to finished report
+          </h2>
+          <p className="mt-4 max-w-lg text-base leading-relaxed" style={{ color: "var(--text-muted)" }}>
+            Whether you&rsquo;re a company filing your first questionnaire or a consultant managing a full book, the platform works the same way.
+          </p>
+
+          <div className="mt-14 grid gap-10 sm:grid-cols-3">
+            {[
+              {
+                num: "01",
+                title: "Connect your data",
+                desc: "Link your accounts. GreenTrack pulls transactions and energy data automatically — no exports, no manual entry.",
+              },
+              {
+                num: "02",
+                title: "Calculations run automatically",
+                desc: "GHG Protocol emission factors applied in real time. Scope 1, 2, and 3 broken down by source as data comes in.",
+              },
+              {
+                num: "03",
+                title: "Export and submit",
+                desc: "Audit-ready PDF or pre-filled questionnaire fields. CDP, EcoVadis, and Walmart — all mapped.",
+              },
+            ].map(({ num, title, desc }) => (
+              <div key={num}>
+                <p className="font-data text-5xl font-bold leading-none" style={{ color: "rgba(26,92,48,0.13)" }}>
+                  {num}
+                </p>
+                <h3 className="mt-5 font-display text-lg font-bold" style={{ color: "var(--text)" }}>{title}</h3>
+                <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>{desc}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="my-16" style={{ borderTop: "1px solid var(--divider)" }} />
+
+          <p className="mb-3 text-xs font-bold uppercase tracking-widest" style={{ color: "var(--primary)" }}>
+            What&rsquo;s included
+          </p>
+          <h3
+            className="font-display text-2xl font-extrabold tracking-tight sm:text-3xl"
+            style={{ color: "var(--text)" }}
+          >
             Everything the job requires,
             <br className="hidden sm:block" />
             nothing it doesn&rsquo;t
-          </h2>
-          <p className="mt-4 max-w-lg text-base leading-relaxed" style={{ color: "var(--text-muted)" }}>
-            Built around the data you already have and the frameworks your customers already use.
-          </p>
+          </h3>
 
-          <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {[
               {
                 title: "Automated data sync",
