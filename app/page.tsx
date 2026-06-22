@@ -251,59 +251,6 @@ export default async function Home() {
         </div>
       </div>
 
-      {/* ── How it works ── */}
-      <section className="px-6 py-24" style={{ background: "var(--surface)" }}>
-        <div className="mx-auto max-w-5xl">
-          <p className="mb-3 text-xs font-bold uppercase tracking-widest" style={{ color: "var(--primary)" }}>
-            How it works
-          </p>
-          <h2
-            className="font-display text-3xl font-extrabold tracking-tight sm:text-4xl"
-            style={{ color: "var(--text)" }}
-          >
-            From raw data to finished report
-          </h2>
-          <p className="mt-4 max-w-lg text-base leading-relaxed" style={{ color: "var(--text-muted)" }}>
-            Whether you&rsquo;re a company filing your first questionnaire or a consultant managing a full book, the platform works the same way.
-          </p>
-
-          <div className="mt-14 grid gap-10 sm:grid-cols-3">
-            {[
-              {
-                num: "01",
-                title: "Connect your data",
-                desc: "Link your accounts. GreenTrack pulls transactions and energy data automatically — no exports, no manual entry.",
-              },
-              {
-                num: "02",
-                title: "Calculations run automatically",
-                desc: "GHG Protocol emission factors applied in real time. Scope 1, 2, and 3 broken down by source as data comes in.",
-              },
-              {
-                num: "03",
-                title: "Export and submit",
-                desc: "Audit-ready PDF or pre-filled questionnaire fields. CDP, EcoVadis, and Walmart — all mapped.",
-              },
-            ].map(({ num, title, desc }) => (
-              <div key={num}>
-                <p
-                  className="font-data text-5xl font-bold leading-none"
-                  style={{ color: "rgba(26,92,48,0.13)" }}
-                >
-                  {num}
-                </p>
-                <h3 className="mt-5 font-display text-lg font-bold" style={{ color: "var(--text)" }}>
-                  {title}
-                </h3>
-                <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>
-                  {desc}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* ── Stats ── */}
       <section className="px-6 py-16">
         <div className="mx-auto max-w-5xl">
