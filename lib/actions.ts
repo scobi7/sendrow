@@ -681,6 +681,19 @@ export async function archiveClient(companyId: string) {
   redirect("/consultant");
 }
 
+export async function deleteClient(companyId: string) {
+  const consultant = await requireConsultant();
+  await db
+    .delete(consultantClients)
+    .where(
+      and(
+        eq(consultantClients.consultantId, consultant.id),
+        eq(consultantClients.companyId, companyId)
+      )
+    );
+  redirect("/consultant");
+}
+
 export async function acceptInvite(token: string) {
   const { userId } = await auth();
   if (!userId) redirect(`/login?redirect_url=/connect/${token}`);

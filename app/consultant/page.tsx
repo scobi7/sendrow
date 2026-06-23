@@ -2,12 +2,13 @@ import Link from "next/link";
 import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { consultantClients } from "@/lib/db/schema";
-import { eq, isNull } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { loadCompany } from "@/lib/store";
 import { totals } from "@/lib/calc";
 import { progressPercent } from "@/lib/progress";
 import { PageHeader, StatusDot } from "@/components/ui";
 import { SectionName } from "@/lib/types";
+import { archiveClient, deleteClient } from "@/lib/actions";
 
 const SECTION_LABELS: Record<SectionName, string> = {
   connections: "Connections",
@@ -32,7 +33,7 @@ export default async function ConsultantDashboard({
   const filtered_links = await db
     .select()
     .from(consultantClients)
-    .where(eq(consultantClients.consultantId, user.id) && isNull(consultantClients.archivedAt));
+    .where(and(eq(consultantClients.consultantId, user.id), isNull(consultantClients.archivedAt)));
 
   const clientResults = await Promise.allSettled(
     filtered_links.map(async (link) => {
@@ -161,12 +162,24 @@ export default async function ConsultantDashboard({
                     </span>
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <Link
-                      href={`/consultant/clients/${company.id}`}
-                      className="btn btn-secondary px-3 py-1 text-xs"
-                    >
-                      View
-                    </Link>
+                    <div className="flex items-center justify-end gap-2">
+                      <Link
+                        href={`/consultant/clients/${company.id}`}
+                        className="btn btn-secondary px-3 py-1 text-xs"
+                      >
+                        View
+                      </Link>
+                      <form action={archiveClient.bind(null, company.id)}>
+                        <button className="px-2 py-1 text-xs transition-opacity hover:opacity-70" style={{ color: "var(--text-muted)" }} title="Archive">
+                          Archive
+                        </button>
+                      </form>
+                      <form action={deleteClient.bind(null, company.id)} onSubmit={(e) => { if (!confirm(`Permanently delete ${company.name}? This cannot be undone.`)) e.preventDefault(); }}>
+                        <button className="px-2 py-1 text-xs transition-opacity hover:opacity-70" style={{ color: "var(--danger)" }} title="Delete">
+                          Delete
+                        </button>
+                      </form>
+                    </div>
                   </td>
                 </tr>
               ))}
