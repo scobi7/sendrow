@@ -9,6 +9,7 @@ import { progressPercent } from "@/lib/progress";
 import { PageHeader, StatusDot } from "@/components/ui";
 import { SectionName } from "@/lib/types";
 import { archiveClient, deleteClient } from "@/lib/actions";
+import { DeleteClientButton } from "./delete-client-button";
 
 const SECTION_LABELS: Record<SectionName, string> = {
   connections: "Connections",
@@ -174,11 +175,7 @@ export default async function ConsultantDashboard({
                           Archive
                         </button>
                       </form>
-                      <form action={deleteClient.bind(null, company.id)} onSubmit={(e) => { if (!confirm(`Permanently delete ${company.name}? This cannot be undone.`)) e.preventDefault(); }}>
-                        <button className="px-2 py-1 text-xs transition-opacity hover:opacity-70" style={{ color: "var(--danger)" }} title="Delete">
-                          Delete
-                        </button>
-                      </form>
+                      <DeleteClientButton action={deleteClient.bind(null, company.id)} companyName={company.name} />
                     </div>
                   </td>
                 </tr>
