@@ -26,7 +26,7 @@ import { recalcCompany } from "./calc";
 import { refreshSectionStatus } from "./progress";
 import { logChange } from "./audit";
 import { createCompanyRecord } from "./newcompany";
-import { sendWelcomeEmail } from "./email";
+import { sendWelcomeEmail, sendInviteAcceptedEmail, sendSectionCompleteEmail } from "./email";
 import type { UtilityMeter, UtilityBill } from "./utilityapi";
 import type { Location } from "./types";
 
@@ -461,6 +461,7 @@ const BOOL_FIELDS = new Set([
 export async function saveFields(formData: FormData) {
   const { user, company } = await requireUser();
   const inputs = company.inputs as Record<string, unknown>;
+  const prevStatus = { ...company.sectionStatus };
   for (const [key, raw] of Array.from(formData.entries())) {
     if (key.startsWith("$") || key === "redirect_to") continue;
     if (!(key in FIELD_SECTIONS)) continue;
@@ -472,6 +473,31 @@ export async function saveFields(formData: FormData) {
     inputs[key] = value;
   }
   await persist(company);
+
+  // Notify consultant if a section just completed
+  try {
+    const SECTION_LABELS: Record<string, string> = {
+      scope1: "Scope 1", scope2: "Scope 2", scope3: "Scope 3",
+      social: "Social", governance: "Governance", connections: "Connections",
+    };
+    for (const [sec, label] of Object.entries(SECTION_LABELS)) {
+      if (prevStatus[sec as keyof typeof prevStatus] !== "complete" && company.sectionStatus[sec as keyof typeof company.sectionStatus] === "complete") {
+        const link = await db.query.consultantClients.findFirst({
+          where: and(eq(consultantClients.companyId, company.id), isNull(consultantClients.archivedAt)),
+        });
+        if (link) {
+          const consultant = await db.query.userCompanies.findFirst({
+            where: eq(userCompanies.clerkId, link.consultantId),
+          });
+          if (consultant?.email) {
+            await sendSectionCompleteEmail(consultant.email, consultant.name ?? "there", company.name, label);
+          }
+        }
+        break;
+      }
+    }
+  } catch {}
+
   const dest = String(formData.get("redirect_to") ?? "");
   if (dest) redirect(dest);
 }
@@ -690,5 +716,22 @@ export async function acceptInvite(token: string) {
   }
 
   await db.update(inviteTokens).set({ usedAt: new Date().toISOString() }).where(eq(inviteTokens.token, token));
+
+  // Notify the consultant
+  try {
+    const link = await db.query.consultantClients.findFirst({
+      where: and(eq(consultantClients.companyId, invite.companyId), isNull(consultantClients.archivedAt)),
+    });
+    if (link) {
+      const consultant = await db.query.userCompanies.findFirst({
+        where: eq(userCompanies.clerkId, link.consultantId),
+      });
+      const company = await loadCompany(invite.companyId);
+      if (consultant?.email) {
+        await sendInviteAcceptedEmail(consultant.name ?? "there", consultant.email, company.name, name, email);
+      }
+    }
+  } catch {}
+
   redirect("/setup");
 }
