@@ -1,4 +1,4 @@
-# GreenTrack — MVP (Company Customer Flow)
+# Sendrow — MVP (Company Customer Flow)
 
 ESG compliance software for California mid-market companies. This is the **pitch-ready MVP**: the full 16-screen direct-customer flow from the Product Bible, with a real calculation engine, versioned emission-factor library, append-only audit trail, and report generation. QuickBooks and utility connections are **simulated** with realistic, industry-scaled sample data (real OAuth is a production step — see roadmap below).
 
@@ -7,7 +7,7 @@ ESG compliance software for California mid-market companies. This is the **pitch
 Requires Node.js 18+ (check with `node -v`; install from nodejs.org if needed).
 
 ```bash
-cd greentrack-app
+cd sendrow-app
 npm install
 npm run dev
 ```
@@ -16,7 +16,7 @@ Open http://localhost:3000.
 
 ## Demo script for pitches (~5 minutes)
 
-1. **Landing page** — the one-sentence pitch. For live pitching, click **"View a demo company"** at the bottom: it logs you into *Pacific Coast Logistics*, a fully populated 240-person logistics company (login: `demo@pacificcoastlogistics.example` / `greentrack-demo`).
+1. **Landing page** — the one-sentence pitch. For live pitching, click **"View a demo company"** at the bottom: it logs you into *Pacific Coast Logistics*, a fully populated 240-person logistics company (login: `demo@pacificcoastlogistics.example` / `sendrow-demo`).
 2. **Dashboard** — show the progress checklist and the live emissions summary. "This is what your ops manager sees — no sustainability expertise required."
 3. **Connections** — show the QuickBooks and utility cards and the *Review What We Pulled* tables. "We connect read-only to systems you already have. This is where months of data gathering disappear."
 4. **Scope 2** — show dual location/market-based reporting and the REC section. "Most CA companies don't realize their green tariff already lowers their reportable number."

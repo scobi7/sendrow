@@ -181,7 +181,7 @@ export async function GET() {
   return new NextResponse(new Uint8Array(zip), {
     headers: {
       "Content-Type": "application/zip",
-      "Content-Disposition": `attachment; filename="greentrack-export-${company.id}.zip"`,
+      "Content-Disposition": `attachment; filename="sendrow-export-${company.id}.zip"`,
     },
   });
 }

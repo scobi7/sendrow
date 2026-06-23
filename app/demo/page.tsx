@@ -71,7 +71,7 @@ export default async function DemoPage({
           <div className="card">
             <h1 className="text-2xl font-bold font-display" style={{ color: "var(--text)" }}>Request a demo</h1>
             <p className="mt-2 text-sm" style={{ color: "var(--text-muted)" }}>
-              We&rsquo;ll show you how GreenTrack handles a real questionnaire end to end. Usually 20 minutes.
+              We&rsquo;ll show you how Sendrow handles a real questionnaire end to end. Usually 20 minutes.
             </p>
             <form action={requestDemo} className="mt-8 space-y-4">
               <div>

@@ -20,9 +20,9 @@ const spaceMono = Space_Mono({
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "GreenTrack — ESG reporting in days, not months",
+  title: "Sendrow — ESG reporting in days, not months",
   description:
-    "GreenTrack connects to your existing systems, calculates your emissions, and generates a report your customer will accept.",
+    "Sendrow connects to your existing systems, calculates your emissions, and generates a report your customer will accept.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

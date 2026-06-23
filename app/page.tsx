@@ -88,7 +88,7 @@ export default async function Home() {
             className="mx-auto mt-6 max-w-lg text-lg leading-relaxed"
             style={{ color: "var(--text-muted)" }}
           >
-            GreenTrack connects your existing data and automatically produces the ESG reports your customers require.
+            Sendrow connects your existing data and automatically produces the ESG reports your customers require.
           </p>
 
           {/* Audience cards */}
@@ -178,7 +178,7 @@ export default async function Home() {
                 <span className="h-2.5 w-2.5 rounded-full" style={{ background: "#FFBD2E" }} />
                 <span className="h-2.5 w-2.5 rounded-full" style={{ background: "#28C840" }} />
                 <span className="ml-4 text-xs font-medium" style={{ color: "var(--text-muted)" }}>
-                  GreenTrack &mdash; Emissions Dashboard
+                  Sendrow &mdash; Emissions Dashboard
                 </span>
               </div>
 
@@ -326,7 +326,7 @@ export default async function Home() {
               {
                 num: "01",
                 title: "Connect your data",
-                desc: "Link your accounts. GreenTrack pulls transactions and energy data automatically — no exports, no manual entry.",
+                desc: "Link your accounts. Sendrow pulls transactions and energy data automatically — no exports, no manual entry.",
               },
               {
                 num: "02",
@@ -413,10 +413,10 @@ export default async function Home() {
             >
               G
             </span>
-            GreenTrack
+            Sendrow
           </span>
           <p className="text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>
-            &copy; {new Date().getFullYear()} GreenTrack. Built in California.
+            &copy; {new Date().getFullYear()} Sendrow. Built in California.
           </p>
           <div className="flex gap-6">
             {[

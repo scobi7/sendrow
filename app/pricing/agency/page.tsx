@@ -190,7 +190,7 @@ export default function AgencyQuotePage() {
                 </select>
               </div>
               <div>
-                <label className="label">How did you hear about GreenTrack?</label>
+                <label className="label">How did you hear about Sendrow?</label>
                 <input name="source" type="text" className="input w-full" placeholder="LinkedIn, referral, Google…" />
               </div>
             </div>

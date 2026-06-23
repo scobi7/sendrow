@@ -95,7 +95,7 @@ export default function ForCompanies() {
             className="mx-auto mt-6 max-w-xl text-lg leading-relaxed"
             style={{ color: "var(--text-muted)" }}
           >
-            Connect your accounts and GreenTrack calculates your footprint, then maps your numbers to whatever framework your customer requires &mdash; CDP, EcoVadis, Walmart, and more.
+            Connect your accounts and Sendrow calculates your footprint, then maps your numbers to whatever framework your customer requires &mdash; CDP, EcoVadis, Walmart, and more.
           </p>
 
           <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
@@ -125,7 +125,7 @@ export default function ForCompanies() {
                 <span className="h-2.5 w-2.5 rounded-full" style={{ background: "#FFBD2E" }} />
                 <span className="h-2.5 w-2.5 rounded-full" style={{ background: "#28C840" }} />
                 <span className="ml-4 text-xs font-medium" style={{ color: "var(--text-muted)" }}>
-                  GreenTrack &mdash; Emissions Dashboard
+                  Sendrow &mdash; Emissions Dashboard
                 </span>
               </div>
 
@@ -240,7 +240,7 @@ export default function ForCompanies() {
                 We handle the rest.
               </h2>
               <p className="mt-4 text-base leading-relaxed" style={{ color: "var(--text-muted)" }}>
-                Link QuickBooks and your utility provider. GreenTrack pulls your transactions and energy data automatically &mdash; no exports, no manual data entry.
+                Link QuickBooks and your utility provider. Sendrow pulls your transactions and energy data automatically &mdash; no exports, no manual data entry.
               </p>
               <ul className="mt-8 space-y-4">
                 {[
@@ -352,7 +352,7 @@ export default function ForCompanies() {
               {
                 num: "01",
                 title: "Connect your accounts",
-                desc: "Link QuickBooks and your utility provider. GreenTrack pulls your transactions and energy data automatically &mdash; no exports, no spreadsheets.",
+                desc: "Link QuickBooks and your utility provider. Sendrow pulls your transactions and energy data automatically &mdash; no exports, no spreadsheets.",
               },
               {
                 num: "02",
@@ -399,7 +399,7 @@ export default function ForCompanies() {
                 California&rsquo;s mid-market &mdash; 50 to 500 employees &mdash; is getting ESG questionnaires from major customers for the first time. Most don&rsquo;t have a sustainability team, and the questionnaires aren&rsquo;t getting easier.
               </p>
               <p className="mt-4 text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>
-                GreenTrack pulls your data, calculates your footprint, and produces a report your customer accepts. In days, not months.
+                Sendrow pulls your data, calculates your footprint, and produces a report your customer accepts. In days, not months.
               </p>
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -468,10 +468,10 @@ export default function ForCompanies() {
             >
               G
             </span>
-            GreenTrack
+            Sendrow
           </span>
           <p className="text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>
-            &copy; {new Date().getFullYear()} GreenTrack. Built in California.
+            &copy; {new Date().getFullYear()} Sendrow. Built in California.
           </p>
           <div className="flex gap-6">
             {[

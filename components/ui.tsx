@@ -12,7 +12,7 @@ export function Logo({ light = false }: { light?: boolean }) {
       >
         G
       </span>
-      GreenTrack
+      Sendrow
     </span>
   );
 }

@@ -145,7 +145,7 @@ export default function PricingPage() {
           className="mt-12 rounded-2xl px-8 py-6 text-center text-sm"
           style={{ background: "var(--primary-tint)", color: "var(--text-muted)" }}
         >
-          Enterprise ESG platforms charge <strong style={{ color: "var(--text)" }}>$50,000–$250,000/year</strong>. GreenTrack does the same core job for companies and consultants who don't need a Fortune 500 solution.
+          Enterprise ESG platforms charge <strong style={{ color: "var(--text)" }}>$50,000–$250,000/year</strong>. Sendrow does the same core job for companies and consultants who don't need a Fortune 500 solution.
         </div>
 
         {/* FAQ */}
@@ -153,11 +153,11 @@ export default function PricingPage() {
           <h2 className="text-center text-2xl font-bold font-display" style={{ color: "var(--text)" }}>Common questions</h2>
           <div className="mt-10 grid gap-6 sm:grid-cols-2">
             {[
-              ["What counts as an active client?", "Any client company with data in your GreenTrack account. You can archive clients you're no longer working with and they won't count toward your limit."],
+              ["What counts as an active client?", "Any client company with data in your Sendrow account. You can archive clients you're no longer working with and they won't count toward your limit."],
               ["Can I try it before paying?", "Yes — consultants get a 14-day free trial. Company reports are pay-to-generate, but you can enter all your data and see your numbers before paying."],
               ["What happens to my data if I cancel?", "It stays in your account for 90 days. You can export everything as CSV or PDF before your account closes."],
               ["Do my clients need their own accounts?", "They can — or you can enter data on their behalf from your consultant dashboard. Either way works."],
-              ["What frameworks does GreenTrack support?", "GHG Protocol (Scope 1, 2, 3), EcoVadis, CDP, and supply chain questionnaire mapping. More frameworks added regularly."],
+              ["What frameworks does Sendrow support?", "GHG Protocol (Scope 1, 2, 3), EcoVadis, CDP, and supply chain questionnaire mapping. More frameworks added regularly."],
               ["Is the $400 really one-time?", "Yes. You pay once to generate your report. If you come back next year, your data pre-fills and you pay $400 again for the new report."],
             ].map(([q, a]) => (
               <div key={q as string} className="rounded-xl p-6" style={{ border: "1px solid var(--divider)" }}>

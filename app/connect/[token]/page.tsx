@@ -54,10 +54,10 @@ export default async function ConnectPage({
         ) : (
           <>
             <h1 className="text-xl font-bold font-display" style={{ color: "var(--text)" }}>
-              You&rsquo;ve been invited to GreenTrack
+              You&rsquo;ve been invited to Sendrow
             </h1>
             <p className="mt-2 text-sm" style={{ color: "var(--text-muted)" }}>
-              Your ESG consultant has set up a GreenTrack account for{" "}
+              Your ESG consultant has set up a Sendrow account for{" "}
               <strong style={{ color: "var(--text)" }}>{company?.name ?? "your company"}</strong>.
               {userId
                 ? " Click below to accept the invite and get started."

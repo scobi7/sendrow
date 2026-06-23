@@ -10,8 +10,8 @@ import { refreshSectionStatus } from "@/lib/progress";
 import { persistCompany, saveLocations, saveQBTransactions, saveUtilityData, uid, loadFactors } from "@/lib/store";
 import { Company } from "@/lib/types";
 
-const DEMO_EMAIL = "demo@greentrack.app";
-const DEMO_PASSWORD = "GreenTrack2025!";
+const DEMO_EMAIL = "demo@sendrow.app";
+const DEMO_PASSWORD = "Sendrow2025!";
 
 export async function GET(request: Request) {
   const secret = process.env.DEMO_SECRET;

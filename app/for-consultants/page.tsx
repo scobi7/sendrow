@@ -105,7 +105,7 @@ export default function ForConsultants() {
             className="mx-auto mt-6 max-w-xl text-lg leading-relaxed"
             style={{ color: "var(--text-muted)" }}
           >
-            Clients connect their own accounts and fill in their data. GreenTrack runs the calculations. You review, report, and deliver &mdash; without the spreadsheet overhead.
+            Clients connect their own accounts and fill in their data. Sendrow runs the calculations. You review, report, and deliver &mdash; without the spreadsheet overhead.
           </p>
 
           <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
@@ -135,7 +135,7 @@ export default function ForConsultants() {
                 <span className="h-2.5 w-2.5 rounded-full" style={{ background: "#FFBD2E" }} />
                 <span className="h-2.5 w-2.5 rounded-full" style={{ background: "#28C840" }} />
                 <span className="ml-4 text-xs font-medium" style={{ color: "var(--text-muted)" }}>
-                  GreenTrack &mdash; Consultant Dashboard
+                  Sendrow &mdash; Consultant Dashboard
                 </span>
               </div>
 
@@ -275,7 +275,7 @@ export default function ForConsultants() {
                 data collection.
               </h2>
               <p className="mt-4 text-base leading-relaxed" style={{ color: "var(--text-muted)" }}>
-                Send a client an invite link. They connect their QuickBooks and utility account. GreenTrack pulls the data and runs the calculations automatically &mdash; no back-and-forth, no manual data requests.
+                Send a client an invite link. They connect their QuickBooks and utility account. Sendrow pulls the data and runs the calculations automatically &mdash; no back-and-forth, no manual data requests.
               </p>
               <ul className="mt-8 space-y-4">
                 {[
@@ -378,7 +378,7 @@ export default function ForConsultants() {
               {
                 num: "02",
                 title: "They connect their accounts",
-                desc: "Clients link QuickBooks and their utility provider. GreenTrack pulls transactions and energy data automatically.",
+                desc: "Clients link QuickBooks and their utility provider. Sendrow pulls transactions and energy data automatically.",
               },
               {
                 num: "03",
@@ -420,7 +420,7 @@ export default function ForConsultants() {
                 ESG practices are growing fast, but the tools haven&rsquo;t kept up. Most consultants are still coordinating data collection over email, running calculations in spreadsheets, and manually building reports for every client.
               </p>
               <p className="mt-4 text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>
-                GreenTrack gives you a platform where clients handle their own data, calculations run automatically, and every report is audit-ready from the start. Spend your time on the work that requires your expertise.
+                Sendrow gives you a platform where clients handle their own data, calculations run automatically, and every report is audit-ready from the start. Spend your time on the work that requires your expertise.
               </p>
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -450,10 +450,10 @@ export default function ForConsultants() {
             >
               G
             </span>
-            GreenTrack
+            Sendrow
           </span>
           <p className="text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>
-            &copy; {new Date().getFullYear()} GreenTrack. Built in California.
+            &copy; {new Date().getFullYear()} Sendrow. Built in California.
           </p>
           <div className="flex gap-6">
             {[

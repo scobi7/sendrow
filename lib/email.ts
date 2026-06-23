@@ -1,7 +1,7 @@
 "use server";
 
-const FROM = process.env.FROM_EMAIL ?? "hello@greentrack.app";
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://greentrack.app";
+const FROM = process.env.FROM_EMAIL ?? "hello@sendrow.app";
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://sendrow.app";
 const ADMIN_EMAIL = "malachinguyenn@gmail.com";
 
 async function send(to: string | string[], subject: string, html: string) {
@@ -12,7 +12,7 @@ async function send(to: string | string[], subject: string, html: string) {
       Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ from: `GreenTrack <${FROM}>`, to: Array.isArray(to) ? to : [to], subject, html }),
+    body: JSON.stringify({ from: `Sendrow <${FROM}>`, to: Array.isArray(to) ? to : [to], subject, html }),
   });
 }
 
@@ -30,11 +30,11 @@ export async function sendWelcomeEmail(name: string, email: string) {
   const firstName = name.split(" ")[0];
   await send(
     email,
-    "Welcome to GreenTrack",
+    "Welcome to Sendrow",
     `<p>Hi ${firstName},</p>
-<p>Your GreenTrack account is ready. Connect your <strong>QuickBooks</strong> and <strong>utility account</strong> first — those two do most of the work automatically.</p>
+<p>Your Sendrow account is ready. Connect your <strong>QuickBooks</strong> and <strong>utility account</strong> first — those two do most of the work automatically.</p>
 <p><a href="${APP_URL}/dashboard">Go to your dashboard →</a></p>
-<p>— The GreenTrack team</p>`
+<p>— The Sendrow team</p>`
   );
 }
 
@@ -50,10 +50,10 @@ export async function sendInviteAcceptedEmail(
     consultantEmail,
     `${clientName} accepted your invite for ${companyName}`,
     `<p>Hi ${firstName},</p>
-<p><strong>${clientName}</strong> (${clientEmail}) has accepted your invite and created their GreenTrack account for <strong>${companyName}</strong>.</p>
+<p><strong>${clientName}</strong> (${clientEmail}) has accepted your invite and created their Sendrow account for <strong>${companyName}</strong>.</p>
 <p>They can now log in and start filling in their data. You can track their progress from your dashboard.</p>
 <p><a href="${APP_URL}/consultant">View your clients →</a></p>
-<p>— The GreenTrack team</p>`
+<p>— The Sendrow team</p>`
   );
 }
 
@@ -103,8 +103,8 @@ export async function sendSectionCompleteEmail(
     consultantEmail,
     `${companyName} completed ${sectionLabel}`,
     `<p>Hi ${firstName},</p>
-<p><strong>${companyName}</strong> just completed the <strong>${sectionLabel}</strong> section on GreenTrack.</p>
+<p><strong>${companyName}</strong> just completed the <strong>${sectionLabel}</strong> section on Sendrow.</p>
 <p><a href="${APP_URL}/consultant">View their progress →</a></p>
-<p>— The GreenTrack team</p>`
+<p>— The Sendrow team</p>`
   );
 }

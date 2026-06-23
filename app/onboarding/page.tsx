@@ -25,9 +25,9 @@ export default async function OnboardingPage({
       <Logo />
       <div className="mt-8 w-full max-w-lg">
         <h1 className="text-2xl font-bold font-display" style={{ color: "var(--text)" }}>
-          Welcome to GreenTrack
+          Welcome to Sendrow
         </h1>
-        <p className="mt-2" style={{ color: "var(--text-muted)" }}>How will you be using GreenTrack?</p>
+        <p className="mt-2" style={{ color: "var(--text-muted)" }}>How will you be using Sendrow?</p>
 
         {error && (
           <p

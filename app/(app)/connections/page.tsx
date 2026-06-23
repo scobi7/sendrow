@@ -284,7 +284,7 @@ function PanelFooter({
         </form>
       )}
       <a
-        href="mailto:malachinguyenn@gmail.com?subject=GreenTrack data issue"
+        href="mailto:malachinguyenn@gmail.com?subject=Sendrow data issue"
         className="btn btn-secondary px-3 py-1.5 text-xs"
       >
         Flag an issue
