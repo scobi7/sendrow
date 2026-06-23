@@ -83,11 +83,19 @@ export default async function ClientDetailPage({
             {company.headcountRange ? company.headcountRange.replace(/_/g, "–") : "Headcount not set"} employees
           </p>
         </div>
-        <form action={boundArchive}>
-          <button className="text-xs transition-opacity hover:opacity-70" style={{ color: "var(--text-muted)" }}>
-            Archive client
-          </button>
-        </form>
+        <div className="flex items-center gap-3">
+          <Link
+            href={`/consultant/clients/${id}/manage`}
+            className="btn btn-primary text-sm"
+          >
+            Manage on behalf
+          </Link>
+          <form action={boundArchive}>
+            <button className="text-xs transition-opacity hover:opacity-70" style={{ color: "var(--text-muted)" }}>
+              Archive client
+            </button>
+          </form>
+        </div>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
