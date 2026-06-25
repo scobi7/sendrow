@@ -3,6 +3,7 @@ import { loadCompany } from "@/lib/store";
 import { connectQuickBooks, connectUtility, startUtilityConnect, syncUtilityNow, syncUtilityByUid, resync, markQBReviewed, markUtilityReviewed, disconnectQuickBooks, disconnectUtility } from "@/lib/actions";
 import { reportingPeriod } from "@/lib/calc";
 import { PageHeader } from "@/components/ui";
+import { SubmitButton } from "@/components/submit-button";
 
 const UTIL_ERRORS: Record<string, string> = {
   not_found: "Authorization not found yet — your utility provider may still be processing it. Wait a few minutes and try again.",
@@ -91,7 +92,7 @@ export default async function Connections({
             </div>
           ) : (
             <form action={connectQuickBooks} className="mt-4">
-              <button className="btn btn-primary w-full">Connect QuickBooks</button>
+              <SubmitButton className="btn btn-primary w-full" pendingText="Connecting…">Connect QuickBooks</SubmitButton>
               <p className="mt-2 text-center text-xs" style={{ color: "var(--text-muted)" }}>Demo mode: loads realistic sample data.</p>
             </form>
           )}
@@ -145,7 +146,7 @@ export default async function Connections({
                 </a>
               )}
               <form action={syncUtilityNow}>
-                <button className="btn btn-primary w-full">I authorized — pull my data</button>
+                <SubmitButton className="btn btn-primary w-full" pendingText="Pulling data…">I authorized — pull my data</SubmitButton>
               </form>
               <details className="text-xs" style={{ color: "var(--text-muted)" }}>
                 <summary className="cursor-pointer py-1 font-medium">Have your Authorization UID? Enter it manually →</summary>
@@ -183,7 +184,7 @@ export default async function Connections({
             </form>
           ) : (
             <form action={connectUtility} className="mt-4">
-              <button className="btn btn-primary w-full">Connect Utility</button>
+              <SubmitButton className="btn btn-primary w-full" pendingText="Connecting…">Connect Utility</SubmitButton>
               <p className="mt-2 text-center text-xs" style={{ color: "var(--text-muted)" }}>Demo mode: loads realistic sample data.</p>
             </form>
           )}
@@ -280,11 +281,11 @@ function PanelFooter({
         </span>
       ) : (
         <form action={reviewAction}>
-          <button type="submit" className="btn btn-primary px-3 py-1.5 text-xs">✓ This looks right</button>
+          <SubmitButton className="btn btn-primary px-3 py-1.5 text-xs" pendingText="Saving…">✓ This looks right</SubmitButton>
         </form>
       )}
       <a
-        href="mailto:malachinguyenn@gmail.com?subject=Sendrow data issue"
+        href={`mailto:${process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "hello@sendrow.app"}?subject=Sendrow data issue`}
         className="btn btn-secondary px-3 py-1.5 text-xs"
       >
         Flag an issue

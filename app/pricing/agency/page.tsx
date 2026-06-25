@@ -2,9 +2,12 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { LandingNav } from "@/components/landing-nav";
 import { sendAgencyQuoteRequest } from "@/lib/email";
+import { clientIp, checkRateLimit } from "@/lib/ratelimit";
 
 async function submitQuote(formData: FormData) {
   "use server";
+  const ip = await clientIp();
+  if (!checkRateLimit(`agency_quote:${ip}`)) redirect("/pricing/agency?error=rate_limit");
 
   const get = (k: string) => (formData.get(k) as string | null) ?? "";
   const getAll = (k: string) => formData.getAll(k) as string[];

@@ -53,7 +53,5 @@ export async function getBills(meterUids: string[]): Promise<UtilityBill[]> {
   });
   if (!res.ok) throw new Error(`UtilityAPI ${res.status}`);
   const data = await res.json();
-  const bills = data.bills ?? [];
-  if (bills.length > 0) console.log("[UtilityAPI] sample bill fields:", JSON.stringify(bills[0], null, 2));
-  return bills as UtilityBill[];
+  return (data.bills ?? []) as UtilityBill[];
 }

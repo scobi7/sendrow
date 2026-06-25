@@ -5,6 +5,7 @@ import { generateReport } from "@/lib/actions";
 import { totals } from "@/lib/calc";
 import { canGenerateReport } from "@/lib/progress";
 import { PageHeader } from "@/components/ui";
+import { SubmitButton } from "@/components/submit-button";
 import { questionnaireMapping, QUESTIONNAIRE_FORMATS } from "@/lib/mapping";
 
 export default async function Reports({ searchParams }: { searchParams: Promise<{ format?: string }> }) {
@@ -83,7 +84,7 @@ export default async function Reports({ searchParams }: { searchParams: Promise<
             </div>
           ) : (
             <form action={generateReport}>
-              <button className="btn btn-primary" disabled={!ready}>Generate PDF</button>
+              <SubmitButton className="btn btn-primary" disabled={!ready} pendingText="Generating…">Generate PDF</SubmitButton>
             </form>
           )}
         </div>

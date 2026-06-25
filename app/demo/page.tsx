@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Logo } from "@/components/ui";
 import { sendDemoRequest } from "@/lib/email";
+import { clientIp, checkRateLimit } from "@/lib/ratelimit";
 
 export default async function DemoPage({
   searchParams,
@@ -14,6 +15,8 @@ export default async function DemoPage({
 
   async function requestDemo(formData: FormData) {
     "use server";
+    const ip = await clientIp();
+    if (!checkRateLimit(`demo:${ip}`)) redirect("/demo?error=rate_limit");
     const name = String(formData.get("name") ?? "").trim();
     const email = String(formData.get("email") ?? "").trim();
     const company = String(formData.get("company") ?? "").trim();

@@ -6,14 +6,39 @@ export function Logo({ light = false }: { light?: boolean }) {
       className="flex items-center gap-2 text-lg font-bold font-display"
       style={{ color: light ? "#fff" : "var(--text)" }}
     >
-      <span
-        className="flex h-8 w-8 items-center justify-center text-sm font-bold text-white"
-        style={{ background: "var(--primary)", borderRadius: "var(--radius-sm)" }}
-      >
-        G
-      </span>
+      <SendrowMark />
       Sendrow
     </span>
+  );
+}
+
+function SendrowMark() {
+  return (
+    <svg
+      width="32"
+      height="32"
+      viewBox="0 0 100 100"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+    >
+      {/* Light green — top piece (angular C opening right) */}
+      <path
+        d="M 8 8 L 78 8 L 90 20 L 90 34 L 60 34 L 46 50 L 32 50 L 46 36 L 8 36 Z"
+        fill="#5CB85C"
+      />
+      {/* Shadow overlap in center */}
+      <path
+        d="M 46 50 L 60 50 L 54 56 L 40 56 Z"
+        fill="#1A5C30"
+        opacity="0.45"
+      />
+      {/* Dark green — bottom piece (mirror of top) */}
+      <path
+        d="M 92 92 L 22 92 L 10 80 L 10 66 L 40 66 L 54 50 L 68 50 L 54 64 L 92 64 Z"
+        fill="#1A5C30"
+      />
+    </svg>
   );
 }
 
@@ -236,7 +261,7 @@ export function InfoTip({ text }: { text: string }) {
       >
         i
       </span>
-      <span className="invisible absolute bottom-5 left-1/2 z-10 w-64 -translate-x-1/2 rounded-xl bg-canopy-text p-3 text-xs text-white shadow-lg group-hover:visible"
+      <span className="invisible absolute bottom-5 left-1/2 z-10 w-64 -translate-x-1/2 rounded-xl p-3 text-xs text-white shadow-lg group-hover:visible"
         style={{ background: "var(--text)" }}>
         {text}
       </span>

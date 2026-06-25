@@ -2,7 +2,7 @@
 
 const FROM = process.env.FROM_EMAIL ?? "hello@sendrow.app";
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://sendrow.app";
-const ADMIN_EMAIL = "malachinguyenn@gmail.com";
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? "malachinguyenn@gmail.com";
 
 async function send(to: string | string[], subject: string, html: string) {
   if (!process.env.RESEND_API_KEY) return;

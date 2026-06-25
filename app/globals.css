@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 :root {
-  /* ── Canopy Light palette ── */
+  /* ── Sendrow palette ── */
   --bg:           #F5FBF6;   /* page background — near-white, barely-there green */
   --surface:      #EBF5ED;   /* nav, sidebar, alternate section backgrounds */
   --card:         #DFF0E2;   /* card / panel fill */

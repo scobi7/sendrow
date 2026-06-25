@@ -4,6 +4,7 @@ import { exchangeCode, fetchPurchases } from "@/lib/quickbooks";
 import { loadCompany, loadFactors, persistCompany, saveQBTransactions } from "@/lib/store";
 import { recalcCompany } from "@/lib/calc";
 import { refreshSectionStatus } from "@/lib/progress";
+import { logError } from "@/lib/logger";
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "";
 
@@ -59,7 +60,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.redirect(`${BASE_URL}/connections`);
   } catch (e) {
-    console.error("QB OAuth callback error:", e);
+    logError("QB OAuth callback", e);
     return NextResponse.redirect(`${BASE_URL}/connections?error=qb_oauth_failed`);
   }
 }
