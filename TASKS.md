@@ -6,22 +6,11 @@ Generated from PLANS.md (approved). Updated after each task completes.
 ## Plan C — Domain & Email Infrastructure (2026-06-26)
 
 - [x] **C1** — Updated `ADMIN_EMAIL` fallback in `lib/email.ts` to `malachi.nguyen@sendrow.app`
-- [ ] **C2** — Set Vercel env vars: `FROM_EMAIL`, `ADMIN_EMAIL`, `NEXT_PUBLIC_SUPPORT_EMAIL`, `NEXT_PUBLIC_APP_URL` (user action)
-- [ ] **C3** — Set up Resend sending domain `sendrow.app` + add DNS records to Cloudflare (user action)
-- [ ] **C4** — Set `RESEND_API_KEY` in Vercel (user action)
+- [x] **C2** — Set Vercel env vars: `FROM_EMAIL`, `ADMIN_EMAIL`, `NEXT_PUBLIC_SUPPORT_EMAIL`, `NEXT_PUBLIC_APP_URL`
+- [x] **C3** — Set up Resend sending domain `sendrow.app` + DNS verified via Cloudflare auto-configure
+- [x] **C4** — `RESEND_API_KEY` already set in Vercel; redeployed to apply all env vars
 
 ---
-
-## Plan A — Codebase Cleanup
-
-- [x] **A1** — Fix Logo: replaced hardcoded "G" with inline SVG recreation of Sendrow logo
-- [x] **A2** — Removed `console.log` debug statement from `lib/utilityapi.ts`
-- [x] **A3** — Moved hardcoded support email to `NEXT_PUBLIC_SUPPORT_EMAIL` env var
-- [x] **A4** — Standardized `ADMIN_EMAIL` in `lib/email.ts` to use env var
-- [x] **A5** — Updated stale "Canopy Light palette" → "Sendrow palette" in `app/globals.css`
-- [x] **A6** — Removed dead `bg-canopy-text` Tailwind class from `components/ui.tsx`
-- [x] **A7** — Deleted dead `lib/ratelimit.ts` file (re-created with proper implementation for B2)
-- [x] **A8** — QB callback errors now write to `logs/errors.log` via new `lib/logger.ts`
 
 ## Plan B — First Customer Readiness
 
@@ -30,26 +19,27 @@ Generated from PLANS.md (approved). Updated after each task completes.
 - [x] **B3** — Created stub `/terms` and `/privacy` pages with draft-warning banners
 - [x] **B4** — Created `app/not-found.tsx` (404) and `app/error.tsx` (global error boundary)
 - [x] **B5** — Added `SubmitButton` client component with `useFormStatus`; applied to connections and reports pages
-- [x] **B6** — Verified PDF (`/api/report/pdf`) and export routes (`/api/export`, `/api/export/zip`) — structurally sound, no bugs
+- [x] **B6** — Verified PDF (`/api/report/pdf`) and export routes — structurally sound, no bugs
 - [x] **B7** — Written `docs/first-customer-readiness.md` with full status, env var checklist, and gap list
+
+## Plan A — Codebase Cleanup
+
+- [x] **A1** — Fix Logo: replaced hardcoded "G" with inline SVG Sendrow mark
+- [x] **A2** — Removed `console.log` debug statement from `lib/utilityapi.ts`
+- [x] **A3** — Moved hardcoded support email to `NEXT_PUBLIC_SUPPORT_EMAIL` env var
+- [x] **A4** — Standardized `ADMIN_EMAIL` in `lib/email.ts` to use env var
+- [x] **A5** — Updated stale "Canopy Light palette" → "Sendrow palette" in `app/globals.css`
+- [x] **A6** — Removed dead `bg-canopy-text` Tailwind class from `components/ui.tsx`
+- [x] **A7** — Deleted dead `lib/ratelimit.ts` (re-created with proper IP-based implementation)
+- [x] **A8** — QB callback errors now write to `logs/errors.log` via `lib/logger.ts`
 
 ## Smoke Tests
 
-- [x] **T1** — Set up vitest; wrote calc engine smoke tests (`test/calc.test.ts`) — 12 tests
-- [x] **T2** — Wrote section status smoke tests (`test/progress.test.ts`) — 12 tests
-- [x] **T3** — Wrote emission factor smoke tests (`test/factors.test.ts`) — 18 tests
+- [x] **T1** — Vitest setup; calc engine smoke tests (`test/calc.test.ts`) — 12 tests
+- [x] **T2** — Section status smoke tests (`test/progress.test.ts`) — 12 tests
+- [x] **T3** — Emission factor smoke tests (`test/factors.test.ts`) — 18 tests
 - [x] **T4** — All 42 tests pass. TypeScript clean (0 errors).
 
 ---
 
-## Summary
-
-All tasks complete. New files:
-- `components/submit-button.tsx` — pending-state form button
-- `lib/logger.ts` — file + stderr error logger
-- `lib/ratelimit.ts` — IP-based rate limiter (used by demo + agency quote)
-- `app/not-found.tsx`, `app/error.tsx` — error pages
-- `app/terms/page.tsx`, `app/privacy/page.tsx` — legal stub pages
-- `test/calc.test.ts`, `test/progress.test.ts`, `test/factors.test.ts` — smoke tests
-- `test/setup.ts`, `vitest.config.ts` — test infrastructure
-- `docs/first-customer-readiness.md` — gap analysis doc
+## Up Next — Plan D: Stripe Billing (pending approval)
