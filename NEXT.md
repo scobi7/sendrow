@@ -1,6 +1,6 @@
 # NEXT.md
 > Summary table of what needs to be done next. Updated at end of each session.
-> Last updated: 2026-06-25
+> Last updated: 2026-06-26
 
 ---
 
@@ -11,7 +11,8 @@
 | N1 | **Billing / Stripe integration** | No way to charge anyone — app has no paywall | New feature — `app/billing/`, `lib/stripe.ts` |
 | N2 | **ToS & Privacy legal copy** | Stub pages exist but have "draft" warning banners — need attorney-reviewed copy | `app/terms/page.tsx`, `app/privacy/page.tsx` |
 | N3 | **Set `ADMIN_CLERK_ID` env var in prod** | Without it, `/admin` redirects everyone — admin panel is broken in production | Vercel env config |
-| N4 | **Set all production env vars** | `ADMIN_EMAIL`, `NEXT_PUBLIC_SUPPORT_EMAIL`, `RESEND_API_KEY`, `NEXT_PUBLIC_APP_URL` | Vercel env config |
+| N4 | **Set all production env vars** | `FROM_EMAIL=contact@sendrow.app`, `ADMIN_EMAIL=malachi.nguyen@sendrow.app`, `NEXT_PUBLIC_SUPPORT_EMAIL=contact@sendrow.app`, `NEXT_PUBLIC_APP_URL=https://sendrow.app`, `RESEND_API_KEY` | Vercel env config |
+| N4b | **Resend domain setup** | Add `sendrow.app` in resend.com → get SPF/DKIM/DMARC records → paste into Cloudflare DNS → verify | resend.com + Cloudflare |
 
 ---
 

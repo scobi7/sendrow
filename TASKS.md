@@ -3,6 +3,15 @@ Generated from PLANS.md (approved). Updated after each task completes.
 
 ---
 
+## Plan C — Domain & Email Infrastructure (2026-06-26)
+
+- [x] **C1** — Updated `ADMIN_EMAIL` fallback in `lib/email.ts` to `malachi.nguyen@sendrow.app`
+- [ ] **C2** — Set Vercel env vars: `FROM_EMAIL`, `ADMIN_EMAIL`, `NEXT_PUBLIC_SUPPORT_EMAIL`, `NEXT_PUBLIC_APP_URL` (user action)
+- [ ] **C3** — Set up Resend sending domain `sendrow.app` + add DNS records to Cloudflare (user action)
+- [ ] **C4** — Set `RESEND_API_KEY` in Vercel (user action)
+
+---
+
 ## Plan A — Codebase Cleanup
 
 - [x] **A1** — Fix Logo: replaced hardcoded "G" with inline SVG recreation of Sendrow logo
