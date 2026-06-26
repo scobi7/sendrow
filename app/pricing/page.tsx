@@ -65,7 +65,7 @@ export default function PricingPage() {
             <p className="mt-3 text-sm" style={{ color: "var(--text-muted)" }}>
               One-time payment. Generate your GHG inventory report, answer your customer's ESG questionnaire, and you're done. Come back next year and your data pre-fills.
             </p>
-            <Link href="/signup" className="btn btn-primary mt-8 block w-full text-center">
+            <Link href="/signup?plan=company" className="btn btn-primary mt-8 block w-full text-center">
               Get started
             </Link>
             <ul className="mt-8 space-y-3">
@@ -99,7 +99,7 @@ export default function PricingPage() {
             <p className="mt-3 text-sm" style={{ color: "var(--text-muted)" }}>
               $100/mo per additional active client. Scale your book without scaling your hours. Cancel anytime.
             </p>
-            <Link href="/signup?role=consultant" className="btn btn-primary mt-8 block w-full text-center">
+            <Link href="/signup?plan=consultant" className="btn btn-primary mt-8 block w-full text-center">
               Start free trial
             </Link>
             <PricingCalculator />

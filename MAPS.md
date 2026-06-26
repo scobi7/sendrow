@@ -22,4 +22,5 @@ confirm that all hard invariants live in contracts/
 Src/ of you are writing a program
 www/ if you you out putting to browser
 when finishing, push to github-branch-tracking so I can preview and test. do not push to main unless specified
+Then create a summary table in NEXT.md that is a summary of whats needed to be done next
 ~                                                      

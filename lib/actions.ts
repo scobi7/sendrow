@@ -128,7 +128,7 @@ export async function onboardAsCompany(formData: FormData) {
 
   if (uname && uemail) sendWelcomeEmail(uname, uemail).catch(() => {});
 
-  redirect("/setup");
+  redirect("/checkout?plan=company");
 }
 
 export async function onboardAsConsultant() {
@@ -155,7 +155,7 @@ export async function onboardAsConsultant() {
     });
 
   if (email) sendWelcomeEmail(name, email).catch(() => {});
-  redirect("/consultant");
+  redirect("/checkout?plan=consultant");
 }
 
 // ─────────── Setup wizard ───────────

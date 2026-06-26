@@ -42,4 +42,15 @@ Generated from PLANS.md (approved). Updated after each task completes.
 
 ---
 
-## Up Next — Plan D: Stripe Billing (pending approval)
+## Plan D — Stripe Billing Integration (2026-06-26)
+
+- [x] **D1** — `lib/stripe.ts` — Stripe client + `createCheckoutSession()`
+- [x] **D2** — `app/api/checkout/verify/route.ts` — GET: verify payment + update Clerk metadata
+- [x] **D3** — `app/api/webhooks/stripe/route.ts` — handle checkout.session.completed + subscription cancellations
+- [x] **D4** — `app/api/billing/portal/route.ts` — billing portal for consultants
+- [x] **D5** — `app/checkout/page.tsx` — plan picker or immediate Stripe redirect
+- [x] **D6** — `app/checkout/success/page.tsx` — verify, reload session, redirect
+- [x] **D7** — `middleware.ts` — payment gate on all app routes (skipped if no STRIPE_SECRET_KEY)
+- [x] **D8** — `lib/actions.ts` — onboarding now redirects to `/checkout?plan=...`
+- [x] **D9** — `app/pricing/page.tsx` — CTAs updated to `/signup?plan=...`
+- [ ] **D10** — Set up Stripe webhook in dashboard + add `STRIPE_WEBHOOK_SECRET` to Vercel (user action)

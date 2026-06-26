@@ -3,32 +3,58 @@
 
 ---
 
-## Plan C — Domain & Email Infrastructure (2026-06-26)
+## Plan D — Stripe Billing Integration (2026-06-26)
 
-### What changed
-- Bought `sendrow.app` on Cloudflare Registrar
-- Connected to Vercel via auto-configure DNS
-- Set up Zoho Mail (Mail Lite, $1/mo/user)
-  - `malachi.nguyen@sendrow.app` + `contact@sendrow.app` alias → Malachi's inbox
-  - `masao.honda@sendrow.app` → Masao's inbox
-- Added `malachi.nguyen@sendrow.app` to Gmail via SMTP (smtppro.zoho.com)
+### Price IDs
+- Company Report: `price_1TmhpRCXd6KQb0HdOVmsmqst` ($400 one-time)
+- Consultant Plan: `price_1TmhqGCXd6KQb0HdpQyG12jp` ($300/mo subscription)
 
-### Code changes (approved + executed)
-| # | File | Change |
-|---|------|--------|
-| C1 | `lib/email.ts` | `ADMIN_EMAIL` fallback updated from personal Gmail → `malachi.nguyen@sendrow.app` |
+---
 
-### Vercel env vars to set (manual — user action required)
-| Var | Value |
-|-----|-------|
-| `FROM_EMAIL` | `contact@sendrow.app` |
-| `ADMIN_EMAIL` | `malachi.nguyen@sendrow.app` |
-| `NEXT_PUBLIC_SUPPORT_EMAIL` | `contact@sendrow.app` |
-| `NEXT_PUBLIC_APP_URL` | `https://sendrow.app` |
-| `RESEND_API_KEY` | get from resend.com |
+### How it works (user flow)
 
-### Resend domain setup (manual — user action required)
-1. resend.com → Domains → Add `sendrow.app`
-2. Paste the 3 DNS records (SPF, DKIM, DMARC) into Cloudflare DNS
-3. Hit Verify in Resend
-4. Set `FROM_EMAIL=contact@sendrow.app` in Vercel
+**Company:**
+1. `/signup` → Clerk signup → redirect to Stripe Checkout ($400 one-time)
+2. Pay → Stripe fires webhook → Clerk user metadata set: `{ plan: "company", planStatus: "active" }`
+3. Redirect to `/onboarding` → `/dashboard`
+4. Middleware blocks app access if no active plan → redirects to `/checkout`
+
+**Consultant:**
+1. `/signup?role=consultant` → Clerk signup → redirect to Stripe Checkout ($300/mo)
+2. Pay → webhook → Clerk metadata: `{ plan: "consultant", planStatus: "active" }`
+3. Redirect to `/consultant`
+4. If subscription cancels → Stripe fires webhook → metadata updated → access revoked
+
+---
+
+### Files to create/modify
+
+| # | File | What |
+|---|------|------|
+| D1 | `lib/stripe.ts` | Stripe client + helpers |
+| D2 | `app/api/checkout/route.ts` | Create Stripe checkout session |
+| D3 | `app/api/webhooks/stripe/route.ts` | Handle `checkout.session.completed`, `customer.subscription.deleted` |
+| D4 | `app/api/billing/portal/route.ts` | Billing portal redirect for consultants |
+| D5 | `middleware.ts` | Gate app routes behind active plan check |
+| D6 | `app/checkout/page.tsx` | Checkout landing page (choose plan + redirect to Stripe) |
+| D7 | `app/checkout/success/page.tsx` | Post-payment success page |
+| D8 | `app/onboarding/page.tsx` | Update redirect after onboarding to go to checkout first |
+| D9 | `app/pricing/page.tsx` | Update CTAs to go to `/checkout?plan=company` etc. |
+
+### Env vars needed in Vercel
+| Var | Where to get |
+|-----|-------------|
+| `STRIPE_SECRET_KEY` | Stripe → Developers → API Keys → Secret key |
+| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Stripe → Developers → API Keys → Publishable key |
+| `STRIPE_WEBHOOK_SECRET` | Stripe → Developers → Webhooks → signing secret (after creating webhook) |
+| `STRIPE_COMPANY_PRICE_ID` | `price_1TmhpRCXd6KQb0HdOVmsmqst` |
+| `STRIPE_CONSULTANT_PRICE_ID` | `price_1TmhqGCXd6KQb0HdpQyG12jp` |
+
+### Webhook to set up in Stripe
+- URL: `https://sendrow.app/api/webhooks/stripe`
+- Events: `checkout.session.completed`, `customer.subscription.deleted`, `customer.subscription.updated`
+
+---
+
+## Approval
+Reply "approved" to proceed to TASKS.md and implementation.
