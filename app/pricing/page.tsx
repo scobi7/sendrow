@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { LandingNav } from "@/components/landing-nav";
+import { LandingFooter } from "@/components/landing-footer";
 import { PricingCalculator } from "@/components/pricing-calculator";
 
 const COMPANY_FEATURES = [
@@ -176,6 +177,7 @@ export default function PricingPage() {
         </div>
 
       </main>
+      <LandingFooter />
     </>
   );
 }

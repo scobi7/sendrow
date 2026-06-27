@@ -3,8 +3,11 @@ export const dynamic = "force-dynamic";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Logo } from "@/components/ui";
+import { LandingFooter } from "@/components/landing-footer";
 import { sendDemoRequest } from "@/lib/email";
 import { clientIp, checkRateLimit } from "@/lib/ratelimit";
+
+const CALENDLY_URL = process.env.NEXT_PUBLIC_CALENDLY_URL ?? "{CALENDLY_URL}";
 
 export default async function DemoPage({
   searchParams,
@@ -57,7 +60,7 @@ export default async function DemoPage({
               We&rsquo;ll be in touch shortly. Or pick a time right now:
             </p>
             <a
-              href="https://calendly.com/malachinguyenn/30min"
+              href="{CALENDLY_URL}"
               target="_blank"
               rel="noopener noreferrer"
               className="btn btn-primary mt-6 inline-block text-sm px-6 py-2.5"
@@ -96,7 +99,7 @@ export default async function DemoPage({
             <p className="mt-4 text-center text-xs" style={{ color: "var(--text-muted)" }}>
               Prefer to pick a time directly?{" "}
               <a
-                href="https://calendly.com/malachinguyenn/30min"
+                href="{CALENDLY_URL}"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="underline transition-opacity hover:opacity-70"
@@ -114,6 +117,7 @@ export default async function DemoPage({
           </div>
         )}
       </div>
+      <LandingFooter />
     </main>
   );
 }

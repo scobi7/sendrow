@@ -14,13 +14,15 @@ export default function TermsPage() {
         <h1 className="text-3xl font-black font-display" style={{ color: "var(--text)" }}>Terms of Service</h1>
         <p className="mt-2 text-sm" style={{ color: "var(--text-muted)" }}>Last updated: {new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}</p>
 
-        <div className="mt-8 rounded-xl p-6" style={{ background: "var(--warning-tint)", border: "1px solid var(--warning)" }}>
-          <p className="text-sm font-semibold" style={{ color: "var(--warning)" }}>Draft — legal review pending</p>
-          <p className="mt-1 text-sm" style={{ color: "var(--warning)" }}>
-            This page is a placeholder. Full terms of service are being drafted and will be published before general availability.
-            Contact <a href="mailto:hello@sendrow.app" style={{ color: "var(--warning)" }}>hello@sendrow.app</a> with questions.
-          </p>
-        </div>
+        {process.env.NEXT_PUBLIC_DRAFT_LEGAL === "true" && (
+          <div className="mt-8 rounded-xl p-6" style={{ background: "var(--warning-tint)", border: "1px solid var(--warning)" }}>
+            <p className="text-sm font-semibold" style={{ color: "var(--warning)" }}>Draft — legal review pending</p>
+            <p className="mt-1 text-sm" style={{ color: "var(--warning)" }}>
+              This page is a placeholder. Full terms of service are being drafted and will be published before general availability.
+              Contact <a href="mailto:hello@sendrow.app" style={{ color: "var(--warning)" }}>hello@sendrow.app</a> with questions.
+            </p>
+          </div>
+        )}
 
         <h2 className="mt-10 text-xl font-bold font-display" style={{ color: "var(--text)" }}>1. Agreement to Terms</h2>
         <p style={{ color: "var(--text-muted)" }}>

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { LandingNav } from "@/components/landing-nav";
+import { LandingFooter } from "@/components/landing-footer";
 import { ScopeBarChart, ScopeDonutChart } from "@/components/ui";
 
 const SAMPLE_EMISSIONS = [
@@ -458,39 +459,7 @@ export default function ForCompanies() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="px-6 py-10" style={{ background: "var(--text)" }}>
-        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-6">
-          <span className="flex items-center gap-2 font-display text-base font-bold text-white">
-            <span
-              className="flex h-7 w-7 items-center justify-center rounded-lg text-xs font-black"
-              style={{ background: "var(--status-green)", color: "var(--text)" }}
-            >
-              G
-            </span>
-            Sendrow
-          </span>
-          <p className="text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>
-            &copy; {new Date().getFullYear()} Sendrow. Built in California.
-          </p>
-          <div className="flex gap-6">
-            {[
-              ["Sign in", "/login"],
-              ["Request demo", "/demo"],
-              ["Get started", "/signup"],
-            ].map(([label, href]) => (
-              <Link
-                key={href}
-                href={href}
-                className="text-xs transition-opacity hover:opacity-80"
-                style={{ color: "rgba(255,255,255,0.4)" }}
-              >
-                {label}
-              </Link>
-            ))}
-          </div>
-        </div>
-      </footer>
+      <LandingFooter />
     </main>
   );
 }

@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { LandingNav } from "@/components/landing-nav";
+import { LandingFooter } from "@/components/landing-footer";
 import { sendAgencyQuoteRequest } from "@/lib/email";
 import { clientIp, checkRateLimit } from "@/lib/ratelimit";
 
@@ -209,6 +210,7 @@ export default function AgencyQuotePage() {
           </div>
         </form>
       </main>
+      <LandingFooter />
     </>
   );
 }

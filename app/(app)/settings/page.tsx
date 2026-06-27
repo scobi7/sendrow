@@ -127,9 +127,16 @@ export default async function Settings({ searchParams }: { searchParams: Promise
             <dd className="font-medium" style={{ color: "var(--text)" }}>{u.email}</dd>
           </div>
         </dl>
-        <p className="mt-3 text-xs" style={{ color: "var(--text-muted)" }}>
-          Password change and billing are available in the production build with Stripe.
-        </p>
+        <div className="mt-4 flex flex-wrap gap-3">
+          {process.env.STRIPE_SECRET_KEY && (
+            <a
+              href="/api/billing/portal"
+              className="btn btn-secondary text-sm"
+            >
+              Manage billing →
+            </a>
+          )}
+        </div>
       </div>
 
       {/* Data Export */}
