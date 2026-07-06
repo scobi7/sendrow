@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { currentUser } from "@/lib/auth";
 import { loadCompany } from "@/lib/store";
 import { totals } from "@/lib/calc";
@@ -19,7 +20,8 @@ const SECTIONS: [SectionName, string, string, string][] = [
 const STEP_LABELS = ["Connect", "Scope 1", "Scope 2", "Scope 3", "Social", "Govern.", "Reports"];
 
 export default async function Dashboard() {
-  const user = (await currentUser())!;
+  const user = await currentUser();
+  if (!user?.companyId) redirect("/onboarding");
   const company = await loadCompany(user.companyId);
   const pct = progressPercent(company);
   const t = totals(company);
