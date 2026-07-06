@@ -3,9 +3,10 @@ import { auth } from "@clerk/nextjs/server";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { userCompanies, mappingProfiles, emissionLineItems } from "@/lib/db/schema";
-import { applyProfile, rowToLineItem } from "@/lib/ingestion/ingest";
+import { applyProfile, rowToLineItem, fleetFuelToLineItems } from "@/lib/ingestion/ingest";
 import { getFactorsFromDb } from "@/lib/factor-engine";
-import type { ColumnMap } from "@/lib/ingestion/ingest";
+import type { ColumnMap, FuelPrices } from "@/lib/ingestion/ingest";
+import type { DataType } from "@/lib/ingestion/data-type-templates";
 
 function newId(prefix: string) {
   return prefix + "_" + Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
@@ -29,6 +30,8 @@ export async function POST(request: NextRequest) {
   const rows: Record<string, string>[] = body.rows ?? [];
   const columnMap: ColumnMap = body.columnMap ?? {};
   const profileName: string = body.profileName ?? "Untitled profile";
+  const dataType: DataType = body.dataType ?? "custom";
+  const fuelPrices: FuelPrices | null = body.fuelPrices ?? null;
 
   if (!rows.length) return NextResponse.json({ error: "No rows provided" }, { status: 400 });
 
@@ -37,7 +40,7 @@ export async function POST(request: NextRequest) {
     id: profileId,
     companyId,
     name: profileName,
-    columnMap,
+    columnMap: { ...columnMap, _dataType: dataType },
     effectiveFrom: new Date().toISOString().slice(0, 10),
     createdAt: new Date().toISOString(),
   });
@@ -45,9 +48,14 @@ export async function POST(request: NextRequest) {
   const factors = await getFactorsFromDb();
   const normalized = applyProfile(rows, columnMap);
 
-  const inserts = normalized
-    .map((row) => rowToLineItem(row, factors, companyId, profileId))
-    .filter((item): item is NonNullable<typeof item> => item !== null);
+  let inserts;
+  if (dataType === "fleet_fuel_dollar" && fuelPrices) {
+    inserts = fleetFuelToLineItems(normalized, factors, fuelPrices, companyId, profileId);
+  } else {
+    inserts = normalized
+      .map((row) => rowToLineItem(row, factors, companyId, profileId))
+      .filter((item): item is NonNullable<typeof item> => item !== null);
+  }
 
   if (inserts.length > 0) {
     await db.insert(emissionLineItems).values(inserts);

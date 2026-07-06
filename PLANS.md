@@ -1,5 +1,89 @@
 # PLANS.md
-> Plan F pending approval.
+> Plan G pending approval.
+
+---
+
+## Plan G — Full Client Pipeline (2026-07-06)
+
+### Context
+Reviewed two practice client files (Pacific Ridge Foods). Real client data has 7 distinct data types across separate tabs — utility bills, fleet fuel (dollar-based, no gallons), price references, vendor invoices, commute survey, business travel. Five gaps block an end-to-end walkthrough. This plan closes them.
+
+### The "which report" answer
+Add one field to the onboarding setup wizard: **"What are you reporting to?"** — dropdown with GHG Protocol PDF, CDP, EcoVadis, Supplier questionnaire, Other. Stored on the company record. V1 only generates the GHG Protocol PDF; the field seeds future adapters and tells the app which Scope 3 categories to flag as required.
+
+### Phase 1 — Reporting destination in onboarding
+
+- Add `reportingFramework` field to `gt_companies` schema (`text`, nullable)
+- Add a step to the setup wizard (`app/(app)/setup/`) asking "What will you use this report for?" — single select: GHG Protocol PDF | CDP | EcoVadis | Supplier questionnaire | Other
+- Display the selected framework on the dashboard and in the report header
+
+### Phase 2 — Data-type-aware intake
+
+Upgrade the upload flow so the user declares **what kind of data** each sheet contains before column mapping. Each data type has a pre-built column map template so the fuzzy-match step is pre-filled and minimal.
+
+Data types supported in V1:
+| Type key | What it covers | Key columns |
+|----------|---------------|-------------|
+| `utility_bills` | Electricity (kWh), natural gas (therms), propane (gallons) | month, kwh, therms, propane_gallons, meter_read_type |
+| `fleet_fuel_dollar` | Fleet fuel spend in $ (requires price-per-gallon step) | month, vehicle_id, fuel_type, total_dollars |
+| `vendor_invoices` | Spend-based Scope 3 (packaging, freight, services) | vendor, category, amount, date |
+| `commute_survey` | Employee commute (mode + miles) | employee_id, one_way_miles, mode |
+| `business_travel` | Flight city pairs | origin, destination, round_trip |
+| `custom` | Anything else — fall back to current fuzzy-match flow |
+
+UI change: after file upload + sheet selection, user picks a data type from the list above before the column-mapping step.
+
+### Phase 3 — Fleet fuel $ → gallons processor
+
+Fleet fuel cards give total $ spent, not gallons. Before line items can be created, quantity must be derived:
+
+- After selecting `fleet_fuel_dollar` data type, an extra step appears: **"Enter fuel prices"** — two inputs: Diesel $/gallon, Gasoline $/gallon (with a note that monthly averages can be found from CA Energy Commission or EIA)
+- Alternatively: if the user's file has a separate price reference sheet, they can upload that as a second file and map month + fuel_type + price_per_gallon columns
+- Processing: `total_$ ÷ $/gal = gallons`, then `gallons × emission_factor = CO2e`
+- Simple V1: single price input (user enters their best estimate). Price reference sheet upload is V2.
+
+### Phase 4 — Scope 3 materiality screening
+
+New page `app/(app)/scope3-screening/page.tsx`:
+- Shows all 15 GHG Protocol Scope 3 categories with a short description
+- For each: toggle Included / Excluded
+- Excluded requires a reason (select: Not material | No operations in this category | Data unavailable | Below threshold) + free-text notes
+- Saves to a new `gt_scope3_screening` table (`company_id`, `category_number`, `category_name`, `status`, `reason`, `notes`, `updated_at`)
+- Results flow into the workpaper and appear in the report's methodology section
+
+New schema table: `gt_scope3_screening`
+
+### Phase 5 — Report connected to line items
+
+The existing PDF report (`app/api/report/pdf/route.ts`) reads from `gt_calcs`. Update it to pull totals from `gt_emission_line_items` when they exist (line items take precedence; falls back to `gt_calcs` if none imported yet).
+
+- `lib/report-totals.ts` — new helper: `getReportTotals(companyId)` — sums `co2e_kg` from `emission_line_items` grouped by scope and category, converts to tCO2e
+- Report PDF header: shows `reportingFramework` from company record
+- Methodology section: shows materiality screening decisions from `gt_scope3_screening`
+
+### Full walkthrough (Pacific Ridge Foods — after Plan G)
+
+1. Consultant creates client "Pacific Ridge Foods" in setup wizard → selects "GHG Protocol PDF" as reporting framework
+2. **Data Intake → Upload utility bills tab** → select type "Utility bills" → pre-filled mapping (kWh, therms, propane_gallons, month) → import → Scope 1 (nat gas + propane) + Scope 2 (electricity) line items created with calc_log
+3. **Data Intake → Upload fleet fuel tab** → select type "Fleet fuel ($-based)" → enter diesel $4.20/gal + gasoline $3.80/gal → import → Scope 1 mobile combustion line items
+4. **Data Intake → Upload vendor invoices tab** → select type "Vendor invoices" → map category column → import → Scope 3 Cat 1 line items
+5. **Data Intake → Upload commute survey tab** → select type "Commute survey" → import → Scope 3 Cat 7 line items (with estimated confidence + partial-survey note)
+6. **Scope 3 Screening** → mark Cat 4 (upstream transport) as excluded (data unavailable) and other non-material categories
+7. **Workpaper** → review all line items, verify calc_log, check confidence flags
+8. **Reports** → generate PDF → report pulls from line items, includes data quality notes + framework header
+
+### What stays unchanged
+- Auth, billing, marketing, existing connections (QB, UtilityAPI)
+- `gt_calcs` and legacy calc path — not deleted, report falls back to it
+
+### Build order
+1. Phase 1 — schema + onboarding field
+2. Phase 4 — materiality screening (schema + UI, no dependency on other phases)
+3. Phase 2 — data-type-aware intake upgrade
+4. Phase 3 — fleet fuel $ processor
+5. Phase 5 — report connected to line items
+
+---
 
 ---
 

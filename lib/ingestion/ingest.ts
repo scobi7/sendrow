@@ -80,6 +80,72 @@ function resolveFactorQuery(row: NormalizedRow) {
   return null;
 }
 
+export type FuelPrices = { diesel: number; gasoline: number; propane?: number };
+
+/**
+ * Converts dollar-based fleet fuel rows to line items.
+ * Requires a price lookup ($/gal) to derive volume before applying emission factors.
+ */
+export function fleetFuelToLineItems(
+  rows: NormalizedRow[],
+  factors: EmissionFactor[],
+  prices: FuelPrices,
+  companyId: string,
+  mappingProfileId: string | null = null
+): LineItemInsert[] {
+  const results: LineItemInsert[] = [];
+  for (const row of rows) {
+    if (!row.quantity) continue;
+    const fuelType = (row.activity_type ?? "").toLowerCase();
+    let pricePerGal: number;
+    let factorQuery: { category: string; unit: string };
+
+    if (fuelType.includes("diesel")) {
+      pricePerGal = prices.diesel;
+      factorQuery = { category: "mobile_combustion", unit: "gallon" };
+    } else if (fuelType.includes("gasoline") || fuelType.includes("gas")) {
+      pricePerGal = prices.gasoline;
+      factorQuery = { category: "mobile_combustion", unit: "gallon" };
+    } else if (fuelType.includes("propane")) {
+      pricePerGal = prices.propane ?? prices.gasoline;
+      factorQuery = { category: "stationary_combustion", unit: "gallon" };
+    } else {
+      continue;
+    }
+
+    if (!pricePerGal || pricePerGal <= 0) continue;
+    const gallons = row.quantity / pricePerGal;
+    const factor = lookupFactor(factors, factorQuery);
+    if (!factor) continue;
+
+    const { co2e_kg, calc_log } = applyFactor(gallons, "gallon", factor);
+    const enrichedLog = {
+      ...calc_log,
+      dollar_amount: row.quantity,
+      price_per_gal: pricePerGal,
+      derived_gallons: gallons,
+      formula: `$${row.quantity} ÷ $${pricePerGal}/gal = ${gallons.toFixed(2)} gal × ${factor.value} ${factor.unit} × 1000 kg/t`,
+    };
+
+    results.push({
+      id: newId(),
+      companyId,
+      sourceRef: row.source_ref ?? row.date ?? "",
+      scope: 1,
+      category: "mobile_combustion",
+      rawValue: row.quantity.toFixed(2),
+      rawUnit: "USD",
+      co2eKg: co2e_kg.toFixed(4),
+      confidence: "estimated",
+      factorId: factor.factor_id,
+      calcLog: enrichedLog,
+      mappingProfileId,
+      createdAt: new Date().toISOString(),
+    });
+  }
+  return results;
+}
+
 let _idCounter = 0;
 function newId(): string {
   return `li_${Date.now()}_${++_idCounter}`;

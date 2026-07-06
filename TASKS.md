@@ -5,6 +5,43 @@ Generated from PLANS.md (approved). Updated after each task completes.
 
 ## Plan F — V1 Spreadsheet Ingestion Pipeline (2026-07-06)
 
+## Plan G — Full Client Pipeline (2026-07-06)
+
+### Phase 1 — Reporting destination
+- [ ] **G1** — Add `reporting_framework` column to `gt_companies` in schema
+- [ ] **G2** — Add `gt_scope3_screening` table to schema
+- [ ] **G3** — Generate + push migration
+- [ ] **G4** — Add step 5 to setup wizard: "What's driving this report?" (4 tile options, skippable)
+- [ ] **G5** — Update `saveSetup` action + show framework badge on dashboard
+
+### Phase 2 — Materiality screening UI
+- [ ] **G6** — `app/(app)/scope3-screening/page.tsx` + `screening-form.tsx` — 15-category checklist with inline reason
+- [ ] **G7** — `saveScreening` server action in `lib/actions.ts`
+- [ ] **G8** — Add "Scope 3 Screening" to nav
+
+### Phase 3 — Data-type-aware intake
+- [ ] **G9** — `lib/ingestion/data-type-templates.ts` — pre-built column map templates per data type
+- [ ] **G10** — Add data type selector to upload flow (one dropdown before column mapping)
+- [ ] **G11** — When type selected, pre-fill column mapping from template
+
+### Phase 4 — Fleet fuel $ processor
+- [ ] **G12** — Add fuel price input step when `fleet_fuel_dollar` type selected
+- [ ] **G13** — `fleetFuelToLineItems()` in `lib/ingestion/ingest.ts` — `$ ÷ $/gal = gallons → CO2e`
+- [ ] **G14** — Wire fleet fuel price through `/api/intake/import`
+
+### Phase 5 — Report connected to line items
+- [ ] **G15** — `lib/report-totals.ts` — `getReportTotals(companyId)` sums emission_line_items by scope
+- [ ] **G16** — Update PDF report to use line items when they exist (fall back to gt_calcs)
+- [ ] **G17** — Add reporting framework to PDF header + materiality decisions to methodology section
+
+### Finalize
+- [ ] **G18** — Run full test suite
+- [ ] **G19** — Commit + push to `github-branch-tracking`, update NEXT.md
+
+---
+
+### Plan F — V1 Spreadsheet Ingestion Pipeline (2026-07-06) ✅
+
 ### Phase 1 — Schema
 - [x] **F1** — Add `emission_line_items` table to `lib/db/schema.ts`
 - [x] **F2** — Add `mapping_profiles` table to `lib/db/schema.ts`

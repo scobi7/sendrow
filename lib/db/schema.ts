@@ -6,11 +6,23 @@ export const companies = pgTable("gt_companies", {
   industry: text("industry"),
   headcountRange: text("headcount_range"),
   fiscalYearEndMonth: integer("fiscal_year_end_month"),
+  reportingFramework: text("reporting_framework"),
   setupComplete: boolean("setup_complete").notNull().default(false),
   createdAt: text("created_at").notNull(),
   reportGeneratedAt: text("report_generated_at"),
   actionPlan: jsonb("action_plan"),
   sectionStatus: jsonb("section_status"),
+});
+
+export const scope3Screening = pgTable("gt_scope3_screening", {
+  id: text("id").primaryKey(),
+  companyId: text("company_id").notNull().references(() => companies.id),
+  categoryNumber: integer("category_number").notNull(),
+  categoryName: text("category_name").notNull(),
+  status: text("status").notNull().default("excluded"),
+  reason: text("reason"),
+  notes: text("notes"),
+  updatedAt: text("updated_at").notNull(),
 });
 
 export const userCompanies = pgTable("gt_user_companies", {

@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 import { auth, currentUser as getClerkUser } from "@clerk/nextjs/server";
 import { and, eq, isNull } from "drizzle-orm";
 import { db } from "./db";
-import { companies, userCompanies, consultantClients, inviteTokens } from "./db/schema";
+import { companies, userCompanies, consultantClients, inviteTokens, scope3Screening } from "./db/schema";
 import {
   loadCompany,
   loadFactors,
@@ -165,6 +165,7 @@ export async function saveSetup(formData: FormData) {
   const industry = String(formData.get("industry") ?? "") as Industry;
   const headcount = String(formData.get("headcount") ?? "") as HeadcountRange;
   const fyEnd = Number(formData.get("fiscal_year_end"));
+  const reportingFramework = String(formData.get("reporting_framework") ?? "").trim() || null;
   const locCount = Number(formData.get("location_count"));
 
   await logChange({ user, companyId: company.id, section: "setup", field: "industry", prev: company.industry, next: industry });
@@ -174,6 +175,7 @@ export async function saveSetup(formData: FormData) {
   company.industry = industry;
   company.headcountRange = headcount;
   company.fiscalYearEndMonth = fyEnd;
+  if (reportingFramework) company.reportingFramework = reportingFramework;
   company.locations = [];
 
   for (let i = 0; i < locCount; i++) {
@@ -747,4 +749,41 @@ export async function acceptInvite(token: string) {
   } catch {}
 
   redirect("/setup");
+}
+
+// ─────────── Scope 3 Materiality Screening ───────────
+
+export async function saveScreening(
+  companyId: string,
+  decisions: { categoryNumber: number; status: string; reason: string; notes: string }[]
+) {
+  const { user } = await requireUser();
+  if (user.companyId !== companyId) throw new Error("Unauthorized");
+
+  const now = new Date().toISOString();
+  for (const d of decisions) {
+    const id = `s3s_${companyId}_${d.categoryNumber}`;
+    await db
+      .insert(scope3Screening)
+      .values({
+        id,
+        companyId,
+        categoryNumber: d.categoryNumber,
+        categoryName: "",
+        status: d.status,
+        reason: d.reason || null,
+        notes: d.notes || null,
+        updatedAt: now,
+      })
+      .onConflictDoUpdate({
+        target: scope3Screening.id,
+        set: {
+          status: d.status,
+          reason: d.reason || null,
+          notes: d.notes || null,
+          updatedAt: now,
+        },
+      });
+  }
+  revalidatePath("/scope3-screening");
 }

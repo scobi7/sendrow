@@ -12,6 +12,12 @@ const HEADCOUNTS: [string, string][] = [
   ["350_500", "350 to 500"],
 ];
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const FRAMEWORKS: [string, string, string][] = [
+  ["customer_request", "A customer asked for it", "Supplier questionnaire or vendor compliance"],
+  ["framework", "CDP or EcoVadis", "Formal framework submission"],
+  ["internal", "Internal baseline", "Just want to know where we stand"],
+  ["regulatory", "Regulatory requirement", "CSRD, SEC, or other mandate"],
+];
 
 interface Loc { address: string; city: string; state: string; zip: string }
 
@@ -22,6 +28,7 @@ export default function SetupWizard({ companyName }: { companyName: string }) {
   const [locCount, setLocCount] = useState(1);
   const [locations, setLocations] = useState<Loc[]>([{ address: "", city: "", state: "CA", zip: "" }]);
   const [fyEnd, setFyEnd] = useState(12);
+  const [framework, setFramework] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   const setLocField = (i: number, k: keyof Loc, v: string) =>
@@ -43,6 +50,7 @@ export default function SetupWizard({ companyName }: { companyName: string }) {
     fd.set("industry", industry);
     fd.set("headcount", headcount);
     fd.set("fiscal_year_end", String(fyEnd));
+    fd.set("reporting_framework", framework);
     fd.set("location_count", String(locCount));
     locations.forEach((l, i) => {
       fd.set(`loc_${i}_address`, l.address);
@@ -57,9 +65,9 @@ export default function SetupWizard({ companyName }: { companyName: string }) {
     <main className="mx-auto flex min-h-screen max-w-xl flex-col px-6 py-10" style={{ background: "var(--bg)" }}>
       <div className="mb-8 flex justify-center"><Logo /></div>
       <p className="mb-2 text-center text-sm" style={{ color: "var(--text-muted)" }}>
-        Step {step} of 4 — {companyName}
+        Step {step} of 5 — {companyName}
       </p>
-      <ProgressBar percent={(step / 4) * 100} className="mb-10" />
+      <ProgressBar percent={(step / 5) * 100} className="mb-10" />
 
       {step === 1 && (
         <div className="card">
@@ -160,10 +168,49 @@ export default function SetupWizard({ companyName }: { companyName: string }) {
           </select>
           <div className="mt-6 flex justify-between">
             <button className="btn btn-secondary" onClick={() => setStep(3)}>Back</button>
+            <button className="btn btn-primary" onClick={() => setStep(5)}>Next</button>
+          </div>
+        </div>
+      )}
+
+      {step === 5 && (
+        <div className="card">
+          <h1 className="text-lg font-bold font-display" style={{ color: "var(--text)" }}>
+            What's driving this inventory?
+          </h1>
+          <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>
+            Helps us highlight what matters. You can change this later.
+          </p>
+          <div className="mt-4 grid grid-cols-2 gap-3">
+            {FRAMEWORKS.map(([value, label, sub]) => (
+              <button
+                key={value}
+                onClick={() => setFramework(value)}
+                className="rounded-lg border px-4 py-4 text-left transition-colors"
+                style={
+                  framework === value
+                    ? { border: "1px solid var(--primary)", background: "var(--primary-tint)" }
+                    : { border: "1px solid var(--divider)", background: "var(--surface)" }
+                }
+              >
+                <p className="text-sm font-semibold" style={{ color: framework === value ? "var(--primary)" : "var(--text)" }}>
+                  {label}
+                </p>
+                <p className="mt-0.5 text-xs" style={{ color: "var(--text-muted)" }}>{sub}</p>
+              </button>
+            ))}
+          </div>
+          <div className="mt-6 flex justify-between">
+            <button className="btn btn-secondary" onClick={() => setStep(4)}>Back</button>
             <button className="btn btn-primary" disabled={submitting} onClick={finish}>
               {submitting ? "Saving…" : "Finish Setup"}
             </button>
           </div>
+          {!framework && (
+            <p className="mt-3 text-center text-xs" style={{ color: "var(--text-muted)" }}>
+              Not sure? <button className="underline" onClick={finish} disabled={submitting} style={{ color: "var(--text-muted)" }}>Skip for now</button>
+            </p>
+          )}
         </div>
       )}
     </main>

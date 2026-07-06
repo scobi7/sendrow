@@ -123,6 +123,7 @@ export interface Company {
   headcountRange: HeadcountRange | null;
   locations: Location[];
   fiscalYearEndMonth: number | null; // 1-12
+  reportingFramework: string | null;
   setupComplete: boolean;
   createdAt: string;
   connections: {

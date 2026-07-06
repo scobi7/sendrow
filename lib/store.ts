@@ -65,6 +65,7 @@ export const loadCompany = cache(async (companyId: string): Promise<Company> => 
     industry: c.industry as Industry,
     headcountRange: c.headcountRange as HeadcountRange,
     fiscalYearEndMonth: c.fiscalYearEndMonth ?? 12,
+    reportingFramework: c.reportingFramework ?? null,
     setupComplete: c.setupComplete,
     createdAt: c.createdAt,
     sectionStatus: (c.sectionStatus ?? {
@@ -141,6 +142,7 @@ export async function persistCompany(company: Company): Promise<void> {
         industry: company.industry ?? null,
         headcountRange: company.headcountRange ?? null,
         fiscalYearEndMonth: company.fiscalYearEndMonth,
+        reportingFramework: company.reportingFramework ?? null,
         setupComplete: company.setupComplete,
         sectionStatus: company.sectionStatus,
         reportGeneratedAt: company.reportGeneratedAt ?? null,

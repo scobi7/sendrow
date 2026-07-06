@@ -3,6 +3,7 @@ import { Company, EmissionFactor } from "@/lib/types";
 import { totals } from "@/lib/calc";
 import { fiscalPeriodLabel } from "@/lib/mapping";
 import { SEED_FACTORS } from "@/lib/factors";
+import type { ReportTotals, ScreeningDecision } from "@/lib/report-totals";
 
 function lookupFactor(id: string, overrides: EmissionFactor[]): EmissionFactor | undefined {
   return overrides.find((f) => f.factor_id === id) ?? SEED_FACTORS.find((f) => f.factor_id === id);
@@ -41,10 +42,14 @@ const s = StyleSheet.create({
 export interface GHGReportPDFProps {
   company: Company;
   factorOverrides?: EmissionFactor[];
+  lineItemTotals?: ReportTotals | null;
+  screeningDecisions?: ScreeningDecision[];
 }
 
-export function GHGReportPDF({ company, factorOverrides = [] }: GHGReportPDFProps) {
-  const t = totals(company);
+export function GHGReportPDF({ company, factorOverrides = [], lineItemTotals, screeningDecisions = [] }: GHGReportPDFProps) {
+  const legacyTotals = totals(company);
+  const t = lineItemTotals ?? legacyTotals;
+  const dataSource = lineItemTotals ? "line_items" : "calcs";
   const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 2 });
   const period = fiscalPeriodLabel(company);
   const genDate = company.reportGeneratedAt
@@ -71,7 +76,11 @@ export function GHGReportPDF({ company, factorOverrides = [] }: GHGReportPDFProp
           <Text style={s.badge}>GREENHOUSE GAS INVENTORY REPORT</Text>
           <Text style={s.h1}>{company.name}</Text>
           <Text style={s.meta}>Reporting period: {period}  ·  Industry: {company.industry ?? "—"}</Text>
-          <Text style={s.metaSmall}>Prepared with Sendrow  ·  Generated {genDate}</Text>
+          <Text style={s.metaSmall}>
+            Prepared with Sendrow  ·  Generated {genDate}
+            {company.reportingFramework ? `  ·  Purpose: ${company.reportingFramework.replace(/_/g, " ")}` : ""}
+            {lineItemTotals ? `  ·  ${lineItemTotals.lineItemCount} imported line items` : ""}
+          </Text>
         </View>
 
         {/* Summary table */}
@@ -128,11 +137,26 @@ export function GHGReportPDF({ company, factorOverrides = [] }: GHGReportPDFProp
           <Text style={s.h2}>Methodology Statement</Text>
           <Text style={s.para}>
             This inventory was prepared in accordance with the GHG Protocol Corporate Accounting and Reporting Standard.
-            Scope 2 emissions are reported using both the location-based and market-based methods per the GHG Protocol
-            Scope 2 Guidance. Scope 3 categories derived from financial records use the spend-based method with USEEIO
-            sector emission intensities. Activity data was sourced from utility records, accounting system exports, and
-            management estimates as noted. All calculations are traceable in the accompanying Audit Trail document.
+            {dataSource === "line_items"
+              ? " Emission totals are derived from imported activity data line items, each traceable to its source, factor, and calculation log."
+              : " Scope 2 emissions are reported using both the location-based and market-based methods per the GHG Protocol Scope 2 Guidance."}
+            {" "}Scope 3 categories derived from financial records use the spend-based method with USEEIO sector emission intensities.
+            Activity data was sourced from utility records, accounting system exports, and management estimates as noted.
           </Text>
+          {screeningDecisions.length > 0 && (
+            <View>
+              <Text style={s.h3}>Scope 3 materiality screening</Text>
+              {screeningDecisions.filter((d) => d.status === "excluded").map((d) => (
+                <Text key={d.categoryNumber} style={s.bullet}>
+                  {"• "}Cat {d.categoryNumber} — {d.categoryName || `Category ${d.categoryNumber}`}: excluded
+                  {d.reason ? ` (${d.reason})` : ""}
+                </Text>
+              ))}
+              {screeningDecisions.filter((d) => d.status === "excluded").length === 0 && (
+                <Text style={s.bullet}>All 15 Scope 3 categories assessed as material.</Text>
+              )}
+            </View>
+          )}
           <Text style={s.h3}>Emission factors used</Text>
           {factorIds.map((fid) => {
             const f = lookupFactor(fid, factorOverrides);

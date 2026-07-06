@@ -4,10 +4,11 @@ import { useState, useRef } from "react";
 import Link from "next/link";
 import * as XLSX from "xlsx";
 import { STANDARD_FIELDS } from "@/lib/ingestion/fuzzy-match";
+import { DATA_TYPE_CONFIGS, applyTemplate } from "@/lib/ingestion/data-type-templates";
+import type { DataType } from "@/lib/ingestion/data-type-templates";
 import type { MatchResult } from "@/lib/ingestion/fuzzy-match";
 
-type Step = "upload" | "map" | "done";
-
+type Step = "upload" | "type" | "fuel_prices" | "map" | "done";
 type ImportResult = { imported: number; skipped: number };
 
 export default function UploadPage() {
@@ -15,19 +16,29 @@ export default function UploadPage() {
   const [fileName, setFileName] = useState("");
   const [headers, setHeaders] = useState<string[]>([]);
   const [rows, setRows] = useState<Record<string, string>[]>([]);
-  const [suggestions, setSuggestions] = useState<MatchResult[]>([]);
+  const [fuzzyResults, setFuzzyResults] = useState<MatchResult[]>([]);
+  const [dataType, setDataType] = useState<DataType>("custom");
   const [columnMap, setColumnMap] = useState<Record<string, string>>({});
   const [profileName, setProfileName] = useState("");
+  const [fuelPrices, setFuelPrices] = useState({ diesel: "", gasoline: "" });
   const [result, setResult] = useState<ImportResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
+  const STEPS: Step[] = dataType === "fleet_fuel_dollar"
+    ? ["upload", "type", "fuel_prices", "map", "done"]
+    : ["upload", "type", "map", "done"];
+  const stepIndex = STEPS.indexOf(step);
+  const stepLabel: Record<Step, string> = { upload: "Upload", type: "Data type", fuel_prices: "Fuel prices", map: "Map columns", done: "Done" };
+
+  async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
     setFileName(file.name);
     setProfileName(file.name.replace(/\.[^.]+$/, ""));
+    setLoading(true);
+    setError(null);
 
     const reader = new FileReader();
     reader.onload = async (ev) => {
@@ -36,27 +47,19 @@ export default function UploadPage() {
         const wb = XLSX.read(data, { type: "array" });
         const ws = wb.Sheets[wb.SheetNames[0]];
         const rawRows = XLSX.utils.sheet_to_json<Record<string, string>>(ws, { defval: "" });
-
-        if (rawRows.length === 0) { setError("The spreadsheet appears to be empty."); return; }
-
+        if (rawRows.length === 0) { setError("Spreadsheet appears empty."); setLoading(false); return; }
         const hdrs = Object.keys(rawRows[0]);
         setHeaders(hdrs);
         setRows(rawRows.map((r) => Object.fromEntries(Object.entries(r).map(([k, v]) => [k, String(v)]))));
 
-        setLoading(true);
         const res = await fetch("/api/intake/preview", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ headers: hdrs }),
         });
         const json = await res.json();
-        setSuggestions(json.suggestions ?? []);
-        const initialMap: Record<string, string> = {};
-        for (const s of json.suggestions ?? []) {
-          if (s.field) initialMap[s.header] = s.field;
-        }
-        setColumnMap(initialMap);
-        setStep("map");
+        setFuzzyResults(json.suggestions ?? []);
+        setStep("type");
       } catch {
         setError("Could not parse this file. Make sure it's a valid .xlsx or .csv.");
       } finally {
@@ -66,14 +69,32 @@ export default function UploadPage() {
     reader.readAsArrayBuffer(file);
   }
 
+  function selectDataType(type: DataType) {
+    setDataType(type);
+    const merged = applyTemplate(headers, type, fuzzyResults);
+    setColumnMap(merged);
+  }
+
+  function proceedFromType() {
+    if (dataType === "fleet_fuel_dollar") setStep("fuel_prices");
+    else setStep("map");
+  }
+
   async function handleImport() {
     setLoading(true);
     setError(null);
     try {
+      const body: Record<string, unknown> = { rows, columnMap, profileName, dataType };
+      if (dataType === "fleet_fuel_dollar") {
+        body.fuelPrices = {
+          diesel: parseFloat(fuelPrices.diesel) || 0,
+          gasoline: parseFloat(fuelPrices.gasoline) || 0,
+        };
+      }
       const res = await fetch("/api/intake/import", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ rows, columnMap, profileName }),
+        body: JSON.stringify(body),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? "Import failed");
@@ -95,21 +116,21 @@ export default function UploadPage() {
       </div>
 
       {/* Step indicator */}
-      <div className="mb-8 flex gap-6">
-        {(["upload", "map", "done"] as Step[]).map((s, i) => (
-          <div key={s} className="flex items-center gap-2">
+      <div className="mb-8 flex gap-5 overflow-x-auto">
+        {STEPS.filter(s => s !== "done").map((s, i) => (
+          <div key={s} className="flex items-center gap-2 shrink-0">
             <span
               className="flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold"
               style={
-                step === s
+                stepIndex >= i
                   ? { background: "var(--primary)", color: "#fff" }
                   : { background: "var(--divider)", color: "var(--text-muted)" }
               }
             >
               {i + 1}
             </span>
-            <span className="text-sm capitalize" style={{ color: step === s ? "var(--text)" : "var(--text-muted)" }}>
-              {s === "upload" ? "Upload" : s === "map" ? "Map columns" : "Done"}
+            <span className="text-sm" style={{ color: stepIndex >= i ? "var(--text)" : "var(--text-muted)" }}>
+              {stepLabel[s]}
             </span>
           </div>
         ))}
@@ -121,15 +142,15 @@ export default function UploadPage() {
         </div>
       )}
 
-      {/* Step 1 — Upload */}
+      {/* Step: Upload */}
       {step === "upload" && (
         <div className="card text-center">
           <h2 className="text-lg font-bold font-display" style={{ color: "var(--text)" }}>Choose a file</h2>
-          <p className="mt-2 text-sm" style={{ color: "var(--text-muted)" }}>
-            Accepts .xlsx or .csv. Any column format works — you'll map the columns in the next step.
+          <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>
+            .xlsx or .csv — any column format works.
           </p>
           <label
-            className="mt-8 flex cursor-pointer flex-col items-center justify-center rounded-xl p-10 transition-colors hover:opacity-80"
+            className="mt-8 flex cursor-pointer flex-col items-center justify-center rounded-xl p-10 transition-opacity hover:opacity-70"
             style={{ border: "2px dashed var(--divider)", background: "var(--bg)" }}
           >
             <svg className="mb-3 h-10 w-10" style={{ color: "var(--text-muted)" }} fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
@@ -138,84 +159,133 @@ export default function UploadPage() {
             <span className="text-sm font-medium" style={{ color: "var(--text)" }}>
               {loading ? "Reading file…" : "Click to browse"}
             </span>
-            <span className="mt-1 text-xs" style={{ color: "var(--text-muted)" }}>or drag and drop</span>
-            <input
-              ref={fileRef}
-              type="file"
-              accept=".xlsx,.csv"
-              className="hidden"
-              onChange={handleFile}
-              disabled={loading}
-            />
+            <input ref={fileRef} type="file" accept=".xlsx,.csv" className="hidden" onChange={handleFile} disabled={loading} />
           </label>
         </div>
       )}
 
-      {/* Step 2 — Map columns */}
+      {/* Step: Data type */}
+      {step === "type" && (
+        <div className="card">
+          <h2 className="text-lg font-bold font-display" style={{ color: "var(--text)" }}>What kind of data is this?</h2>
+          <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>
+            Picked up {rows.length} rows from <span className="font-mono">{fileName}</span>. Choose the type to pre-fill column mapping.
+          </p>
+          <div className="mt-5 space-y-2">
+            {(Object.entries(DATA_TYPE_CONFIGS) as [DataType, typeof DATA_TYPE_CONFIGS[DataType]][]).map(([key, cfg]) => (
+              <button
+                key={key}
+                onClick={() => selectDataType(key)}
+                className="w-full rounded-xl px-4 py-3 text-left transition-colors"
+                style={
+                  dataType === key
+                    ? { border: "1px solid var(--primary)", background: "var(--primary-tint)" }
+                    : { border: "1px solid var(--divider)", background: "var(--surface)" }
+                }
+              >
+                <p className="text-sm font-semibold" style={{ color: dataType === key ? "var(--primary)" : "var(--text)" }}>
+                  {cfg.label}
+                </p>
+                <p className="mt-0.5 text-xs" style={{ color: "var(--text-muted)" }}>{cfg.description}</p>
+              </button>
+            ))}
+          </div>
+          <div className="mt-6 flex justify-between">
+            <button onClick={() => setStep("upload")} className="btn btn-secondary">Back</button>
+            <button onClick={proceedFromType} className="btn btn-primary">Next</button>
+          </div>
+        </div>
+      )}
+
+      {/* Step: Fuel prices (fleet_fuel_dollar only) */}
+      {step === "fuel_prices" && (
+        <div className="card">
+          <h2 className="text-lg font-bold font-display" style={{ color: "var(--text)" }}>Enter fuel prices</h2>
+          <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>
+            Your fuel card data shows $ spend, not gallons. Enter the average price per gallon to convert — CA Energy Commission or EIA has monthly averages.
+          </p>
+          <div className="mt-6 grid grid-cols-2 gap-4">
+            <div>
+              <label className="label">Diesel ($/gallon)</label>
+              <input
+                className="input"
+                type="number"
+                step="0.01"
+                min="0"
+                placeholder="e.g. 4.20"
+                value={fuelPrices.diesel}
+                onChange={(e) => setFuelPrices((p) => ({ ...p, diesel: e.target.value }))}
+              />
+            </div>
+            <div>
+              <label className="label">Gasoline ($/gallon)</label>
+              <input
+                className="input"
+                type="number"
+                step="0.01"
+                min="0"
+                placeholder="e.g. 3.80"
+                value={fuelPrices.gasoline}
+                onChange={(e) => setFuelPrices((p) => ({ ...p, gasoline: e.target.value }))}
+              />
+            </div>
+          </div>
+          <div className="mt-6 flex justify-between">
+            <button onClick={() => setStep("type")} className="btn btn-secondary">Back</button>
+            <button
+              onClick={() => setStep("map")}
+              disabled={!fuelPrices.diesel || !fuelPrices.gasoline}
+              className="btn btn-primary"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Step: Map columns */}
       {step === "map" && (
         <div className="card">
-          <h2 className="text-lg font-bold font-display" style={{ color: "var(--text)" }}>Map your columns</h2>
+          <h2 className="text-lg font-bold font-display" style={{ color: "var(--text)" }}>Confirm column mapping</h2>
           <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>
-            We pre-filled our best guess. Adjust any that are wrong, then hit Import.
+            Pre-filled from the {DATA_TYPE_CONFIGS[dataType].label} template. Adjust anything that's off.
           </p>
-
-          <div className="mt-6 mb-4">
+          <div className="mt-4 mb-4">
             <label className="label">Profile name</label>
-            <input
-              className="input"
-              value={profileName}
-              onChange={(e) => setProfileName(e.target.value)}
-              placeholder="e.g. PG&amp;E Monthly Bill"
-            />
+            <input className="input" value={profileName} onChange={(e) => setProfileName(e.target.value)} />
           </div>
-
-          <div className="mt-4 overflow-x-auto">
+          <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr style={{ borderBottom: "1px solid var(--divider)" }}>
-                  <th className="pb-2 text-left font-semibold" style={{ color: "var(--text-muted)" }}>Your column</th>
-                  <th className="pb-2 pl-4 text-left font-semibold" style={{ color: "var(--text-muted)" }}>Maps to</th>
-                  <th className="pb-2 pl-4 text-left font-semibold" style={{ color: "var(--text-muted)" }}>Sample</th>
+                  <th className="pb-2 text-left text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>Your column</th>
+                  <th className="pb-2 pl-4 text-left text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>Maps to</th>
+                  <th className="pb-2 pl-4 text-left text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>Sample</th>
                 </tr>
               </thead>
               <tbody className="divide-y" style={{ borderColor: "var(--divider)" }}>
-                {headers.map((h) => {
-                  const suggestion = suggestions.find((s) => s.header === h);
-                  const sample = rows[0]?.[h] ?? "";
-                  return (
-                    <tr key={h}>
-                      <td className="py-2.5 pr-4 font-mono text-xs" style={{ color: "var(--text)" }}>{h}</td>
-                      <td className="py-2.5 pl-4">
-                        <select
-                          className="input py-1 text-sm"
-                          value={columnMap[h] ?? ""}
-                          onChange={(e) =>
-                            setColumnMap((prev) => ({ ...prev, [h]: e.target.value }))
-                          }
-                        >
-                          <option value="">— skip —</option>
-                          {STANDARD_FIELDS.map((f) => (
-                            <option key={f} value={f}>{f}</option>
-                          ))}
-                        </select>
-                        {suggestion?.confidence === "low" && columnMap[h] && (
-                          <span className="ml-2 text-xs" style={{ color: "var(--warning)" }}>low confidence</span>
-                        )}
-                      </td>
-                      <td className="py-2.5 pl-4 font-mono text-xs truncate max-w-[160px]" style={{ color: "var(--text-muted)" }}>
-                        {sample}
-                      </td>
-                    </tr>
-                  );
-                })}
+                {headers.map((h) => (
+                  <tr key={h}>
+                    <td className="py-2.5 pr-4 font-mono text-xs" style={{ color: "var(--text)" }}>{h}</td>
+                    <td className="py-2.5 pl-4">
+                      <select
+                        className="input py-1 text-sm"
+                        value={columnMap[h] ?? ""}
+                        onChange={(e) => setColumnMap((prev) => ({ ...prev, [h]: e.target.value }))}
+                      >
+                        <option value="">— skip —</option>
+                        {STANDARD_FIELDS.map((f) => <option key={f} value={f}>{f}</option>)}
+                      </select>
+                    </td>
+                    <td className="py-2.5 pl-4 font-mono text-xs truncate max-w-[160px]" style={{ color: "var(--text-muted)" }}>
+                      {rows[0]?.[h] ?? ""}
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
-
-          <p className="mt-4 text-xs" style={{ color: "var(--text-muted)" }}>
-            {rows.length} row{rows.length !== 1 ? "s" : ""} in {fileName}
-          </p>
-
+          <p className="mt-3 text-xs" style={{ color: "var(--text-muted)" }}>{rows.length} rows in {fileName}</p>
           <div className="mt-6 flex gap-3">
             <button
               onClick={handleImport}
@@ -224,23 +294,15 @@ export default function UploadPage() {
             >
               {loading ? "Importing…" : `Import ${rows.length} rows`}
             </button>
-            <button
-              onClick={() => { setStep("upload"); setError(null); }}
-              className="btn btn-secondary px-4"
-            >
-              Back
-            </button>
+            <button onClick={() => setStep(dataType === "fleet_fuel_dollar" ? "fuel_prices" : "type")} className="btn btn-secondary">Back</button>
           </div>
         </div>
       )}
 
-      {/* Step 3 — Done */}
+      {/* Step: Done */}
       {step === "done" && result && (
         <div className="card text-center">
-          <div
-            className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full"
-            style={{ background: "var(--primary-tint)" }}
-          >
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full" style={{ background: "var(--primary-tint)" }}>
             <svg className="h-6 w-6" style={{ color: "var(--primary)" }} fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
             </svg>
@@ -248,7 +310,7 @@ export default function UploadPage() {
           <h2 className="text-xl font-bold font-display" style={{ color: "var(--text)" }}>Import complete</h2>
           <p className="mt-2 text-sm" style={{ color: "var(--text-muted)" }}>
             <strong style={{ color: "var(--text)" }}>{result.imported}</strong> rows imported
-            {result.skipped > 0 && <>, <strong style={{ color: "var(--warning)" }}>{result.skipped}</strong> skipped (missing quantity or unrecognized activity type)</>}
+            {result.skipped > 0 && <>, <strong style={{ color: "var(--warning)" }}>{result.skipped}</strong> skipped</>}
           </p>
           <div className="mt-6 flex justify-center gap-3">
             <Link href="/workpaper" className="btn btn-primary px-6">View workpaper →</Link>

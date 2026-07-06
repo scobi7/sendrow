@@ -10,6 +10,7 @@ export function createCompanyRecord(name: string): Company {
     headcountRange: null,
     locations: [],
     fiscalYearEndMonth: null,
+    reportingFramework: null,
     setupComplete: false,
     createdAt: new Date().toISOString(),
     connections: {
