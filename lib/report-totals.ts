@@ -5,6 +5,7 @@ import { emissionLineItems, scope3Screening } from "./db/schema";
 export type ReportTotals = {
   scope1: number;
   scope2Location: number;
+  scope2Market: number;
   scope3: number;
   total: number;
   byCategory: { scope: number; category: string; co2eTons: number }[];
@@ -42,6 +43,7 @@ export async function getLineItemTotals(companyId: string): Promise<ReportTotals
   return {
     scope1,
     scope2Location,
+    scope2Market: scope2Location,
     scope3,
     total: scope1 + scope2Location + scope3,
     byCategory,
