@@ -101,6 +101,7 @@ export async function GET(request: Request) {
       sectionStatus: { connections: "not_started", scope1: "not_started", scope2: "not_started", scope3: "not_started", social: "not_started", governance: "not_started", reports: "not_started" },
       reportGeneratedAt: null,
       actionPlan: null,
+      reportingFramework: null,
     };
 
     company.qbTransactions = generateQBTransactions(company);
