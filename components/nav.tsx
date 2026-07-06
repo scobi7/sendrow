@@ -11,6 +11,8 @@ const NAV: [string, string][] = [
   ["/scope3",      "Scope 3"],
   ["/social",      "Social"],
   ["/governance",  "Governance"],
+  ["/intake",      "Data Intake"],
+  ["/workpaper",   "Workpaper"],
   ["/reports",     "Reports"],
   ["/gaps",        "Gap Analysis"],
   ["/settings",    "Settings"],

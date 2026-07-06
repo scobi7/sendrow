@@ -3,6 +3,41 @@ Generated from PLANS.md (approved). Updated after each task completes.
 
 ---
 
+## Plan F — V1 Spreadsheet Ingestion Pipeline (2026-07-06)
+
+### Phase 1 — Schema
+- [x] **F1** — Add `emission_line_items` table to `lib/db/schema.ts`
+- [x] **F2** — Add `mapping_profiles` table to `lib/db/schema.ts`
+- [x] **F3** — `drizzle-kit generate` done → `lib/db/migrations/0001_daffy_barracuda.sql`. **User action:** run `drizzle-kit push` with `DATABASE_URL` set locally, or deploy to Vercel (auto-applies).
+
+### Phase 2 — Factor engine
+- [x] **F4** — Created `lib/factor-engine.ts`: `lookupFactor()`, `applyFactor()`, `getFactorsFromDb()`
+- [x] **F5** — `test/factor-engine.test.ts` — 8 tests, all passing
+
+### Phase 3 — Ingestion logic
+- [x] **F6** — Created `lib/ingestion/fuzzy-match.ts`: `STANDARD_FIELDS`, `FIELD_ALIASES`, `fuzzyMatchHeaders()`
+- [x] **F7** — Created `lib/ingestion/ingest.ts`: `applyProfile()`, `rowToLineItem()`
+- [x] **F8** — `test/ingestion.test.ts` — 13 tests, all passing
+
+### Phase 4 — API routes
+- [x] **F9** — Installed `xlsx` package
+- [x] **F10** — `app/api/intake/preview/route.ts` — POST: fuzzy-match headers, return suggestions
+- [x] **F11** — `app/api/intake/import/route.ts` — POST: save mapping profile + write emission_line_items
+
+### Phase 5 — Intake UI
+- [x] **F12** — `app/(app)/intake/page.tsx` — landing: profile list + upload CTA
+- [x] **F13** — `app/(app)/intake/upload/page.tsx` — 3-step client component: upload → map → done
+
+### Phase 6 — Workpaper view
+- [x] **F14** — `app/(app)/workpaper/page.tsx` + `workpaper-table.tsx` — filterable line items table with expandable calc_log rows
+
+### Finalize
+- [x] **F15** — Added "Data Intake" + "Workpaper" to `components/nav.tsx`
+- [x] **F16** — 63/63 tests passing
+- [x] **F17** — Committed + pushed to `github-branch-tracking`
+
+---
+
 ## Plan C — Domain & Email Infrastructure (2026-06-26)
 
 - [x] **C1** — Updated `ADMIN_EMAIL` fallback in `lib/email.ts` to `malachi.nguyen@sendrow.app`

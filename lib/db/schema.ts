@@ -112,6 +112,31 @@ export const inviteTokens = pgTable("gt_invite_tokens", {
   usedAt: text("used_at"),
 });
 
+export const mappingProfiles = pgTable("gt_mapping_profiles", {
+  id: text("id").primaryKey(),
+  companyId: text("company_id").notNull().references(() => companies.id),
+  name: text("name").notNull(),
+  columnMap: jsonb("column_map").notNull().default({}),
+  effectiveFrom: text("effective_from").notNull(),
+  createdAt: text("created_at").notNull(),
+});
+
+export const emissionLineItems = pgTable("gt_emission_line_items", {
+  id: text("id").primaryKey(),
+  companyId: text("company_id").notNull().references(() => companies.id),
+  sourceRef: text("source_ref").notNull().default(""),
+  scope: integer("scope").notNull(),
+  category: text("category").notNull(),
+  rawValue: numeric("raw_value", { precision: 14, scale: 4 }).notNull(),
+  rawUnit: text("raw_unit").notNull(),
+  co2eKg: numeric("co2e_kg", { precision: 14, scale: 4 }).notNull(),
+  confidence: text("confidence").notNull().default("estimated"),
+  factorId: text("factor_id"),
+  calcLog: jsonb("calc_log").notNull().default({}),
+  mappingProfileId: text("mapping_profile_id"),
+  createdAt: text("created_at").notNull(),
+});
+
 export const emissionFactors = pgTable("gt_emission_factors", {
   factorId: text("factor_id").primaryKey(),
   factorName: text("factor_name").notNull(),
