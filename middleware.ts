@@ -31,6 +31,9 @@ const isAppRoute = createRouteMatcher([
   "/social(.*)",
   "/gaps(.*)",
   "/report(.*)",
+  "/intake(.*)",
+  "/workpaper(.*)",
+  "/scope3-screening(.*)",
 ]);
 
 export default clerkMiddleware(async (auth, request) => {
