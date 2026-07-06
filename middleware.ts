@@ -49,15 +49,16 @@ export default clerkMiddleware(async (auth, request) => {
     }
   }
 
-  if (isAppRoute(request) && process.env.STRIPE_SECRET_KEY) {
-    const { userId, sessionClaims } = await auth();
-    if (userId && userId !== process.env.ADMIN_CLERK_ID) {
-      const planStatus = (sessionClaims?.publicMetadata as Record<string, string>)?.planStatus;
-      if (planStatus !== "active") {
-        return NextResponse.redirect(new URL("/checkout", request.url));
-      }
-    }
-  }
+  // Payment gate disabled during development
+  // if (isAppRoute(request) && process.env.STRIPE_SECRET_KEY) {
+  //   const { userId, sessionClaims } = await auth();
+  //   if (userId && userId !== process.env.ADMIN_CLERK_ID) {
+  //     const planStatus = (sessionClaims?.publicMetadata as Record<string, string>)?.planStatus;
+  //     if (planStatus !== "active") {
+  //       return NextResponse.redirect(new URL("/checkout", request.url));
+  //     }
+  //   }
+  // }
 });
 
 export const config = {
