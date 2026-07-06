@@ -1,5 +1,5 @@
 # PLANS.md
-> Plan G pending approval.
+> Plan G complete. No plan pending approval.
 
 ---
 
