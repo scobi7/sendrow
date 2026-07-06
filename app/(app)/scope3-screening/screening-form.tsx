@@ -2,9 +2,9 @@
 
 import { useState, useTransition } from "react";
 import { saveScreening } from "@/lib/actions";
-import type { SCOPE3_CATEGORIES } from "./page";
+import type { Scope3Category } from "./categories";
 
-type Category = (typeof SCOPE3_CATEGORIES)[number];
+type Category = Scope3Category;
 type SavedRow = { categoryNumber: number; status: string; reason: string | null; notes: string | null };
 
 const REASONS = [
