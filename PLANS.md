@@ -1,5 +1,97 @@
 # PLANS.md
-> Plan G complete. No plan pending approval.
+> Plan H pending approval.
+
+---
+
+## Plan H — Managed Intake & Two-Sided Dashboard (2026-07-07)
+
+### Vision
+Move from "self-serve upload tool" to "managed intake service": client uploads raw data, consultant reviews and locks a pipeline, the two sides communicate through structured requests, and future years auto-process. Sendrow becomes the operating layer between client and consultant — not just a report generator.
+
+### What's already built (reuse)
+- `mapping_profiles` — versioned column mapping per company ✅
+- `emission_line_items` — normalized data with calc_log ✅
+- Upload flow (`/intake/upload`) ✅
+- Workpaper view ✅
+- `company` / `consultant` user roles in `userCompanies` ✅
+
+### New schema tables
+
+**`gt_intake_sessions`** — one row per file upload event
+```
+id, company_id, uploaded_by (clerk_id), filename, data_type,
+status: "pending_review" | "needs_info" | "approved" | "rejected",
+reviewer_notes, row_count, mapping_profile_id,
+created_at, reviewed_at
+```
+
+**`gt_data_requests`** — consultant asks client for specific missing data
+```
+id, company_id, requested_by (clerk_id),
+description (e.g. "Please upload Q3 utility bills for Oakland facility"),
+status: "open" | "fulfilled" | "dismissed",
+due_date, created_at, fulfilled_at
+```
+
+**`gt_pipeline_status`** — one row per company, tracks whether pipeline is locked
+```
+id, company_id,
+status: "not_started" | "in_progress" | "locked",
+locked_at, locked_by, notes
+```
+
+### Phase 1 — Intake session tracking
+- Tag every upload with a session record (status starts at `pending_review`)
+- Upload completion screen shows "Your data is under review" instead of just "imported N rows"
+- `/intake` landing page shows sessions with their status badges
+
+### Phase 2 — Consultant review interface
+- New page `/consultant/clients` — list of all companies consultant manages
+- New page `/consultant/clients/[companyId]/review` — see all pending sessions for a client
+  - View file, data type, row count, mapping used
+  - Approve (status → `approved`) or flag (status → `needs_info` with notes)
+- Approved sessions: line items confirmed, pipeline profile promoted
+
+### Phase 3 — Data requests
+- Consultant can create a `gt_data_requests` entry from review page
+- Client sees open requests on their dashboard: "Action needed — please upload Q3 utility bills"
+- Client uploads → request marked `fulfilled` → consultant notified
+- Email sent to client when request is created
+
+### Phase 4 — Client status dashboard
+- Redesign `/dashboard` for company users:
+  - Pipeline status banner (not started / in progress / locked)
+  - Open data requests (if any) — prominent CTA
+  - Recent uploads with status badges
+  - Quick link to workpaper once approved
+  - "Generate report" only enabled when pipeline is approved or locked
+- Remove the old section-by-section checklist (Connections, Scope 1–3, Social, Governance) — replace with intake-centric flow
+
+### Phase 5 — Notifications
+- Email client when consultant creates a data request
+- Email consultant when client uploads a new file
+- Both use existing `lib/email.ts` + Resend
+
+### Phase 6 — Pipeline lock
+- Consultant clicks "Lock pipeline" once all sessions are approved
+- Pipeline status → `locked`
+- Future uploads against this company auto-apply the locked mapping profile (no mapping step shown)
+- Upload completion screen changes to "Auto-processed against your locked pipeline"
+
+### Build order
+1. Schema + migrations (all 3 tables)
+2. Phase 1 — session tracking wired into upload flow
+3. Phase 4 — client dashboard redesign (drives the visible change)
+4. Phase 2 — consultant review interface
+5. Phase 3 — data requests
+6. Phase 5 — notifications
+7. Phase 6 — pipeline lock
+
+### What stays unchanged
+- Upload flow mechanics (file parsing, column mapping, factor engine)
+- Workpaper view
+- PDF report generation
+- Billing / auth / marketing
 
 ---
 
