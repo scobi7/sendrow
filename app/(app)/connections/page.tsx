@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { currentUser } from "@/lib/auth";
 import { loadCompany } from "@/lib/store";
 import { connectQuickBooks, connectUtility, startUtilityConnect, syncUtilityNow, syncUtilityByUid, resync, markQBReviewed, markUtilityReviewed, disconnectQuickBooks, disconnectUtility } from "@/lib/actions";
@@ -17,7 +18,8 @@ export default async function Connections({
   searchParams: Promise<{ util_error?: string }>;
 }) {
   const { util_error } = await searchParams;
-  const user = (await currentUser())!;
+  const user = await currentUser();
+  if (!user?.companyId) redirect("/onboarding");
   const company = await loadCompany(user.companyId);
   const qb = company.connections.quickbooks;
   const util = company.connections.utility;

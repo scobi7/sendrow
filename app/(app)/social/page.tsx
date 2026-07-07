@@ -1,10 +1,12 @@
+import { redirect } from "next/navigation";
 import { currentUser } from "@/lib/auth";
 import { loadCompany } from "@/lib/store";
 import { saveFields } from "@/lib/actions";
 import { InfoTip, PageHeader } from "@/components/ui";
 
 export default async function Social() {
-  const user = (await currentUser())!;
+  const user = await currentUser();
+  if (!user?.companyId) redirect("/onboarding");
   const company = await loadCompany(user.companyId);
   const inp = company.inputs;
   const turnover =

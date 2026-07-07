@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { currentUser } from "@/lib/auth";
 import { loadCompany, getFactor } from "@/lib/store";
 import { saveFields } from "@/lib/actions";
@@ -5,7 +6,8 @@ import { PageHeader } from "@/components/ui";
 import Link from "next/link";
 
 export default async function Scope2() {
-  const user = (await currentUser())!;
+  const user = await currentUser();
+  if (!user?.companyId) redirect("/onboarding");
   const company = await loadCompany(user.companyId);
   const inp = company.inputs;
   const connected = company.connections.utility.connected;

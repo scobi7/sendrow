@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { currentUser } from "@/lib/auth";
 import { loadCompany } from "@/lib/store";
 import { saveFields, saveLeadership, savePolicy } from "@/lib/actions";
@@ -14,7 +15,8 @@ const POLICIES = [
 const LEVELS = ["C-Suite", "VP/Director", "Manager", "Individual Contributor"];
 
 export default async function Governance() {
-  const user = (await currentUser())!;
+  const user = await currentUser();
+  if (!user?.companyId) redirect("/onboarding");
   const company = await loadCompany(user.companyId);
   const inp = company.inputs;
   const policies = inp.gov_policies ?? {};

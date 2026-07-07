@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { currentUser } from "@/lib/auth";
 import { loadCompany } from "@/lib/store";
 import { gapAnalysis } from "@/lib/progress";
@@ -11,7 +12,8 @@ const DIFF_STYLE: Record<string, { background: string; color: string }> = {
 };
 
 export default async function Gaps() {
-  const user = (await currentUser())!;
+  const user = await currentUser();
+  if (!user?.companyId) redirect("/onboarding");
   const company = await loadCompany(user.companyId);
   const gaps = gapAnalysis(company);
   const saved = company.actionPlan;

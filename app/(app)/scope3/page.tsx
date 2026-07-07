@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import Link from "next/link";
 import { currentUser } from "@/lib/auth";
 import { loadCompany } from "@/lib/store";
@@ -6,7 +7,8 @@ import { CO2eBox, InfoTip, PageHeader } from "@/components/ui";
 import { SCOPE3_OTHER_CATEGORIES } from "@/lib/factors";
 
 export default async function Scope3() {
-  const user = (await currentUser())!;
+  const user = await currentUser();
+  if (!user?.companyId) redirect("/onboarding");
   const company = await loadCompany(user.companyId);
   const inp = company.inputs;
   const qbConnected = company.connections.quickbooks.connected;
