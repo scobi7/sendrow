@@ -128,7 +128,8 @@ export async function onboardAsCompany(formData: FormData) {
 
   if (uname && uemail) sendWelcomeEmail(uname, uemail).catch(() => {});
 
-  redirect("/checkout?plan=company");
+  const dest = process.env.STRIPE_SECRET_KEY ? "/checkout?plan=company" : "/setup";
+  redirect(dest);
 }
 
 export async function onboardAsConsultant() {
@@ -155,7 +156,8 @@ export async function onboardAsConsultant() {
     });
 
   if (email) sendWelcomeEmail(name, email).catch(() => {});
-  redirect("/checkout?plan=consultant");
+  const dest = process.env.STRIPE_SECRET_KEY ? "/checkout?plan=consultant" : "/setup";
+  redirect(dest);
 }
 
 // ─────────── Setup wizard ───────────
