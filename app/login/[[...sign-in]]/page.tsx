@@ -18,7 +18,7 @@ export default function LoginPage() {
               card: "rounded-2xl shadow-sm",
             },
           }}
-          fallbackRedirectUrl="/dashboard"
+          fallbackRedirectUrl="/onboarding"
           signUpUrl="/signup"
         />
       </Suspense>
