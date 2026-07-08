@@ -1,8 +1,7 @@
 # PLANS.md
 
 ## Plan V — Visual Identity Refresh ("The Ledger")
-> STATUS: DRAFT — PENDING HUMAN APPROVAL
-> Generated 2026-07-08. Full research + system spec: docs/design-direction.md. On approval, generate TASKS.md (V1–V6).
+> STATUS: BUILT 2026-07-08 on `sendrow-v2` — see success/plan-v.md. Spec: docs/design-direction.md.
 
 ### Objective
 Kill the "AI-generated SaaS" look. Move from pastel-green wash + geometric sans to paper/ink/forest with an editorial serif — the visual language of an audit-grade practice platform (Watershed's restraint, Clio's order, the Paymark template's single-accent discipline).
