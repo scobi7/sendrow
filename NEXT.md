@@ -24,11 +24,12 @@ Sendrow is now **the practice platform for climate consultants** — consultants
 - CARB 15-day comment window: publish the explainer within 24h + submit a comment letter when it opens
 
 ## 🟡 Current state
-- Plan I (Integrity Release) built + deployed to production 2026-07-07; 136/136 tests; review queue at `/consultant/review`.
-- **Plan J (Practice Platform Release) drafted in PLANS.md — awaiting approval:** magic-link data-request portal, vendor-mapping memory, referral routing, trust basics.
-- Manual QA of the full company flow in progress (Malachi).
-- Old-direction artifacts still live on the site: pricing page sells company plans, landing copy is company-facing — Plan J Phase 4 fixes this.
-- ~~Re-enable payment gate~~ — no longer applies; direct-to-company checkout is being retired (Plan J Phase 4), code stays dormant.
+- **Plan J (Practice Platform Release) BUILT 2026-07-08 on `sendrow-v2`** — all 20 tasks, 154/154 tests, tsc clean, full build passes. See success/plan-j.md. Ships: magic-link portal (`/portal/[token]`), reminder cron, vendor-mapping memory + confirm UI in review queue, `/get-matched` referral flow, `/security` + `/dpa`.
+- Landing + pricing repositioned to practice-platform; company checkout dormant (not deleted).
+- Migrations 0004 (portal/vendor/referral tables) + 0003 auto-apply on next deploy of `sendrow-v2`.
+- Production (`main`/`sendrow-v1`) still runs the pre-pivot version — deploy of v2 is a user decision.
+- Manual QA of the v2 flow needed: create request → open portal link (incognito) → upload messy file → confirm vendor in review queue → see remap.
+- Set `CRON_SECRET` in Vercel for the reminders cron (optional but recommended).
 
 ## ⚠ Carried-over flags from Plan I build
 1. **Factor values are still "representative"** — the 22 new eGRID and 14 new USEEIO factors approximate published data. Before the first fulfillment engagement's deliverable goes out, load the real EPA eGRID 2024 + USEEIO v2 values (data-only task, fits Plan J).

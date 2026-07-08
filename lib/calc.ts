@@ -1,6 +1,8 @@
 import { CalcResult, Company, EmissionFactor } from "./types";
 import { getFactor, uid } from "./store";
 import { COMMUTE_FACTOR, QB_CATEGORY_TO_USEEIO, REFRIGERANT_FACTOR } from "./factors";
+import { matchVendor } from "./vendor-mappings";
+import type { VendorMapping } from "./vendor-mappings";
 
 /**
  * Server-side calculation engine. Runs after every data save; results are
@@ -45,7 +47,11 @@ export function reportingPeriod(fiscalYearEndMonth: number): {
   };
 }
 
-export function recalcCompany(company: Company, factorOverrides: EmissionFactor[] = []): void {
+export function recalcCompany(
+  company: Company,
+  factorOverrides: EmissionFactor[] = [],
+  vendorMappings: VendorMapping[] = []
+): void {
   const results: CalcResult[] = [];
   const inp = company.inputs;
 
@@ -139,11 +145,29 @@ export function recalcCompany(company: Company, factorOverrides: EmissionFactor[
       purchased: { tons: 0, spend: 0, parts: [] },
       freight: { tons: 0, spend: 0, parts: [] },
     };
+    const bucketFor = (category: string): "travel" | "purchased" | "freight" =>
+      category === "business_travel" ? "travel" : category === "upstream_freight" ? "freight" : "purchased";
+
     const unmapped: { cat: string; spend: number }[] = [];
     for (const [cat, spend] of Object.entries(byCategory)) {
       const map = QB_CATEGORY_TO_USEEIO[cat];
       if (!map) {
-        unmapped.push({ cat, spend });
+        // Vendor memory: spend in unmapped QB categories resolves per-vendor
+        // when a human has confirmed that vendor (cross-client, Plan J)
+        let unresolved = 0;
+        for (const t of filteredTxns.filter((t) => t.category === cat)) {
+          const vm = matchVendor(t.vendor, vendorMappings);
+          if (vm?.factorId) {
+            const f = getF(vm.factorId);
+            const b = buckets[bucketFor(vm.category)];
+            b.tons += t.amount * f.value;
+            b.spend += t.amount;
+            b.parts.push(`$${fmt(t.amount)} ${t.vendor} (vendor mapping ${vm.id}) × ${f.value} ${f.unit}`);
+          } else {
+            unresolved += t.amount;
+          }
+        }
+        if (unresolved > 0) unmapped.push({ cat, spend: unresolved });
         continue;
       }
       const f = getF(map.factorId);

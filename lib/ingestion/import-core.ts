@@ -1,7 +1,10 @@
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { mappingProfiles, emissionLineItems, intakeSessions, pipelineStatus, dataRequests } from "@/lib/db/schema";
+import { sql, inArray } from "drizzle-orm";
+import { vendorMappings as vendorMappingsTable } from "@/lib/db/schema";
 import { applyProfile, rowToLineItem, fleetFuelToLineItems } from "./ingest";
+import { getVendorMappingsFromDb } from "@/lib/vendor-mappings";
 import { getFactorsFromDb } from "@/lib/factor-engine";
 import { fuzzyMatchHeaders } from "./fuzzy-match";
 import { scoreSession } from "./session-score";
@@ -70,7 +73,7 @@ export async function processImport(input: ImportInput): Promise<ImportOutcome> 
     createdAt: new Date().toISOString(),
   });
 
-  const factors = await getFactorsFromDb();
+  const [factors, vendorMaps] = await Promise.all([getFactorsFromDb(), getVendorMappingsFromDb()]);
   const normalized = applyProfile(rows, columnMap);
 
   // Every row becomes a line item — unmappable rows are flagged, never dropped
@@ -78,9 +81,22 @@ export async function processImport(input: ImportInput): Promise<ImportOutcome> 
   if (dataType === "fleet_fuel_dollar" && fuelPrices) {
     inserts = fleetFuelToLineItems(normalized, factors, fuelPrices, companyId, profileId);
   } else {
-    inserts = normalized.map((row) => rowToLineItem(row, factors, companyId, profileId));
+    inserts = normalized.map((row) => rowToLineItem(row, factors, companyId, profileId, vendorMaps));
   }
   const unmappedCount = inserts.filter((i) => i.status === "unmapped").length;
+
+  // Count vendor-memory applications (the moat compounding, measurably)
+  const usedMappingIds = [...new Set(
+    inserts
+      .map((i) => (i.calcLog as { vendor_mapping_id?: string }).vendor_mapping_id)
+      .filter((id): id is string => Boolean(id))
+  )];
+  if (usedMappingIds.length > 0) {
+    await db
+      .update(vendorMappingsTable)
+      .set({ timesApplied: sql`${vendorMappingsTable.timesApplied} + 1` })
+      .where(inArray(vendorMappingsTable.id, usedMappingIds));
+  }
 
   // Flagged rows always get human review — even on a locked pipeline
   if (unmappedCount > 0 && autoApproved) {

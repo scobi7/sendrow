@@ -115,6 +115,19 @@ ${dueDate ? `<p><strong>Due:</strong> ${dueDate}</p>` : ""}
   );
 }
 
+export async function sendReferralLeadEmail(data: { name: string; email: string; company: string; trigger: string }) {
+  await send(
+    ADMIN_EMAIL,
+    `Referral lead: ${data.company} (${data.name})`,
+    `<h2>New consultant-match request</h2>
+<p><strong>Name:</strong> ${data.name}</p>
+<p><strong>Email:</strong> ${data.email}</p>
+<p><strong>Company:</strong> ${data.company}</p>
+<p><strong>What triggered the need:</strong><br/>${data.trigger || "—"}</p>
+<p>Route to a partner consultant and log the outcome.</p>`
+  );
+}
+
 export async function sendPortalReminderEmail(
   clientEmail: string,
   clientName: string,

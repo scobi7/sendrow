@@ -1,4 +1,6 @@
 import { lookupFactor, applyFactor } from "@/lib/factor-engine";
+import { matchVendor } from "@/lib/vendor-mappings";
+import type { VendorMapping } from "@/lib/vendor-mappings";
 import type { EmissionFactor, CalcLog } from "@/lib/factor-engine";
 import type { StandardField } from "./fuzzy-match";
 
@@ -224,15 +226,43 @@ export function unmappedLineItem(
 /**
  * Converts a normalized row to a DB insert. Rows with a missing quantity or
  * no matching factor come back as flagged `unmapped` items — never null.
+ * Confirmed vendor mappings (cross-client memory) take precedence over
+ * heuristic activity/unit resolution.
  */
 export function rowToLineItem(
   row: NormalizedRow,
   factors: EmissionFactor[],
   companyId: string,
-  mappingProfileId: string | null = null
+  mappingProfileId: string | null = null,
+  vendorMappings: VendorMapping[] = []
 ): LineItemInsert {
   if (row.quantity === undefined || row.quantity === null) {
     return unmappedLineItem(row, "Missing or non-numeric quantity", companyId, mappingProfileId);
+  }
+
+  // Vendor memory first: a human-confirmed mapping beats heuristics
+  const vendorMatch = matchVendor(row.source_ref, vendorMappings) ?? matchVendor(row.activity_type, vendorMappings);
+  if (vendorMatch?.factorId) {
+    const factor = lookupFactor(factors, { factorId: vendorMatch.factorId });
+    if (factor) {
+      const { co2e_kg, calc_log } = applyFactor(row.quantity, row.unit ?? "", factor);
+      return {
+        id: newId(),
+        companyId,
+        sourceRef: row.source_ref ?? "",
+        scope: vendorMatch.scope,
+        category: vendorMatch.category,
+        rawValue: String(row.quantity),
+        rawUnit: row.unit ?? "",
+        co2eKg: co2e_kg.toFixed(4),
+        confidence: row.confidence ?? "estimated",
+        status: "mapped",
+        factorId: factor.factor_id,
+        calcLog: { ...calc_log, vendor_mapping_id: vendorMatch.id } as CalcLog & { vendor_mapping_id: string },
+        mappingProfileId,
+        createdAt: new Date().toISOString(),
+      };
+    }
   }
 
   const scopeInfo = row.scope

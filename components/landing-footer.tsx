@@ -15,7 +15,7 @@ export function LandingFooter() {
           <div>
             <Logo />
             <p className="mt-3 max-w-xs text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>
-              GHG emissions reporting for SMBs and ESG consultants. Scope 1, 2, and 3 — automated.
+              The practice platform for climate consultants. One audited inventory in, every buyer and regulator format out.
             </p>
           </div>
 
@@ -24,8 +24,8 @@ export function LandingFooter() {
               <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>Product</p>
               <ul className="mt-3 space-y-2">
                 {[
-                  ["For companies", "/for-companies"],
                   ["For consultants", "/for-consultants"],
+                  ["Get matched (companies)", "/get-matched"],
                   ["Pricing", "/pricing"],
                   ["Request a demo", "/demo"],
                 ].map(([label, href]) => (
@@ -44,6 +44,8 @@ export function LandingFooter() {
                 {[
                   ["Terms of Service", "/terms"],
                   ["Privacy Policy", "/privacy"],
+                  ["Security", "/security"],
+                  ["DPA template", "/dpa"],
                 ].map(([label, href]) => (
                   <li key={href}>
                     <Link href={href} className="text-sm transition-colors hover:opacity-80" style={{ color: "var(--text-muted)" }}>

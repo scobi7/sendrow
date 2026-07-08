@@ -7,36 +7,36 @@ Generated from PLANS.md (approved). Updated after each task completes.
 > Approved 2026-07-08, building on branch `sendrow-v2`. Baseline: 136/136 tests.
 
 ### Phase 1 — Magic-link data-request portal
-- [ ] **J1** — Schema: extend `gt_data_requests` with `token` (unique), `expiresAt`, `checklist` (jsonb), `remindersSentAt` (jsonb); drizzle migration
-- [ ] **J2** — `createDataRequest` generates token + checklist items (from data types); portal URL surfaced to consultant
-- [ ] **J3** — Middleware: public bypass for `/portal/*`
-- [ ] **J4** — `app/portal/[token]/page.tsx` — token validation (expiry), checklist view with per-item status, no login required
-- [ ] **J5** — Portal item flow: document upload → existing intake pipeline (`/api/portal/upload` wrapping import logic, tagged with `dataRequestId`, attributed to the company)
-- [ ] **J6** — Portal item flow: structured entry forms per data type (reuse `data-type-templates.ts` fields) → line items via existing ingest
-- [ ] **J7** — Checklist item status updates (pending → received) as uploads/entries land; request auto-fulfills when all items received
+- [x] **J1** — Schema: extend `gt_data_requests` with `token` (unique), `expiresAt`, `checklist` (jsonb), `remindersSentAt` (jsonb); drizzle migration
+- [x] **J2** — `createDataRequest` generates token + checklist items (from data types); portal URL surfaced to consultant
+- [x] **J3** — Middleware: public bypass for `/portal/*`
+- [x] **J4** — `app/portal/[token]/page.tsx` — token validation (expiry), checklist view with per-item status, no login required
+- [x] **J5** — Portal item flow: document upload → existing intake pipeline (`/api/portal/upload` wrapping import logic, tagged with `dataRequestId`, attributed to the company)
+- [x] **J6** — Portal item flow: structured entry forms per data type (reuse `data-type-templates.ts` fields) → line items via existing ingest
+- [x] **J7** — Checklist item status updates (pending → received) as uploads/entries land; request auto-fulfills when all items received
 
 ### Phase 2 — Reminders + consultant status board
-- [ ] **J8** — `sendPortalReminderEmail` in `lib/email.ts`; reminder selection as pure function (`lib/reminders.ts`) — nudges at 3/7/14 days, consultant CC on day 14
-- [ ] **J9** — `/api/cron/reminders` route + cron config (daily)
-- [ ] **J10** — `/consultant/review/[companyId]`: data-request cards show checklist item status + portal link
+- [x] **J8** — `sendPortalReminderEmail` in `lib/email.ts`; reminder selection as pure function (`lib/reminders.ts`) — nudges at 3/7/14 days, consultant CC on day 14
+- [x] **J9** — `/api/cron/reminders` route + cron config (daily)
+- [x] **J10** — `/consultant/review/[companyId]`: data-request cards show checklist item status + portal link
 
 ### Phase 3 — Vendor-mapping memory
-- [ ] **J11** — Schema: `gt_vendor_mappings` (vendorPattern, scope, category, factorId, confidence, confirmedBy, confirmedAt, sourceCompanyId, timesApplied); migration
-- [ ] **J12** — `lib/vendor-mappings.ts`: `normalizeVendor()`, `matchVendor()` (pure); hook into `rowToLineItem` before factor resolution; mapping id recorded in calc log
-- [ ] **J13** — Review write-back: unmapped-vendor confirmation UI in review detail; `confirmVendorMapping` server action inserts global mapping + remaps that session's flagged rows
-- [ ] **J14** — QB path in `lib/calc.ts` consults vendor mappings for categories missing from `QB_CATEGORY_TO_USEEIO`
-- [ ] **J15** — Tests: normalize/match; client-A confirmation auto-maps client B; unconfirmed vendors still flag `unmapped` (Plan I invariant preserved)
+- [x] **J11** — Schema: `gt_vendor_mappings` (vendorPattern, scope, category, factorId, confidence, confirmedBy, confirmedAt, sourceCompanyId, timesApplied); migration
+- [x] **J12** — `lib/vendor-mappings.ts`: `normalizeVendor()`, `matchVendor()` (pure); hook into `rowToLineItem` before factor resolution; mapping id recorded in calc log
+- [x] **J13** — Review write-back: unmapped-vendor confirmation UI in review detail; `confirmVendorMapping` server action inserts global mapping + remaps that session's flagged rows
+- [x] **J14** — QB path in `lib/calc.ts` consults vendor mappings for categories missing from `QB_CATEGORY_TO_USEEIO`
+- [x] **J15** — Tests: normalize/match; client-A confirmation auto-maps client B; unconfirmed vendors still flag `unmapped` (Plan I invariant preserved)
 
 ### Phase 4 — Referral routing
-- [ ] **J16** — Schema: `gt_referral_leads` (name, email, company, trigger, status, createdAt); migration
-- [ ] **J17** — Landing hero + `/pricing` become consultant-facing; company path becomes "Get matched with a consultant" form → lead logged + admin email (checkout code untouched, dormant)
+- [x] **J16** — Schema: `gt_referral_leads` (name, email, company, trigger, status, createdAt); migration
+- [x] **J17** — Landing hero + `/pricing` become consultant-facing; company path becomes "Get matched with a consultant" form → lead logged + admin email (checkout code untouched, dormant)
 
 ### Phase 5 — Trust basics
-- [ ] **J18** — `/security` page + DPA template page; footer links
-- [ ] **J19** — Settings: data export button + delete-my-data request flow (audit-logged, admin-notified)
+- [x] **J18** — `/security` page + DPA template page; footer links
+- [x] **J19** — Settings: data export button + delete-my-data request flow (audit-logged, admin-notified)
 
 ### Finalize
-- [ ] **J20** — success/plan-j.md; all tests + tsc clean; contracts invariants 11–12 verified; commit + push `sendrow-v2`
+- [x] **J20** — success/plan-j.md; all tests + tsc clean; contracts invariants 11–12 verified; commit + push `sendrow-v2`
 
 ---
 

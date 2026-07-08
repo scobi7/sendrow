@@ -20,6 +20,7 @@ const isPublicRoute = createRouteMatcher([
   "/api/portal(.*)",  // portal submissions — token validated in the route
   "/security(.*)",
   "/dpa(.*)",
+  "/get-matched(.*)",
 ]);
 
 const isAdminRoute = createRouteMatcher(["/admin(.*)"]);

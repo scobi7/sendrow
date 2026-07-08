@@ -4,7 +4,11 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { and, eq, isNull } from "drizzle-orm";
 import { db } from "./db";
-import { consultantClients, userCompanies, intakeSessions, dataRequests, pipelineStatus } from "./db/schema";
+import { consultantClients, userCompanies, intakeSessions, dataRequests, pipelineStatus, vendorMappings, emissionLineItems } from "./db/schema";
+import { normalizeVendor, matchVendor, VENDOR_CONFIRM_OPTIONS, getVendorMappingsFromDb } from "./vendor-mappings";
+import { rowToLineItem } from "./ingestion/ingest";
+import { getFactorsFromDb } from "./factor-engine";
+import type { UnmappedLog } from "./ingestion/ingest";
 import { loadCompany, loadFactors, persistCompany } from "./store";
 import { currentUser } from "./auth";
 import { recalcCompany } from "./calc";
@@ -66,7 +70,8 @@ async function asConsultantFor(companyId: string): Promise<{ user: User; company
 
 async function persist(company: Company) {
   const overrides = await loadFactors();
-  recalcCompany(company, overrides);
+  const vendorMaps = await getVendorMappingsFromDb();
+  recalcCompany(company, overrides, vendorMaps);
   refreshSectionStatus(company);
   await persistCompany(company);
   revalidatePath("/", "layout");
@@ -232,6 +237,87 @@ async function notifyClientOfDataRequest(companyId: string, description: string,
   ]);
   if (!clientUser?.email) return;
   await sendDataRequestEmail(clientUser.email, clientUser.name ?? "there", company.name, description, dueDate, token);
+}
+
+/** Confirms a vendor→category mapping globally (contracts/ §12: human-confirmed
+ *  only) and remaps this company's flagged rows that match the vendor. */
+export async function confirmVendorMapping(companyId: string, vendorRaw: string, optionKey: string) {
+  const user = await currentUser();
+  if (!user || user.role !== "consultant") return;
+  const link = await db.query.consultantClients.findFirst({
+    where: and(
+      eq(consultantClients.consultantId, user.id),
+      eq(consultantClients.companyId, companyId),
+      isNull(consultantClients.archivedAt)
+    ),
+  });
+  if (!link) return;
+
+  const option = VENDOR_CONFIRM_OPTIONS.find((o) => o.key === optionKey);
+  const pattern = normalizeVendor(vendorRaw);
+  if (!option || !pattern) return;
+
+  const mappingId = newId("vm");
+  await db
+    .insert(vendorMappings)
+    .values({
+      id: mappingId,
+      vendorPattern: pattern,
+      scope: option.scope,
+      category: option.category,
+      factorId: option.factorId,
+      confidence: "confirmed",
+      confirmedBy: user.id,
+      confirmedAt: new Date().toISOString(),
+      sourceCompanyId: companyId,
+      timesApplied: 0,
+    })
+    .onConflictDoUpdate({
+      target: vendorMappings.vendorPattern,
+      set: {
+        scope: option.scope,
+        category: option.category,
+        factorId: option.factorId,
+        confirmedBy: user.id,
+        confirmedAt: new Date().toISOString(),
+      },
+    });
+
+  // Remap this company's flagged rows that match the confirmed vendor
+  const [factors, flagged] = await Promise.all([
+    getFactorsFromDb(),
+    db.select().from(emissionLineItems).where(
+      and(eq(emissionLineItems.companyId, companyId), eq(emissionLineItems.status, "unmapped"))
+    ),
+  ]);
+  const mapping = [{ id: mappingId, vendorPattern: pattern, scope: option.scope, category: option.category, factorId: option.factorId }];
+
+  for (const item of flagged) {
+    const log = item.calcLog as UnmappedLog;
+    const row = {
+      quantity: log.raw_value ?? undefined,
+      unit: log.raw_unit,
+      activity_type: log.activity_type,
+      source_ref: item.sourceRef,
+    };
+    if (!matchVendor(row.source_ref, mapping) && !matchVendor(row.activity_type, mapping)) continue;
+    const remapped = rowToLineItem(row, factors, companyId, item.mappingProfileId, mapping);
+    if (remapped.status !== "mapped") continue; // e.g. quantity still missing — stays flagged
+    await db
+      .update(emissionLineItems)
+      .set({
+        scope: remapped.scope,
+        category: remapped.category,
+        co2eKg: remapped.co2eKg,
+        confidence: remapped.confidence,
+        status: "mapped",
+        factorId: remapped.factorId,
+        calcLog: remapped.calcLog,
+      })
+      .where(eq(emissionLineItems.id, item.id));
+  }
+
+  revalidatePath(`/consultant/review/${companyId}`);
 }
 
 export async function lockPipeline(companyId: string, notes: string) {

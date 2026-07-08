@@ -80,21 +80,21 @@ export default async function Home() {
             className="font-display text-5xl font-extrabold leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl"
             style={{ color: "var(--text)" }}
           >
-            ESG compliance,
+            The practice platform for
             <br />
-            <span style={{ color: "var(--primary)" }}>done right.</span>
+            <span style={{ color: "var(--primary)" }}>climate consultants.</span>
           </h1>
           <p
             className="mx-auto mt-6 max-w-lg text-lg leading-relaxed"
             style={{ color: "var(--text-muted)" }}
           >
-            Sendrow connects your existing data and automatically produces the ESG reports your customers require.
+            Turn a client&rsquo;s messy data into one audited emissions inventory, then answer every buyer and regulator format from it — under your brand.
           </p>
 
           {/* Audience cards */}
           <div className="mx-auto mt-14 grid max-w-2xl gap-4 sm:grid-cols-2">
             <Link
-              href="/for-companies"
+              href="/get-matched"
               className="group rounded-2xl p-8 text-left transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg"
               style={{
                 background: "var(--card)",
@@ -112,13 +112,13 @@ export default async function Home() {
                 Got an ESG questionnaire from a customer?
               </h2>
               <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>
-                Connect your accounts. We calculate your footprint and map your numbers to whatever framework they&rsquo;re asking for.
+                We&rsquo;ll match you with a vetted climate consultant who handles it end to end — free, usually within two business days.
               </p>
               <span
                 className="mt-6 inline-flex items-center gap-1 text-sm font-semibold"
                 style={{ color: "var(--primary)" }}
               >
-                See how it works &rarr;
+                Get matched &rarr;
               </span>
             </Link>
 

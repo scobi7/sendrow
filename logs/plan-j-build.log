@@ -1,0 +1,8 @@
+2026-07-08 Plan J — Practice Platform Release build log (branch sendrow-v2)
+- Phase 1: magic-link portal (token+checklist on gt_data_requests, /portal/[token], /api/portal/import via shared import-core extracted from intake route)
+- Phase 2: lib/reminders.ts (3/7/14-day tiers) + /api/cron/reminders + vercel.json cron; consultant status board shows checklist chips + portal link
+- Phase 3: gt_vendor_mappings global memory; ingest + QB calc path consult it; confirmVendorMapping remaps flagged rows; VENDOR_CONFIRM_OPTIONS curated
+- Phase 4: /get-matched referral form + gt_referral_leads; landing hero + pricing repositioned; checkout dormant
+- Phase 5: /security + /dpa pages, footer links; export/delete already in settings
+- Guard added: USD/dollar units never resolve to physical factors (flag → review)
+- Final: 154/154 tests, tsc clean, next build passes (all routes verified)

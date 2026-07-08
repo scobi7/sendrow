@@ -4,12 +4,12 @@ import { LandingFooter } from "@/components/landing-footer";
 import { PricingCalculator } from "@/components/pricing-calculator";
 
 const COMPANY_FEATURES = [
+  "Introduction to a vetted climate consultant",
   "Full GHG inventory — Scope 1, 2, and 3",
-  "QuickBooks + utility account integrations",
-  "Questionnaire helper (EcoVadis, CDP, and more)",
-  "Audit-ready PDF report",
-  "Methodology notes and data quality flags",
-  "Unlimited revisions before generating",
+  "Buyer questionnaire answered (EcoVadis, CDP, and more)",
+  "Audit-ready deliverables with data quality flags",
+  "No platform to learn — a guided upload link does the work",
+  "Free for you — the consultant pays the referral fee",
 ];
 
 const CONSULTANT_FEATURES = [
@@ -60,14 +60,14 @@ export default function PricingPage() {
           <div className="rounded-2xl p-8" style={{ border: "1px solid var(--divider)", background: "var(--card)" }}>
             <p className="text-sm font-semibold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>For companies</p>
             <div className="mt-4 flex items-end gap-1">
-              <span className="text-5xl font-black font-data" style={{ color: "var(--text)" }}>$400</span>
-              <span className="mb-2 text-sm" style={{ color: "var(--text-muted)" }}>per report</span>
+              <span className="text-5xl font-black font-data" style={{ color: "var(--text)" }}>Free</span>
+              <span className="mb-2 text-sm" style={{ color: "var(--text-muted)" }}>consultant match</span>
             </div>
             <p className="mt-3 text-sm" style={{ color: "var(--text-muted)" }}>
-              One-time payment. Generate your GHG inventory report, answer your customer's ESG questionnaire, and you're done. Come back next year and your data pre-fills.
+              A customer or regulator asking for your emissions data? We introduce you to a vetted climate consultant who handles it end to end — powered by Sendrow. The consultant pays us, not you.
             </p>
-            <Link href="/signup?plan=company" className="btn btn-primary mt-8 block w-full text-center">
-              Get started
+            <Link href="/get-matched" className="btn btn-primary mt-8 block w-full text-center">
+              Get matched
             </Link>
             <ul className="mt-8 space-y-3">
               {COMPANY_FEATURES.map((f) => (

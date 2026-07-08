@@ -8,6 +8,7 @@ import { SessionActions } from "./session-actions";
 import { DataRequestForm } from "./data-request-form";
 import { LockPipelineButton } from "./lock-pipeline-button";
 import { PortalLinkButton } from "./portal-link-button";
+import { VendorConfirm } from "./vendor-confirm";
 import type { ChecklistItem } from "@/lib/portal";
 
 const STATUS_LABEL: Record<string, string> = {
@@ -50,7 +51,11 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ c
     db.select().from(intakeSessions).where(eq(intakeSessions.companyId, companyId)).orderBy(desc(intakeSessions.createdAt)).limit(20),
     db.select().from(dataRequests).where(eq(dataRequests.companyId, companyId)).orderBy(desc(dataRequests.createdAt)),
     db.select().from(pipelineStatus).where(eq(pipelineStatus.companyId, companyId)).then(r => r[0] ?? null),
-    db.select({ mappingProfileId: emissionLineItems.mappingProfileId })
+    db.select({
+      mappingProfileId: emissionLineItems.mappingProfileId,
+      sourceRef: emissionLineItems.sourceRef,
+      calcLog: emissionLineItems.calcLog,
+    })
       .from(emissionLineItems)
       .where(and(eq(emissionLineItems.companyId, companyId), eq(emissionLineItems.status, "unmapped"))),
   ]);
@@ -60,10 +65,18 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ c
   const pStatus = pipeline?.status ?? "not_started";
   const pendingSessions = sessions.filter(s => s.status === "pending_review" || s.status === "needs_info");
   const unmappedByProfile: Record<string, number> = {};
+  const vendorCounts: Record<string, number> = {};
   for (const item of unmappedItems) {
-    if (!item.mappingProfileId) continue;
-    unmappedByProfile[item.mappingProfileId] = (unmappedByProfile[item.mappingProfileId] ?? 0) + 1;
+    if (item.mappingProfileId) {
+      unmappedByProfile[item.mappingProfileId] = (unmappedByProfile[item.mappingProfileId] ?? 0) + 1;
+    }
+    const log = item.calcLog as { activity_type?: string } | null;
+    const vendor = item.sourceRef?.trim() || log?.activity_type?.trim();
+    if (vendor) vendorCounts[vendor] = (vendorCounts[vendor] ?? 0) + 1;
   }
+  const unmappedVendors = Object.entries(vendorCounts)
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count);
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
@@ -91,6 +104,9 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ c
           <LockPipelineButton companyId={companyId} />
         )}
       </div>
+
+      {/* Unmapped vendors — confirm once, mapped for every client (vendor memory) */}
+      <VendorConfirm companyId={companyId} vendors={unmappedVendors} />
 
       {/* Sessions requiring action */}
       {pendingSessions.length > 0 && (

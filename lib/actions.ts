@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 import { auth, currentUser as getClerkUser } from "@clerk/nextjs/server";
 import { and, eq, isNull } from "drizzle-orm";
 import { db } from "./db";
-import { companies, userCompanies, consultantClients, inviteTokens, scope3Screening } from "./db/schema";
+import { companies, userCompanies, consultantClients, inviteTokens, scope3Screening, referralLeads } from "./db/schema";
 import {
   loadCompany,
   loadFactors,
@@ -21,12 +21,14 @@ import { Company, HeadcountRange, Industry, User } from "./types";
 import { findAuthorizationByEmail, getMeters, getBills } from "./utilityapi";
 import { fetchPurchases, getValidTokens } from "./quickbooks";
 import { egridForState } from "./factors";
+import { getVendorMappingsFromDb } from "./vendor-mappings";
 import { generateQBTransactions, generateUtilityData } from "./mockdata";
 import { recalcCompany } from "./calc";
 import { refreshSectionStatus } from "./progress";
 import { logChange } from "./audit";
 import { createCompanyRecord } from "./newcompany";
-import { sendWelcomeEmail, sendInviteAcceptedEmail, sendSectionCompleteEmail } from "./email";
+import { clientIp, checkRateLimit } from "./ratelimit";
+import { sendWelcomeEmail, sendInviteAcceptedEmail, sendSectionCompleteEmail, sendReferralLeadEmail } from "./email";
 import type { UtilityMeter, UtilityBill } from "./utilityapi";
 import type { Location } from "./types";
 
@@ -80,7 +82,8 @@ async function requireConsultant(): Promise<User> {
 
 async function persist(company: Company) {
   const overrides = await loadFactors();
-  recalcCompany(company, overrides);
+  const vendorMaps = await getVendorMappingsFromDb();
+  recalcCompany(company, overrides, vendorMaps);
   refreshSectionStatus(company);
   await persistCompany(company);
   revalidatePath("/", "layout");
@@ -258,7 +261,8 @@ export async function startUtilityConnectForClient(companyId: string, formData: 
     authUid: null,
   };
   const overrides = await loadFactors();
-  recalcCompany(company, overrides);
+  const vendorMaps = await getVendorMappingsFromDb();
+  recalcCompany(company, overrides, vendorMaps);
   refreshSectionStatus(company);
   await persistCompany(company);
   revalidatePath("/consultant");
@@ -758,6 +762,37 @@ export async function acceptInvite(token: string) {
   } catch {}
 
   redirect("/setup");
+}
+
+// ─────────── Referral routing (Plan J: inbound companies → partner consultants) ───────────
+
+export async function submitReferralLead(formData: FormData) {
+  const ip = await clientIp();
+  if (!checkRateLimit(`referral:${ip}`)) {
+    redirect("/get-matched?error=" + encodeURIComponent("Too many requests — please try again later."));
+  }
+
+  const name = String(formData.get("name") ?? "").trim();
+  const email = String(formData.get("email") ?? "").trim();
+  const company = String(formData.get("company") ?? "").trim();
+  const trigger = String(formData.get("trigger") ?? "").trim();
+
+  if (!name || !email || !company) {
+    redirect("/get-matched?error=" + encodeURIComponent("Name, email, and company are required."));
+  }
+
+  await db.insert(referralLeads).values({
+    id: uid("rl_"),
+    name,
+    email,
+    company,
+    trigger: trigger || null,
+    status: "new",
+    createdAt: new Date().toISOString(),
+  });
+
+  sendReferralLeadEmail({ name, email, company, trigger }).catch(() => {});
+  redirect("/get-matched?submitted=1");
 }
 
 // ─────────── Scope 3 Materiality Screening ───────────
