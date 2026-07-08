@@ -54,28 +54,13 @@ export default async function Home() {
         className="relative overflow-hidden px-6 py-28 text-center"
         style={{ background: "var(--bg)" }}
       >
-        <div className="pointer-events-none absolute inset-0" aria-hidden>
-          <div
-            className="absolute left-1/2 top-0 -translate-x-1/2"
-            style={{
-              width: 900,
-              height: 600,
-              borderRadius: "50%",
-              background: "radial-gradient(ellipse, rgba(34,197,94,0.13) 0%, transparent 65%)",
-            }}
-          />
-          <div
-            className="absolute left-1/4 top-1/2 -translate-x-1/2"
-            style={{
-              width: 460,
-              height: 460,
-              borderRadius: "50%",
-              background: "radial-gradient(circle, rgba(22,163,74,0.07) 0%, transparent 65%)",
-            }}
-          />
-        </div>
-
         <div className="relative z-10 mx-auto max-w-5xl">
+          <p
+            className="mb-5 text-xs font-bold uppercase tracking-[0.2em]"
+            style={{ color: "var(--accent)", fontFamily: "var(--font-body)" }}
+          >
+            For climate consultants
+          </p>
           <h1
             className="font-display text-5xl font-extrabold leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl"
             style={{ color: "var(--text)" }}
@@ -403,36 +388,37 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* ── Footer ── */}
-      <footer className="px-6 py-10" style={{ background: "var(--text)" }}>
-        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-6">
-          <span className="flex items-center gap-2 font-display text-base font-bold text-white">
-            <span
-              className="flex h-7 w-7 items-center justify-center rounded-lg text-xs font-black"
-              style={{ background: "var(--status-green)", color: "var(--text)" }}
-            >
-              G
-            </span>
-            Sendrow
-          </span>
-          <p className="text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>
-            &copy; {new Date().getFullYear()} Sendrow. Built in California.
+      {/* ── Footer — the ink band ── */}
+      <footer className="px-6 py-14" style={{ background: "var(--ink-band)" }}>
+        <div className="mx-auto max-w-5xl">
+          <p className="font-display text-2xl font-semibold leading-snug" style={{ color: "var(--ink-band-text)" }}>
+            One audited inventory in.
+            <br />
+            Every buyer and regulator format out.
           </p>
-          <div className="flex gap-6">
-            {[
-              ["Sign in", "/login"],
-              ["Request demo", "/demo"],
-              ["Get started", "/signup"],
-            ].map(([label, href]) => (
-              <Link
-                key={href}
-                href={href}
-                className="text-xs transition-opacity hover:opacity-80"
-                style={{ color: "rgba(255,255,255,0.4)" }}
-              >
-                {label}
-              </Link>
-            ))}
+          <div className="mt-8 flex flex-wrap items-center justify-between gap-6" style={{ borderTop: "1px solid rgba(233,239,233,0.15)", paddingTop: "1.5rem" }}>
+            <span className="font-display text-base font-bold" style={{ color: "var(--ink-band-text)" }}>
+              Sendrow
+            </span>
+            <p className="text-xs" style={{ color: "rgba(233,239,233,0.45)" }}>
+              &copy; {new Date().getFullYear()} Sendrow. Built in California.
+            </p>
+            <div className="flex gap-6">
+              {[
+                ["Sign in", "/login"],
+                ["Request demo", "/demo"],
+                ["Security", "/security"],
+              ].map(([label, href]) => (
+                <Link
+                  key={href}
+                  href={href}
+                  className="text-xs transition-opacity hover:opacity-80"
+                  style={{ color: "rgba(233,239,233,0.6)" }}
+                >
+                  {label}
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
       </footer>

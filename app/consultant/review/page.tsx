@@ -66,7 +66,7 @@ export default async function ConsultantClientsPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   {pendingCount > 0 && (
-                    <span className="rounded-full px-2.5 py-0.5 text-xs font-bold" style={{ background: "#fef9c3", color: "#92400e" }}>
+                    <span className="rounded-full px-2.5 py-0.5 text-xs font-bold" style={{ background: "var(--warning-tint)", color: "var(--warning-strong)" }}>
                       {pendingCount} pending
                     </span>
                   )}

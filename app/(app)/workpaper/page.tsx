@@ -44,7 +44,7 @@ export default async function WorkpaperPage({
       />
 
       {unmappedCount > 0 && (
-        <div className="mb-6 rounded-xl px-4 py-3 text-sm" style={{ background: "#fef2f2", border: "1px solid #fecaca", color: "#dc2626" }}>
+        <div className="mb-6 rounded-xl px-4 py-3 text-sm" style={{ background: "var(--danger-tint)", border: "1px solid var(--danger-border)", color: "var(--danger)" }}>
           <span className="font-semibold">{unmappedCount} row{unmappedCount !== 1 ? "s" : ""} could not be mapped</span>
           <span style={{ color: "var(--text)" }}> — flagged below with the reason, contributing 0 emissions until categorized. Nothing was dropped.</span>
         </div>

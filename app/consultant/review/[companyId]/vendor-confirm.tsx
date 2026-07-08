@@ -22,9 +22,9 @@ export function VendorConfirm({ companyId, vendors }: { companyId: string; vendo
   if (vendors.length === 0) return null;
 
   return (
-    <div className="rounded-2xl" style={{ background: "var(--card)", border: "1px solid #fecaca" }}>
+    <div className="rounded-2xl" style={{ background: "var(--card)", border: "1px solid var(--danger-border)" }}>
       <div className="px-5 pt-4 pb-3" style={{ borderBottom: "1px solid var(--divider)" }}>
-        <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "#dc2626" }}>
+        <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "var(--danger)" }}>
           Unmapped vendors ({vendors.length})
         </p>
         <p className="mt-1 text-xs" style={{ color: "var(--text-muted)" }}>

@@ -50,27 +50,6 @@ export default function ForCompanies() {
           paddingBottom: "0",
         }}
       >
-        <div className="pointer-events-none absolute inset-0" aria-hidden>
-          <div
-            className="absolute left-1/2 top-0 -translate-x-1/2"
-            style={{
-              width: 900,
-              height: 600,
-              borderRadius: "50%",
-              background: "radial-gradient(ellipse, rgba(34,197,94,0.14) 0%, transparent 65%)",
-            }}
-          />
-          <div
-            className="absolute left-1/4 top-1/3 -translate-x-1/2"
-            style={{
-              width: 460,
-              height: 460,
-              borderRadius: "50%",
-              background: "radial-gradient(circle, rgba(22,163,74,0.09) 0%, transparent 65%)",
-            }}
-          />
-        </div>
-
         <div className="relative z-10 w-full max-w-5xl">
           <div
             className="mb-8 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-semibold"
@@ -420,19 +399,8 @@ export default function ForCompanies() {
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="relative overflow-hidden px-6 py-28 text-center" style={{ background: "var(--primary)" }}>
-        <div className="pointer-events-none absolute inset-0" aria-hidden>
-          <div
-            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
-            style={{
-              width: 700,
-              height: 400,
-              borderRadius: "50%",
-              background: "radial-gradient(ellipse, rgba(255,255,255,0.07) 0%, transparent 60%)",
-            }}
-          />
-        </div>
+      {/* CTA — ink band */}
+      <section className="relative overflow-hidden px-6 py-28 text-center" style={{ background: "var(--ink-band)" }}>
         <div className="relative z-10 mx-auto max-w-2xl">
           <h2 className="font-display text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
             See it handle a real questionnaire

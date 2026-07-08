@@ -57,7 +57,7 @@ export function WorkpaperTable({ items }: { items: LineItem[] }) {
                   onClick={() => toggle(item.id)}
                   className="cursor-pointer transition-colors"
                   style={{
-                    background: isUnmapped ? "#fef2f2" : isExpanded ? "var(--primary-tint)" : i % 2 === 0 ? "var(--card)" : "var(--surface)",
+                    background: isUnmapped ? "var(--danger-tint)" : isExpanded ? "var(--primary-tint)" : i % 2 === 0 ? "var(--card)" : "var(--surface)",
                     borderTop: i > 0 ? "1px solid var(--divider)" : undefined,
                   }}
                 >
@@ -83,7 +83,7 @@ export function WorkpaperTable({ items }: { items: LineItem[] }) {
                       className="rounded-full px-2 py-0.5 text-xs"
                       style={
                         isUnmapped
-                          ? { background: "#fecaca", color: "#dc2626", fontWeight: 600 }
+                          ? { background: "var(--danger-border)", color: "var(--danger)", fontWeight: 600 }
                           : item.confidence === "actual"
                           ? { background: "var(--primary-tint)", color: "var(--primary)" }
                           : { background: "var(--divider)", color: "var(--text-muted)" }
@@ -99,9 +99,9 @@ export function WorkpaperTable({ items }: { items: LineItem[] }) {
                 </tr>
 
                 {isExpanded && unmappedLog && (
-                  <tr key={`${item.id}-log`} style={{ background: "#fef2f2", borderTop: "1px solid #fecaca" }}>
+                  <tr key={`${item.id}-log`} style={{ background: "var(--danger-tint)", borderTop: "1px solid var(--danger-border)" }}>
                     <td colSpan={7} className="px-6 py-4">
-                      <p className="mb-1 text-xs font-semibold uppercase tracking-wide" style={{ color: "#dc2626" }}>
+                      <p className="mb-1 text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--danger)" }}>
                         Flagged — could not be mapped
                       </p>
                       <p className="text-sm" style={{ color: "var(--text)" }}>{unmappedLog.reason}</p>

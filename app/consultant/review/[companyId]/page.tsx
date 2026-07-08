@@ -90,8 +90,8 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ c
       <div
         className="flex items-center justify-between rounded-2xl px-5 py-4"
         style={{
-          background: pStatus === "locked" ? "var(--primary-tint)" : pStatus === "in_progress" ? "#fef9c3" : "var(--card)",
-          border: `1px solid ${pStatus === "locked" ? "var(--primary)" : pStatus === "in_progress" ? "#fde68a" : "var(--divider)"}`,
+          background: pStatus === "locked" ? "var(--primary-tint)" : pStatus === "in_progress" ? "var(--warning-tint)" : "var(--card)",
+          border: `1px solid ${pStatus === "locked" ? "var(--primary)" : pStatus === "in_progress" ? "var(--warning-border)" : "var(--divider)"}`,
         }}
       >
         <div>
@@ -126,7 +126,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ c
                       {s.dataType} · {s.rowCount} rows · score {s.sessionScore} · {new Date(s.createdAt).toLocaleDateString()}
                     </p>
                     {s.mappingProfileId && (unmappedByProfile[s.mappingProfileId] ?? 0) > 0 && (
-                      <p className="mt-1 text-xs font-semibold" style={{ color: "#dc2626" }}>
+                      <p className="mt-1 text-xs font-semibold" style={{ color: "var(--danger)" }}>
                         ⚠ {unmappedByProfile[s.mappingProfileId]} unmapped row{unmappedByProfile[s.mappingProfileId] !== 1 ? "s" : ""} — zero emissions until categorized
                       </p>
                     )}
@@ -171,8 +171,8 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ c
                     <span
                       className="shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold"
                       style={{
-                        background: req.status === "open" ? "#fef9c3" : req.status === "fulfilled" ? "var(--primary-tint)" : "var(--divider)",
-                        color: req.status === "open" ? "#92400e" : req.status === "fulfilled" ? "var(--primary)" : "var(--text-muted)",
+                        background: req.status === "open" ? "var(--warning-tint)" : req.status === "fulfilled" ? "var(--primary-tint)" : "var(--divider)",
+                        color: req.status === "open" ? "var(--warning-strong)" : req.status === "fulfilled" ? "var(--primary)" : "var(--text-muted)",
                       }}
                     >
                       {req.status}

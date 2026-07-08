@@ -1,18 +1,27 @@
 import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
-import { Manrope, Space_Mono } from "next/font/google";
+import { Fraunces, Instrument_Sans, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 
-const manrope = Manrope({
+// "The Ledger" type system (docs/design-direction.md):
+// serif speaks (headlines), sans works (UI/body), mono counts (every figure)
+const fraunces = Fraunces({
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700", "800"],
+  weight: ["400", "500", "600", "700", "800"],
   variable: "--font-display",
   display: "swap",
 });
 
-const spaceMono = Space_Mono({
+const instrumentSans = Instrument_Sans({
   subsets: ["latin"],
-  weight: ["400", "700"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-body",
+  display: "swap",
+});
+
+const plexMono = IBM_Plex_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
   variable: "--font-data",
   display: "swap",
 });
@@ -20,15 +29,15 @@ const spaceMono = Space_Mono({
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Sendrow — ESG reporting in days, not months",
+  title: "Sendrow — The practice platform for climate consultants",
   description:
-    "Sendrow connects to your existing systems, calculates your emissions, and generates a report your customer will accept.",
+    "Turn a client's messy data into one audited emissions inventory, then answer every buyer and regulator format from it — under your brand.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <ClerkProvider>
-      <html lang="en" className={`${manrope.variable} ${spaceMono.variable}`}>
+      <html lang="en" className={`${fraunces.variable} ${instrumentSans.variable} ${plexMono.variable}`}>
         <body>{children}</body>
       </html>
     </ClerkProvider>

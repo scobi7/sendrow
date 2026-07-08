@@ -304,14 +304,14 @@ export default function UploadForm() {
         <div className="card text-center">
           <div
             className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full"
-            style={{ background: result.autoApproved ? "var(--primary-tint)" : "var(--warning-tint, #fef9c3)" }}
+            style={{ background: result.autoApproved ? "var(--primary-tint)" : "var(--warning-tint, var(--warning-tint))" }}
           >
             {result.autoApproved ? (
               <svg className="h-6 w-6" style={{ color: "var(--primary)" }} fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
               </svg>
             ) : (
-              <svg className="h-6 w-6" style={{ color: "#d97706" }} fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+              <svg className="h-6 w-6" style={{ color: "var(--warning)" }} fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2m6-2a10 10 0 11-20 0 10 10 0 0120 0z" />
               </svg>
             )}
@@ -328,13 +328,13 @@ export default function UploadForm() {
             {result.skipped > 0 && <>, <strong style={{ color: "var(--warning)" }}>{result.skipped}</strong> skipped</>}
           </p>
           {result.unmapped > 0 && (
-            <p className="mt-3 rounded-lg px-4 py-2 text-sm" style={{ background: "#fef2f2", color: "#dc2626" }}>
+            <p className="mt-3 rounded-lg px-4 py-2 text-sm" style={{ background: "var(--danger-tint)", color: "var(--danger)" }}>
               {result.unmapped} row{result.unmapped !== 1 ? "s" : ""} couldn&apos;t be matched to an emission factor.
               They were imported and flagged — nothing was dropped — and a reviewer will categorize them.
             </p>
           )}
           {!result.autoApproved && !result.pipelineLocked && (
-            <p className="mt-3 rounded-lg px-4 py-2 text-sm" style={{ background: "#fef9c3", color: "#92400e" }}>
+            <p className="mt-3 rounded-lg px-4 py-2 text-sm" style={{ background: "var(--warning-tint)", color: "var(--warning-strong)" }}>
               Some columns couldn&apos;t be matched confidently. A reviewer will check this file before it&apos;s finalized.
             </p>
           )}

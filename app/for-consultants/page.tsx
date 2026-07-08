@@ -60,27 +60,6 @@ export default function ForConsultants() {
           paddingBottom: "0",
         }}
       >
-        <div className="pointer-events-none absolute inset-0" aria-hidden>
-          <div
-            className="absolute left-1/2 top-0 -translate-x-1/2"
-            style={{
-              width: 900,
-              height: 600,
-              borderRadius: "50%",
-              background: "radial-gradient(ellipse, rgba(34,197,94,0.14) 0%, transparent 65%)",
-            }}
-          />
-          <div
-            className="absolute right-16 top-1/4"
-            style={{
-              width: 340,
-              height: 340,
-              borderRadius: "50%",
-              background: "radial-gradient(circle, rgba(34,197,94,0.07) 0%, transparent 65%)",
-            }}
-          />
-        </div>
-
         <div className="relative z-10 w-full max-w-5xl">
           <div
             className="mb-8 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-semibold"

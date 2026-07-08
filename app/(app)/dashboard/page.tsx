@@ -76,8 +76,8 @@ export default async function Dashboard() {
       <div
         className="flex items-center justify-between rounded-2xl px-5 py-4"
         style={{
-          background: pStatus === "locked" ? "var(--primary-tint)" : pStatus === "in_progress" ? "#fef9c3" : "var(--card)",
-          border: `1px solid ${pStatus === "locked" ? "var(--primary)" : pStatus === "in_progress" ? "#fde68a" : "var(--divider)"}`,
+          background: pStatus === "locked" ? "var(--primary-tint)" : pStatus === "in_progress" ? "var(--warning-tint)" : "var(--card)",
+          border: `1px solid ${pStatus === "locked" ? "var(--primary)" : pStatus === "in_progress" ? "var(--warning-border)" : "var(--divider)"}`,
         }}
       >
         <div>
@@ -93,11 +93,11 @@ export default async function Dashboard() {
 
       {/* Open data requests */}
       {openRequests.length > 0 && (
-        <div className="rounded-2xl" style={{ background: "#fef2f2", border: "1px solid #fecaca" }}>
+        <div className="rounded-2xl" style={{ background: "var(--danger-tint)", border: "1px solid var(--danger-border)" }}>
           <div className="px-5 pt-4 pb-2">
-            <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "#dc2626" }}>Action needed</p>
+            <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "var(--danger)" }}>Action needed</p>
           </div>
-          <div className="divide-y" style={{ borderColor: "#fecaca" }}>
+          <div className="divide-y" style={{ borderColor: "var(--danger-border)" }}>
             {openRequests.map((req) => (
               <div key={req.id} className="flex items-center justify-between px-5 py-3">
                 <p className="text-sm" style={{ color: "var(--text)" }}>{req.description}</p>
@@ -132,18 +132,18 @@ export default async function Dashboard() {
             <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>Data quality</p>
             <p className="text-xs" style={{ color: "var(--text-muted)" }}>
               {pct(qActual)}% actual · {pct(qEstimated)}% estimated
-              {qUnmapped > 0 && <span style={{ color: "#dc2626", fontWeight: 600 }}> · {pct(qUnmapped)}% unmapped ({qUnmapped} row{qUnmapped !== 1 ? "s" : ""})</span>}
+              {qUnmapped > 0 && <span style={{ color: "var(--danger)", fontWeight: 600 }}> · {pct(qUnmapped)}% unmapped ({qUnmapped} row{qUnmapped !== 1 ? "s" : ""})</span>}
             </p>
           </div>
           <div className="mt-3 flex h-2 w-full overflow-hidden rounded-full" style={{ background: "var(--divider)" }}>
             <div style={{ width: `${pct(qActual)}%`, background: "var(--primary)" }} />
-            <div style={{ width: `${pct(qEstimated)}%`, background: "#d97706" }} />
-            <div style={{ width: `${pct(qUnmapped)}%`, background: "#dc2626" }} />
+            <div style={{ width: `${pct(qEstimated)}%`, background: "var(--warning)" }} />
+            <div style={{ width: `${pct(qUnmapped)}%`, background: "var(--danger)" }} />
           </div>
           {qUnmapped > 0 && (
             <p className="mt-2 text-xs" style={{ color: "var(--text-muted)" }}>
               Unmapped rows hold 0 emissions until categorized —{" "}
-              <Link href="/workpaper" className="underline" style={{ color: "#dc2626" }}>review them in the workpaper</Link>.
+              <Link href="/workpaper" className="underline" style={{ color: "var(--danger)" }}>review them in the workpaper</Link>.
             </p>
           )}
         </div>

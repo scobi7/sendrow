@@ -3,6 +3,18 @@ Generated from PLANS.md (approved). Updated after each task completes.
 
 ---
 
+## Plan V — Visual Identity Refresh (2026-07-08)
+> Approved 2026-07-08, building on `sendrow-v2`. Baseline: 154/154 tests.
+
+- [x] **V1** — Fonts: Fraunces (display serif) + Instrument Sans (body) + IBM Plex Mono (data) in `app/layout.tsx`; tailwind config
+- [x] **V2** — Color tokens: paper/ink/forest retheme of `:root` in `globals.css`; new `--accent` + `--ink-band`
+- [x] **V3** — Hardcoded-hex sweep onto tokens (exception: STATUS_COLOR maps that use the hex+alpha-suffix trick keep literal hex)
+- [x] **V4** — Landing: remove gradient blobs, ink-band section, serif hero, one terracotta moment
+- [x] **V5** — App surfaces: figures in mono/tabular; print styles unregressed
+- [x] **V6** — Verify: tests + tsc + build; hydrate success/plan-v.md
+
+---
+
 ## Plan J — Practice Platform Release (2026-07-08)
 > Approved 2026-07-08, building on branch `sendrow-v2`. Baseline: 136/136 tests.
 

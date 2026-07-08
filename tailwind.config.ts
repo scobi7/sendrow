@@ -43,9 +43,10 @@ const config: Config = {
         "canopy-sm": "var(--radius-sm)",
       },
       fontFamily: {
-        display: ["var(--font-display)", "sans-serif"],
-        body: ["var(--font-display)", "sans-serif"],
+        display: ["var(--font-display)", "serif"],
+        body: ["var(--font-body)", "sans-serif"],
         data: ["var(--font-data)", "monospace"],
+        mono: ["var(--font-data)", "monospace"],
       },
       boxShadow: {
         card: "var(--shadow-card)",

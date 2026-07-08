@@ -51,7 +51,7 @@ export function SessionActions({ sessionId, companyId }: { sessionId: string; co
         className="btn btn-secondary text-xs px-3 py-1.5"
         disabled={isPending}
         onClick={() => startTransition(() => rejectSession(sessionId, companyId))}
-        style={{ color: "var(--danger, #dc2626)" }}
+        style={{ color: "var(--danger, var(--danger))" }}
       >
         Reject
       </button>

@@ -3,31 +3,38 @@
 @tailwind utilities;
 
 :root {
-  /* ── Sendrow palette ── */
-  --bg:           #F5FBF6;   /* page background — near-white, barely-there green */
-  --surface:      #EBF5ED;   /* nav, sidebar, alternate section backgrounds */
-  --card:         #DFF0E2;   /* card / panel fill */
-  --text:         #0C1F12;   /* primary text — deep forest */
-  --text-muted:   #5A7B62;   /* secondary text — readable sage */
-  --primary:      #1A5C30;   /* buttons, links, highlights */
-  --primary-tint: #EBF5ED;   /* light accent fill (inline banners, tags) */
-  --track-bg:     #C8E6CC;   /* progress bars, chart track backgrounds */
-  --scope1:       #22C55E;
-  --scope2:       #16A34A;
-  --scope3:       #15532D;
-  --divider:      #C4DFCA;   /* borders and table rules */
-  --status-green: #22C55E;
-  --warning:      #B8863A;
-  --warning-tint: #FBF3E5;
-  --danger:       #B8554A;
-  --danger-tint:  #FAECEA;
-  --radius-lg:    20px;
-  --radius-sm:    12px;
-  --shadow-card:  0 2px 8px rgba(15,50,28,0.07), 0 1px 2px rgba(15,50,28,0.04);
+  /* ── "The Ledger" palette (docs/design-direction.md) — paper, ink, forest, one terracotta ── */
+  --bg:             #FAF8F2;   /* warm paper — ledger stock, not screen-green */
+  --surface:        #F2EFE7;   /* nav, sidebar, alternate section backgrounds */
+  --card:           #FFFFFF;   /* cards are white paper with hairline borders */
+  --text:           #161D18;   /* ink with a forest undertone */
+  --text-muted:     #5F6B62;   /* desaturated — no green cast */
+  --primary:        #1D5A36;   /* forest — CTAs and links; an accent you earn, not wallpaper */
+  --primary-tint:   #EAF2EC;
+  --accent:         #C96F4A;   /* terracotta — one warm moment per screen, never a CTA */
+  --accent-tint:    #F8EDE6;
+  --ink-band:       #122619;   /* deep forest-ink — footer + one band per page */
+  --ink-band-text:  #E9EFE9;
+  --track-bg:       #E2DFD3;   /* progress/chart tracks in paper tones */
+  --scope1:         #2E7D4F;
+  --scope2:         #1D5A36;
+  --scope3:         #7A9B85;
+  --divider:        #E4DFD2;   /* paper-toned hairlines */
+  --status-green:   #2E7D4F;
+  --warning:        #A87B2F;
+  --warning-strong: #7C5A1E;
+  --warning-tint:   #F8F1E2;
+  --warning-border: #E7D9B7;
+  --danger:         #B8554A;
+  --danger-tint:    #F9EDEB;
+  --danger-border:  #ECCEC9;
+  --neutral-muted:  #8A8578;   /* rejected/archived chips */
+  --radius-lg:      16px;
+  --radius-sm:      10px;
+  --shadow-card:  0 1px 3px rgba(22,29,24,0.06), 0 1px 2px rgba(22,29,24,0.04);
 
-  /* ── Fonts — populated by next/font at runtime ── */
-  /* --font-display and --font-data are injected by layout.tsx via next/font variables */
-  /* --font-body aliases display so both use Manrope */
+  /* ── Fonts — injected by layout.tsx via next/font ── */
+  /* --font-display: Fraunces (serif, headlines) · --font-body: Instrument Sans · --font-data: IBM Plex Mono */
 }
 
 html {
@@ -37,7 +44,7 @@ html {
 body {
   background-color: var(--bg);
   color: var(--text);
-  font-family: var(--font-display), sans-serif;
+  font-family: var(--font-body), sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -73,7 +80,7 @@ section[id] {
   color: var(--text);
   padding: 0.5rem 0.75rem;
   font-size: 0.875rem;
-  font-family: var(--font-display), sans-serif;
+  font-family: var(--font-body), sans-serif;
   box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.04);
   transition: border-color 0.15s, box-shadow 0.15s;
 }
@@ -91,7 +98,7 @@ section[id] {
   padding: 0.5rem 1rem;
   font-size: 0.875rem;
   font-weight: 600;
-  font-family: var(--font-display), sans-serif;
+  font-family: var(--font-body), sans-serif;
   border-radius: var(--radius-sm);
   transition: opacity 0.15s, background-color 0.15s, transform 0.15s;
   cursor: pointer;
@@ -128,7 +135,9 @@ section[id] {
 .card {
   padding: 1.5rem;
   background: var(--card);
+  border: 1px solid var(--divider);
   border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
 }
 
 .label {
@@ -137,5 +146,10 @@ section[id] {
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--text);
-  font-family: var(--font-display), sans-serif;
+  font-family: var(--font-body), sans-serif;
+}
+
+.font-data,
+[class~="font-data"] {
+  font-variant-numeric: tabular-nums;
 }
