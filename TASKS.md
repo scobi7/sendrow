@@ -56,8 +56,8 @@ Generated from PLANS.md (approved). Updated after each task completes.
 - [x] **H11** — Redesign `app/(app)/dashboard/page.tsx`: pipeline banner, open requests, recent sessions, report CTA
 
 ### Phase 2 — Consultant review queue
-- [x] **H12** — `app/(app)/consultant/clients/page.tsx` — client list with pending badge counts
-- [x] **H13** — `app/(app)/consultant/clients/[companyId]/page.tsx` — pending sessions, approve/flag/reject actions
+- [x] **H12** — Consultant review queue client list (moved to `app/consultant/review/page.tsx` post-I16 — route collision fix)
+- [x] **H13** — Review detail: pending sessions, approve/flag/reject (moved to `app/consultant/review/[companyId]/page.tsx` post-I16)
 - [x] **H14** — Server actions: `approveSession`, `flagSession`, `rejectSession` (in `lib/consultant-actions.ts`)
 
 ### Phase 3 — Data requests + Phase 5 Notifications

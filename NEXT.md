@@ -18,6 +18,7 @@
 - Manual QA of full company flow (signup → wizard incl. boundary → screening → intake → upload with a messy file → workpaper → PDF) still needed before first paying customer.
 
 ## ⚠ Flags found during the build (need a decision or follow-up)
+0. **Fixed post-push: Vercel build was broken by Plan H** — `app/(app)/consultant/` collided with `app/consultant/` (two pages at `/consultant`), and the `(app)` layout redirects consultants away, so the Plan H review pages were unreachable. Review queue now lives at `/consultant/review` (+ nav link in consultant layout). Commit `6d68c3f`.
 1. **Factor values are still "representative"** — the 22 new eGRID and 14 new USEEIO factors follow the existing `SEED_FACTORS` convention (demo values approximating published data). Before defending "audit-grade" to a real client, load the actual EPA eGRID 2024 + USEEIO v2 releases. Candidate for Plan J or a data-only task.
 2. **H9 was checked off but never landed** — `/intake` still lists mapping profiles, not intake sessions with status badges (last touched in Plan F). Small gap; sessions do show on the dashboard.
 3. **Ingestion electricity default changed** — spreadsheet kWh rows previously picked CAMX (California) implicitly (first category match); now explicitly pinned to national average `egrid.USAVG.2024`. Forward-only; documented in the calc log of new imports.
