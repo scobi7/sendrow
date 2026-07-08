@@ -66,7 +66,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ c
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <div className="flex items-center gap-3">
-        <Link href="/consultant/clients" className="text-sm" style={{ color: "var(--text-muted)" }}>← Clients</Link>
+        <Link href="/consultant/review" className="text-sm" style={{ color: "var(--text-muted)" }}>← Review queue</Link>
         <span style={{ color: "var(--divider)" }}>/</span>
         <span className="text-sm font-medium" style={{ color: "var(--text)" }}>{company.name}</span>
       </div>

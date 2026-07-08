@@ -169,7 +169,7 @@ export async function approveSession(sessionId: string, companyId: string) {
       set: { status: "in_progress", updatedAt: new Date().toISOString() },
       setWhere: eq(pipelineStatus.status, "not_started"),
     });
-  revalidatePath(`/consultant/clients/${companyId}`);
+  revalidatePath(`/consultant/review/${companyId}`);
 }
 
 export async function flagSession(sessionId: string, companyId: string, notes: string) {
@@ -179,14 +179,14 @@ export async function flagSession(sessionId: string, companyId: string, notes: s
     .update(intakeSessions)
     .set({ status: "needs_info", reviewerNotes: notes, reviewedAt: new Date().toISOString() })
     .where(eq(intakeSessions.id, sessionId));
-  revalidatePath(`/consultant/clients/${companyId}`);
+  revalidatePath(`/consultant/review/${companyId}`);
 }
 
 export async function rejectSession(sessionId: string, companyId: string) {
   const user = await currentUser();
   if (!user || user.role !== "consultant") return;
   await db.update(intakeSessions).set({ status: "rejected", reviewedAt: new Date().toISOString() }).where(eq(intakeSessions.id, sessionId));
-  revalidatePath(`/consultant/clients/${companyId}`);
+  revalidatePath(`/consultant/review/${companyId}`);
 }
 
 export async function createDataRequest(companyId: string, consultantId: string, description: string, dueDate: string | null) {
@@ -206,7 +206,7 @@ export async function createDataRequest(companyId: string, consultantId: string,
   // Notify the client — fire-and-forget so email failures never block the request
   notifyClientOfDataRequest(companyId, description.trim(), dueDate || null).catch(() => {});
 
-  revalidatePath(`/consultant/clients/${companyId}`);
+  revalidatePath(`/consultant/review/${companyId}`);
 }
 
 async function notifyClientOfDataRequest(companyId: string, description: string, dueDate: string | null) {
@@ -230,7 +230,7 @@ export async function lockPipeline(companyId: string, notes: string) {
       target: pipelineStatus.companyId,
       set: { status: "locked", lockedAt: new Date().toISOString(), lockedBy: user.id, notes: notes || null, updatedAt: new Date().toISOString() },
     });
-  revalidatePath(`/consultant/clients/${companyId}`);
+  revalidatePath(`/consultant/review/${companyId}`);
 }
 
 // ── Notify consultant when client accepts invite ───────────────────────────

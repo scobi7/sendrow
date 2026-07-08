@@ -126,7 +126,7 @@ export async function sendUploadNeedsReviewEmail(
     `<p>Hi ${firstName},</p>
 <p><strong>${companyName}</strong> uploaded <strong>${filename}</strong> and it was routed to your review queue.</p>
 ${unmappedCount > 0 ? `<p><strong>${unmappedCount}</strong> row${unmappedCount === 1 ? "" : "s"} could not be mapped to an emission factor and ${unmappedCount === 1 ? "is" : "are"} flagged for categorization.</p>` : ""}
-<p><a href="${APP_URL}/consultant/clients">Review the upload →</a></p>
+<p><a href="${APP_URL}/consultant/review">Review the upload →</a></p>
 <p>— The Sendrow team</p>`
   );
 }

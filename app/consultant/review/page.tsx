@@ -54,7 +54,7 @@ export default async function ConsultantClientsPage() {
             return (
               <Link
                 key={company.id}
-                href={`/consultant/clients/${company.id}`}
+                href={`/consultant/review/${company.id}`}
                 className="flex items-center justify-between px-5 py-4 transition-colors hover:opacity-80"
                 style={{ background: "var(--card)" }}
               >
