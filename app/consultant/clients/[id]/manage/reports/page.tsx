@@ -44,7 +44,6 @@ export default async function ManageReports({
     ["Scope 1 complete", s.scope1 === "complete", "All subsections answered or N/A"],
     ["Scope 2 complete", s.scope2 === "complete", "Utility data reviewed"],
     ["Scope 3 complete (recommended)", s.scope3 === "complete", "Required for CDP/EcoVadis completeness"],
-    ["Social & Governance (recommended)", s.social === "complete" && s.governance === "complete", "Needed for full questionnaire coverage"],
   ];
 
   return (

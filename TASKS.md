@@ -267,7 +267,11 @@ Generated from PLANS.md (approved). Updated after each task completes.
 - [x] **N1.6** — Delete dead v1 email paths (`notifyConsultantOfAcceptedInvite`, `sendInviteAcceptedEmail`, `sendSectionCompleteEmail`); favicon
 - [x] **N1.7** — Tests + tsc + build clean
 
-### N2 — One consultant workspace (queued)
+### N2 — One consultant workspace
+- [x] **N2.1** — `/consultant/clients/[id]` is THE workspace: pipeline, vendor confirm, review sessions, data requests (+contact), uploads, emissions sidebar
+- [x] **N2.2** — `/consultant/review/[companyId]` → redirect (old email links keep working); queue rows link to the client workspace
+- [x] **N2.3** — social/governance manage pages retired (v1 keeps them); manage tabs trimmed
+- [x] **N2.4** — `/consultant` home = practice board: pipeline stage, open requests + items in, to-review, unmapped, CO2e, last activity
 ### N3 — Evidence locker (queued)
 ### N4 — Reporting periods & YoY (queued)
 ### N5 — White-label branding + shareable results (queued)

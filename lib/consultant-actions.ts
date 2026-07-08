@@ -106,33 +106,7 @@ export async function consultantSaveScope3Decision(companyId: string, category: 
   await persist(company);
 }
 
-export async function consultantSavePolicy(companyId: string, policy: string, value: boolean) {
-  const { user, company } = await asConsultantFor(companyId);
-  const map = company.inputs.gov_policies ?? {};
-  await logChange({ user, companyId: company.id, section: "governance", field: `policy:${policy}`, prev: map[policy], next: value });
-  map[policy] = value;
-  company.inputs.gov_policies = map;
-  await persist(company);
-}
 
-export async function consultantSaveLeadership(companyId: string, formData: FormData) {
-  const { user, company } = await asConsultantFor(companyId);
-  const levels = ["C-Suite", "VP/Director", "Manager", "Individual Contributor"];
-  const map: Record<string, { womenPct?: number | null; minorityPct?: number | null }> = {};
-  for (const lvl of levels) {
-    const w = formData.get(`${lvl}_women`);
-    const m = formData.get(`${lvl}_minority`);
-    if (w !== null || m !== null) {
-      map[lvl] = {
-        womenPct: w === "" || w === null ? null : Number(w),
-        minorityPct: m === "" || m === null ? null : Number(m),
-      };
-    }
-  }
-  await logChange({ user, companyId: company.id, section: "governance", field: "leadership_diversity", prev: company.inputs.gov_leadership, next: map });
-  company.inputs.gov_leadership = map;
-  await persist(company);
-}
 
 export async function consultantMarkQBReviewed(companyId: string) {
   const { user, company } = await asConsultantFor(companyId);
@@ -176,7 +150,7 @@ export async function approveSession(sessionId: string, companyId: string) {
       set: { status: "in_progress", updatedAt: new Date().toISOString() },
       setWhere: eq(pipelineStatus.status, "not_started"),
     });
-  revalidatePath(`/consultant/review/${companyId}`);
+  revalidatePath(`/consultant/clients/${companyId}`);
 }
 
 export async function flagSession(sessionId: string, companyId: string, notes: string) {
@@ -186,14 +160,14 @@ export async function flagSession(sessionId: string, companyId: string, notes: s
     .update(intakeSessions)
     .set({ status: "needs_info", reviewerNotes: notes, reviewedAt: new Date().toISOString() })
     .where(eq(intakeSessions.id, sessionId));
-  revalidatePath(`/consultant/review/${companyId}`);
+  revalidatePath(`/consultant/clients/${companyId}`);
 }
 
 export async function rejectSession(sessionId: string, companyId: string) {
   const user = await currentUser();
   if (!user || user.role !== "consultant") return;
   await db.update(intakeSessions).set({ status: "rejected", reviewedAt: new Date().toISOString() }).where(eq(intakeSessions.id, sessionId));
-  revalidatePath(`/consultant/review/${companyId}`);
+  revalidatePath(`/consultant/clients/${companyId}`);
 }
 
 export async function createDataRequest(
@@ -225,7 +199,7 @@ export async function createDataRequest(
   // Notify the client — fire-and-forget so email failures never block the request
   notifyClientOfDataRequest(companyId, description.trim(), dueDate || null, token).catch(() => {});
 
-  revalidatePath(`/consultant/review/${companyId}`);
+  revalidatePath(`/consultant/clients/${companyId}`);
 }
 
 async function notifyClientOfDataRequest(companyId: string, description: string, dueDate: string | null, token: string) {
@@ -248,7 +222,7 @@ export async function resendPortalEmail(requestId: string, companyId: string) {
   const req = await db.query.dataRequests.findFirst({ where: eq(dataRequests.id, requestId) });
   if (!req?.token || req.status !== "open" || req.companyId !== companyId) return;
   await notifyClientOfDataRequest(companyId, req.description, req.dueDate, req.token);
-  revalidatePath(`/consultant/review/${companyId}`);
+  revalidatePath(`/consultant/clients/${companyId}`);
 }
 
 /** Confirms a vendor→category mapping globally (contracts/ §12: human-confirmed
@@ -329,7 +303,7 @@ export async function confirmVendorMapping(companyId: string, vendorRaw: string,
       .where(eq(emissionLineItems.id, item.id));
   }
 
-  revalidatePath(`/consultant/review/${companyId}`);
+  revalidatePath(`/consultant/clients/${companyId}`);
 }
 
 export async function lockPipeline(companyId: string, notes: string) {
@@ -342,7 +316,7 @@ export async function lockPipeline(companyId: string, notes: string) {
       target: pipelineStatus.companyId,
       set: { status: "locked", lockedAt: new Date().toISOString(), lockedBy: user.id, notes: notes || null, updatedAt: new Date().toISOString() },
     });
-  revalidatePath(`/consultant/review/${companyId}`);
+  revalidatePath(`/consultant/clients/${companyId}`);
 }
 
 // ── Notify consultant when client accepts invite ───────────────────────────

@@ -12,8 +12,6 @@ const NAV = [
   { label: "Scope 1", href: "scope1" },
   { label: "Scope 2", href: "scope2" },
   { label: "Scope 3", href: "scope3" },
-  { label: "Social", href: "social" },
-  { label: "Governance", href: "governance" },
   { label: "Reports", href: "reports" },
 ];
 

@@ -220,7 +220,7 @@ export async function updateClientContact(companyId: string, formData: FormData)
     .where(eq(companies.id, companyId));
 
   revalidatePath(`/consultant/clients/${companyId}`);
-  revalidatePath(`/consultant/review/${companyId}`);
+  revalidatePath(`/consultant/clients/${companyId}`);
 }
 
 export async function archiveClient(companyId: string) {
