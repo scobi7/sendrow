@@ -10,6 +10,7 @@
 | 3 | `STRIPE_WEBHOOK_SECRET` in Vercel | Vercel env vars |
 | 4 | Re-enable payment gate before charging customers | `middleware.ts` |
 | 5 | Update Calendly links | `app/demo/page.tsx`, `app/pricing/agency/page.tsx` |
+| 6 | Clerk **dev** keys for Preview deploys — prod keys only work on sendrow.app, so /login is blank on *.vercel.app previews | Vercel env vars: scope `pk_live_`/`sk_live_` to Production only; add `pk_test_`/`sk_test_` (Clerk dev instance) scoped to Preview |
 
 ## 🟡 Current state
 - **Plan I (Integrity Release) built 2026-07-07** — all 16 tasks complete, 136/136 tests, tsc clean, pushed to `github-branch-tracking`. See `success/plan-i.md`.
