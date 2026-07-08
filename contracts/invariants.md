@@ -24,6 +24,12 @@ These invariants must hold at all times. Tests and code must enforce them.
 
 8. **Invite tokens expire after 7 days.** `acceptInvite` must reject tokens where `expiresAt < now` or `usedAt` is set.
 
+## Practice Platform (added 2026-07-08, direction reset)
+
+11. **White-label surfaces never show Sendrow's name.** Any client-facing surface rendered on behalf of a consultant (portal, emails, PDFs) carries the consultant's brand; Sendrow never contacts the end client directly.
+
+12. **Vendor mappings require human confirmation before becoming global.** Auto-applied vendor mappings record the mapping id/version used in the calc log; mapping changes apply forward only, like factor vintages.
+
 ## Data Integrity
 
 9. **Calcs are always replaced on persist.** `persistCompany` deletes and re-inserts all `gt_calcs` rows. Stale calc rows must never accumulate.

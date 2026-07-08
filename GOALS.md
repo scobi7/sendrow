@@ -1,58 +1,49 @@
 # GOALS.md — Sendrow Project Goals
+> Direction reset 2026-07-08 (supersedes the company-first positioning). Source: "Sendrow Model and Expansion Plan" doc + industry research; see PLANS.md and ROADMAP.md.
 
 ## What is Sendrow?
-Sendrow automates GHG emissions **data ingestion, conversion, and audit trail** for CA mid-market companies (50–500 employees) and the ESG/sustainability consultants who serve them. The output is trustworthy, traceable Scope 1–3 data exportable to any reporting destination (CDP, EcoVadis, customer supplier portals, PDF, CSV).
+**The practice platform for climate consultants.** Sendrow turns a client's messy data into one audited emissions inventory, then answers every buyer and regulator format from it — under the consultant's brand. What Clio is to law firms, Sendrow is to climate consulting practices.
 
-## The Core Problem
-The pain is not generating a report — it's that client source data is messy, inconsistent, and hard to trace. Sendrow makes that data trustworthy and replayable. The report is the last, easiest step.
+We are NOT "another carbon accounting platform." That category is crowded, venture-funded, and enterprise-aimed (Persefoni, Watershed, Greenly). A solo consultant is a salesperson, analyst, PM, bookkeeper, and delivery staff at once; Sendrow is their back office.
 
-## Business Model — Hybrid (land as service, scale as software)
-- **Year 1 per client:** service-heavy onboarding — mapping their messy data sources into the standard schema, building their mapping profiles. Priced accordingly.
-- **Year 2+:** mappings already exist, pipeline locked, software mostly runs itself. Cost to serve drops; margin improves per account over time.
-- The service layer is how software coverage grows: every human-assisted onboarding produces a reusable template.
+## Who pays us
+- **Consultants (only paying customer):** solo climate/ESG consultants and small firms serving CA mid-size suppliers. ~30 named targets to start; Kerri is Founding Partner seat one.
+- **Companies (referral revenue, not customers):** inbound companies are routed to partner consultants for a referral fee ($500–1.5k or % of first engagement). The direct-to-company sales motion is dead; the self-serve code stays dormant, not deleted.
 
-## Pricing (updated 2026-07-07 — supersedes one-time $400)
-- **Companies:** annual. Year 1 ≈ $1,200–1,500 (onboarding + first inventory), renewal ≈ $500–800/yr (data refresh, updated factor vintages, data quality scorecard). Validate exact numbers in discovery; the annual structure is committed.
-- **Consultants:** $300/mo — requires multi-client portfolio management to be viable (Plan K).
-- Existing one-time customers grandfathered as founding accounts.
+## The Timing Thesis (why now — verified July 2026)
+- SB 253's first deadline moved to Nov 10, 2026; first year is leniency (report what you already collected, no assurance). **Don't sell November panic — sophisticated consultants know it's overstated and it burns credibility.**
+- The real wave is **2027**: Scope 3 reporting starts, limited assurance begins, and $1B+ filers must chase supplier data. Those surveys cascade onto exactly our ICP. Spreadsheets die at limited assurance.
+- Anchor demand in what survives litigation: buyer supply-chain programs (CDP Supply Chain, EcoVadis, retailer surveys) and EPR/SB 54 — not SB 253/261 themselves (SB 261 enjoined; both under challenge).
 
-## Five Architecture Layers
-1. **Client intake** — branches by what data the client actually has (clean export / semi-structured spreadsheet / no tracking). Not a single fixed form. Boundary approach + Scope 3 materiality screening happen here, BEFORE first upload.
-2. **Standardized data model** — every data point normalized to Scope + category, tagged with source and confidence.
-3. **Factor lookup engine** — versioned factor tables (activity-based + spend-based), each factor tagged with vintage year so historical results never silently change.
-4. **Conversion & audit layer** — does unit math and writes a replayable calculation log per line item.
-5. **Export adapters** — declarative mapping configs per destination (PDF, CSV, CDP, buyer-specific portals), built once and reused across all clients.
+## The Moat — Vendor-Mapping Memory
+Confirm a vendor once ("PG&E = Scope 2 electricity, this factor"), mapped forever, **shared across every client**. Businesses share vendors (utilities, carriers, suppliers), so the mapping database compounds with every client onboarded. It can only be earned through real client volume — Persefoni cannot buy or code its way to it. Every human-assisted engagement is a permanent deposit into this asset.
 
-## The Audit Trail — Definition of Done
-Structured, queryable data first; prose generated from it on demand. Every stored value carries:
-- **Provenance** — source reference (invoice #, bill, survey answer)
-- **Factor + vintage** — which factor, which year's release
-- **Confidence tag** — actual / estimated / % actual if partial
-- **Calculation log** — timestamped inputs → formula → output, replayable
+## Product Doctrine
+1. **Three hardened intake paths, not universal ingestion:** structured CSV template, accounting-system spend export, document upload with human-confirmed extraction. Guided data entry orchestrated by the portal replaces "parse anything" engineering.
+2. **Data-request portal (the consultant's worst week, killed):** magic link (no client login), guided checklist per data type, uploads + simple structured entry, missing-item tracking, automatic reminders, consultant status board.
+3. **Questionnaire-response copilot (possibly the actual product):** one audited inventory in, any buyer/regulator format out. Formats are built from real client requests only — built once, sold forever, each addition announced as marketing.
+4. **Evidence locker / assurance-ready by construction:** every figure clicks back to its source document and emission-factor vintage; one-click assurance binder for the 2027 season. This is the Plan I audit-trail engineering — it carries over untouched.
+5. **White-label by default:** the consultant's client never sees Sendrow's name.
 
-Hard rule: **no data is ever silently dropped or silently reinterpreted.** Unmapped spend, unrecognized categories, and failed lookups are flagged, not ignored.
+## Revenue Ladder (in order)
+1. **White-label fulfillment (now):** footprint sprint (Scope 1–2 + spend-based Scope 3 screen, 2-week turnaround) — consultant bills $8–15k, Sendrow takes $2.5–4k fixed. Survey response package: $1–2.5k per questionnaire. Rush tier at 1.5–2x. The service is the R&D lab that pays us; every engagement produces an SOP → software spec.
+2. **Referral routing:** inbound companies → partner consultants, tracked and counted as a formal partnership benefit.
+3. **Software subscription:** only once the portal + copilot are real. Price against consultant project value (per-deliverable), not seats.
 
-## Ingestion Tiers
-- **Tier 1 (clean/structured):** known template, auto-mapped, no human step.
-- **Tier 2 (semi-structured):** client's own spreadsheet — fuzzy-matched column mapping, client confirms once, saved as a versioned mapping profile.
-- **Tier 3 (messy/unstructured):** confidence score below threshold → routed to human-assisted review queue (never shown to client as a bad guess). The resulting mapping becomes a reusable Tier 1/2 template.
-- Mapping profiles are versioned by effective date — historical data stays linked to the version that produced it.
+**What people pay generously for (ranked):** making money > removing risk/fear > status > speed under deadline > saving time. Consultants pay for referred leads, white-label polish, monitoring retainers they can resell, and crunch capacity. Nobody pays for dashboards or "insights."
 
-## Annual Deliverables (renewal drivers)
-- Updated inventory with current factor vintages
-- **Data quality scorecard** — % actual vs. estimated per category, what was flagged, and 2–3 concrete asks to improve next year's data (e.g., "add a gallons column to your fuel card export"). This is the artifact that justifies renewal and improves our own margin on the account.
+## Go-to-Market
+- **Tiny and deep:** one geography (California), one workflow (data request → inventory → any format out).
+- **Soft-verticalize into food & beverage / agriculture** — CA-dense, buyer-pressured, shared vendors compound the mapping moat fastest. Bias the outreach list; no rebrand.
+- **Note-taker of the niche:** summarize every CARB docket move within 24 hours; comment letters; format announcements as content cadence; free lead-magnet tools (in-scope checker, deadline calendar, survey decoder).
+- **Trust basics before asked:** DPA template, one-page security overview, export/delete button. Tool-not-advice ToS; consultant owns professional judgment.
 
-## User Audiences
-- **Company users (primary):** mid-market SMBs asked to report emissions to a customer, regulator, or framework.
-- **Consultant users:** ESG/sustainability consultants managing 5–50+ client companies (portfolio mode ships in Plan K).
+## Explicitly Out of Scope
+- Universal/arbitrary-format ingestion as a product promise
+- Direct-to-company self-serve sales (code dormant, motion dead)
+- Enterprise SSO and procurement features
+- Speculative output formats no real client has requested
+- SOC 2 (transparency substitutes at this stage)
 
 ## Technical Stack
-- Next.js 15 App Router, multi-tenant, shared infrastructure — per-client differences live in config (mapping profiles, intake answers), never forked code
-- Clerk v6 (auth + plan metadata), NeonDB + Drizzle ORM, Stripe (annual company plans + consultant subscription), Resend
-
-## Explicitly Out of Scope (for now)
-- Custom per-client apps or forked dashboards
-- Fully automated Tier 3 ingestion (human-assisted is fine)
-- Export adapters for destinations no real client has requested
-- Scope 4 (avoided emissions)
-- Multi-year trend reporting (backlog — see ROADMAP.md)
+Next.js 15 App Router, multi-tenant, Clerk v6, NeonDB + Drizzle, Stripe, Resend, Vercel Blob (evidence storage). Per-client differences live in config (mapping profiles, intake answers, branding config) — never forked code.

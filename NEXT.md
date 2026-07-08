@@ -1,38 +1,46 @@
 # NEXT.md
 > End-of-session summary. For build priorities see ROADMAP.md; for the active plan see PLANS.md.
-> Last updated: 2026-07-07 (Plan I build session)
+> Last updated: 2026-07-08 (direction reset session)
+
+## 🧭 Direction reset (2026-07-08)
+Sendrow is now **the practice platform for climate consultants** — consultants are the only paying customer; inbound companies become referral revenue. White-label fulfillment funds the software build; the 2027 Scope 3 / limited-assurance wave is the timing thesis; vendor-mapping memory is the moat. Full rationale + industry research in GOALS.md; source doc: "Sendrow Model and Expansion Plan.docx".
 
 ## 🔴 P0 — Ops blockers (user actions, not build work)
 | # | What | Where |
 |---|------|-------|
 | 1 | Clerk production Google OAuth | Clerk dashboard → Social connections → Google |
-| 2 | Attorney-reviewed ToS & Privacy copy | `app/terms/page.tsx`, `app/privacy/page.tsx` |
+| 2 | Attorney-reviewed ToS (**tool-not-advice positioning**) & Privacy copy | `app/terms/page.tsx`, `app/privacy/page.tsx` |
 | 3 | `STRIPE_WEBHOOK_SECRET` in Vercel | Vercel env vars |
-| 4 | Re-enable payment gate before charging customers | `middleware.ts` |
+| 4 | Clerk **dev** keys for Preview deploys — prod keys only work on sendrow.app, so /login is blank on *.vercel.app previews | Vercel env vars: scope `pk_live_`/`sk_live_` to Production only; add `pk_test_`/`sk_test_` scoped to Preview |
 | 5 | Update Calendly links | `app/demo/page.tsx`, `app/pricing/agency/page.tsx` |
-| 6 | Clerk **dev** keys for Preview deploys — prod keys only work on sendrow.app, so /login is blank on *.vercel.app previews | Vercel env vars: scope `pk_live_`/`sk_live_` to Production only; add `pk_test_`/`sk_test_` (Clerk dev instance) scoped to Preview |
+| 6 | Fix prospectus "Live" integrations label — one caught exaggeration erases everything | prospectus / deck |
+
+## 🟠 Business decisions the strategy doc assigns to you & Masao (not build work)
+- Founding Partner terms → convert Kerri (free/near-free year for named case study + 3 intros)
+- Bootstrap tripwire date (doc suggests: first paid contract by Oct 15, or re-decide with real numbers)
+- Concierge cap: 3 engagements, then productize or raise price
+- CARB 15-day comment window: publish the explainer within 24h + submit a comment letter when it opens
 
 ## 🟡 Current state
-- **Plan I (Integrity Release) built 2026-07-07** — all 16 tasks complete, 136/136 tests, tsc clean, pushed to `github-branch-tracking`. See `success/plan-i.md`.
-- Migration `0003_eager_ikaris.sql` (line-item `status` column + Plan H tables) auto-applies on next deploy via the build script.
-- Emails only fire with `RESEND_API_KEY` set (already in Vercel per Plan C).
-- Manual QA of full company flow (signup → wizard incl. boundary → screening → intake → upload with a messy file → workpaper → PDF) still needed before first paying customer.
+- Plan I (Integrity Release) built + deployed to production 2026-07-07; 136/136 tests; review queue at `/consultant/review`.
+- **Plan J (Practice Platform Release) drafted in PLANS.md — awaiting approval:** magic-link data-request portal, vendor-mapping memory, referral routing, trust basics.
+- Manual QA of the full company flow in progress (Malachi).
+- Old-direction artifacts still live on the site: pricing page sells company plans, landing copy is company-facing — Plan J Phase 4 fixes this.
+- ~~Re-enable payment gate~~ — no longer applies; direct-to-company checkout is being retired (Plan J Phase 4), code stays dormant.
 
-## ⚠ Flags found during the build (need a decision or follow-up)
-0. **Fixed post-push: Vercel build was broken by Plan H** — `app/(app)/consultant/` collided with `app/consultant/` (two pages at `/consultant`), and the `(app)` layout redirects consultants away, so the Plan H review pages were unreachable. Review queue now lives at `/consultant/review` (+ nav link in consultant layout). Commit `6d68c3f`.
-1. **Factor values are still "representative"** — the 22 new eGRID and 14 new USEEIO factors follow the existing `SEED_FACTORS` convention (demo values approximating published data). Before defending "audit-grade" to a real client, load the actual EPA eGRID 2024 + USEEIO v2 releases. Candidate for Plan J or a data-only task.
-2. **H9 was checked off but never landed** — `/intake` still lists mapping profiles, not intake sessions with status badges (last touched in Plan F). Small gap; sessions do show on the dashboard.
-3. **Ingestion electricity default changed** — spreadsheet kWh rows previously picked CAMX (California) implicitly (first category match); now explicitly pinned to national average `egrid.USAVG.2024`. Forward-only; documented in the calc log of new imports.
+## ⚠ Carried-over flags from Plan I build
+1. **Factor values are still "representative"** — the 22 new eGRID and 14 new USEEIO factors approximate published data. Before the first fulfillment engagement's deliverable goes out, load the real EPA eGRID 2024 + USEEIO v2 values (data-only task, fits Plan J).
+2. **H9 never landed** — `/intake` still lists mapping profiles, not intake sessions. Superseded by the portal work in Plan J.
+3. **Ingestion electricity default** now pinned to national average `egrid.USAVG.2024` (was implicitly CAMX). Forward-only.
 
 ## 🟢 Next session
-1. Manual QA pass (above), verifying contracts/ invariants against live behavior
-2. Plan J (Revenue Release) — draft PLANS.md for approval: annual Stripe subscription, data quality scorecard, renewal-year flow
+1. Approve/amend Plan J → generate TASKS.md → build Phase 1 (magic-link portal)
+2. Get from Kerri: one real buyer questionnaire (unlocks the Plan K copilot) and her footprint-sprint data checklist (shapes the portal checklist templates)
 
 ## Completed (recent)
 | Item | Status |
 |------|--------|
-| Plan I — onboarding gates, full eGRID map, QB→USEEIO 9→29, silent drops killed, review-queue emails | ✅ 2026-07-07 |
+| Direction reset — doc analysis, industry research, GOALS/ROADMAP/PLANS rewrite | ✅ 2026-07-08 |
+| Plan I — onboarding gates, full eGRID map, QB→USEEIO 9→29, silent drops killed, review emails; `/consultant` route-collision fix | ✅ 2026-07-07 |
 | Plan H — sessions, scoring, auto-routing, review queue, data requests, pipeline lock | ✅ 2026-07-07 |
-| Plan G — reporting framework, Scope 3 screening page, data-type intake, fleet fuel $, PDF from line items | ✅ 2026-07-06 |
-| Plan F — ingestion pipeline: fuzzy match, mapping profiles, emission_line_items, factor engine, workpaper | ✅ 2026-07-06 |
-| Plans A–D — cleanup, first-customer readiness, domain/email, Stripe billing | ✅ 2026-06-26 |
+| Plans A–G — cleanup through full client pipeline | ✅ 2026-06-26 → 2026-07-06 |

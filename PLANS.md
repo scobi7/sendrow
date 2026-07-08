@@ -1,35 +1,49 @@
-# PLANS.md — Plan I: Integrity Release
-> STATUS: BUILT 2026-07-07 — see success/plan-i.md and TASKS.md (I1–I16)
-> Generated 2026-07-07.
+# PLANS.md — Plan J: Practice Platform Release
+> STATUS: DRAFT — PENDING HUMAN APPROVAL
+> Generated 2026-07-08 from the direction reset (see GOALS.md). On approval, generate TASKS.md.
+> Prior plan: Plan I (Integrity Release) — BUILT 2026-07-07, see success/plan-i.md.
 
 ## Objective
-Close the gap between what Sendrow claims (traceable, accurate, audit-grade data) and what the engine currently does. No new surfaces — hardening the existing pipeline.
+Make a white-label fulfillment engagement (footprint sprint) runnable end-to-end through software: consultant sends a data request → client fills a guided magic-link portal → data lands in the existing intake pipeline → every vendor confirmation feeds permanent cross-client mapping memory. Plus: turn the inbound company flow into consultant referral routing.
 
-## Phase 0 — Onboarding gates (carryover H21/H22)
-- Add boundary approach tile to setup wizard (equity share / financial control / operational control, with one-line explanations; store on `gt_companies.boundary_approach`)
-- Move Scope 3 materiality screening into the setup wizard flow; soft-gate `/intake` until screening exists (banner + redirect, not a hard block)
-- Acceptance: a new company cannot reach first upload without boundary + screening recorded
+## Phase 1 — Magic-link data-request portal (client side)
+The client receives a link, needs no account, and sees exactly what to provide.
+- Schema: extend `gt_data_requests` with `token` (unique), `expiresAt`, `checklist` (jsonb: array of items — data type, label, instructions, status), `remindersSentAt` (jsonb)
+- `app/portal/[token]/page.tsx` — public route (middleware bypass like `/terms`): validates token, shows checklist with per-item status, consultant branding placeholder
+- Per-item flows reusing existing machinery: document upload (file → existing `/api/intake/preview` + `import` pipeline, tagged with `dataRequestId`) and simple structured entry forms (per data type from `lib/ingestion/data-type-templates.ts` — e.g., monthly kWh, gallons, therms)
+- Token pattern: reuse the `inviteTokens` approach in `lib/actions.ts` (crypto token, expiry, single-purpose)
+- Acceptance: a client with only the link can complete a checklist item without login; uploads route through the existing scoring/review pipeline
 
-## Phase 1 — Factor engine depth
-- Complete eGRID state → subregion mapping in `lib/factors.ts` (`egridForState()`): all 50 states + DC mapped to correct subregions; multi-subregion states get documented default choice
-- Expand QB → USEEIO category mappings (target: cover the categories that appear in real client charts of accounts; prioritize manufacturing + professional services)
-- Every factor row carries vintage year; `applyFactor()` records vintage into the line item calc log
-- Acceptance: unit tests per state mapping; no factor application without a recorded vintage
+## Phase 2 — Reminders + consultant status board
+- Reminder emails via `lib/email.ts` + Vercel cron (`/api/cron/reminders`): open requests with incomplete items get a nudge at 3/7/14 days; consultant CC'd on the 14-day
+- Extend `/consultant/review/[companyId]`: data-request cards show per-item checklist status (received / missing / under review), last activity, next reminder date
+- Acceptance: smoke test proves reminder selection logic (who gets nudged when); board shows item-level status
 
-## Phase 2 — Kill silent drops (contracts/ invariant)
-- Uncategorized/unmapped spend creates a flagged `emission_line_items` row with status `unmapped` (zero emissions, visible in workpaper + review queue) instead of being skipped
-- Dashboard data quality bar counts unmapped rows against "% actual"
-- Acceptance: importing a file with unknown categories produces visible flagged rows, and a test proves nothing is dropped
+## Phase 3 — Vendor-mapping memory (the moat)
+- Schema: new `gt_vendor_mappings` — `id`, `vendorPattern` (normalized name), `scope`, `category`, `factorId`, `confidence`, `confirmedBy`, `confirmedAt`, `sourceCompanyId`, `timesApplied`
+- Ingest hook: before category resolution in `lib/ingestion/ingest.ts` and the QB path in `lib/calc.ts`, consult vendor mappings (exact → normalized match); matched rows carry `vendor_mapping_id` in the calc log
+- Review-queue write-back: when a consultant approves a session containing previously-unmapped vendors, they confirm vendor→category pairs (new step in `/consultant/review/[companyId]`); confirmations insert global mappings
+- Invariant (contracts/): mappings become global only after human confirmation; auto-applied mappings record which mapping version was used (forward-only, like factors)
+- Acceptance: a vendor confirmed for client A auto-maps for client B, with the mapping id in the audit trail; unconfirmed vendors still flag as `unmapped` (Plan I behavior preserved)
 
-## Phase 3 — Review-queue notifications (carryover H17)
-- Email client on new data request; email consultant on new upload needing review (`lib/email.ts`, existing Resend setup)
-- Acceptance: both emails fire in a smoke test with mocked send
+## Phase 4 — Referral routing (kill direct-to-company sales)
+- `/pricing` and landing CTAs: replace self-serve checkout path with "Get matched with a climate consultant" form (name, company, what triggered the need); logged to new `gt_referral_leads` table; admin notification email
+- Middleware: leave payment gate and checkout code dormant (no deletion)
+- Landing copy: reposition hero to practice-platform language (consultant-facing), companies get the referral form
+- Acceptance: no path from the marketing site into company self-serve checkout; leads are logged and notified
 
-## Success criteria (write to success/plan-i.md)
-1. New-company flow: signup → onboarding (boundary + screening) → first upload, with no path around onboarding
-2. All 50 states resolve to a real eGRID subregion
-3. A deliberately messy test file produces zero silently dropped rows
-4. All existing tests still pass; new tests cover phases 0–3
+## Phase 5 — Trust basics
+- `/security` one-page overview (encryption at rest via Neon, access model, export/delete)
+- Data export button (existing export route surfaced in settings) + delete-my-data request flow (logged, admin-notified)
+- DPA template as downloadable page
+- Acceptance: all three reachable from footer; delete request writes an audit log entry
 
-## Out of scope for Plan I
-Pricing changes (Plan J), scorecard (Plan J), consultant multi-client (Plan K), CSV adapter (backlog).
+## Success criteria (write to success/plan-j.md)
+1. A fulfillment engagement can run without ad-hoc email: request created → client completes portal checklist → data reviewed → inventory produced
+2. Vendor confirmed once = auto-mapped for the next client, traceable in the calc log
+3. Reminder emails fire per schedule in smoke tests
+4. Marketing site routes companies to referral, not checkout
+5. All existing tests pass; new tests cover token access, reminder logic, vendor-mapping application
+
+## Out of scope for Plan J
+Questionnaire copilot and evidence locker (Plan K), white-label branding (Plan K), assurance binder (Plan L), consultant Stripe pricing changes (decide after first fulfillment revenue).
