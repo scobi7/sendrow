@@ -23,6 +23,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           >
             Emission Factors
           </Link>
+          <Link
+            href="/admin/referrals"
+            className="text-sm font-medium transition-opacity hover:opacity-70"
+            style={{ color: "var(--text-muted)" }}
+          >
+            Referral Leads
+          </Link>
         </nav>
       </header>
       <main className="mx-auto max-w-5xl px-8 py-10">{children}</main>

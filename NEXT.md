@@ -23,7 +23,13 @@ Sendrow is now **the practice platform for climate consultants** — consultants
 - Concierge cap: 3 engagements, then productize or raise price
 - CARB 15-day comment window: publish the explainer within 24h + submit a comment letter when it opens
 
-## 🟡 Current state
+## 🟡 Current state (updated 2026-07-08, Plan N session)
+- **Plan N phases N1–N5 + N7.1 BUILT on `sendrow-v2`** (158/158 tests): client-contact email repair (portal emails actually deliver now), one merged consultant workspace + practice board, evidence locker (original files on Vercel Blob, hash-always provenance), reporting periods + YoY, white-label branding (brand profiles, branded portal/emails, `/shared/[token]` client results links), `/admin/referrals` lead board.
+- **N6 (questionnaire copilot) blocked** on one real buyer questionnaire from Kerri.
+- **N7.2 open:** real EPA eGRID 2024 / USEEIO v2 factor values still needed before any client deliverable — load via /admin/factors.
+- **New env vars to set in Vercel:** `BLOB_READ_WRITE_TOKEN` (evidence + logo storage), `CRON_SECRET` (reminders), `ADMIN_CLERK_ID` (admin pages).
+
+## 🟡 Previous state
 - **Plan J (Practice Platform Release) BUILT 2026-07-08 on `sendrow-v2`** — all 20 tasks, 154/154 tests, tsc clean, full build passes. See success/plan-j.md. Ships: magic-link portal (`/portal/[token]`), reminder cron, vendor-mapping memory + confirm UI in review queue, `/get-matched` referral flow, `/security` + `/dpa`.
 - Landing + pricing repositioned to practice-platform; company checkout dormant (not deleted).
 - Migrations 0004 (portal/vendor/referral tables) + 0003 auto-apply on next deploy of `sendrow-v2`.

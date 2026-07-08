@@ -287,5 +287,7 @@ Generated from PLANS.md (approved). Updated after each task completes.
 - [x] **N5.3** — portal renders consultant brand + accent; Sendrow logo removed from expired state (§11)
 - [x] **N5.4** — client-facing emails send as the brand name with consultant reply-to + brand signature
 - [x] **N5.5** — `/shared/[token]` read-only branded results page (scopes, periods, YoY); create/copy/revoke from workspace
-### N6 — Questionnaire copilot (blocked: needs a real questionnaire)
-### N7 — Real factor data, referral admin, polish (queued)
+### N6 — Questionnaire copilot — BLOCKED: needs one real buyer questionnaire (Kerri)
+### N7 — Referral admin & ops polish
+- [x] **N7.1** — `/admin/referrals`: lead board with new → routed → converted → dead status tracking
+- [ ] **N7.2** — Real EPA eGRID 2024 + USEEIO v2 factor values — OPEN: needs the actual published datasets loaded via /admin/factors; current values are flagged approximations. Pre-deliverable blocker, not fabricatable.
