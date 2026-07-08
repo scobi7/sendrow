@@ -9,6 +9,7 @@ import { totals } from "@/lib/calc";
 import { auditForCompany } from "@/lib/audit";
 import { archiveClient, updateClientContact } from "@/lib/actions";
 import { resendPortalEmail } from "@/lib/consultant-actions";
+import { periodTotals, yoyDelta } from "@/lib/period";
 import { SessionActions } from "./session-actions";
 import { DataRequestForm } from "./data-request-form";
 import { LockPipelineButton } from "./lock-pipeline-button";
@@ -64,6 +65,18 @@ export default async function ClientWorkspacePage({
     auditForCompany(id),
   ]);
   if (!companyRow || !fullCompany) notFound();
+
+  const periodItems = await db
+    .select({
+      period: emissionLineItems.period,
+      scope: emissionLineItems.scope,
+      co2eKg: emissionLineItems.co2eKg,
+      status: emissionLineItems.status,
+    })
+    .from(emissionLineItems)
+    .where(eq(emissionLineItems.companyId, id));
+  const byPeriod = periodTotals(periodItems.map((i) => ({ ...i, co2eKg: Number(i.co2eKg) })));
+  const yoy = yoyDelta(byPeriod);
 
   const t = totals(fullCompany);
   const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 2 });
@@ -333,6 +346,41 @@ export default async function ClientWorkspacePage({
             </dl>
             <p className="mt-4 text-xs" style={{ color: "var(--text-muted)" }}>Updates as data is approved.</p>
           </div>
+
+          {byPeriod.length > 0 && (
+            <div className="card h-fit">
+              <h2 className="text-sm font-bold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
+                By Reporting Period
+              </h2>
+              {yoy && (
+                <p
+                  className="mt-3 rounded-lg px-3 py-2 text-sm font-semibold"
+                  style={
+                    yoy.pct <= 0
+                      ? { background: "var(--primary-tint)", color: "var(--primary)" }
+                      : { background: "var(--warning-tint)", color: "var(--warning-strong)" }
+                  }
+                >
+                  {yoy.pct <= 0 ? "▼" : "▲"} {Math.abs(yoy.pct).toFixed(1)}% vs {yoy.previous}
+                </p>
+              )}
+              <dl className="mt-3 space-y-2 text-sm">
+                {byPeriod.map((p) => (
+                  <div key={p.period} className="flex justify-between">
+                    <dt style={{ color: p.period === "untagged" ? "var(--text-muted)" : "var(--text)" }}>
+                      {p.period === "untagged" ? "No date on rows" : p.period}
+                    </dt>
+                    <dd className="font-semibold font-data" style={{ color: "var(--text)" }}>
+                      {(p.total / 1000).toLocaleString("en-US", { maximumFractionDigits: 2 })} t
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+              <p className="mt-3 text-xs" style={{ color: "var(--text-muted)" }}>
+                From imported line items, tagged by row date{companyRow.fiscalYearEndMonth && companyRow.fiscalYearEndMonth !== 12 ? " (fiscal year)" : ""}.
+              </p>
+            </div>
+          )}
 
           <div className="card h-fit">
             <h2 className="text-sm font-bold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>

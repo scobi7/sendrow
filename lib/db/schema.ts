@@ -150,6 +150,8 @@ export const emissionLineItems = pgTable("gt_emission_line_items", {
   confidence: text("confidence").notNull().default("estimated"),
   // "mapped" = factor applied; "unmapped" = flagged for review, zero emissions — never dropped
   status: text("status").notNull().default("mapped"),
+  // Fiscal-year label ("2026" / "FY2026") from the row date; null = untagged (pre-N4 or dateless)
+  period: text("period"),
   factorId: text("factor_id"),
   calcLog: jsonb("calc_log").notNull().default({}),
   mappingProfileId: text("mapping_profile_id"),

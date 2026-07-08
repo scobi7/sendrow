@@ -1,0 +1,1 @@
+ALTER TABLE "gt_emission_line_items" ADD COLUMN "period" text;

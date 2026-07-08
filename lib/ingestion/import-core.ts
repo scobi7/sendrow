@@ -9,6 +9,8 @@ import { getFactorsFromDb } from "@/lib/factor-engine";
 import { fuzzyMatchHeaders } from "./fuzzy-match";
 import { scoreSession } from "./session-score";
 import { checklistComplete } from "@/lib/portal";
+import { periodForDate } from "@/lib/period";
+import { companies } from "@/lib/db/schema";
 import type { ChecklistItem } from "@/lib/portal";
 import type { ColumnMap, FuelPrices } from "./ingest";
 import type { DataType } from "./data-type-templates";
@@ -74,7 +76,11 @@ export async function processImport(input: ImportInput): Promise<ImportOutcome> 
     createdAt: new Date().toISOString(),
   });
 
-  const [factors, vendorMaps] = await Promise.all([getFactorsFromDb(), getVendorMappingsFromDb()]);
+  const [factors, vendorMaps, companyRow] = await Promise.all([
+    getFactorsFromDb(),
+    getVendorMappingsFromDb(),
+    db.query.companies.findFirst({ where: eq(companies.id, companyId) }),
+  ]);
   const normalized = applyProfile(rows, columnMap);
 
   // Every row becomes a line item — unmappable rows are flagged, never dropped
@@ -82,7 +88,11 @@ export async function processImport(input: ImportInput): Promise<ImportOutcome> 
   if (dataType === "fleet_fuel_dollar" && fuelPrices) {
     inserts = fleetFuelToLineItems(normalized, factors, fuelPrices, companyId, profileId);
   } else {
-    inserts = normalized.map((row) => rowToLineItem(row, factors, companyId, profileId, vendorMaps));
+    // 1:1 with normalized rows, so each item can be period-tagged from its row date
+    inserts = normalized.map((row) => ({
+      ...rowToLineItem(row, factors, companyId, profileId, vendorMaps),
+      period: periodForDate(row.date, companyRow?.fiscalYearEndMonth ?? null),
+    }));
   }
   // Provenance: every line item's calc log records how it arrived and, for
   // uploads, which stored source document it came from (evidence locker)

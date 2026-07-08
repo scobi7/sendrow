@@ -277,7 +277,10 @@ Generated from PLANS.md (approved). Updated after each task completes.
 - [x] **N3.2** — portal uploads go multipart; original file stored via @vercel/blob; import failures never blocked by storage
 - [x] **N3.3** — every line item's calc log carries `submitted_via` + `evidence_id`; manual entries keep provenance without a file
 - [x] **N3.4** — authed `/api/evidence/[id]` download (consultant-of-this-client only); "source file ↓" links in workspace uploads
-### N4 — Reporting periods & YoY (queued)
+### N4 — Reporting periods & YoY
+- [x] **N4.1** — `period` on line items (migration 0007); tagged from row date at import, fiscal-year aware, null when dateless (never guessed)
+- [x] **N4.2** — `lib/period.ts`: periodForDate / periodTotals / yoyDelta, fully unit-tested
+- [x] **N4.3** — workspace "By Reporting Period" card with YoY delta once ≥2 tagged periods exist
 ### N5 — White-label branding + shareable results (queued)
 ### N6 — Questionnaire copilot (blocked: needs a real questionnaire)
 ### N7 — Real factor data, referral admin, polish (queued)
