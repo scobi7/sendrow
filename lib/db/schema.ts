@@ -177,6 +177,38 @@ export const dataRequests = pgTable("gt_data_requests", {
   dueDate: text("due_date"),
   createdAt: text("created_at").notNull(),
   fulfilledAt: text("fulfilled_at"),
+  // Magic-link portal (Plan J): client accesses /portal/[token] without login
+  token: text("token").unique(),
+  expiresAt: text("expires_at"),
+  // Array of { id, dataType, label, instructions, status: "pending" | "received" }
+  checklist: jsonb("checklist"),
+  // ISO timestamps of reminders already sent, keyed by day offset ("3" | "7" | "14")
+  remindersSentAt: jsonb("reminders_sent_at"),
+});
+
+/** Cross-client vendor → category memory (Plan J). Global: one confirmation
+ *  maps that vendor for every client, forever. Human-confirmed only. */
+export const vendorMappings = pgTable("gt_vendor_mappings", {
+  id: text("id").primaryKey(),
+  vendorPattern: text("vendor_pattern").notNull().unique(), // normalized vendor name
+  scope: integer("scope").notNull(),
+  category: text("category").notNull(),
+  factorId: text("factor_id"),
+  confidence: text("confidence").notNull().default("confirmed"),
+  confirmedBy: text("confirmed_by").notNull(),
+  confirmedAt: text("confirmed_at").notNull(),
+  sourceCompanyId: text("source_company_id"),
+  timesApplied: integer("times_applied").notNull().default(0),
+});
+
+export const referralLeads = pgTable("gt_referral_leads", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  email: text("email").notNull(),
+  company: text("company").notNull(),
+  trigger: text("trigger"), // what prompted the need (buyer request, regulation, …)
+  status: text("status").notNull().default("new"), // new | routed | converted | dead
+  createdAt: text("created_at").notNull(),
 });
 
 export const pipelineStatus = pgTable("gt_pipeline_status", {

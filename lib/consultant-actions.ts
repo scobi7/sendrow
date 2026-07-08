@@ -12,6 +12,8 @@ import { refreshSectionStatus } from "./progress";
 import { logChange } from "./audit";
 import { Company, User } from "./types";
 import { sendInviteAcceptedEmail, sendDataRequestEmail } from "./email";
+import { generatePortalToken, portalExpiry, buildChecklist } from "./portal";
+import type { DataType } from "./ingestion/data-type-templates";
 
 // ── Field maps (mirrored from actions.ts) ──────────────────────────────────
 
@@ -189,10 +191,18 @@ export async function rejectSession(sessionId: string, companyId: string) {
   revalidatePath(`/consultant/review/${companyId}`);
 }
 
-export async function createDataRequest(companyId: string, consultantId: string, description: string, dueDate: string | null) {
+export async function createDataRequest(
+  companyId: string,
+  consultantId: string,
+  description: string,
+  dueDate: string | null,
+  checklistTypes: DataType[] = []
+) {
   const user = await currentUser();
   if (!user || user.role !== "consultant") return;
   if (!description.trim()) return;
+
+  const token = generatePortalToken();
   await db.insert(dataRequests).values({
     id: newId("dr"),
     companyId,
@@ -201,15 +211,19 @@ export async function createDataRequest(companyId: string, consultantId: string,
     status: "open",
     dueDate: dueDate || null,
     createdAt: new Date().toISOString(),
+    token,
+    expiresAt: portalExpiry(),
+    checklist: buildChecklist(checklistTypes, description.trim()),
+    remindersSentAt: {},
   });
 
   // Notify the client — fire-and-forget so email failures never block the request
-  notifyClientOfDataRequest(companyId, description.trim(), dueDate || null).catch(() => {});
+  notifyClientOfDataRequest(companyId, description.trim(), dueDate || null, token).catch(() => {});
 
   revalidatePath(`/consultant/review/${companyId}`);
 }
 
-async function notifyClientOfDataRequest(companyId: string, description: string, dueDate: string | null) {
+async function notifyClientOfDataRequest(companyId: string, description: string, dueDate: string | null, token: string) {
   const [clientUser, company] = await Promise.all([
     db.query.userCompanies.findFirst({
       where: and(eq(userCompanies.companyId, companyId), eq(userCompanies.role, "company")),
@@ -217,7 +231,7 @@ async function notifyClientOfDataRequest(companyId: string, description: string,
     loadCompany(companyId),
   ]);
   if (!clientUser?.email) return;
-  await sendDataRequestEmail(clientUser.email, clientUser.name ?? "there", company.name, description, dueDate);
+  await sendDataRequestEmail(clientUser.email, clientUser.name ?? "there", company.name, description, dueDate, token);
 }
 
 export async function lockPipeline(companyId: string, notes: string) {

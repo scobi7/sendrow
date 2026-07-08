@@ -7,6 +7,8 @@ import { consultantClients, companies, intakeSessions, dataRequests, pipelineSta
 import { SessionActions } from "./session-actions";
 import { DataRequestForm } from "./data-request-form";
 import { LockPipelineButton } from "./lock-pipeline-button";
+import { PortalLinkButton } from "./portal-link-button";
+import type { ChecklistItem } from "@/lib/portal";
 
 const STATUS_LABEL: Record<string, string> = {
   auto_approved: "Auto-approved",
@@ -136,25 +138,51 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ c
           <p className="px-5 py-4 text-sm" style={{ color: "var(--text-muted)" }}>No requests sent yet.</p>
         ) : (
           <div className="divide-y" style={{ borderColor: "var(--divider)" }}>
-            {openRequests.map((req) => (
-              <div key={req.id} className="flex items-center justify-between px-5 py-3">
-                <div>
-                  <p className="text-sm" style={{ color: "var(--text)" }}>{req.description}</p>
-                  {req.dueDate && (
-                    <p className="mt-0.5 text-xs" style={{ color: "var(--text-muted)" }}>Due {req.dueDate}</p>
+            {openRequests.map((req) => {
+              const checklist = (req.checklist as ChecklistItem[] | null) ?? [];
+              const sentMap = (req.remindersSentAt as Record<string, string> | null) ?? {};
+              const lastReminder = Object.keys(sentMap).sort((a, b) => Number(a) - Number(b)).pop();
+              return (
+                <div key={req.id} className="px-5 py-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm" style={{ color: "var(--text)" }}>{req.description}</p>
+                      <p className="mt-0.5 text-xs" style={{ color: "var(--text-muted)" }}>
+                        {req.dueDate ? `Due ${req.dueDate} · ` : ""}sent {new Date(req.createdAt).toLocaleDateString()}
+                        {lastReminder ? ` · day-${lastReminder} reminder sent` : ""}
+                      </p>
+                    </div>
+                    <span
+                      className="shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold"
+                      style={{
+                        background: req.status === "open" ? "#fef9c3" : req.status === "fulfilled" ? "var(--primary-tint)" : "var(--divider)",
+                        color: req.status === "open" ? "#92400e" : req.status === "fulfilled" ? "var(--primary)" : "var(--text-muted)",
+                      }}
+                    >
+                      {req.status}
+                    </span>
+                  </div>
+                  {checklist.length > 0 && (
+                    <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                      {checklist.map((item) => (
+                        <span
+                          key={item.id}
+                          className="rounded-full px-2 py-0.5 text-xs"
+                          style={
+                            item.status === "received"
+                              ? { background: "var(--primary-tint)", color: "var(--primary)" }
+                              : { background: "var(--divider)", color: "var(--text-muted)" }
+                          }
+                        >
+                          {item.status === "received" ? "✓ " : "○ "}{item.label}
+                        </span>
+                      ))}
+                      {req.token && <PortalLinkButton token={req.token} />}
+                    </div>
                   )}
                 </div>
-                <span
-                  className="shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold"
-                  style={{
-                    background: req.status === "open" ? "#fef9c3" : req.status === "fulfilled" ? "var(--primary-tint)" : "var(--divider)",
-                    color: req.status === "open" ? "#92400e" : req.status === "fulfilled" ? "var(--primary)" : "var(--text-muted)",
-                  }}
-                >
-                  {req.status}
-                </span>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
         <div className="px-5 py-4" style={{ borderTop: "1px solid var(--divider)" }}>

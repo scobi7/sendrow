@@ -97,9 +97,11 @@ export async function sendDataRequestEmail(
   clientName: string,
   companyName: string,
   description: string,
-  dueDate: string | null
+  dueDate: string | null,
+  portalToken?: string
 ) {
   const firstName = clientName.split(" ")[0];
+  const link = portalToken ? `${APP_URL}/portal/${portalToken}` : `${APP_URL}/intake/upload`;
   await send(
     clientEmail,
     `New data request for ${companyName}`,
@@ -107,7 +109,31 @@ export async function sendDataRequestEmail(
 <p>Your reviewer has requested additional data for <strong>${companyName}</strong>:</p>
 <blockquote><p>${description}</p></blockquote>
 ${dueDate ? `<p><strong>Due:</strong> ${dueDate}</p>` : ""}
-<p><a href="${APP_URL}/intake/upload">Upload the data →</a></p>
+<p><a href="${link}">Open your secure upload link →</a></p>
+<p>No account or password needed — the link is unique to you.</p>
+<p>— The Sendrow team</p>`
+  );
+}
+
+export async function sendPortalReminderEmail(
+  clientEmail: string,
+  clientName: string,
+  companyName: string,
+  description: string,
+  portalToken: string,
+  daysOpen: number,
+  ccConsultant: string | null
+) {
+  const firstName = clientName.split(" ")[0];
+  const to = ccConsultant ? [clientEmail, ccConsultant] : clientEmail;
+  await send(
+    to,
+    `Reminder: data still needed for ${companyName}`,
+    `<p>Hi ${firstName},</p>
+<p>A quick reminder — your reviewer is still waiting on data for <strong>${companyName}</strong> (requested ${daysOpen} days ago):</p>
+<blockquote><p>${description}</p></blockquote>
+<p><a href="${APP_URL}/portal/${portalToken}">Open your secure upload link →</a></p>
+<p>It usually takes just a few minutes. No account or password needed.</p>
 <p>— The Sendrow team</p>`
   );
 }

@@ -29,6 +29,13 @@
       "when": 1783476094871,
       "tag": "0003_eager_ikaris",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1783496129891,
+      "tag": "0004_wide_shotgun",
+      "breakpoints": true
     }
   ]
 }

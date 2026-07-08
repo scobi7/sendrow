@@ -81,6 +81,11 @@ function resolveFactorQuery(row: NormalizedRow) {
   const t = (row.activity_type ?? "").toLowerCase();
   const u = (row.unit ?? "").toLowerCase();
 
+  // Dollar amounts must never be treated as physical quantities (e.g. fuel $
+  // applied to a per-gallon factor). Without a price conversion they flag as
+  // unmapped and route to review — contracts/ "no silent reinterpretation".
+  if (u.includes("usd") || u.includes("$") || u.includes("dollar")) return null;
+
   // Spreadsheet rows carry no location, so grid electricity uses the national
   // average — a category query would pick an arbitrary subregion.
   if (u.includes("kwh") || t.includes("electric")) return { factorId: "egrid.USAVG.2024" };

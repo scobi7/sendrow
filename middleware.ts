@@ -16,6 +16,10 @@ const isPublicRoute = createRouteMatcher([
   "/api/webhooks/stripe(.*)",
   "/terms(.*)",
   "/privacy(.*)",
+  "/portal(.*)",      // magic-link client portal — token is the auth
+  "/api/portal(.*)",  // portal submissions — token validated in the route
+  "/security(.*)",
+  "/dpa(.*)",
 ]);
 
 const isAdminRoute = createRouteMatcher(["/admin(.*)"]);
