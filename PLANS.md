@@ -1,6 +1,32 @@
-# PLANS.md — Plan J: Practice Platform Release
-> STATUS: APPROVED 2026-07-08 — building on branch `sendrow-v2`
-> Generated 2026-07-08 from the direction reset (see GOALS.md). TASKS.md generated (J1–J20).
+# PLANS.md
+
+## Plan V — Visual Identity Refresh ("The Ledger")
+> STATUS: DRAFT — PENDING HUMAN APPROVAL
+> Generated 2026-07-08. Full research + system spec: docs/design-direction.md. On approval, generate TASKS.md (V1–V6).
+
+### Objective
+Kill the "AI-generated SaaS" look. Move from pastel-green wash + geometric sans to paper/ink/forest with an editorial serif — the visual language of an audit-grade practice platform (Watershed's restraint, Clio's order, the Paymark template's single-accent discipline).
+
+### Phases
+1. **V1 — Fonts:** `app/layout.tsx` swaps Manrope/Space Mono → Fraunces (display serif) + Instrument Sans (body/UI) + IBM Plex Mono (data); `--font-body` becomes a real token; tailwind config updated
+2. **V2 — Color tokens:** retheme `:root` in `globals.css` per docs/design-direction.md table (paper bg, white cards + hairlines, ink text, forest primary, new `--accent` terracotta + `--ink-band`)
+3. **V3 — Hardcoded-hex sweep:** move ~20 inline hex values (`#fef9c3`, `#fecaca`, `#dc2626`, `#d97706`…) onto tokens so the theme is fully centralized (white-label prerequisite)
+4. **V4 — Landing polish:** remove hero gradient blobs, one ink-band section, Fraunces hero, terracotta used once per screen
+5. **V5 — App surfaces check:** dashboard/workpaper/portal numbers in mono with tabular figures; no regressions in PDF print styles
+6. **V6 — Verify:** visual pass on landing, portal, dashboard, review queue; tests + tsc + build clean
+
+### Acceptance
+- No Manrope/Space Mono references remain; no gradient blobs; no inline status-color hex in pages
+- The portal and app shell remain fully tokenized (consultant white-label can override via CSS variables alone)
+- All tests pass; `next build` clean
+
+### Out of scope
+Layout restructuring, new sections/pages, consultant branding upload (that's Plan K white-label), logo redesign.
+
+---
+
+# Plan J: Practice Platform Release
+> STATUS: BUILT 2026-07-08 on branch `sendrow-v2` — see success/plan-j.md and TASKS.md (J1–J20).
 > Prior plan: Plan I (Integrity Release) — BUILT 2026-07-07, see success/plan-i.md.
 
 ## Objective

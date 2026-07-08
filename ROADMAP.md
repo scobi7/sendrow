@@ -9,6 +9,9 @@ Make the Kerri engagement (and every white-label fulfillment after it) run throu
 3. **Referral routing:** inbound company flow becomes "get matched with a consultant" (form + logged lead), replacing self-serve checkout as the front door
 4. **Trust basics:** DPA template page, one-page security overview, data export/delete button
 
+## Plan V — Visual Identity Refresh (inserted 2026-07-08, pending approval)
+"The Ledger": Fraunces/Instrument Sans/IBM Plex Mono + paper-ink-forest palette with one terracotta accent. Research + spec: docs/design-direction.md; plan in PLANS.md. Small surface (tokens + fonts), also the white-label prerequisite.
+
 ## Plan K — Evidence & Copilot Release (3–6 months)
 The 2027 story.
 1. **Evidence locker:** source documents (Vercel Blob) attached to line items; every figure clicks to its bill/invoice + factor vintage
