@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { and, eq, isNull } from "drizzle-orm";
 import { db } from "./db";
-import { consultantClients, userCompanies } from "./db/schema";
+import { consultantClients, userCompanies, intakeSessions, dataRequests, pipelineStatus } from "./db/schema";
 import { loadCompany, loadFactors, persistCompany } from "./store";
 import { currentUser } from "./auth";
 import { recalcCompany } from "./calc";
@@ -149,6 +149,73 @@ export async function consultantGenerateReport(companyId: string) {
   await logChange({ user, companyId: company.id, section: "reports", field: "ghg_inventory_report", prev: "—", next: `generated ${company.reportGeneratedAt}` });
   await persist(company);
   redirect(`/consultant/clients/${companyId}/manage/reports`);
+}
+
+// ── Intake session review actions ─────────────────────────────────────────
+
+function newId(prefix: string) {
+  return prefix + "_" + Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
+}
+
+export async function approveSession(sessionId: string, companyId: string) {
+  const user = await currentUser();
+  if (!user || user.role !== "consultant") return;
+  await db.update(intakeSessions).set({ status: "approved", reviewedAt: new Date().toISOString() }).where(eq(intakeSessions.id, sessionId));
+  await db
+    .insert(pipelineStatus)
+    .values({ companyId, status: "in_progress", updatedAt: new Date().toISOString() })
+    .onConflictDoUpdate({
+      target: pipelineStatus.companyId,
+      set: { status: "in_progress", updatedAt: new Date().toISOString() },
+      setWhere: eq(pipelineStatus.status, "not_started"),
+    });
+  revalidatePath(`/consultant/clients/${companyId}`);
+}
+
+export async function flagSession(sessionId: string, companyId: string, notes: string) {
+  const user = await currentUser();
+  if (!user || user.role !== "consultant") return;
+  await db
+    .update(intakeSessions)
+    .set({ status: "needs_info", reviewerNotes: notes, reviewedAt: new Date().toISOString() })
+    .where(eq(intakeSessions.id, sessionId));
+  revalidatePath(`/consultant/clients/${companyId}`);
+}
+
+export async function rejectSession(sessionId: string, companyId: string) {
+  const user = await currentUser();
+  if (!user || user.role !== "consultant") return;
+  await db.update(intakeSessions).set({ status: "rejected", reviewedAt: new Date().toISOString() }).where(eq(intakeSessions.id, sessionId));
+  revalidatePath(`/consultant/clients/${companyId}`);
+}
+
+export async function createDataRequest(companyId: string, consultantId: string, description: string, dueDate: string | null) {
+  const user = await currentUser();
+  if (!user || user.role !== "consultant") return;
+  if (!description.trim()) return;
+  await db.insert(dataRequests).values({
+    id: newId("dr"),
+    companyId,
+    requestedBy: consultantId,
+    description: description.trim(),
+    status: "open",
+    dueDate: dueDate || null,
+    createdAt: new Date().toISOString(),
+  });
+  revalidatePath(`/consultant/clients/${companyId}`);
+}
+
+export async function lockPipeline(companyId: string, notes: string) {
+  const user = await currentUser();
+  if (!user || user.role !== "consultant") return;
+  await db
+    .insert(pipelineStatus)
+    .values({ companyId, status: "locked", lockedAt: new Date().toISOString(), lockedBy: user.id, notes: notes || null, updatedAt: new Date().toISOString() })
+    .onConflictDoUpdate({
+      target: pipelineStatus.companyId,
+      set: { status: "locked", lockedAt: new Date().toISOString(), lockedBy: user.id, notes: notes || null, updatedAt: new Date().toISOString() },
+    });
+  revalidatePath(`/consultant/clients/${companyId}`);
 }
 
 // ── Notify consultant when client accepts invite ───────────────────────────

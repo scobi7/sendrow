@@ -3,6 +3,52 @@ Generated from PLANS.md (approved). Updated after each task completes.
 
 ---
 
+## Plan H — Managed Intake & Two-Sided Dashboard (2026-07-07)
+
+### Schema
+- [x] **H1** — Add `boundary_approach` + `onboarding_complete` to `gt_companies` schema
+- [x] **H2** — Add `gt_intake_sessions` table to schema
+- [x] **H3** — Add `gt_data_requests` table to schema
+- [x] **H4** — Add `gt_pipeline_status` table to schema
+- [x] **H5** — `drizzle-kit push` (auto-runs on next deploy via build script)
+
+### Scoring engine
+- [x] **H6** — `lib/ingestion/session-score.ts` — pure `scoreSession()` function
+- [x] **H7** — `test/session-score.test.ts` — unit tests for scoring logic
+
+### Phase 1 — Session tracking + auto-routing
+- [x] **H8** — Update `/api/intake/import` to create `gt_intake_sessions` row with score + auto-route
+- [x] **H9** — Redesign `/intake` landing: sessions list with status badges, score, data type
+- [x] **H10** — Update upload done screen: "auto-approved" vs "under review" messaging
+
+### Phase 4 — Client dashboard redesign
+- [x] **H11** — Redesign `app/(app)/dashboard/page.tsx`: pipeline banner, open requests, recent sessions, report CTA
+
+### Phase 2 — Consultant review queue
+- [x] **H12** — `app/(app)/consultant/clients/page.tsx` — client list with pending badge counts
+- [x] **H13** — `app/(app)/consultant/clients/[companyId]/page.tsx` — pending sessions, approve/flag/reject actions
+- [x] **H14** — Server actions: `approveSession`, `flagSession`, `rejectSession` (in `lib/consultant-actions.ts`)
+
+### Phase 3 — Data requests + Phase 5 Notifications
+- [x] **H15** — `createDataRequest` server action + `lockPipeline` server action
+- [x] **H16** — Client dashboard shows open requests as action items (done in H11)
+- [ ] **H17** — Email client on new request, email consultant on new upload (via `lib/email.ts`)
+
+### Phase 6 — Pipeline lock
+- [x] **H18** — `lockPipeline` server action — sets `gt_pipeline_status` to locked
+- [x] **H19** — Upload API: if pipeline locked, skip mapping step, auto-approve (done in H8)
+- [x] **H20** — Upload screen shows "auto-processed — pipeline locked" message (done in H10)
+
+### Phase 0 — Onboarding extensions
+- [ ] **H21** — Add boundary approach tile to setup wizard
+- [ ] **H22** — Move scope 3 screening into setup wizard flow (soft gate on `/intake`)
+
+### Finalize
+- [ ] **H23** — All tests passing
+- [ ] **H24** — Commit + push
+
+---
+
 ## Plan F — V1 Spreadsheet Ingestion Pipeline (2026-07-06)
 
 ## Plan G — Full Client Pipeline (2026-07-06) ✅

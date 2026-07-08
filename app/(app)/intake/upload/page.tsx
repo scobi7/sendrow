@@ -9,7 +9,7 @@ import type { DataType } from "@/lib/ingestion/data-type-templates";
 import type { MatchResult } from "@/lib/ingestion/fuzzy-match";
 
 type Step = "upload" | "type" | "fuel_prices" | "map" | "done";
-type ImportResult = { imported: number; skipped: number };
+type ImportResult = { imported: number; skipped: number; autoApproved: boolean; sessionScore: number; pipelineLocked: boolean };
 
 export default function UploadPage() {
   const [step, setStep] = useState<Step>("upload");
@@ -84,7 +84,7 @@ export default function UploadPage() {
     setLoading(true);
     setError(null);
     try {
-      const body: Record<string, unknown> = { rows, columnMap, profileName, dataType };
+      const body: Record<string, unknown> = { rows, columnMap, profileName, dataType, filename: fileName };
       if (dataType === "fleet_fuel_dollar") {
         body.fuelPrices = {
           diesel: parseFloat(fuelPrices.diesel) || 0,
@@ -302,18 +302,38 @@ export default function UploadPage() {
       {/* Step: Done */}
       {step === "done" && result && (
         <div className="card text-center">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full" style={{ background: "var(--primary-tint)" }}>
-            <svg className="h-6 w-6" style={{ color: "var(--primary)" }} fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-            </svg>
+          <div
+            className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full"
+            style={{ background: result.autoApproved ? "var(--primary-tint)" : "var(--warning-tint, #fef9c3)" }}
+          >
+            {result.autoApproved ? (
+              <svg className="h-6 w-6" style={{ color: "var(--primary)" }} fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+              </svg>
+            ) : (
+              <svg className="h-6 w-6" style={{ color: "#d97706" }} fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2m6-2a10 10 0 11-20 0 10 10 0 0120 0z" />
+              </svg>
+            )}
           </div>
-          <h2 className="text-xl font-bold font-display" style={{ color: "var(--text)" }}>Import complete</h2>
+          <h2 className="text-xl font-bold font-display" style={{ color: "var(--text)" }}>
+            {result.pipelineLocked
+              ? "Auto-processed — pipeline locked"
+              : result.autoApproved
+              ? "Import complete"
+              : "Upload received — under review"}
+          </h2>
           <p className="mt-2 text-sm" style={{ color: "var(--text-muted)" }}>
             <strong style={{ color: "var(--text)" }}>{result.imported}</strong> rows imported
             {result.skipped > 0 && <>, <strong style={{ color: "var(--warning)" }}>{result.skipped}</strong> skipped</>}
           </p>
+          {!result.autoApproved && !result.pipelineLocked && (
+            <p className="mt-3 rounded-lg px-4 py-2 text-sm" style={{ background: "#fef9c3", color: "#92400e" }}>
+              Some columns couldn&apos;t be matched confidently. A reviewer will check this file before it&apos;s finalized.
+            </p>
+          )}
           <div className="mt-6 flex justify-center gap-3">
-            <Link href="/workpaper" className="btn btn-primary px-6">View workpaper →</Link>
+            <Link href="/dashboard" className="btn btn-primary px-6">Back to dashboard →</Link>
             <Link href="/intake/upload" className="btn btn-secondary px-4">Upload another</Link>
           </div>
         </div>

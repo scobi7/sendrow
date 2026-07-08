@@ -7,6 +7,8 @@ export const companies = pgTable("gt_companies", {
   headcountRange: text("headcount_range"),
   fiscalYearEndMonth: integer("fiscal_year_end_month"),
   reportingFramework: text("reporting_framework"),
+  boundaryApproach: text("boundary_approach"),
+  onboardingComplete: boolean("onboarding_complete").notNull().default(false),
   setupComplete: boolean("setup_complete").notNull().default(false),
   createdAt: text("created_at").notNull(),
   reportGeneratedAt: text("report_generated_at"),
@@ -147,6 +149,41 @@ export const emissionLineItems = pgTable("gt_emission_line_items", {
   calcLog: jsonb("calc_log").notNull().default({}),
   mappingProfileId: text("mapping_profile_id"),
   createdAt: text("created_at").notNull(),
+});
+
+export const intakeSessions = pgTable("gt_intake_sessions", {
+  id: text("id").primaryKey(),
+  companyId: text("company_id").notNull().references(() => companies.id),
+  uploadedBy: text("uploaded_by").notNull(),
+  filename: text("filename").notNull(),
+  dataType: text("data_type").notNull(),
+  sessionScore: numeric("session_score", { precision: 4, scale: 3 }).notNull().default("0"),
+  status: text("status").notNull().default("pending_review"),
+  reviewerNotes: text("reviewer_notes"),
+  rowCount: integer("row_count").notNull().default(0),
+  mappingProfileId: text("mapping_profile_id"),
+  createdAt: text("created_at").notNull(),
+  reviewedAt: text("reviewed_at"),
+});
+
+export const dataRequests = pgTable("gt_data_requests", {
+  id: text("id").primaryKey(),
+  companyId: text("company_id").notNull().references(() => companies.id),
+  requestedBy: text("requested_by").notNull(),
+  description: text("description").notNull(),
+  status: text("status").notNull().default("open"),
+  dueDate: text("due_date"),
+  createdAt: text("created_at").notNull(),
+  fulfilledAt: text("fulfilled_at"),
+});
+
+export const pipelineStatus = pgTable("gt_pipeline_status", {
+  companyId: text("company_id").primaryKey().references(() => companies.id),
+  status: text("status").notNull().default("not_started"),
+  lockedAt: text("locked_at"),
+  lockedBy: text("locked_by"),
+  notes: text("notes"),
+  updatedAt: text("updated_at").notNull(),
 });
 
 export const emissionFactors = pgTable("gt_emission_factors", {

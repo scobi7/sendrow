@@ -1,97 +1,119 @@
 # PLANS.md
-> Plan H pending approval.
+> Plan H approved. Building.
 
 ---
 
 ## Plan H — Managed Intake & Two-Sided Dashboard (2026-07-07)
 
 ### Vision
-Move from "self-serve upload tool" to "managed intake service": client uploads raw data, consultant reviews and locks a pipeline, the two sides communicate through structured requests, and future years auto-process. Sendrow becomes the operating layer between client and consultant — not just a report generator.
+Move from "self-serve upload tool" to "managed intake service": client completes a structured onboarding once, then uploads raw data. Automation scores each upload and auto-approves high-confidence ones — only ambiguous uploads reach a human. Consultant communicates back via structured data requests. Pipeline locks after first clean cycle; Year 2 is nearly zero-touch.
 
 ### What's already built (reuse)
 - `mapping_profiles` — versioned column mapping per company ✅
-- `emission_line_items` — normalized data with calc_log ✅
-- Upload flow (`/intake/upload`) ✅
-- Workpaper view ✅
-- `company` / `consultant` user roles in `userCompanies` ✅
+- `emission_line_items` with confidence field ✅
+- `fuzzy-match.ts` — per-column `"high" | "low"` confidence scores ✅
+- `data-type-templates.ts` — known-format column maps (high confidence base) ✅
+- `scope3_screening` table ✅
+- `consultantClients` + `inviteTokens` tables ✅
+- Upload flow + workpaper ✅
 
-### New schema tables
+### New schema
 
-**`gt_intake_sessions`** — one row per file upload event
+**`gt_intake_sessions`** — one row per upload event
 ```
-id, company_id, uploaded_by (clerk_id), filename, data_type,
-status: "pending_review" | "needs_info" | "approved" | "rejected",
+id, company_id, uploaded_by, filename, data_type,
+session_score (numeric 0–1),
+status: "auto_approved" | "pending_review" | "needs_info" | "approved" | "rejected",
 reviewer_notes, row_count, mapping_profile_id,
 created_at, reviewed_at
 ```
 
-**`gt_data_requests`** — consultant asks client for specific missing data
+**`gt_data_requests`** — structured ask from consultant → client
 ```
-id, company_id, requested_by (clerk_id),
-description (e.g. "Please upload Q3 utility bills for Oakland facility"),
-status: "open" | "fulfilled" | "dismissed",
+id, company_id, requested_by,
+description, status: "open" | "fulfilled" | "dismissed",
 due_date, created_at, fulfilled_at
 ```
 
-**`gt_pipeline_status`** — one row per company, tracks whether pipeline is locked
+**`gt_pipeline_status`** — per-company pipeline state
 ```
 id, company_id,
 status: "not_started" | "in_progress" | "locked",
 locked_at, locked_by, notes
 ```
 
-### Phase 1 — Intake session tracking
-- Tag every upload with a session record (status starts at `pending_review`)
-- Upload completion screen shows "Your data is under review" instead of just "imported N rows"
-- `/intake` landing page shows sessions with their status badges
+Add to `gt_companies`: `boundary_approach` (text: equity_share | operational_control | financial_control), `onboarding_complete` (boolean)
 
-### Phase 2 — Consultant review interface
-- New page `/consultant/clients` — list of all companies consultant manages
-- New page `/consultant/clients/[companyId]/review` — see all pending sessions for a client
-  - View file, data type, row count, mapping used
-  - Approve (status → `approved`) or flag (status → `needs_info` with notes)
-- Approved sessions: line items confirmed, pipeline profile promoted
+### Auto-confidence scoring algorithm
+Session score = weighted combination:
+- **+0.50** if data type is a known template (not "custom")
+- **+0.30** × (required fields matched at high confidence / required fields) — required: `quantity`, `date`
+- **+0.20** × (total columns matched / total columns)
+
+**Score ≥ 0.85 → `auto_approved`**, line items committed immediately, consultant not notified
+**Score < 0.85 → `pending_review`**, line items committed with `confidence = "estimated"`, session queued for human review
+
+### Phase 0 — Structured onboarding (before first upload)
+- Extend setup wizard with:
+  - Boundary approach selection (equity share / operational control / financial control) — one tile
+  - Facility confirmation (already have locations table — just review/add)
+  - Scope 3 materiality screening moved here from a separate nav item
+- `onboarding_complete` flag set on finish
+- `/intake/upload` shows a banner if onboarding not complete, but doesn't block (soft gate)
+
+### Phase 1 — Session tracking + auto-routing
+- Upload API creates `gt_intake_sessions` row per upload
+- Compute session score from fuzzy match results + data type
+- Score ≥ 0.85: auto_approved, pipeline_status → in_progress if not already
+- Score < 0.85: pending_review
+- `/intake` landing redesigned: sessions list with status badges, score, data type
+
+### Phase 2 — Consultant review queue (human touches only low-confidence)
+- `/consultant/clients` — all linked companies with pending count badge
+- `/consultant/clients/[companyId]` — pending sessions only (auto_approved never shown here)
+  - View: filename, data type, score, row count, which columns were ambiguous
+  - Actions: Approve → `approved` | Flag → `needs_info` + notes | Reject → `rejected`
+- Approved: pipeline_status advances
 
 ### Phase 3 — Data requests
-- Consultant can create a `gt_data_requests` entry from review page
-- Client sees open requests on their dashboard: "Action needed — please upload Q3 utility bills"
-- Client uploads → request marked `fulfilled` → consultant notified
-- Email sent to client when request is created
+- Consultant creates request from review page ("We need Q3 utility bills for Oakland")
+- Client sees open requests on dashboard as prominent action items
+- Client uploads file → can link to open request → request marked `fulfilled`
+- Email sent to client on creation, to consultant on fulfillment
 
-### Phase 4 — Client status dashboard
-- Redesign `/dashboard` for company users:
-  - Pipeline status banner (not started / in progress / locked)
-  - Open data requests (if any) — prominent CTA
-  - Recent uploads with status badges
-  - Quick link to workpaper once approved
-  - "Generate report" only enabled when pipeline is approved or locked
-- Remove the old section-by-section checklist (Connections, Scope 1–3, Social, Governance) — replace with intake-centric flow
+### Phase 4 — Client dashboard redesign
+- Remove old section checklist (Connections, Scope 1–3, Social, Governance)
+- New layout:
+  - **Pipeline status banner** (not started / in progress / locked)
+  - **Action needed** — open data requests (red if overdue)
+  - **Recent uploads** — last 5 sessions with status badge
+  - **Workpaper** link (always accessible)
+  - **Generate report** — enabled when ≥1 approved session exists
+- Company role only (consultants see their own dashboard at `/consultant`)
 
 ### Phase 5 — Notifications
-- Email client when consultant creates a data request
-- Email consultant when client uploads a new file
-- Both use existing `lib/email.ts` + Resend
+- Email client: new data request created
+- Email consultant: new file uploaded to their client
+- Use existing `lib/email.ts` + Resend
 
 ### Phase 6 — Pipeline lock
-- Consultant clicks "Lock pipeline" once all sessions are approved
-- Pipeline status → `locked`
-- Future uploads against this company auto-apply the locked mapping profile (no mapping step shown)
-- Upload completion screen changes to "Auto-processed against your locked pipeline"
+- Consultant clicks "Lock pipeline" on client page when all data is clean
+- `pipeline_status → locked`
+- Future uploads: skip mapping step, apply locked profile directly, always `auto_approved`
+- Upload screen shows "Auto-processed — pipeline locked"
 
 ### Build order
-1. Schema + migrations (all 3 tables)
-2. Phase 1 — session tracking wired into upload flow
-3. Phase 4 — client dashboard redesign (drives the visible change)
-4. Phase 2 — consultant review interface
-5. Phase 3 — data requests
-6. Phase 5 — notifications
+1. Schema additions + migration
+2. `lib/ingestion/session-score.ts` — scoring pure function (testable)
+3. Phase 1 — session tracking in upload API + `/intake` redesign
+4. Phase 4 — client dashboard redesign
+5. Phase 2 — consultant review queue
+6. Phase 3 — data requests + Phase 5 notifications (same pass)
 7. Phase 6 — pipeline lock
+8. Phase 0 — onboarding extensions (boundary approach, move scope3 screening)
 
 ### What stays unchanged
-- Upload flow mechanics (file parsing, column mapping, factor engine)
-- Workpaper view
-- PDF report generation
-- Billing / auth / marketing
+- File parsing, fuzzy match, factor engine, workpaper, PDF report, billing, auth
 
 ---
 
