@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { and, eq, isNull } from "drizzle-orm";
 import { db } from "./db";
-import { consultantClients, userCompanies, intakeSessions, dataRequests, pipelineStatus, vendorMappings, emissionLineItems } from "./db/schema";
+import { companies, consultantClients, userCompanies, intakeSessions, dataRequests, pipelineStatus, vendorMappings, emissionLineItems } from "./db/schema";
 import { normalizeVendor, matchVendor, VENDOR_CONFIRM_OPTIONS, getVendorMappingsFromDb } from "./vendor-mappings";
 import { rowToLineItem } from "./ingestion/ingest";
 import { getFactorsFromDb } from "./factor-engine";
@@ -15,7 +15,7 @@ import { recalcCompany } from "./calc";
 import { refreshSectionStatus } from "./progress";
 import { logChange } from "./audit";
 import { Company, User } from "./types";
-import { sendInviteAcceptedEmail, sendDataRequestEmail } from "./email";
+import { sendDataRequestEmail } from "./email";
 import { generatePortalToken, portalExpiry, buildChecklist } from "./portal";
 import type { DataType } from "./ingestion/data-type-templates";
 
@@ -229,14 +229,26 @@ export async function createDataRequest(
 }
 
 async function notifyClientOfDataRequest(companyId: string, description: string, dueDate: string | null, token: string) {
-  const [clientUser, company] = await Promise.all([
-    db.query.userCompanies.findFirst({
-      where: and(eq(userCompanies.companyId, companyId), eq(userCompanies.role, "company")),
-    }),
-    loadCompany(companyId),
-  ]);
-  if (!clientUser?.email) return;
-  await sendDataRequestEmail(clientUser.email, clientUser.name ?? "there", company.name, description, dueDate, token);
+  const company = await db.query.companies.findFirst({ where: eq(companies.id, companyId) });
+  if (!company?.clientContactEmail) return; // no contact on file — consultant shares the link manually
+  await sendDataRequestEmail(
+    company.clientContactEmail,
+    company.clientContactName ?? "there",
+    company.name,
+    description,
+    dueDate,
+    token
+  );
+}
+
+/** Re-sends the portal link email for an open request (e.g. after adding a contact email). */
+export async function resendPortalEmail(requestId: string, companyId: string) {
+  const user = await currentUser();
+  if (!user || user.role !== "consultant") return;
+  const req = await db.query.dataRequests.findFirst({ where: eq(dataRequests.id, requestId) });
+  if (!req?.token || req.status !== "open" || req.companyId !== companyId) return;
+  await notifyClientOfDataRequest(companyId, req.description, req.dueDate, req.token);
+  revalidatePath(`/consultant/review/${companyId}`);
 }
 
 /** Confirms a vendor→category mapping globally (contracts/ §12: human-confirmed
@@ -335,26 +347,3 @@ export async function lockPipeline(companyId: string, notes: string) {
 
 // ── Notify consultant when client accepts invite ───────────────────────────
 
-export async function notifyConsultantOfAcceptedInvite(companyId: string, clientName: string, clientEmail: string) {
-  const link = await db.query.consultantClients.findFirst({
-    where: and(
-      eq(consultantClients.companyId, companyId),
-      isNull(consultantClients.archivedAt)
-    ),
-  });
-  if (!link) return;
-
-  const consultant = await db.query.userCompanies.findFirst({
-    where: eq(userCompanies.clerkId, link.consultantId),
-  });
-  if (!consultant?.email) return;
-
-  const company = await loadCompany(companyId);
-  await sendInviteAcceptedEmail(
-    consultant.name ?? "there",
-    consultant.email,
-    company.name,
-    clientName,
-    clientEmail
-  );
-}

@@ -252,3 +252,24 @@ Generated from PLANS.md (approved). Updated after each task completes.
 - [x] **D8** — `lib/actions.ts` — onboarding now redirects to `/checkout?plan=...`
 - [x] **D9** — `app/pricing/page.tsx` — CTAs updated to `/signup?plan=...`
 - [ ] **D10** — Set up Stripe webhook in dashboard + add `STRIPE_WEBHOOK_SECRET` to Vercel (user action)
+
+---
+
+## Plan N — Final Product Program (approved 2026-07-08)
+> Baseline: 150/150 tests, Plan M shipped (cae02c1).
+
+### N1 — Client contact & communication repair (P0)
+- [x] **N1.1** — Schema: `client_contact_name` / `client_contact_email` on `gt_companies` + migration
+- [x] **N1.2** — Add-client form + client page collect/edit the contact
+- [x] **N1.3** — Data-request email + reminders cron target the contact (not the deleted v1 client login)
+- [x] **N1.4** — "Resend portal link" action in the review workspace; warn when no contact email set
+- [x] **N1.5** — White-label email copy: client-facing emails carry no Sendrow signature (contracts §11); drop dead `/intake/upload` fallback link
+- [x] **N1.6** — Delete dead v1 email paths (`notifyConsultantOfAcceptedInvite`, `sendInviteAcceptedEmail`, `sendSectionCompleteEmail`); favicon
+- [x] **N1.7** — Tests + tsc + build clean
+
+### N2 — One consultant workspace (queued)
+### N3 — Evidence locker (queued)
+### N4 — Reporting periods & YoY (queued)
+### N5 — White-label branding + shareable results (queued)
+### N6 — Questionnaire copilot (blocked: needs a real questionnaire)
+### N7 — Real factor data, referral admin, polish (queued)

@@ -2,23 +2,29 @@
 > Direction reset 2026-07-08: practice platform for climate consultants. Order rationale: make the first fulfillment engagement runnable, then make every figure defensible, then make the 2027 product.
 > Last updated: 2026-07-08
 
-## Plan J — Practice Platform Release (next; 0–90 days)
+## Plan M — Remove Company Self-Serve (BUILT 2026-07-08)
+v1/v2 split made real: company dashboard, setup wizard, invite-login flow, and 25 orphaned company actions deleted from v2 (all preserved on `sendrow-v1`). Onboarding is consultant-only; companies route to /get-matched.
+
+## Plan N — Final Product Program (PENDING APPROVAL — see PLANS.md)
+N1 client-contact email repair (P0: portal emails currently no-op) → N2 single consultant workspace → N3 evidence locker (Blob) → N4 reporting periods/YoY → N5 white-label + shareable client results → N6 questionnaire copilot (needs a real questionnaire) → N7 real factor data, referral-lead admin, polish. Absorbs the former Plan K/L items below.
+
+## Plan J — Practice Platform Release (BUILT 2026-07-08)
 Make the Kerri engagement (and every white-label fulfillment after it) run through software instead of email.
 1. **Data-request portal:** magic-link client access (no login), guided checklist per data type, structured entry + document upload feeding the existing intake pipeline, missing-item tracker, automatic reminder emails, consultant status board (extends `/consultant/review`)
 2. **Vendor-mapping memory:** global `gt_vendor_mappings` table (vendor → scope/category/factor, confirmed-by, confidence); review-queue confirmations write to it; ingest consults it before anything else — the moat compounds from engagement one
 3. **Referral routing:** inbound company flow becomes "get matched with a consultant" (form + logged lead), replacing self-serve checkout as the front door
 4. **Trust basics:** DPA template page, one-page security overview, data export/delete button
 
-## Plan V — Visual Identity Refresh (inserted 2026-07-08, pending approval)
+## Plan V — Visual Identity Refresh (BUILT 2026-07-08)
 "The Ledger": Fraunces/Instrument Sans/IBM Plex Mono + paper-ink-forest palette with one terracotta accent. Research + spec: docs/design-direction.md; plan in PLANS.md. Small surface (tokens + fonts), also the white-label prerequisite.
 
-## Plan K — Evidence & Copilot Release (3–6 months)
+## Plan K — Evidence & Copilot Release (absorbed into Plan N: N3, N5, N6)
 The 2027 story.
 1. **Evidence locker:** source documents (Vercel Blob) attached to line items; every figure clicks to its bill/invoice + factor vintage
 2. **Questionnaire-response copilot prototype:** built against a real buyer questionnaire from a founding partner's client — question → inventory-field mapping, drafted answers, consultant review/sign; each new format saved as a permanent template and announced
 3. **White-label branding:** consultant logo/colors on all client-facing surfaces (portal, emails, PDFs); Sendrow's name never shown to end clients
 
-## Plan L — Assurance & Practice Depth (6–12 months)
+## Plan L — Assurance & Practice Depth (6–12 months; N4 lays the YoY groundwork)
 1. One-click assurance binder export, timed to the 2027 limited-assurance season
 2. Year-over-year delta narratives ("emissions rose 12% because…")
 3. Consultant practice dashboard: every client's status, missing data, deadlines in one view

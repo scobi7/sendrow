@@ -38,24 +38,6 @@ export async function sendWelcomeEmail(name: string, email: string) {
   );
 }
 
-export async function sendInviteAcceptedEmail(
-  consultantName: string,
-  consultantEmail: string,
-  companyName: string,
-  clientName: string,
-  clientEmail: string
-) {
-  const firstName = consultantName.split(" ")[0];
-  await send(
-    consultantEmail,
-    `${clientName} accepted your invite for ${companyName}`,
-    `<p>Hi ${firstName},</p>
-<p><strong>${clientName}</strong> (${clientEmail}) has accepted your invite and created their Sendrow account for <strong>${companyName}</strong>.</p>
-<p>They can now log in and start filling in their data. You can track their progress from your dashboard.</p>
-<p><a href="${APP_URL}/consultant">View your clients →</a></p>
-<p>— The Sendrow team</p>`
-  );
-}
 
 export async function sendAgencyQuoteRequest(data: {
   name: string;
@@ -98,10 +80,10 @@ export async function sendDataRequestEmail(
   companyName: string,
   description: string,
   dueDate: string | null,
-  portalToken?: string
+  portalToken: string
 ) {
   const firstName = clientName.split(" ")[0];
-  const link = portalToken ? `${APP_URL}/portal/${portalToken}` : `${APP_URL}/intake/upload`;
+  const link = `${APP_URL}/portal/${portalToken}`;
   await send(
     clientEmail,
     `New data request for ${companyName}`,
@@ -110,8 +92,7 @@ export async function sendDataRequestEmail(
 <blockquote><p>${description}</p></blockquote>
 ${dueDate ? `<p><strong>Due:</strong> ${dueDate}</p>` : ""}
 <p><a href="${link}">Open your secure upload link →</a></p>
-<p>No account or password needed — the link is unique to you.</p>
-<p>— The Sendrow team</p>`
+<p>No account or password needed — the link is unique to you.</p>`
   );
 }
 
@@ -146,8 +127,7 @@ export async function sendPortalReminderEmail(
 <p>A quick reminder — your reviewer is still waiting on data for <strong>${companyName}</strong> (requested ${daysOpen} days ago):</p>
 <blockquote><p>${description}</p></blockquote>
 <p><a href="${APP_URL}/portal/${portalToken}">Open your secure upload link →</a></p>
-<p>It usually takes just a few minutes. No account or password needed.</p>
-<p>— The Sendrow team</p>`
+<p>It usually takes just a few minutes. No account or password needed.</p>`
   );
 }
 
@@ -170,19 +150,3 @@ ${unmappedCount > 0 ? `<p><strong>${unmappedCount}</strong> row${unmappedCount =
   );
 }
 
-export async function sendSectionCompleteEmail(
-  consultantEmail: string,
-  consultantName: string,
-  companyName: string,
-  sectionLabel: string
-) {
-  const firstName = consultantName.split(" ")[0];
-  await send(
-    consultantEmail,
-    `${companyName} completed ${sectionLabel}`,
-    `<p>Hi ${firstName},</p>
-<p><strong>${companyName}</strong> just completed the <strong>${sectionLabel}</strong> section on Sendrow.</p>
-<p><a href="${APP_URL}/consultant">View their progress →</a></p>
-<p>— The Sendrow team</p>`
-  );
-}

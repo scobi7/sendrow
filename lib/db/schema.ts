@@ -8,6 +8,9 @@ export const companies = pgTable("gt_companies", {
   fiscalYearEndMonth: integer("fiscal_year_end_month"),
   reportingFramework: text("reporting_framework"),
   boundaryApproach: text("boundary_approach"),
+  // Who receives portal links + reminders (v2: clients have no login)
+  clientContactName: text("client_contact_name"),
+  clientContactEmail: text("client_contact_email"),
   onboardingComplete: boolean("onboarding_complete").notNull().default(false),
   setupComplete: boolean("setup_complete").notNull().default(false),
   createdAt: text("created_at").notNull(),

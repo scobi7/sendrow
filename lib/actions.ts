@@ -28,7 +28,7 @@ import { refreshSectionStatus } from "./progress";
 import { logChange } from "./audit";
 import { createCompanyRecord } from "./newcompany";
 import { clientIp, checkRateLimit } from "./ratelimit";
-import { sendWelcomeEmail, sendInviteAcceptedEmail, sendSectionCompleteEmail, sendReferralLeadEmail } from "./email";
+import { sendWelcomeEmail, sendReferralLeadEmail } from "./email";
 import type { UtilityMeter, UtilityBill } from "./utilityapi";
 import type { Location } from "./types";
 
@@ -169,6 +169,8 @@ export async function consultantAddClient(formData: FormData) {
   const name = String(formData.get("name") ?? "").trim();
   const industry = String(formData.get("industry") ?? "") as Industry;
   const headcount = String(formData.get("headcount") ?? "") as HeadcountRange;
+  const contactName = String(formData.get("contact_name") ?? "").trim();
+  const contactEmail = String(formData.get("contact_email") ?? "").trim();
 
   if (!name) redirect("/consultant/clients/new?error=" + encodeURIComponent("Client name is required."));
 
@@ -181,6 +183,8 @@ export async function consultantAddClient(formData: FormData) {
     name: company.name,
     industry: company.industry ?? null,
     headcountRange: company.headcountRange ?? null,
+    clientContactName: contactName || null,
+    clientContactEmail: contactEmail || null,
     createdAt: company.createdAt,
     setupComplete: false,
     sectionStatus: company.sectionStatus,
@@ -195,6 +199,28 @@ export async function consultantAddClient(formData: FormData) {
   });
 
   redirect(`/consultant/clients/${company.id}`);
+}
+
+export async function updateClientContact(companyId: string, formData: FormData) {
+  const consultant = await requireConsultant();
+  const link = await db.query.consultantClients.findFirst({
+    where: and(
+      eq(consultantClients.consultantId, consultant.id),
+      eq(consultantClients.companyId, companyId),
+      isNull(consultantClients.archivedAt)
+    ),
+  });
+  if (!link) return;
+
+  const contactName = String(formData.get("contact_name") ?? "").trim();
+  const contactEmail = String(formData.get("contact_email") ?? "").trim();
+  await db
+    .update(companies)
+    .set({ clientContactName: contactName || null, clientContactEmail: contactEmail || null })
+    .where(eq(companies.id, companyId));
+
+  revalidatePath(`/consultant/clients/${companyId}`);
+  revalidatePath(`/consultant/review/${companyId}`);
 }
 
 export async function archiveClient(companyId: string) {

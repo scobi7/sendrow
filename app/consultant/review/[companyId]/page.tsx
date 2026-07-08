@@ -8,6 +8,8 @@ import { SessionActions } from "./session-actions";
 import { DataRequestForm } from "./data-request-form";
 import { LockPipelineButton } from "./lock-pipeline-button";
 import { PortalLinkButton } from "./portal-link-button";
+import { resendPortalEmail } from "@/lib/consultant-actions";
+import { updateClientContact } from "@/lib/actions";
 import { VendorConfirm } from "./vendor-confirm";
 import type { ChecklistItem } from "@/lib/portal";
 
@@ -150,6 +152,31 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ c
         <div className="px-5 pt-4 pb-3" style={{ borderBottom: "1px solid var(--divider)" }}>
           <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>Data requests</p>
         </div>
+        <div className="px-5 py-3" style={{ borderBottom: "1px solid var(--divider)", background: company.clientContactEmail ? "transparent" : "var(--warning-tint)" }}>
+          {!company.clientContactEmail && (
+            <p className="mb-2 text-xs font-medium" style={{ color: "var(--warning-strong)" }}>
+              No client contact on file — requests and reminders can&apos;t be emailed. Add one below or share the portal link manually.
+            </p>
+          )}
+          <form action={updateClientContact.bind(null, companyId)} className="flex flex-wrap items-center gap-2">
+            <input
+              name="contact_name"
+              defaultValue={company.clientContactName ?? ""}
+              placeholder="Contact name"
+              className="input flex-1 text-xs"
+              style={{ minWidth: "10rem" }}
+            />
+            <input
+              name="contact_email"
+              type="email"
+              defaultValue={company.clientContactEmail ?? ""}
+              placeholder="contact@client.com"
+              className="input flex-1 text-xs"
+              style={{ minWidth: "12rem" }}
+            />
+            <button className="btn btn-secondary shrink-0 px-3 py-1.5 text-xs">Save contact</button>
+          </form>
+        </div>
         {openRequests.length === 0 ? (
           <p className="px-5 py-4 text-sm" style={{ color: "var(--text-muted)" }}>No requests sent yet.</p>
         ) : (
@@ -178,24 +205,29 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ c
                       {req.status}
                     </span>
                   </div>
-                  {checklist.length > 0 && (
-                    <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                      {checklist.map((item) => (
-                        <span
-                          key={item.id}
-                          className="rounded-full px-2 py-0.5 text-xs"
-                          style={
-                            item.status === "received"
-                              ? { background: "var(--primary-tint)", color: "var(--primary)" }
-                              : { background: "var(--divider)", color: "var(--text-muted)" }
-                          }
-                        >
-                          {item.status === "received" ? "✓ " : "○ "}{item.label}
-                        </span>
-                      ))}
-                      {req.token && <PortalLinkButton token={req.token} />}
-                    </div>
-                  )}
+                  <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                    {checklist.map((item) => (
+                      <span
+                        key={item.id}
+                        className="rounded-full px-2 py-0.5 text-xs"
+                        style={
+                          item.status === "received"
+                            ? { background: "var(--primary-tint)", color: "var(--primary)" }
+                            : { background: "var(--divider)", color: "var(--text-muted)" }
+                        }
+                      >
+                        {item.status === "received" ? "✓ " : "○ "}{item.label}
+                      </span>
+                    ))}
+                    {req.token && <PortalLinkButton token={req.token} />}
+                    {req.token && req.status === "open" && company.clientContactEmail && (
+                      <form action={resendPortalEmail.bind(null, req.id, companyId)}>
+                        <button className="rounded-full px-2 py-0.5 text-xs font-medium transition-opacity hover:opacity-70" style={{ background: "var(--primary-tint)", color: "var(--primary)" }}>
+                          ✉ Email link to {company.clientContactEmail}
+                        </button>
+                      </form>
+                    )}
+                  </div>
                 </div>
               );
             })}

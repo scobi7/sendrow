@@ -15,8 +15,8 @@ describe("review-queue notification emails (Plan I / H17)", () => {
     vi.unstubAllGlobals();
   });
 
-  it("sendDataRequestEmail sends to the client with the request description", async () => {
-    await sendDataRequestEmail("client@acme.com", "Jane Doe", "Acme Corp", "Please upload Q3 fuel card export", "2026-08-01");
+  it("sendDataRequestEmail sends to the client with the request description and portal link", async () => {
+    await sendDataRequestEmail("client@acme.com", "Jane Doe", "Acme Corp", "Please upload Q3 fuel card export", "2026-08-01", "tok_abc123");
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const [url, init] = fetchMock.mock.calls[0];
     expect(url).toBe("https://api.resend.com/emails");
@@ -25,6 +25,18 @@ describe("review-queue notification emails (Plan I / H17)", () => {
     expect(body.subject).toContain("Acme Corp");
     expect(body.html).toContain("Please upload Q3 fuel card export");
     expect(body.html).toContain("2026-08-01");
+    expect(body.html).toContain("/portal/tok_abc123");
+    // contracts §11: no Sendrow signature in client-facing copy
+    // (the portal URL's domain is a known N5 white-label gap)
+    expect(body.html).not.toContain("Sendrow team");
+  });
+
+  it("sendPortalReminderEmail carries no Sendrow signature (contracts §11)", async () => {
+    const { sendPortalReminderEmail } = await import("@/lib/email");
+    await sendPortalReminderEmail("client@acme.com", "Jane", "Acme", "utility bills", "tok_r", 7, null);
+    const body = JSON.parse(fetchMock.mock.calls[0][1].body);
+    expect(body.html).toContain("/portal/tok_r");
+    expect(body.html).not.toContain("Sendrow team");
   });
 
   it("sendUploadNeedsReviewEmail sends to the consultant with the unmapped count", async () => {
@@ -39,7 +51,7 @@ describe("review-queue notification emails (Plan I / H17)", () => {
 
   it("does nothing when RESEND_API_KEY is not set", async () => {
     vi.stubEnv("RESEND_API_KEY", "");
-    await sendDataRequestEmail("client@acme.com", "Jane", "Acme", "desc", null);
+    await sendDataRequestEmail("client@acme.com", "Jane", "Acme", "desc", null, "tok_x");
     expect(fetchMock).not.toHaveBeenCalled();
   });
 });

@@ -34,7 +34,7 @@ export default async function NewClientPage({
       >
         ← Back to clients
       </Link>
-      <PageHeader title="Add New Client" subtitle="Create a client profile and generate an invite link." />
+      <PageHeader title="Add New Client" subtitle="Create a client profile — data requests and portal links go to the contact you set here." />
 
       {error && (
         <p
@@ -49,6 +49,17 @@ export default async function NewClientPage({
         <div>
           <label className="label">Company name</label>
           <input name="name" required className="input" placeholder="Acme Corp" />
+        </div>
+        <div>
+          <label className="label">Contact name</label>
+          <input name="contact_name" className="input" placeholder="Jane Doe" />
+        </div>
+        <div>
+          <label className="label">Contact email</label>
+          <input name="contact_email" type="email" className="input" placeholder="jane@acme.com" />
+          <p className="mt-1 text-xs" style={{ color: "var(--text-muted)" }}>
+            Portal links and reminders are emailed here. You can add it later, but requests won&apos;t be delivered until you do.
+          </p>
         </div>
         <div>
           <label className="label">Industry</label>

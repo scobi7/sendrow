@@ -27,13 +27,8 @@ export async function GET(request: NextRequest) {
     const req = open.find((r) => r.id === reminder.id)!;
     if (!req.token) continue; // pre-portal requests have no magic link to remind about
 
-    const [clientUser, [company]] = await Promise.all([
-      db.query.userCompanies.findFirst({
-        where: and(eq(userCompanies.companyId, req.companyId), eq(userCompanies.role, "company")),
-      }),
-      db.select({ name: companies.name }).from(companies).where(eq(companies.id, req.companyId)),
-    ]);
-    if (!clientUser?.email || !company) continue;
+    const company = await db.query.companies.findFirst({ where: eq(companies.id, req.companyId) });
+    if (!company?.clientContactEmail) continue; // no contact on file — nothing to remind
 
     let consultantEmail: string | null = null;
     if (reminder.ccConsultant) {
@@ -50,8 +45,8 @@ export async function GET(request: NextRequest) {
 
     try {
       await sendPortalReminderEmail(
-        clientUser.email,
-        clientUser.name ?? "there",
+        company.clientContactEmail,
+        company.clientContactName ?? "there",
         company.name,
         req.description,
         req.token,
