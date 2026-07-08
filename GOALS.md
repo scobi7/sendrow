@@ -8,7 +8,7 @@ We are NOT "another carbon accounting platform." That category is crowded, ventu
 
 ## Who pays us
 - **Consultants (only paying customer):** solo climate/ESG consultants and small firms serving CA mid-size suppliers. ~30 named targets to start; Kerri is Founding Partner seat one.
-- **Companies (referral revenue, not customers):** inbound companies are routed to partner consultants for a referral fee ($500–1.5k or % of first engagement). The direct-to-company sales motion is dead; the self-serve code stays dormant, not deleted.
+- **Companies (referral revenue, not customers):** inbound companies are routed to partner consultants for a referral fee ($500–1.5k or % of first engagement). The direct-to-company sales motion is **paused, not disproven** — it was never pitched to anyone. The self-serve code stays dormant, and the full v1 direction is archived in `docs/direction-v1-company-first.md` and on branch `sendrow-v1` if we ever want it back.
 
 ## The Timing Thesis (why now — verified July 2026)
 - SB 253's first deadline moved to Nov 10, 2026; first year is leniency (report what you already collected, no assurance). **Don't sell November panic — sophisticated consultants know it's overstated and it burns credibility.**

@@ -1,6 +1,6 @@
 # PLANS.md — Plan J: Practice Platform Release
-> STATUS: DRAFT — PENDING HUMAN APPROVAL
-> Generated 2026-07-08 from the direction reset (see GOALS.md). On approval, generate TASKS.md.
+> STATUS: APPROVED 2026-07-08 — building on branch `sendrow-v2`
+> Generated 2026-07-08 from the direction reset (see GOALS.md). TASKS.md generated (J1–J20).
 > Prior plan: Plan I (Integrity Release) — BUILT 2026-07-07, see success/plan-i.md.
 
 ## Objective

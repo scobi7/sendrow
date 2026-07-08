@@ -28,8 +28,8 @@ The 2027 story.
 - Free lead-magnet tools: in-scope checker, CA climate deadline calendar, survey decoder
 - "Sendrow Certified" consultant training (pipeline + switching costs — noted, not soon)
 
-## Killed / dormant (2026-07-08)
-- ~~Plan J (old) — annual company Stripe pricing~~ — direct-to-company motion dead; company self-serve code dormant, not deleted
+## Paused / dormant (2026-07-08 — recoverable, see docs/direction-v1-company-first.md + branch `sendrow-v1`)
+- ~~Plan J (old) — annual company Stripe pricing~~ — direct-to-company motion paused (never pitched, not disproven); self-serve code dormant, not deleted
 - ~~Universal spreadsheet ingestion as a promise~~ — three hardened intake paths + guided portal entry instead
 - ~~Data quality scorecard as renewal driver~~ — folded into the consultant practice dashboard (Plan L)
 

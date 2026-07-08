@@ -5,6 +5,8 @@
 ## 🧭 Direction reset (2026-07-08)
 Sendrow is now **the practice platform for climate consultants** — consultants are the only paying customer; inbound companies become referral revenue. White-label fulfillment funds the software build; the 2027 Scope 3 / limited-assurance wave is the timing thesis; vendor-mapping memory is the moat. Full rationale + industry research in GOALS.md; source doc: "Sendrow Model and Expansion Plan.docx".
 
+**v1 is recoverable:** the company-first direction was never pitched (untested, not disproven). It's archived in `docs/direction-v1-company-first.md`; the full pre-pivot repo is branch `sendrow-v1`. Active development: branch `sendrow-v2` (the old `github-branch-tracking` branch was renamed/retired).
+
 ## 🔴 P0 — Ops blockers (user actions, not build work)
 | # | What | Where |
 |---|------|-------|
