@@ -30,7 +30,7 @@ Generated from PLANS.md (approved). Updated after each task completes.
 ### Finalize
 - [x] **I14** — Write `success/plan-i.md`; verify all four success criteria from PLANS.md
 - [x] **I15** — Full test suite passing + `tsc` clean
-- [ ] **I16** — Confirm `contracts/invariants.md` unviolated; commit + push to `github-branch-tracking` (never `main`)
+- [x] **I16** — Confirm `contracts/invariants.md` unviolated; commit + push to `github-branch-tracking` (never `main`)
 
 ---
 
