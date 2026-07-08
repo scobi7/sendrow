@@ -3,8 +3,8 @@ import { db } from "@/lib/db";
 import { dataRequests, companies } from "@/lib/db/schema";
 import { portalTokenValid } from "@/lib/portal";
 import type { ChecklistItem } from "@/lib/portal";
-import { Logo } from "@/components/ui";
 import { PortalChecklist } from "./portal-checklist";
+import { getBrandForCompany } from "@/lib/branding";
 
 export default async function PortalPage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
@@ -13,9 +13,9 @@ export default async function PortalPage({ params }: { params: Promise<{ token: 
   const valid = request && portalTokenValid({ token: request.token, expiresAt: request.expiresAt, status: request.status });
 
   if (!valid) {
+    // White-label surface: no Sendrow branding, even on the error state (§11)
     return (
       <main className="mx-auto flex min-h-screen max-w-lg flex-col items-center justify-center px-6 text-center" style={{ background: "var(--bg)" }}>
-        <Logo />
         <h1 className="mt-8 text-xl font-bold font-display" style={{ color: "var(--text)" }}>
           This link has expired
         </h1>
@@ -26,14 +26,33 @@ export default async function PortalPage({ params }: { params: Promise<{ token: 
     );
   }
 
-  const [company] = await db.select({ name: companies.name }).from(companies).where(eq(companies.id, request.companyId));
+  const [[company], brand] = await Promise.all([
+    db.select({ name: companies.name }).from(companies).where(eq(companies.id, request.companyId)),
+    getBrandForCompany(request.companyId),
+  ]);
   const checklist = (request.checklist as ChecklistItem[] | null) ?? [];
   const received = checklist.filter((i) => i.status === "received").length;
 
   return (
-    <main className="mx-auto min-h-screen max-w-2xl px-6 py-12" style={{ background: "var(--bg)" }}>
-      {/* White-label surface: consultant branding slot — Sendrow's name is not shown (contracts/ §11) */}
+    <main
+      className="mx-auto min-h-screen max-w-2xl px-6 py-12"
+      style={{
+        background: "var(--bg)",
+        ...(brand?.accentColor ? ({ "--primary": brand.accentColor } as React.CSSProperties) : {}),
+      }}
+    >
+      {/* White-label surface: consultant branding, never Sendrow (contracts/ §11) */}
       <div className="mb-10">
+        {brand && (
+          <div className="mb-6 flex items-center gap-3">
+            {brand.logoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={brand.logoUrl} alt={brand.brandName} className="h-9 w-auto" />
+            ) : (
+              <span className="text-lg font-bold font-display" style={{ color: "var(--text)" }}>{brand.brandName}</span>
+            )}
+          </div>
+        )}
         <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
           Data request for
         </p>

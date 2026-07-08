@@ -120,6 +120,27 @@ export const consultantClients = pgTable("gt_consultant_clients", {
   archivedAt: text("archived_at"),
 });
 
+/** White-label brand (Plan N5): what the consultant's clients see instead of
+ *  Sendrow, on the portal, shared results, and client-facing emails (§11). */
+export const consultantProfiles = pgTable("gt_consultant_profiles", {
+  consultantId: text("consultant_id").primaryKey(), // clerk id
+  brandName: text("brand_name"),
+  logoUrl: text("logo_url"),
+  accentColor: text("accent_color"), // hex, overrides --primary on client-facing surfaces
+  replyTo: text("reply_to"),
+  updatedAt: text("updated_at").notNull(),
+});
+
+/** Read-only client results links (Plan N5): the consultant-branded "dashboard"
+ *  a company sees — shared as a link, never a login. */
+export const shareLinks = pgTable("gt_share_links", {
+  token: text("token").primaryKey(),
+  companyId: text("company_id").notNull().references(() => companies.id),
+  createdBy: text("created_by").notNull(),
+  createdAt: text("created_at").notNull(),
+  revokedAt: text("revoked_at"),
+});
+
 export const inviteTokens = pgTable("gt_invite_tokens", {
   token: text("token").primaryKey(),
   consultantId: text("consultant_id").notNull(),

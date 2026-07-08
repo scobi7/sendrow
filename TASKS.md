@@ -281,6 +281,11 @@ Generated from PLANS.md (approved). Updated after each task completes.
 - [x] **N4.1** — `period` on line items (migration 0007); tagged from row date at import, fiscal-year aware, null when dateless (never guessed)
 - [x] **N4.2** — `lib/period.ts`: periodForDate / periodTotals / yoyDelta, fully unit-tested
 - [x] **N4.3** — workspace "By Reporting Period" card with YoY delta once ≥2 tagged periods exist
-### N5 — White-label branding + shareable results (queued)
+### N5 — White-label branding + shareable results
+- [x] **N5.1** — `gt_consultant_profiles` (brand name, logo, accent, reply-to) + `gt_share_links` (migration 0008)
+- [x] **N5.2** — `/consultant/settings` brand editor (logo upload via Blob when configured)
+- [x] **N5.3** — portal renders consultant brand + accent; Sendrow logo removed from expired state (§11)
+- [x] **N5.4** — client-facing emails send as the brand name with consultant reply-to + brand signature
+- [x] **N5.5** — `/shared/[token]` read-only branded results page (scopes, periods, YoY); create/copy/revoke from workspace
 ### N6 — Questionnaire copilot (blocked: needs a real questionnaire)
 ### N7 — Real factor data, referral admin, polish (queued)

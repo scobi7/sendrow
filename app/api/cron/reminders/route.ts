@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { dataRequests, userCompanies, companies, consultantClients } from "@/lib/db/schema";
 import { dueReminders } from "@/lib/reminders";
 import { sendPortalReminderEmail } from "@/lib/email";
+import { getBrandForCompany } from "@/lib/branding";
 
 /** Daily cron (vercel.json): nudges clients with open data requests. */
 export async function GET(request: NextRequest) {
@@ -51,7 +52,8 @@ export async function GET(request: NextRequest) {
         req.description,
         req.token,
         reminder.tier,
-        consultantEmail
+        consultantEmail,
+        await getBrandForCompany(req.companyId)
       );
       const sentMap = (req.remindersSentAt as Record<string, string> | null) ?? {};
       await db

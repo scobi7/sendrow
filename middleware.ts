@@ -20,6 +20,7 @@ const isPublicRoute = createRouteMatcher([
   "/security(.*)",
   "/dpa(.*)",
   "/get-matched(.*)",
+  "/shared(.*)",   // read-only branded results — token is the auth
 ]);
 
 const isAdminRoute = createRouteMatcher(["/admin(.*)"]);

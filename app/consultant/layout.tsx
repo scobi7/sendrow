@@ -31,6 +31,13 @@ export default async function ConsultantLayout({ children }: { children: React.R
           >
             Review Queue
           </Link>
+          <Link
+            href="/consultant/settings"
+            className="nav-link block rounded-canopy-sm px-3 py-2 text-sm font-medium transition-colors"
+            style={{ color: "var(--text-muted)" }}
+          >
+            Practice Settings
+          </Link>
         </nav>
         <div className="pt-4" style={{ borderTop: "1px solid var(--divider)" }}>
           <p className="truncate text-xs font-semibold" style={{ color: "var(--text)" }}>{user.name}</p>

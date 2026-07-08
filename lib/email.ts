@@ -4,15 +4,29 @@ const FROM = process.env.FROM_EMAIL ?? "hello@sendrow.app";
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://sendrow.app";
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? "malachi.nguyen@sendrow.app";
 
-async function send(to: string | string[], subject: string, html: string) {
+async function send(
+  to: string | string[],
+  subject: string,
+  html: string,
+  opts?: { fromName?: string; replyTo?: string | null }
+) {
   if (!process.env.RESEND_API_KEY) return;
+  // Client-facing sends use the consultant's brand as the display name (§11);
+  // the address stays on our domain until custom sending domains land.
+  const fromName = opts?.fromName ?? "Sendrow";
   await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
       Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ from: `Sendrow <${FROM}>`, to: Array.isArray(to) ? to : [to], subject, html }),
+    body: JSON.stringify({
+      from: `${fromName} <${FROM}>`,
+      to: Array.isArray(to) ? to : [to],
+      subject,
+      html,
+      ...(opts?.replyTo ? { reply_to: opts.replyTo } : {}),
+    }),
   });
 }
 
@@ -80,7 +94,8 @@ export async function sendDataRequestEmail(
   companyName: string,
   description: string,
   dueDate: string | null,
-  portalToken: string
+  portalToken: string,
+  brand?: { brandName: string; replyTo: string | null } | null
 ) {
   const firstName = clientName.split(" ")[0];
   const link = `${APP_URL}/portal/${portalToken}`;
@@ -92,7 +107,9 @@ export async function sendDataRequestEmail(
 <blockquote><p>${description}</p></blockquote>
 ${dueDate ? `<p><strong>Due:</strong> ${dueDate}</p>` : ""}
 <p><a href="${link}">Open your secure upload link →</a></p>
-<p>No account or password needed — the link is unique to you.</p>`
+<p>No account or password needed — the link is unique to you.</p>
+${brand ? `<p>— ${brand.brandName}</p>` : ""}`,
+    brand ? { fromName: brand.brandName, replyTo: brand.replyTo } : undefined
   );
 }
 
@@ -116,7 +133,8 @@ export async function sendPortalReminderEmail(
   description: string,
   portalToken: string,
   daysOpen: number,
-  ccConsultant: string | null
+  ccConsultant: string | null,
+  brand?: { brandName: string; replyTo: string | null } | null
 ) {
   const firstName = clientName.split(" ")[0];
   const to = ccConsultant ? [clientEmail, ccConsultant] : clientEmail;
@@ -127,7 +145,9 @@ export async function sendPortalReminderEmail(
 <p>A quick reminder — your reviewer is still waiting on data for <strong>${companyName}</strong> (requested ${daysOpen} days ago):</p>
 <blockquote><p>${description}</p></blockquote>
 <p><a href="${APP_URL}/portal/${portalToken}">Open your secure upload link →</a></p>
-<p>It usually takes just a few minutes. No account or password needed.</p>`
+<p>It usually takes just a few minutes. No account or password needed.</p>
+${brand ? `<p>— ${brand.brandName}</p>` : ""}`,
+    brand ? { fromName: brand.brandName, replyTo: brand.replyTo } : undefined
   );
 }
 

@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { and, eq, isNull } from "drizzle-orm";
 import { db } from "./db";
-import { companies, consultantClients, userCompanies, intakeSessions, dataRequests, pipelineStatus, vendorMappings, emissionLineItems } from "./db/schema";
+import { companies, consultantClients, consultantProfiles, shareLinks, userCompanies, intakeSessions, dataRequests, pipelineStatus, vendorMappings, emissionLineItems } from "./db/schema";
 import { normalizeVendor, matchVendor, VENDOR_CONFIRM_OPTIONS, getVendorMappingsFromDb } from "./vendor-mappings";
 import { rowToLineItem } from "./ingestion/ingest";
 import { getFactorsFromDb } from "./factor-engine";
@@ -16,6 +16,7 @@ import { refreshSectionStatus } from "./progress";
 import { logChange } from "./audit";
 import { Company, User } from "./types";
 import { sendDataRequestEmail } from "./email";
+import { getBrandForCompany } from "./branding";
 import { generatePortalToken, portalExpiry, buildChecklist } from "./portal";
 import type { DataType } from "./ingestion/data-type-templates";
 
@@ -203,7 +204,10 @@ export async function createDataRequest(
 }
 
 async function notifyClientOfDataRequest(companyId: string, description: string, dueDate: string | null, token: string) {
-  const company = await db.query.companies.findFirst({ where: eq(companies.id, companyId) });
+  const [company, brand] = await Promise.all([
+    db.query.companies.findFirst({ where: eq(companies.id, companyId) }),
+    getBrandForCompany(companyId),
+  ]);
   if (!company?.clientContactEmail) return; // no contact on file — consultant shares the link manually
   await sendDataRequestEmail(
     company.clientContactEmail,
@@ -211,7 +215,8 @@ async function notifyClientOfDataRequest(companyId: string, description: string,
     company.name,
     description,
     dueDate,
-    token
+    token,
+    brand
   );
 }
 
@@ -321,3 +326,81 @@ export async function lockPipeline(companyId: string, notes: string) {
 
 // ── Notify consultant when client accepts invite ───────────────────────────
 
+
+// ─────────── White-label brand + shared results (Plan N5) ───────────
+
+export async function saveBrandProfile(formData: FormData) {
+  const user = await currentUser();
+  if (!user || user.role !== "consultant") return;
+
+  const brandName = String(formData.get("brand_name") ?? "").trim();
+  const accentRaw = String(formData.get("accent_color") ?? "").trim();
+  const accentColor = /^#[0-9a-fA-F]{6}$/.test(accentRaw) ? accentRaw : null;
+  const replyTo = String(formData.get("reply_to") ?? "").trim();
+
+  let logoUrl: string | undefined;
+  const logo = formData.get("logo");
+  if (logo instanceof File && logo.size > 0 && process.env.BLOB_READ_WRITE_TOKEN) {
+    const { put } = await import("@vercel/blob");
+    const blob = await put(`branding/${user.id}/${logo.name}`, Buffer.from(await logo.arrayBuffer()), {
+      access: "public",
+      addRandomSuffix: true,
+    });
+    logoUrl = blob.url;
+  }
+
+  await db
+    .insert(consultantProfiles)
+    .values({
+      consultantId: user.id,
+      brandName: brandName || null,
+      accentColor,
+      replyTo: replyTo || null,
+      ...(logoUrl ? { logoUrl } : {}),
+      updatedAt: new Date().toISOString(),
+    })
+    .onConflictDoUpdate({
+      target: consultantProfiles.consultantId,
+      set: {
+        brandName: brandName || null,
+        accentColor,
+        replyTo: replyTo || null,
+        ...(logoUrl ? { logoUrl } : {}),
+        updatedAt: new Date().toISOString(),
+      },
+    });
+
+  revalidatePath("/consultant/settings");
+}
+
+export async function createShareLink(companyId: string) {
+  const user = await currentUser();
+  if (!user || user.role !== "consultant") return;
+  const link = await db.query.consultantClients.findFirst({
+    where: and(
+      eq(consultantClients.consultantId, user.id),
+      eq(consultantClients.companyId, companyId),
+      isNull(consultantClients.archivedAt)
+    ),
+  });
+  if (!link) return;
+
+  const { generatePortalToken } = await import("./portal");
+  await db.insert(shareLinks).values({
+    token: generatePortalToken(),
+    companyId,
+    createdBy: user.id,
+    createdAt: new Date().toISOString(),
+  });
+  revalidatePath(`/consultant/clients/${companyId}`);
+}
+
+export async function revokeShareLink(token: string, companyId: string) {
+  const user = await currentUser();
+  if (!user || user.role !== "consultant") return;
+  await db
+    .update(shareLinks)
+    .set({ revokedAt: new Date().toISOString() })
+    .where(and(eq(shareLinks.token, token), eq(shareLinks.companyId, companyId)));
+  revalidatePath(`/consultant/clients/${companyId}`);
+}

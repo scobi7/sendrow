@@ -3,17 +3,18 @@ import { notFound } from "next/navigation";
 import { and, desc, eq, isNull } from "drizzle-orm";
 import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { companies, consultantClients, intakeSessions, dataRequests, pipelineStatus, emissionLineItems } from "@/lib/db/schema";
+import { companies, consultantClients, intakeSessions, dataRequests, pipelineStatus, emissionLineItems, shareLinks } from "@/lib/db/schema";
 import { loadCompany } from "@/lib/store";
 import { totals } from "@/lib/calc";
 import { auditForCompany } from "@/lib/audit";
 import { archiveClient, updateClientContact } from "@/lib/actions";
-import { resendPortalEmail } from "@/lib/consultant-actions";
+import { resendPortalEmail, createShareLink, revokeShareLink } from "@/lib/consultant-actions";
 import { periodTotals, yoyDelta } from "@/lib/period";
 import { SessionActions } from "./session-actions";
 import { DataRequestForm } from "./data-request-form";
 import { LockPipelineButton } from "./lock-pipeline-button";
 import { PortalLinkButton } from "./portal-link-button";
+import { ShareLinkButton } from "./share-link-button";
 import { VendorConfirm } from "./vendor-confirm";
 import type { ChecklistItem } from "@/lib/portal";
 
@@ -65,6 +66,10 @@ export default async function ClientWorkspacePage({
     auditForCompany(id),
   ]);
   if (!companyRow || !fullCompany) notFound();
+
+  const activeShare = await db.query.shareLinks.findFirst({
+    where: and(eq(shareLinks.companyId, id), isNull(shareLinks.revokedAt)),
+  });
 
   const periodItems = await db
     .select({
@@ -381,6 +386,29 @@ export default async function ClientWorkspacePage({
               </p>
             </div>
           )}
+
+          <div className="card h-fit">
+            <h2 className="text-sm font-bold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
+              Client Results Link
+            </h2>
+            <p className="mt-2 text-xs" style={{ color: "var(--text-muted)" }}>
+              A read-only, branded summary your client can view — no account needed.
+            </p>
+            {activeShare ? (
+              <div className="mt-3 flex items-center gap-3">
+                <ShareLinkButton token={activeShare.token} />
+                <form action={revokeShareLink.bind(null, activeShare.token, id)}>
+                  <button className="text-xs transition-opacity hover:opacity-70" style={{ color: "var(--text-muted)" }}>
+                    Revoke
+                  </button>
+                </form>
+              </div>
+            ) : (
+              <form action={createShareLink.bind(null, id)} className="mt-3">
+                <button className="btn btn-secondary text-xs">Create results link</button>
+              </form>
+            )}
+          </div>
 
           <div className="card h-fit">
             <h2 className="text-sm font-bold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
