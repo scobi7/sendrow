@@ -5,7 +5,7 @@
 ## Plan M — Remove Company Self-Serve (BUILT 2026-07-08)
 v1/v2 split made real: company dashboard, setup wizard, invite-login flow, and 25 orphaned company actions deleted from v2 (all preserved on `sendrow-v1`). Onboarding is consultant-only; companies route to /get-matched.
 
-## Plan N — Final Product Program (PENDING APPROVAL — see PLANS.md)
+## Plan N — Final Product Program (N1–N5 + N7.1 BUILT 2026-07-08; N6 blocked on a real questionnaire; N7.2 open)
 N1 client-contact email repair (P0: portal emails currently no-op) → N2 single consultant workspace → N3 evidence locker (Blob) → N4 reporting periods/YoY → N5 white-label + shareable client results → N6 questionnaire copilot (needs a real questionnaire) → N7 real factor data, referral-lead admin, polish. Absorbs the former Plan K/L items below.
 
 ## Plan J — Practice Platform Release (BUILT 2026-07-08)
