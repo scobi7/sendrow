@@ -72,3 +72,28 @@ The client receives a link, needs no account, and sees exactly what to provide.
 
 ## Out of scope for Plan J
 Questionnaire copilot and evidence locker (Plan K), white-label branding (Plan K), assurance binder (Plan L), consultant Stripe pricing changes (decide after first fulfillment revenue).
+
+---
+
+## Plan M — Remove Company Self-Serve from v2 (APPROVED)
+
+**Decision (Malachi, 2026-07-08):** v1 and v2 are separate branches for a reason. v1 (`sendrow-v1`, frozen) is the archive of the company-first methodology; v2 doesn't need to carry it dormant. Delete the company self-serve surfaces from v2 — reverting = checking out v1.
+
+### M1 — Delete company surfaces
+- `app/(app)/**` — entire company dashboard tree (dashboard, intake, reports, scopes, settings, connections, gaps, governance, social, workpaper, scope3-screening)
+- `app/connect/**` — client invite/login flow (replaced by the magic-link portal)
+- `app/api/intake/**` — only caller was the deleted upload form (portal has its own import route)
+- `app/api/export/**` — only linked from deleted settings page (consultant-side export is future work)
+
+### M2 — Consultant-only onboarding
+- `app/onboarding/page.tsx`: single consultant card; "Represent a company? Get matched →" link to `/get-matched`; consultants with accounts redirect to `/consultant`
+- `lib/actions.ts`: delete `onboardAsCompany`, `acceptInvite`, `generateInviteToken`
+
+### M3 — Rewire stragglers
+- Consultant client page: remove invite-link section (portal is the client access path)
+- All `redirect("/dashboard")` → `/onboarding` (or `/consultant` where role is known)
+- Keep: `/setup`, `/checkout`, billing APIs (consultant billing), `/demo`, `/report` (shareable), shared libs (`import-core`, calc, ingest — portal uses them)
+
+### Acceptance
+- New signup has exactly one path: consultant. `/dashboard` and friends 404.
+- Build passes, all tests pass. Portal flow untouched.

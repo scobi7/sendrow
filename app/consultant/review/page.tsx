@@ -8,7 +8,7 @@ import { consultantClients, companies, intakeSessions, dataRequests } from "@/li
 export default async function ConsultantClientsPage() {
   const user = await currentUser();
   if (!user) redirect("/login");
-  if (user.role !== "consultant") redirect("/dashboard");
+  if (user.role !== "consultant") redirect("/onboarding");
 
   const links = await db
     .select({ companyId: consultantClients.companyId })

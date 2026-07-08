@@ -11,7 +11,6 @@ const isPublicRoute = createRouteMatcher([
   "/signup(.*)",
   "/sso-callback(.*)",
   "/onboarding(.*)",
-  "/connect(.*)",
   "/api/demo(.*)",
   "/api/webhooks/stripe(.*)",
   "/terms(.*)",
@@ -26,20 +25,7 @@ const isPublicRoute = createRouteMatcher([
 const isAdminRoute = createRouteMatcher(["/admin(.*)"]);
 
 const isAppRoute = createRouteMatcher([
-  "/dashboard(.*)",
-  "/setup(.*)",
-  "/scope(.*)",
-  "/connections(.*)",
-  "/reports(.*)",
   "/consultant(.*)",
-  "/settings(.*)",
-  "/governance(.*)",
-  "/social(.*)",
-  "/gaps(.*)",
-  "/report(.*)",
-  "/intake(.*)",
-  "/workpaper(.*)",
-  "/scope3-screening(.*)",
 ]);
 
 export default clerkMiddleware(async (auth, request) => {
@@ -51,7 +37,7 @@ export default clerkMiddleware(async (auth, request) => {
     const { userId } = await auth();
     const adminId = process.env.ADMIN_CLERK_ID;
     if (!adminId || userId !== adminId) {
-      return NextResponse.redirect(new URL("/dashboard", request.url));
+      return NextResponse.redirect(new URL("/consultant", request.url));
     }
   }
 

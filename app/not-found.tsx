@@ -16,7 +16,7 @@ export default function NotFound() {
         <p className="mt-2 text-sm" style={{ color: "var(--text-muted)" }}>
           This page doesn&apos;t exist or was moved.
         </p>
-        <Link href="/dashboard" className="btn btn-primary mt-8">
+        <Link href="/consultant" className="btn btn-primary mt-8">
           Go to dashboard
         </Link>
       </div>

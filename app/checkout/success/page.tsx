@@ -12,7 +12,7 @@ export default function CheckoutSuccessPage() {
 
   useEffect(() => {
     const sessionId = searchParams.get("session_id");
-    const redirectTo = searchParams.get("redirect") ?? "/dashboard";
+    const redirectTo = searchParams.get("redirect") ?? "/consultant";
 
     async function verify() {
       try {

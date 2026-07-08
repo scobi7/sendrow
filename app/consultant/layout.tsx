@@ -7,7 +7,7 @@ import { LogoutButton } from "@/components/logout-button";
 export default async function ConsultantLayout({ children }: { children: React.ReactNode }) {
   const user = await currentUser();
   if (!user) redirect("/login");
-  if (user.role !== "consultant") redirect("/dashboard");
+  if (user.role !== "consultant") redirect("/onboarding");
 
   return (
     <div className="flex min-h-screen" style={{ background: "var(--bg)" }}>

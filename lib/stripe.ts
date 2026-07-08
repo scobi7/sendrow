@@ -1,6 +1,14 @@
 import Stripe from "stripe";
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? "");
+// Lazy: Stripe's constructor throws without a key, which would break builds
+// in environments where billing is dormant (no STRIPE_SECRET_KEY).
+let _stripe: Stripe | null = null;
+export const stripe = new Proxy({} as Stripe, {
+  get(_target, prop) {
+    _stripe ??= new Stripe(process.env.STRIPE_SECRET_KEY ?? "");
+    return _stripe[prop as keyof Stripe];
+  },
+});
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://sendrow.app";
 
@@ -14,7 +22,7 @@ export async function createCheckoutSession(
   plan: "company" | "consultant",
   email?: string
 ) {
-  const redirectTo = plan === "consultant" ? "/consultant" : "/setup";
+  const redirectTo = "/consultant";
 
   const customer = await stripe.customers.create({
     email,

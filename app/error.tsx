@@ -23,7 +23,7 @@ export default function GlobalError({
       </p>
       <div className="mt-8 flex gap-3">
         <button onClick={reset} className="btn btn-primary">Try again</button>
-        <Link href="/dashboard" className="btn btn-secondary">Go to dashboard</Link>
+        <Link href="/consultant" className="btn btn-secondary">Go to your workspace</Link>
       </div>
     </main>
   );

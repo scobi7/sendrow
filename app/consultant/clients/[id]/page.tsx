@@ -7,10 +7,9 @@ import { consultantClients } from "@/lib/db/schema";
 import { loadCompany } from "@/lib/store";
 import { totals } from "@/lib/calc";
 import { auditForCompany } from "@/lib/audit";
-import { generateInviteToken, archiveClient, startUtilityConnectForClient } from "@/lib/actions";
+import { archiveClient, startUtilityConnectForClient } from "@/lib/actions";
 import { PageHeader, StatusDot } from "@/components/ui";
 import { SectionName } from "@/lib/types";
-import { CopyButton } from "./copy-link";
 
 const SECTIONS: { key: SectionName; label: string; desc: string }[] = [
   { key: "connections", label: "Connections", desc: "QuickBooks + utility" },
@@ -30,12 +29,10 @@ const STATUS_LABEL: Record<string, string> = {
 
 export default async function ClientDetailPage({
   params,
-  searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ invite?: string }>;
 }) {
-  const [{ id }, { invite: inviteToken }, user] = await Promise.all([params, searchParams, currentUser()]);
+  const [{ id }, user] = await Promise.all([params, currentUser()]);
 
   const link = await db.query.consultantClients.findFirst({
     where: and(
@@ -58,11 +55,6 @@ export default async function ClientDetailPage({
   const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 2 });
   const recent = recentAudit.slice(0, 10);
 
-  const inviteUrl = inviteToken
-    ? `${process.env.NEXT_PUBLIC_APP_URL}/connect/${inviteToken}`
-    : null;
-
-  const boundGenerate = generateInviteToken.bind(null, id);
   const boundArchive = archiveClient.bind(null, id);
 
   return (
@@ -130,27 +122,15 @@ export default async function ClientDetailPage({
 
           <div className="card">
             <h2 className="text-sm font-bold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
-              Client Invite Link
+              Client Data Access
             </h2>
             <p className="mt-2 text-sm" style={{ color: "var(--text-muted)" }}>
-              Generate a 7-day invite link so your client can create their account and start entering data.
+              Your client never needs an account. Create a data request from the{" "}
+              <Link href={`/consultant/review/${id}`} className="font-medium underline" style={{ color: "var(--primary)" }}>
+                review workspace
+              </Link>{" "}
+              and share the secure portal link — they upload files and enter data there.
             </p>
-            {inviteUrl ? (
-              <div className="mt-3 space-y-2">
-                <div
-                  className="flex items-center gap-2 rounded-lg px-3 py-2"
-                  style={{ border: "1px solid var(--divider)", background: "var(--bg)" }}
-                >
-                  <span className="flex-1 truncate text-xs" style={{ color: "var(--text)" }}>{inviteUrl}</span>
-                  <CopyButton value={inviteUrl} />
-                </div>
-                <p className="text-xs" style={{ color: "var(--text-muted)" }}>This link expires in 7 days.</p>
-              </div>
-            ) : (
-              <form action={boundGenerate} className="mt-3">
-                <button className="btn btn-secondary text-sm">Generate invite link</button>
-              </form>
-            )}
           </div>
 
           <div className="card">

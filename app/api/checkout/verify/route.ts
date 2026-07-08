@@ -22,5 +22,5 @@ export async function GET(request: NextRequest) {
     privateMetadata: { stripeCustomerId: session.customer },
   });
 
-  return NextResponse.json({ plan, redirect: plan === "consultant" ? "/consultant" : "/setup" });
+  return NextResponse.json({ plan, redirect: "/consultant" });
 }

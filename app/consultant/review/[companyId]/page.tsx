@@ -31,7 +31,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ c
   const { companyId } = await params;
   const user = await currentUser();
   if (!user) redirect("/login");
-  if (user.role !== "consultant") redirect("/dashboard");
+  if (user.role !== "consultant") redirect("/onboarding");
 
   // Verify this consultant manages this company
   const [link] = await db

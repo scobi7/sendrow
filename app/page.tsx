@@ -11,7 +11,7 @@ const SAMPLE_EMISSIONS = [
 
 export default async function Home() {
   const user = await currentUser();
-  if (user) redirect(user.role === "consultant" ? "/consultant" : "/dashboard");
+  if (user) redirect(user.role === "consultant" ? "/consultant" : "/onboarding");
 
   return (
     <main style={{ background: "var(--bg)", minHeight: "100vh" }}>
