@@ -5,18 +5,45 @@ import { dataRequests } from "@/lib/db/schema";
 import { portalTokenValid } from "@/lib/portal";
 import type { ChecklistItem } from "@/lib/portal";
 import { processImport } from "@/lib/ingestion/import-core";
+import { storeEvidence } from "@/lib/evidence";
 import { fuzzyMatchHeaders } from "@/lib/ingestion/fuzzy-match";
 import { applyTemplate } from "@/lib/ingestion/data-type-templates";
 import type { ColumnMap } from "@/lib/ingestion/ingest";
 
-/** Magic-link submissions: the token is the auth. No Clerk session involved. */
+/** Magic-link submissions: the token is the auth. No Clerk session involved.
+ *  Uploads arrive as multipart (original file kept for the evidence locker);
+ *  manual entry arrives as JSON. */
 export async function POST(request: NextRequest) {
-  const body = await request.json();
-  const token: string = body.token ?? "";
-  const itemId: string = body.itemId ?? "";
-  const rows: Record<string, string>[] = body.rows ?? [];
-  const filename: string = body.filename ?? "portal upload";
-  const source: "upload" | "entry" = body.source === "entry" ? "entry" : "upload";
+  let token = "";
+  let itemId = "";
+  let rows: Record<string, string>[] = [];
+  let filename = "portal upload";
+  let source: "upload" | "entry" = "upload";
+  let fileBytes: Buffer | null = null;
+
+  if (request.headers.get("content-type")?.includes("multipart/form-data")) {
+    const form = await request.formData();
+    token = String(form.get("token") ?? "");
+    itemId = String(form.get("itemId") ?? "");
+    source = form.get("source") === "entry" ? "entry" : "upload";
+    try {
+      rows = JSON.parse(String(form.get("rows") ?? "[]"));
+    } catch {
+      rows = [];
+    }
+    const file = form.get("file");
+    if (file instanceof File) {
+      filename = file.name || filename;
+      fileBytes = Buffer.from(await file.arrayBuffer());
+    }
+  } else {
+    const body = await request.json();
+    token = body.token ?? "";
+    itemId = body.itemId ?? "";
+    rows = body.rows ?? [];
+    filename = body.filename ?? "portal upload";
+    source = body.source === "entry" ? "entry" : "upload";
+  }
 
   if (!token) return NextResponse.json({ error: "Missing link token" }, { status: 401 });
   if (!rows.length) return NextResponse.json({ error: "No rows provided" }, { status: 400 });
@@ -41,6 +68,18 @@ export async function POST(request: NextRequest) {
     columnMap = applyTemplate(headers, item.dataType, fuzzy) as ColumnMap;
   }
 
+  let evidenceId: string | null = null;
+  if (fileBytes) {
+    evidenceId = await storeEvidence({
+      bytes: fileBytes,
+      filename,
+      companyId: dataRequest.companyId,
+      dataRequestId: dataRequest.id,
+      checklistItemId: item.id,
+      uploadedVia: "portal_upload",
+    });
+  }
+
   const outcome = await processImport({
     companyId: dataRequest.companyId,
     uploadedBy: `portal:${dataRequest.id}`,
@@ -52,6 +91,7 @@ export async function POST(request: NextRequest) {
     filename,
     dataRequestId: dataRequest.id,
     checklistItemId: item.id,
+    evidenceId,
   });
 
   return NextResponse.json(outcome);

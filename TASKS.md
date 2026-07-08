@@ -272,7 +272,11 @@ Generated from PLANS.md (approved). Updated after each task completes.
 - [x] **N2.2** — `/consultant/review/[companyId]` → redirect (old email links keep working); queue rows link to the client workspace
 - [x] **N2.3** — social/governance manage pages retired (v1 keeps them); manage tabs trimmed
 - [x] **N2.4** — `/consultant` home = practice board: pipeline stage, open requests + items in, to-review, unmapped, CO2e, last activity
-### N3 — Evidence locker (queued)
+### N3 — Evidence locker
+- [x] **N3.1** — `gt_evidence` (hash always recorded; blob bytes when configured) + `evidenceId` on sessions (migration 0006)
+- [x] **N3.2** — portal uploads go multipart; original file stored via @vercel/blob; import failures never blocked by storage
+- [x] **N3.3** — every line item's calc log carries `submitted_via` + `evidence_id`; manual entries keep provenance without a file
+- [x] **N3.4** — authed `/api/evidence/[id]` download (consultant-of-this-client only); "source file ↓" links in workspace uploads
 ### N4 — Reporting periods & YoY (queued)
 ### N5 — White-label branding + shareable results (queued)
 ### N6 — Questionnaire copilot (blocked: needs a real questionnaire)

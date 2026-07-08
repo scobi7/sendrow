@@ -28,15 +28,31 @@ export function PortalChecklist({ token, items }: { token: string; items: Checkl
   const [error, setError] = useState<string | null>(null);
   const [doneMsg, setDoneMsg] = useState<string | null>(null);
 
-  async function submit(item: ChecklistItem, payload: { rows: Record<string, string>[]; filename: string; source: "upload" | "entry" }) {
+  async function submit(
+    item: ChecklistItem,
+    payload: { rows: Record<string, string>[]; filename: string; source: "upload" | "entry"; file?: File }
+  ) {
     setBusy(true);
     setError(null);
     try {
-      const res = await fetch("/api/portal/import", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, itemId: item.id, ...payload }),
-      });
+      // Uploads go multipart so the original file is kept as evidence;
+      // manual entry has no source document and stays JSON.
+      let res: Response;
+      if (payload.file) {
+        const form = new FormData();
+        form.set("token", token);
+        form.set("itemId", item.id);
+        form.set("source", payload.source);
+        form.set("rows", JSON.stringify(payload.rows));
+        form.set("file", payload.file, payload.filename);
+        res = await fetch("/api/portal/import", { method: "POST", body: form });
+      } else {
+        res = await fetch("/api/portal/import", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token, itemId: item.id, rows: payload.rows, filename: payload.filename, source: payload.source }),
+        });
+      }
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Something went wrong");
       setDoneMsg(
@@ -65,7 +81,7 @@ export function PortalChecklist({ token, items }: { token: string; items: Checkl
     const stringRows = parsed.map((r) =>
       Object.fromEntries(Object.entries(r).map(([k, v]) => [k, String(v)]))
     );
-    await submit(item, { rows: stringRows, filename: file.name, source: "upload" });
+    await submit(item, { rows: stringRows, filename: file.name, source: "upload", file });
   }
 
   function entryToRows(): Record<string, string>[] {

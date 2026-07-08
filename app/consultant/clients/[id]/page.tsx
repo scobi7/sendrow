@@ -282,6 +282,14 @@ export default async function ClientWorkspacePage({
                       <p className="text-sm font-medium" style={{ color: "var(--text)" }}>{s.filename}</p>
                       <p className="text-xs" style={{ color: "var(--text-muted)" }}>
                         {s.dataType} · {s.rowCount} rows · {new Date(s.createdAt).toLocaleDateString()}
+                        {s.evidenceId && (
+                          <>
+                            {" · "}
+                            <a href={`/api/evidence/${s.evidenceId}`} className="underline" style={{ color: "var(--primary)" }}>
+                              source file ↓
+                            </a>
+                          </>
+                        )}
                       </p>
                     </div>
                     <span

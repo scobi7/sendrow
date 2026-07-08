@@ -167,8 +167,25 @@ export const intakeSessions = pgTable("gt_intake_sessions", {
   reviewerNotes: text("reviewer_notes"),
   rowCount: integer("row_count").notNull().default(0),
   mappingProfileId: text("mapping_profile_id"),
+  evidenceId: text("evidence_id"),
   createdAt: text("created_at").notNull(),
   reviewedAt: text("reviewed_at"),
+});
+
+/** Evidence locker (Plan N3): the original source document behind an import.
+ *  The hash is always recorded, even when blob storage isn't configured —
+ *  provenance survives without the bytes. */
+export const evidence = pgTable("gt_evidence", {
+  id: text("id").primaryKey(),
+  companyId: text("company_id").notNull().references(() => companies.id),
+  dataRequestId: text("data_request_id"),
+  checklistItemId: text("checklist_item_id"),
+  filename: text("filename").notNull(),
+  sha256: text("sha256").notNull(),
+  sizeBytes: integer("size_bytes").notNull(),
+  blobUrl: text("blob_url"), // null when BLOB_READ_WRITE_TOKEN unset at upload time
+  uploadedVia: text("uploaded_via").notNull(), // "portal_upload" | "consultant_upload"
+  createdAt: text("created_at").notNull(),
 });
 
 export const dataRequests = pgTable("gt_data_requests", {

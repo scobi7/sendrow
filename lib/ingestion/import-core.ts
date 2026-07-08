@@ -28,6 +28,7 @@ export type ImportInput = {
   filename: string;
   dataRequestId?: string | null;
   checklistItemId?: string | null;
+  evidenceId?: string | null;
 };
 
 export type ImportOutcome = {
@@ -83,6 +84,16 @@ export async function processImport(input: ImportInput): Promise<ImportOutcome> 
   } else {
     inserts = normalized.map((row) => rowToLineItem(row, factors, companyId, profileId, vendorMaps));
   }
+  // Provenance: every line item's calc log records how it arrived and, for
+  // uploads, which stored source document it came from (evidence locker)
+  inserts = inserts.map((i) => ({
+    ...i,
+    calcLog: {
+      ...(i.calcLog as Record<string, unknown>),
+      submitted_via: uploadedBy,
+      ...(input.evidenceId ? { evidence_id: input.evidenceId } : {}),
+    },
+  }));
   const unmappedCount = inserts.filter((i) => i.status === "unmapped").length;
 
   // Count vendor-memory applications (the moat compounding, measurably)
@@ -120,6 +131,7 @@ export async function processImport(input: ImportInput): Promise<ImportOutcome> 
     status: sessionStatus,
     rowCount: inserts.length,
     mappingProfileId: profileId,
+    evidenceId: input.evidenceId ?? null,
     createdAt: new Date().toISOString(),
   });
 
