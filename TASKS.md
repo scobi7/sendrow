@@ -3,6 +3,37 @@ Generated from PLANS.md (approved). Updated after each task completes.
 
 ---
 
+## Plan I — Integrity Release (2026-07-07)
+> Approved 2026-07-07. Baseline at generation: 69/69 tests passing. Absorbs H17, H21, H22.
+
+### Phase 0 — Onboarding gates (carryover H21/H22)
+- [x] **I1** — Add boundary approach tile to setup wizard (`app/setup/wizard.tsx`, currently 5 steps → 6): equity share / financial control / operational control with one-line explanations; persist via `saveSetup` to `gt_companies.boundary_approach` (column already exists in schema)
+- [x] **I2** — Move Scope 3 materiality screening into the setup flow (reuse `app/(app)/scope3-screening/` form); soft-gate `/intake` when no `gt_scope3_screening` rows exist — banner + redirect, not a hard block
+- [x] **I3** — Test: new company cannot reach first upload without boundary + screening recorded
+
+### Phase 1 — Factor engine depth
+- [x] **I4** — Add missing eGRID subregion factor rows to `lib/factors.ts` (currently only CAMX, NWPP, AZNM, ERCT + USAVG; ~27 subregions total), each with vintage year
+- [x] **I5** — Complete `egridForState()`: all 50 states + DC → correct subregion (currently 11 states mapped, rest silently default to national average); document the default choice for multi-subregion states (e.g. NY, TX, FL, MI)
+- [x] **I6** — Unit tests: every state resolves to a real subregion; assert `applyFactor()` records `factor_vintage` in the calc log (implementation exists in `lib/factor-engine.ts:57` — lock it in with a test)
+- [x] **I7** — Expand `QB_CATEGORY_TO_USEEIO` beyond the current 9 mappings — prioritize manufacturing + professional-services chart-of-accounts categories, with matching USEEIO factor rows
+
+### Phase 2 — Kill silent drops (contracts/ invariant violation today)
+- [x] **I8** — Schema: add `status` column to `gt_emission_line_items` (`mapped` default / `unmapped`); drizzle migration
+- [x] **I9** — `rowToLineItem()` returns a flagged `unmapped` row (zero emissions, reason in calc log) instead of `null`; same for `fleetFuelToLineItems()` skip paths (`continue` on unknown fuel / missing price / no factor); remove the null-filter in `app/api/intake/import/route.ts:77-78`
+- [x] **I10** — Surface unmapped rows: workpaper table + consultant review queue show them flagged; dashboard data quality bar counts unmapped rows against "% actual"
+- [x] **I11** — Test: deliberately messy import file (unknown categories, missing quantities) produces row-count parity — zero silently dropped rows
+
+### Phase 3 — Review-queue notifications (carryover H17)
+- [x] **I12** — `lib/email.ts`: add `sendDataRequestEmail` (to client on new data request) + `sendUploadNeedsReviewEmail` (to consultant on new upload routed to review); wire into `createDataRequest` action and `/api/intake/import`
+- [x] **I13** — Smoke test: both emails fire with mocked Resend send
+
+### Finalize
+- [x] **I14** — Write `success/plan-i.md`; verify all four success criteria from PLANS.md
+- [x] **I15** — Full test suite passing + `tsc` clean
+- [ ] **I16** — Confirm `contracts/invariants.md` unviolated; commit + push to `github-branch-tracking` (never `main`)
+
+---
+
 ## Plan H — Managed Intake & Two-Sided Dashboard (2026-07-07)
 
 ### Schema
@@ -32,7 +63,7 @@ Generated from PLANS.md (approved). Updated after each task completes.
 ### Phase 3 — Data requests + Phase 5 Notifications
 - [x] **H15** — `createDataRequest` server action + `lockPipeline` server action
 - [x] **H16** — Client dashboard shows open requests as action items (done in H11)
-- [ ] **H17** — Email client on new request, email consultant on new upload (via `lib/email.ts`)
+- [~] **H17** — Email client on new request, email consultant on new upload — **absorbed into Plan I (I12–I13)**
 
 ### Phase 6 — Pipeline lock
 - [x] **H18** — `lockPipeline` server action — sets `gt_pipeline_status` to locked
@@ -40,12 +71,12 @@ Generated from PLANS.md (approved). Updated after each task completes.
 - [x] **H20** — Upload screen shows "auto-processed — pipeline locked" message (done in H10)
 
 ### Phase 0 — Onboarding extensions
-- [ ] **H21** — Add boundary approach tile to setup wizard
-- [ ] **H22** — Move scope 3 screening into setup wizard flow (soft gate on `/intake`)
+- [~] **H21** — Add boundary approach tile to setup wizard — **absorbed into Plan I (I1)**
+- [~] **H22** — Move scope 3 screening into setup wizard flow (soft gate on `/intake`) — **absorbed into Plan I (I2)**
 
 ### Finalize
-- [ ] **H23** — All tests passing
-- [ ] **H24** — Commit + push
+- [x] **H23** — All tests passing (69/69 verified 2026-07-07)
+- [x] **H24** — Commit + push (`e49ad66`)
 
 ---
 

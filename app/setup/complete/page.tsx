@@ -18,8 +18,8 @@ export default async function SetupComplete() {
       >
         ✓
       </div>
-      <h1 className="mt-4 text-2xl font-bold font-display" style={{ color: "var(--text)" }}>You are all set</h1>
-      <p className="mt-2" style={{ color: "var(--text-muted)" }}>Connect your accounts, answer a few questions, and we handle the rest.</p>
+      <h1 className="mt-4 text-2xl font-bold font-display" style={{ color: "var(--text)" }}>Setup complete</h1>
+      <p className="mt-2" style={{ color: "var(--text-muted)" }}>One last onboarding step: a quick screening of which Scope 3 categories apply to you. Then we handle the rest.</p>
       <div className="mt-8 grid w-full grid-cols-3 gap-4">
         {["GHG Inventory Report", "Questionnaire Helper", "Audit Trail"].map((title) => (
           <div key={title} className="card py-4 text-center">
@@ -27,7 +27,8 @@ export default async function SetupComplete() {
           </div>
         ))}
       </div>
-      <Link href="/dashboard" className="btn btn-primary mt-10 px-8 py-3">Go to My Dashboard</Link>
+      <Link href="/scope3-screening?from=intake" className="btn btn-primary mt-10 px-8 py-3">Continue — Scope 3 Screening</Link>
+      <Link href="/dashboard" className="mt-4 text-sm underline" style={{ color: "var(--text-muted)" }}>Skip to dashboard</Link>
     </main>
   );
 }

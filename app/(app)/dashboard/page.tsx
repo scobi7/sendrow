@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { eq, desc } from "drizzle-orm";
 import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { intakeSessions, dataRequests, pipelineStatus } from "@/lib/db/schema";
+import { intakeSessions, dataRequests, pipelineStatus, emissionLineItems } from "@/lib/db/schema";
 import { loadCompany } from "@/lib/store";
 import { getLineItemTotals } from "@/lib/report-totals";
 
@@ -29,17 +29,26 @@ export default async function Dashboard() {
 
   const companyId = user.companyId;
 
-  const [company, sessions, openRequests, pipeline, lineItemTotals] = await Promise.all([
+  const [company, sessions, openRequests, pipeline, lineItemTotals, lineItemQuality] = await Promise.all([
     loadCompany(companyId),
     db.select().from(intakeSessions).where(eq(intakeSessions.companyId, companyId)).orderBy(desc(intakeSessions.createdAt)).limit(5),
     db.select().from(dataRequests).where(eq(dataRequests.companyId, companyId)).then(r => r.filter(d => d.status === "open")),
     db.select().from(pipelineStatus).where(eq(pipelineStatus.companyId, companyId)).then(r => r[0] ?? null),
     getLineItemTotals(companyId),
+    db.select({ confidence: emissionLineItems.confidence, status: emissionLineItems.status })
+      .from(emissionLineItems).where(eq(emissionLineItems.companyId, companyId)),
   ]);
 
   const pStatus = pipeline?.status ?? "not_started";
   const hasApprovedSession = sessions.some(s => s.status === "auto_approved" || s.status === "approved");
   const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 1 });
+
+  // Data quality: unmapped rows count against "% actual" — they are data we hold but can't yet use
+  const qTotal = lineItemQuality.length;
+  const qUnmapped = lineItemQuality.filter((i) => i.status === "unmapped").length;
+  const qActual = lineItemQuality.filter((i) => i.status !== "unmapped" && i.confidence === "actual").length;
+  const qEstimated = qTotal - qActual - qUnmapped;
+  const pct = (n: number) => (qTotal > 0 ? Math.round((n / qTotal) * 100) : 0);
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
@@ -113,6 +122,30 @@ export default async function Dashboard() {
               <p className="mt-1 text-xs" style={{ color: "var(--text-muted)" }}>{caption}</p>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Data quality bar */}
+      {qTotal > 0 && (
+        <div className="rounded-2xl px-5 py-4" style={{ background: "var(--card)", border: "1px solid var(--divider)" }}>
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>Data quality</p>
+            <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+              {pct(qActual)}% actual · {pct(qEstimated)}% estimated
+              {qUnmapped > 0 && <span style={{ color: "#dc2626", fontWeight: 600 }}> · {pct(qUnmapped)}% unmapped ({qUnmapped} row{qUnmapped !== 1 ? "s" : ""})</span>}
+            </p>
+          </div>
+          <div className="mt-3 flex h-2 w-full overflow-hidden rounded-full" style={{ background: "var(--divider)" }}>
+            <div style={{ width: `${pct(qActual)}%`, background: "var(--primary)" }} />
+            <div style={{ width: `${pct(qEstimated)}%`, background: "#d97706" }} />
+            <div style={{ width: `${pct(qUnmapped)}%`, background: "#dc2626" }} />
+          </div>
+          {qUnmapped > 0 && (
+            <p className="mt-2 text-xs" style={{ color: "var(--text-muted)" }}>
+              Unmapped rows hold 0 emissions until categorized —{" "}
+              <Link href="/workpaper" className="underline" style={{ color: "#dc2626" }}>review them in the workpaper</Link>.
+            </p>
+          )}
         </div>
       )}
 

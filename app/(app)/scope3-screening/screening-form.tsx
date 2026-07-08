@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Link from "next/link";
 import { saveScreening } from "@/lib/actions";
 import type { Scope3Category } from "./categories";
 
@@ -18,10 +19,12 @@ export function ScreeningForm({
   companyId,
   categories,
   savedMap,
+  continueHref,
 }: {
   companyId: string;
   categories: readonly Category[];
   savedMap: Record<number, SavedRow>;
+  continueHref?: string;
 }) {
   type Decision = { status: "included" | "excluded"; reason: string; notes: string };
   const initial: Record<number, Decision> = Object.fromEntries(
@@ -134,11 +137,16 @@ export function ScreeningForm({
         })}
       </div>
 
-      <div className="mt-6 flex justify-end">
+      <div className="mt-6 flex items-center justify-end gap-3">
+        {saved && continueHref && (
+          <Link href={continueHref} className="btn btn-primary px-6">
+            Continue to Data Intake →
+          </Link>
+        )}
         <button
           onClick={submit}
           disabled={pending}
-          className="btn btn-primary px-6"
+          className={saved && continueHref ? "btn btn-secondary px-6" : "btn btn-primary px-6"}
         >
           {pending ? "Saving…" : saved ? "✓ Saved" : "Save screening"}
         </button>

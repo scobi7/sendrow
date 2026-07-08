@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { userCompanies, mappingProfiles, emissionLineItems, intakeSessions, pipelineStatus } from "@/lib/db/schema";
+import { userCompanies, mappingProfiles, emissionLineItems, intakeSessions, pipelineStatus, consultantClients, companies } from "@/lib/db/schema";
+import { sendUploadNeedsReviewEmail } from "@/lib/email";
 import { applyProfile, rowToLineItem, fleetFuelToLineItems } from "@/lib/ingestion/ingest";
 import { getFactorsFromDb } from "@/lib/factor-engine";
 import { fuzzyMatchHeaders } from "@/lib/ingestion/fuzzy-match";
@@ -12,6 +13,19 @@ import type { DataType } from "@/lib/ingestion/data-type-templates";
 
 function newId(prefix: string) {
   return prefix + "_" + Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
+}
+
+async function notifyConsultantOfReview(companyId: string, filename: string, unmappedCount: number) {
+  const link = await db.query.consultantClients.findFirst({
+    where: and(eq(consultantClients.companyId, companyId), isNull(consultantClients.archivedAt)),
+  });
+  if (!link) return;
+  const [consultant, [company]] = await Promise.all([
+    db.query.userCompanies.findFirst({ where: eq(userCompanies.clerkId, link.consultantId) }),
+    db.select({ name: companies.name }).from(companies).where(eq(companies.id, companyId)),
+  ]);
+  if (!consultant?.email || !company) return;
+  await sendUploadNeedsReviewEmail(consultant.email, consultant.name ?? "there", company.name, filename, unmappedCount);
 }
 
 export async function POST(request: NextRequest) {
@@ -48,11 +62,11 @@ export async function POST(request: NextRequest) {
   // Score the session
   const headers = Object.keys(rows[0] ?? {});
   const matchResults = fuzzyMatchHeaders(headers);
-  const { score, autoApproved, reasons } = pipelineLocked
+  const scored = pipelineLocked
     ? { score: 1, autoApproved: true, reasons: ["pipeline locked"] }
     : scoreSession(dataType, matchResults);
-
-  const sessionStatus = autoApproved ? "auto_approved" : "pending_review";
+  const { score } = scored;
+  let { autoApproved, reasons } = scored;
 
   // Save mapping profile
   const profileId = newId("mp");
@@ -69,14 +83,21 @@ export async function POST(request: NextRequest) {
   const factors = await getFactorsFromDb();
   const normalized = applyProfile(rows, columnMap);
 
+  // Every row becomes a line item — unmappable rows are flagged, never dropped
   let inserts;
   if (dataType === "fleet_fuel_dollar" && fuelPrices) {
     inserts = fleetFuelToLineItems(normalized, factors, fuelPrices, companyId, profileId);
   } else {
-    inserts = normalized
-      .map((row) => rowToLineItem(row, factors, companyId, profileId))
-      .filter((item): item is NonNullable<typeof item> => item !== null);
+    inserts = normalized.map((row) => rowToLineItem(row, factors, companyId, profileId));
   }
+  const unmappedCount = inserts.filter((i) => i.status === "unmapped").length;
+
+  // Flagged rows always get human review — even on a locked pipeline
+  if (unmappedCount > 0 && autoApproved) {
+    autoApproved = false;
+    reasons = [...reasons, `${unmappedCount} row(s) could not be mapped — routed to review`];
+  }
+  const sessionStatus = autoApproved ? "auto_approved" : "pending_review";
 
   if (inserts.length > 0) {
     await db.insert(emissionLineItems).values(inserts);
@@ -97,6 +118,11 @@ export async function POST(request: NextRequest) {
     createdAt: new Date().toISOString(),
   });
 
+  // Notify the reviewing consultant — fire-and-forget, never blocks the upload
+  if (sessionStatus === "pending_review") {
+    notifyConsultantOfReview(companyId, filename, unmappedCount).catch(() => {});
+  }
+
   // Advance pipeline status if auto-approved and not already locked
   if (autoApproved && !pipelineLocked) {
     await db
@@ -115,7 +141,8 @@ export async function POST(request: NextRequest) {
 
   return NextResponse.json({
     imported: inserts.length,
-    skipped: rows.length - inserts.length,
+    unmapped: unmappedCount,
+    skipped: 0, // invariant: no rows are ever dropped
     profileId,
     sessionId,
     sessionStatus,

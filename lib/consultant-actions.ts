@@ -11,7 +11,7 @@ import { recalcCompany } from "./calc";
 import { refreshSectionStatus } from "./progress";
 import { logChange } from "./audit";
 import { Company, User } from "./types";
-import { sendInviteAcceptedEmail } from "./email";
+import { sendInviteAcceptedEmail, sendDataRequestEmail } from "./email";
 
 // ── Field maps (mirrored from actions.ts) ──────────────────────────────────
 
@@ -202,7 +202,22 @@ export async function createDataRequest(companyId: string, consultantId: string,
     dueDate: dueDate || null,
     createdAt: new Date().toISOString(),
   });
+
+  // Notify the client — fire-and-forget so email failures never block the request
+  notifyClientOfDataRequest(companyId, description.trim(), dueDate || null).catch(() => {});
+
   revalidatePath(`/consultant/clients/${companyId}`);
+}
+
+async function notifyClientOfDataRequest(companyId: string, description: string, dueDate: string | null) {
+  const [clientUser, company] = await Promise.all([
+    db.query.userCompanies.findFirst({
+      where: and(eq(userCompanies.companyId, companyId), eq(userCompanies.role, "company")),
+    }),
+    loadCompany(companyId),
+  ]);
+  if (!clientUser?.email) return;
+  await sendDataRequestEmail(clientUser.email, clientUser.name ?? "there", company.name, description, dueDate);
 }
 
 export async function lockPipeline(companyId: string, notes: string) {

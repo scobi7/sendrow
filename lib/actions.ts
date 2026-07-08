@@ -167,12 +167,19 @@ export async function saveSetup(formData: FormData) {
   const industry = String(formData.get("industry") ?? "") as Industry;
   const headcount = String(formData.get("headcount") ?? "") as HeadcountRange;
   const fyEnd = Number(formData.get("fiscal_year_end"));
+  const boundaryApproach = String(formData.get("boundary_approach") ?? "").trim() || null;
   const reportingFramework = String(formData.get("reporting_framework") ?? "").trim() || null;
   const locCount = Number(formData.get("location_count"));
 
   await logChange({ user, companyId: company.id, section: "setup", field: "industry", prev: company.industry, next: industry });
   await logChange({ user, companyId: company.id, section: "setup", field: "headcount_range", prev: company.headcountRange, next: headcount });
   await logChange({ user, companyId: company.id, section: "setup", field: "fiscal_year_end", prev: company.fiscalYearEndMonth, next: fyEnd });
+
+  if (boundaryApproach) {
+    const [row] = await db.select({ boundaryApproach: companies.boundaryApproach }).from(companies).where(eq(companies.id, company.id));
+    await logChange({ user, companyId: company.id, section: "setup", field: "boundary_approach", prev: row?.boundaryApproach ?? null, next: boundaryApproach });
+    await db.update(companies).set({ boundaryApproach }).where(eq(companies.id, company.id));
+  }
 
   company.industry = industry;
   company.headcountRange = headcount;

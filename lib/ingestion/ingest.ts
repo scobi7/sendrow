@@ -16,6 +16,15 @@ export type NormalizedRow = {
   notes?: string;
 };
 
+/** Calc log for rows that could not be mapped to a factor — kept for the audit trail. */
+export type UnmappedLog = {
+  reason: string;
+  raw_value: number | null;
+  raw_unit: string;
+  activity_type: string;
+  computed_at: string;
+};
+
 export type LineItemInsert = {
   id: string;
   companyId: string;
@@ -26,8 +35,9 @@ export type LineItemInsert = {
   rawUnit: string;
   co2eKg: string;
   confidence: string;
+  status: "mapped" | "unmapped";
   factorId: string | null;
-  calcLog: CalcLog;
+  calcLog: CalcLog | UnmappedLog;
   mappingProfileId: string | null;
   createdAt: string;
 };
@@ -71,7 +81,9 @@ function resolveFactorQuery(row: NormalizedRow) {
   const t = (row.activity_type ?? "").toLowerCase();
   const u = (row.unit ?? "").toLowerCase();
 
-  if (u.includes("kwh") || t.includes("electric")) return { category: "electricity_location", unit: "kWh" };
+  // Spreadsheet rows carry no location, so grid electricity uses the national
+  // average — a category query would pick an arbitrary subregion.
+  if (u.includes("kwh") || t.includes("electric")) return { factorId: "egrid.USAVG.2024" };
   if (u.includes("therm") || (t.includes("gas") && !t.includes("gasoline"))) return { category: "stationary_combustion", unit: "therm" };
   if (u.includes("gallon") && t.includes("diesel")) return { category: "mobile_combustion", unit: "gallon" };
   if (u.includes("gallon") || t.includes("gasoline")) return { category: "mobile_combustion", unit: "gallon" };
@@ -95,7 +107,10 @@ export function fleetFuelToLineItems(
 ): LineItemInsert[] {
   const results: LineItemInsert[] = [];
   for (const row of rows) {
-    if (!row.quantity) continue;
+    if (!row.quantity) {
+      results.push(unmappedLineItem(row, "Missing or zero dollar amount", companyId, mappingProfileId));
+      continue;
+    }
     const fuelType = (row.activity_type ?? "").toLowerCase();
     let pricePerGal: number;
     let factorQuery: { category: string; unit: string };
@@ -110,13 +125,20 @@ export function fleetFuelToLineItems(
       pricePerGal = prices.propane ?? prices.gasoline;
       factorQuery = { category: "stationary_combustion", unit: "gallon" };
     } else {
+      results.push(unmappedLineItem(row, `Unrecognized fuel type "${row.activity_type ?? ""}"`, companyId, mappingProfileId));
       continue;
     }
 
-    if (!pricePerGal || pricePerGal <= 0) continue;
+    if (!pricePerGal || pricePerGal <= 0) {
+      results.push(unmappedLineItem(row, `No fuel price provided for "${row.activity_type ?? ""}"`, companyId, mappingProfileId));
+      continue;
+    }
     const gallons = row.quantity / pricePerGal;
     const factor = lookupFactor(factors, factorQuery);
-    if (!factor) continue;
+    if (!factor) {
+      results.push(unmappedLineItem(row, `No emission factor for ${factorQuery.category} (${factorQuery.unit})`, companyId, mappingProfileId));
+      continue;
+    }
 
     const { co2e_kg, calc_log } = applyFactor(gallons, "gallon", factor);
     const enrichedLog = {
@@ -137,6 +159,7 @@ export function fleetFuelToLineItems(
       rawUnit: "USD",
       co2eKg: co2e_kg.toFixed(4),
       confidence: "estimated",
+      status: "mapped",
       factorId: factor.factor_id,
       calcLog: enrichedLog,
       mappingProfileId,
@@ -152,16 +175,60 @@ function newId(): string {
 }
 
 /**
- * Converts a normalized row to a DB insert, or null if quantity is missing
- * or no factor can be matched.
+ * Builds a flagged zero-emission line item for a row that could not be mapped.
+ * Contracts invariant: no data is ever silently dropped — every input row
+ * becomes a line item, and unmappable ones surface in the workpaper and
+ * review queue with the reason recorded.
+ */
+export function unmappedLineItem(
+  row: NormalizedRow,
+  reason: string,
+  companyId: string,
+  mappingProfileId: string | null = null
+): LineItemInsert {
+  const scopeInfo = row.scope
+    ? { scope: row.scope, category: row.category ?? resolveScope(row.activity_type).category }
+    : resolveScope(row.activity_type);
+
+  const calcLog: UnmappedLog = {
+    reason,
+    raw_value: row.quantity ?? null,
+    raw_unit: row.unit ?? "",
+    activity_type: row.activity_type ?? "",
+    computed_at: new Date().toISOString(),
+  };
+
+  return {
+    id: newId(),
+    companyId,
+    sourceRef: row.source_ref ?? row.date ?? "",
+    scope: scopeInfo.scope,
+    category: scopeInfo.category,
+    rawValue: row.quantity != null ? String(row.quantity) : "0",
+    rawUnit: row.unit ?? "",
+    co2eKg: "0.0000",
+    confidence: "flagged",
+    status: "unmapped",
+    factorId: null,
+    calcLog,
+    mappingProfileId,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+/**
+ * Converts a normalized row to a DB insert. Rows with a missing quantity or
+ * no matching factor come back as flagged `unmapped` items — never null.
  */
 export function rowToLineItem(
   row: NormalizedRow,
   factors: EmissionFactor[],
   companyId: string,
   mappingProfileId: string | null = null
-): LineItemInsert | null {
-  if (row.quantity === undefined || row.quantity === null) return null;
+): LineItemInsert {
+  if (row.quantity === undefined || row.quantity === null) {
+    return unmappedLineItem(row, "Missing or non-numeric quantity", companyId, mappingProfileId);
+  }
 
   const scopeInfo = row.scope
     ? { scope: row.scope, category: row.category ?? resolveScope(row.activity_type).category }
@@ -170,7 +237,14 @@ export function rowToLineItem(
   const query = resolveFactorQuery(row);
   const factor = query ? lookupFactor(factors, query) : null;
 
-  if (!factor) return null;
+  if (!factor) {
+    return unmappedLineItem(
+      row,
+      `No emission factor matches activity "${row.activity_type ?? ""}" with unit "${row.unit ?? ""}"`,
+      companyId,
+      mappingProfileId
+    );
+  }
 
   const { co2e_kg, calc_log } = applyFactor(row.quantity, row.unit ?? "", factor);
 
@@ -184,6 +258,7 @@ export function rowToLineItem(
     rawUnit: row.unit ?? "",
     co2eKg: co2e_kg.toFixed(4),
     confidence: row.confidence ?? "estimated",
+    status: "mapped",
     factorId: factor.factor_id,
     calcLog: calc_log,
     mappingProfileId,

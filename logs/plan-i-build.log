@@ -1,0 +1,8 @@
+2026-07-07 Plan I — Integrity Release build log
+- Baseline: 69/69 tests passing at approval
+- Phase 0: wizard boundary step (5→6 steps), screening moved into onboarding flow, /intake + /intake/upload soft gates
+- Phase 1: 22 new eGRID subregion factors, egridForState() full 50-state+DC map, 14 new USEEIO factors, QB map 9→29 categories
+- Phase 2: gt_emission_line_items.status column (migration 0003_eager_ikaris.sql), unmapped rows flagged not dropped (ingest + import route + calc.ts QB path), workpaper/dashboard/review-queue surfacing
+- Phase 3: sendDataRequestEmail + sendUploadNeedsReviewEmail wired into createDataRequest + import route (fire-and-forget)
+- Note: ingestion electricity default pinned to egrid.USAVG.2024 (was implicitly CAMX — first category match)
+- Final: 136/136 tests passing, tsc --noEmit clean

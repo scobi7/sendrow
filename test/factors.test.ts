@@ -60,7 +60,8 @@ describe("egridForState", () => {
   it("maps TX to ERCT", () => expect(egridForState("TX")).toBe("egrid.ERCT.2024"));
   it("maps OR to NWPP", () => expect(egridForState("OR")).toBe("egrid.NWPP.2024"));
   it("maps AZ to AZNM", () => expect(egridForState("AZ")).toBe("egrid.AZNM.2024"));
-  it("unknown states default to USAVG", () => expect(egridForState("NY")).toBe("egrid.USAVG.2024"));
+  it("maps NY to NYCW (largest load center)", () => expect(egridForState("NY")).toBe("egrid.NYCW.2024"));
+  it("unknown state codes default to USAVG", () => expect(egridForState("XX")).toBe("egrid.USAVG.2024"));
   it("handles lowercase input", () => expect(egridForState("ca")).toBe("egrid.CAMX.2024"));
 });
 

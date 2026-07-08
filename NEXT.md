@@ -1,63 +1,36 @@
 # NEXT.md
-> Summary table of what needs to be done next. Updated at end of each session.
-> Last updated: 2026-07-07
+> End-of-session summary. For build priorities see ROADMAP.md; for the active plan see PLANS.md.
+> Last updated: 2026-07-07 (Plan I build session)
 
----
+## 🔴 P0 — Ops blockers (user actions, not build work)
+| # | What | Where |
+|---|------|-------|
+| 1 | Clerk production Google OAuth | Clerk dashboard → Social connections → Google |
+| 2 | Attorney-reviewed ToS & Privacy copy | `app/terms/page.tsx`, `app/privacy/page.tsx` |
+| 3 | `STRIPE_WEBHOOK_SECRET` in Vercel | Vercel env vars |
+| 4 | Re-enable payment gate before charging customers | `middleware.ts` |
+| 5 | Update Calendly links | `app/demo/page.tsx`, `app/pricing/agency/page.tsx` |
 
-## 🔴 P0 — Blocking
+## 🟡 Current state
+- **Plan I (Integrity Release) built 2026-07-07** — all 16 tasks complete, 136/136 tests, tsc clean, pushed to `github-branch-tracking`. See `success/plan-i.md`.
+- Migration `0003_eager_ikaris.sql` (line-item `status` column + Plan H tables) auto-applies on next deploy via the build script.
+- Emails only fire with `RESEND_API_KEY` set (already in Vercel per Plan C).
+- Manual QA of full company flow (signup → wizard incl. boundary → screening → intake → upload with a messy file → workpaper → PDF) still needed before first paying customer.
 
-| # | What | Why | Where |
-|---|------|-----|-------|
-| N1 | **Clerk production Google OAuth** | Users want Google sign-in; currently requires email/password | Clerk dashboard → Social connections → Google |
-| N2 | **ToS & Privacy legal copy** | Stub pages exist — need attorney-reviewed copy | `app/terms/page.tsx`, `app/privacy/page.tsx` |
-| N3 | **Stripe webhook secret** | Billing webhooks will silently fail without it | Vercel → `STRIPE_WEBHOOK_SECRET` |
+## ⚠ Flags found during the build (need a decision or follow-up)
+1. **Factor values are still "representative"** — the 22 new eGRID and 14 new USEEIO factors follow the existing `SEED_FACTORS` convention (demo values approximating published data). Before defending "audit-grade" to a real client, load the actual EPA eGRID 2024 + USEEIO v2 releases. Candidate for Plan J or a data-only task.
+2. **H9 was checked off but never landed** — `/intake` still lists mapping profiles, not intake sessions with status badges (last touched in Plan F). Small gap; sessions do show on the dashboard.
+3. **Ingestion electricity default changed** — spreadsheet kWh rows previously picked CAMX (California) implicitly (first category match); now explicitly pinned to national average `egrid.USAVG.2024`. Forward-only; documented in the calc log of new imports.
 
----
+## 🟢 Next session
+1. Manual QA pass (above), verifying contracts/ invariants against live behavior
+2. Plan J (Revenue Release) — draft PLANS.md for approval: annual Stripe subscription, data quality scorecard, renewal-year flow
 
-## 🟡 P1 — Important (smooth first customer experience)
-
-| # | What | Why | Where |
-|---|------|-----|-------|
-| N4 | **Full company flow QA** | Sign-up → onboarding → intake → scope3 screening → workpaper → PDF report | Manual QA with real data |
-| N5 | **Re-enable payment gate** | Currently commented out in middleware — must re-enable before charging customers | `middleware.ts` |
-| N6 | **PDF report end-to-end test** | Test with imported line items vs legacy gt_calcs fallback | Manual QA with seeded data |
-| N7 | **Consultant multi-client mode** | One account = one company today; consultants need to manage multiple | Future plan |
-| N8 | **Update Calendly links** | Demo and agency pages link to personal calendly | `app/demo/page.tsx`, `app/pricing/agency/page.tsx` |
-
----
-
-## 🟢 P2 — Nice-to-have
-
-| # | What | Why | Where |
-|---|------|-----|-------|
-| N9 | **Expanded eGRID state mapping** | ~40 states default to national average — inaccurate for most US regions | `lib/factors.ts` → `egridForState()` |
-| N10 | **More QB → USEEIO category mappings** | Only 9 categories mapped; uncategorized spend silently ignored | `lib/factors.ts` |
-| N11 | **Onboarding email sequence** | Single welcome email only; no nudge when users stall | `lib/email.ts` + scheduled job |
-| N12 | **In-app help tooltips** | Refrigerant GWP, eGRID subregion, USEEIO — confusing without context | Scope pages |
-
----
-
-## 🔵 P3 — Backlog
-
-| # | What | Why | Where |
-|---|------|-----|-------|
-| N13 | **Multi-year trend reporting** | Customers need YoY emissions reduction tracking | New reporting periods table |
-| N14 | **Emissions reduction target setting** | Natural next step after establishing a baseline | `app/(app)/targets/` |
-| N15 | **CSRD / SEC questionnaire format** | Regulatory demand growing | `lib/mapping.ts` |
-| N16 | **White-label for agencies** | Consultant-tier want their branding on client pages | Theming system |
-| N17 | **Multi-user per company** | One user per company today; enterprises need team access | Schema: `userCompanies` → many-to-one |
-
----
-
-## Completed (2026-07-06 / 07-07)
-
+## Completed (recent)
 | Item | Status |
 |------|--------|
-| Plan F — V1 spreadsheet ingestion pipeline (fuzzy match, mapping profiles, emission_line_items, workpaper) | ✅ |
-| Plan G — Full client pipeline (reporting framework, scope3 screening, data-type intake, fleet fuel $, PDF from line items) | ✅ |
-| Clerk production instance set up (DNS CNAMEs, live keys in Vercel) | ✅ |
-| DB migrations auto-run on deploy (drizzle-kit push in build script) | ✅ |
-| Post-login redirect → /onboarding (fixes new-user dashboard loop) | ✅ |
-| Null guards on all app pages (redirect to /onboarding if no company) | ✅ |
-| Payment gate disabled for dev testing | ✅ |
-| 63/63 tests passing | ✅ |
+| Plan I — onboarding gates, full eGRID map, QB→USEEIO 9→29, silent drops killed, review-queue emails | ✅ 2026-07-07 |
+| Plan H — sessions, scoring, auto-routing, review queue, data requests, pipeline lock | ✅ 2026-07-07 |
+| Plan G — reporting framework, Scope 3 screening page, data-type intake, fleet fuel $, PDF from line items | ✅ 2026-07-06 |
+| Plan F — ingestion pipeline: fuzzy match, mapping profiles, emission_line_items, factor engine, workpaper | ✅ 2026-07-06 |
+| Plans A–D — cleanup, first-customer readiness, domain/email, Stripe billing | ✅ 2026-06-26 |

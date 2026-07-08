@@ -34,6 +34,7 @@ export default async function WorkpaperPage({
     scope: s,
     kg: items.filter((i) => i.scope === s).reduce((sum, i) => sum + Number(i.co2eKg), 0),
   }));
+  const unmappedCount = items.filter((i) => i.status === "unmapped").length;
 
   return (
     <div className="mx-auto max-w-5xl">
@@ -41,6 +42,13 @@ export default async function WorkpaperPage({
         title="Workpaper"
         subtitle="Every imported line item with its full audit trail — factor applied, formula, and result."
       />
+
+      {unmappedCount > 0 && (
+        <div className="mb-6 rounded-xl px-4 py-3 text-sm" style={{ background: "#fef2f2", border: "1px solid #fecaca", color: "#dc2626" }}>
+          <span className="font-semibold">{unmappedCount} row{unmappedCount !== 1 ? "s" : ""} could not be mapped</span>
+          <span style={{ color: "var(--text)" }}> — flagged below with the reason, contributing 0 emissions until categorized. Nothing was dropped.</span>
+        </div>
+      )}
 
       {/* Summary */}
       <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-4">

@@ -18,6 +18,11 @@ const FRAMEWORKS: [string, string, string][] = [
   ["internal", "Internal baseline", "Just want to know where we stand"],
   ["regulatory", "Regulatory requirement", "CSRD, SEC, or other mandate"],
 ];
+const BOUNDARIES: [string, string, string][] = [
+  ["operational_control", "Operational control", "You count 100% of emissions from operations you run day-to-day. Most common for SMBs."],
+  ["financial_control", "Financial control", "You count 100% of emissions from operations you direct financially."],
+  ["equity_share", "Equity share", "You count emissions in proportion to your ownership stake in each operation."],
+];
 
 interface Loc { address: string; city: string; state: string; zip: string }
 
@@ -28,6 +33,7 @@ export default function SetupWizard({ companyName }: { companyName: string }) {
   const [locCount, setLocCount] = useState(1);
   const [locations, setLocations] = useState<Loc[]>([{ address: "", city: "", state: "CA", zip: "" }]);
   const [fyEnd, setFyEnd] = useState(12);
+  const [boundary, setBoundary] = useState("");
   const [framework, setFramework] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -50,6 +56,7 @@ export default function SetupWizard({ companyName }: { companyName: string }) {
     fd.set("industry", industry);
     fd.set("headcount", headcount);
     fd.set("fiscal_year_end", String(fyEnd));
+    fd.set("boundary_approach", boundary);
     fd.set("reporting_framework", framework);
     fd.set("location_count", String(locCount));
     locations.forEach((l, i) => {
@@ -65,9 +72,9 @@ export default function SetupWizard({ companyName }: { companyName: string }) {
     <main className="mx-auto flex min-h-screen max-w-xl flex-col px-6 py-10" style={{ background: "var(--bg)" }}>
       <div className="mb-8 flex justify-center"><Logo /></div>
       <p className="mb-2 text-center text-sm" style={{ color: "var(--text-muted)" }}>
-        Step {step} of 5 — {companyName}
+        Step {step} of 6 — {companyName}
       </p>
-      <ProgressBar percent={(step / 5) * 100} className="mb-10" />
+      <ProgressBar percent={(step / 6) * 100} className="mb-10" />
 
       {step === 1 && (
         <div className="card">
@@ -176,6 +183,40 @@ export default function SetupWizard({ companyName }: { companyName: string }) {
       {step === 5 && (
         <div className="card">
           <h1 className="text-lg font-bold font-display" style={{ color: "var(--text)" }}>
+            How should we draw your organizational boundary?
+          </h1>
+          <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>
+            The GHG Protocol requires choosing one approach for which operations count as yours. Your consultant can help you change this later.
+          </p>
+          <div className="mt-4 space-y-3">
+            {BOUNDARIES.map(([value, label, sub]) => (
+              <button
+                key={value}
+                onClick={() => setBoundary(value)}
+                className="w-full rounded-lg border px-4 py-4 text-left transition-colors"
+                style={
+                  boundary === value
+                    ? { border: "1px solid var(--primary)", background: "var(--primary-tint)" }
+                    : { border: "1px solid var(--divider)", background: "var(--surface)" }
+                }
+              >
+                <p className="text-sm font-semibold" style={{ color: boundary === value ? "var(--primary)" : "var(--text)" }}>
+                  {label}
+                </p>
+                <p className="mt-0.5 text-xs" style={{ color: "var(--text-muted)" }}>{sub}</p>
+              </button>
+            ))}
+          </div>
+          <div className="mt-6 flex justify-between">
+            <button className="btn btn-secondary" onClick={() => setStep(4)}>Back</button>
+            <button className="btn btn-primary" disabled={!boundary} onClick={() => setStep(6)}>Next</button>
+          </div>
+        </div>
+      )}
+
+      {step === 6 && (
+        <div className="card">
+          <h1 className="text-lg font-bold font-display" style={{ color: "var(--text)" }}>
             What's driving this inventory?
           </h1>
           <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>
@@ -201,7 +242,7 @@ export default function SetupWizard({ companyName }: { companyName: string }) {
             ))}
           </div>
           <div className="mt-6 flex justify-between">
-            <button className="btn btn-secondary" onClick={() => setStep(4)}>Back</button>
+            <button className="btn btn-secondary" onClick={() => setStep(5)}>Back</button>
             <button className="btn btn-primary" disabled={submitting} onClick={finish}>
               {submitting ? "Saving…" : "Finish Setup"}
             </button>

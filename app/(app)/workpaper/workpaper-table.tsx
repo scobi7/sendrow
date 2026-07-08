@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { CalcLog } from "@/lib/factor-engine";
+import type { UnmappedLog } from "@/lib/ingestion/ingest";
 
 type LineItem = {
   id: string;
@@ -11,6 +12,7 @@ type LineItem = {
   rawUnit: string;
   co2eKg: string | null;
   confidence: string;
+  status: string;
   factorId: string | null;
   calcLog: unknown;
   sourceRef: string;
@@ -45,7 +47,9 @@ export function WorkpaperTable({ items }: { items: LineItem[] }) {
         <tbody>
           {items.map((item, i) => {
             const isExpanded = expanded.has(item.id);
-            const log = item.calcLog as CalcLog | null;
+            const isUnmapped = item.status === "unmapped";
+            const log = isUnmapped ? null : (item.calcLog as CalcLog | null);
+            const unmappedLog = isUnmapped ? (item.calcLog as UnmappedLog | null) : null;
             return (
               <>
                 <tr
@@ -53,7 +57,7 @@ export function WorkpaperTable({ items }: { items: LineItem[] }) {
                   onClick={() => toggle(item.id)}
                   className="cursor-pointer transition-colors"
                   style={{
-                    background: isExpanded ? "var(--primary-tint)" : i % 2 === 0 ? "var(--card)" : "var(--surface)",
+                    background: isUnmapped ? "#fef2f2" : isExpanded ? "var(--primary-tint)" : i % 2 === 0 ? "var(--card)" : "var(--surface)",
                     borderTop: i > 0 ? "1px solid var(--divider)" : undefined,
                   }}
                 >
@@ -78,12 +82,14 @@ export function WorkpaperTable({ items }: { items: LineItem[] }) {
                     <span
                       className="rounded-full px-2 py-0.5 text-xs"
                       style={
-                        item.confidence === "actual"
+                        isUnmapped
+                          ? { background: "#fecaca", color: "#dc2626", fontWeight: 600 }
+                          : item.confidence === "actual"
                           ? { background: "var(--primary-tint)", color: "var(--primary)" }
                           : { background: "var(--divider)", color: "var(--text-muted)" }
                       }
                     >
-                      {item.confidence}
+                      {isUnmapped ? "⚠ unmapped" : item.confidence}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-xs" style={{ color: "var(--text-muted)" }}>{item.sourceRef || "—"}</td>
@@ -91,6 +97,23 @@ export function WorkpaperTable({ items }: { items: LineItem[] }) {
                     {isExpanded ? "▲" : "▼"}
                   </td>
                 </tr>
+
+                {isExpanded && unmappedLog && (
+                  <tr key={`${item.id}-log`} style={{ background: "#fef2f2", borderTop: "1px solid #fecaca" }}>
+                    <td colSpan={7} className="px-6 py-4">
+                      <p className="mb-1 text-xs font-semibold uppercase tracking-wide" style={{ color: "#dc2626" }}>
+                        Flagged — could not be mapped
+                      </p>
+                      <p className="text-sm" style={{ color: "var(--text)" }}>{unmappedLog.reason}</p>
+                      <p className="mt-2 font-mono text-xs" style={{ color: "var(--text-muted)" }}>
+                        raw: {unmappedLog.raw_value ?? "—"} {unmappedLog.raw_unit || "(no unit)"} · activity: {unmappedLog.activity_type || "—"}
+                      </p>
+                      <p className="mt-1 text-xs" style={{ color: "var(--text-muted)" }}>
+                        This row contributes 0 kgCO₂e until it is categorized. It is counted against your data quality score and is visible to your reviewer.
+                      </p>
+                    </td>
+                  </tr>
+                )}
 
                 {isExpanded && log && (
                   <tr key={`${item.id}-log`} style={{ background: "var(--bg)", borderTop: "1px solid var(--divider)" }}>

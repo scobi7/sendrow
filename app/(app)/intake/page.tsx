@@ -1,7 +1,8 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { mappingProfiles, emissionLineItems } from "@/lib/db/schema";
+import { mappingProfiles, emissionLineItems, scope3Screening } from "@/lib/db/schema";
 import { currentUser } from "@/lib/auth";
 import { PageHeader } from "@/components/ui";
 
@@ -9,10 +10,14 @@ export default async function IntakePage() {
   const user = await currentUser();
   const companyId = user!.companyId;
 
-  const [profiles, lineItems] = await Promise.all([
+  const [profiles, lineItems, screening] = await Promise.all([
     db.select().from(mappingProfiles).where(eq(mappingProfiles.companyId, companyId)),
     db.select({ id: emissionLineItems.id }).from(emissionLineItems).where(eq(emissionLineItems.companyId, companyId)),
+    db.select({ id: scope3Screening.id }).from(scope3Screening).where(eq(scope3Screening.companyId, companyId)).limit(1),
   ]);
+
+  // Onboarding gate: boundary + screening must exist before first upload (soft — screening is one page away)
+  if (screening.length === 0) redirect("/scope3-screening?from=intake");
 
   return (
     <div className="mx-auto max-w-3xl">

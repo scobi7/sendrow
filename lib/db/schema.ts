@@ -145,6 +145,8 @@ export const emissionLineItems = pgTable("gt_emission_line_items", {
   rawUnit: text("raw_unit").notNull(),
   co2eKg: numeric("co2e_kg", { precision: 14, scale: 4 }).notNull(),
   confidence: text("confidence").notNull().default("estimated"),
+  // "mapped" = factor applied; "unmapped" = flagged for review, zero emissions — never dropped
+  status: text("status").notNull().default("mapped"),
   factorId: text("factor_id"),
   calcLog: jsonb("calc_log").notNull().default({}),
   mappingProfileId: text("mapping_profile_id"),

@@ -92,6 +92,45 @@ export async function sendAgencyQuoteRequest(data: {
   );
 }
 
+export async function sendDataRequestEmail(
+  clientEmail: string,
+  clientName: string,
+  companyName: string,
+  description: string,
+  dueDate: string | null
+) {
+  const firstName = clientName.split(" ")[0];
+  await send(
+    clientEmail,
+    `New data request for ${companyName}`,
+    `<p>Hi ${firstName},</p>
+<p>Your reviewer has requested additional data for <strong>${companyName}</strong>:</p>
+<blockquote><p>${description}</p></blockquote>
+${dueDate ? `<p><strong>Due:</strong> ${dueDate}</p>` : ""}
+<p><a href="${APP_URL}/intake/upload">Upload the data →</a></p>
+<p>— The Sendrow team</p>`
+  );
+}
+
+export async function sendUploadNeedsReviewEmail(
+  consultantEmail: string,
+  consultantName: string,
+  companyName: string,
+  filename: string,
+  unmappedCount: number
+) {
+  const firstName = consultantName.split(" ")[0];
+  await send(
+    consultantEmail,
+    `${companyName} uploaded a file that needs review`,
+    `<p>Hi ${firstName},</p>
+<p><strong>${companyName}</strong> uploaded <strong>${filename}</strong> and it was routed to your review queue.</p>
+${unmappedCount > 0 ? `<p><strong>${unmappedCount}</strong> row${unmappedCount === 1 ? "" : "s"} could not be mapped to an emission factor and ${unmappedCount === 1 ? "is" : "are"} flagged for categorization.</p>` : ""}
+<p><a href="${APP_URL}/consultant/clients">Review the upload →</a></p>
+<p>— The Sendrow team</p>`
+  );
+}
+
 export async function sendSectionCompleteEmail(
   consultantEmail: string,
   consultantName: string,

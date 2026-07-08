@@ -139,9 +139,13 @@ export function recalcCompany(company: Company, factorOverrides: EmissionFactor[
       purchased: { tons: 0, spend: 0, parts: [] },
       freight: { tons: 0, spend: 0, parts: [] },
     };
+    const unmapped: { cat: string; spend: number }[] = [];
     for (const [cat, spend] of Object.entries(byCategory)) {
       const map = QB_CATEGORY_TO_USEEIO[cat];
-      if (!map) continue;
+      if (!map) {
+        unmapped.push({ cat, spend });
+        continue;
+      }
       const f = getF(map.factorId);
       const tons = spend * f.value;
       const b = buckets[map.bucket];
@@ -158,6 +162,14 @@ export function recalcCompany(company: Company, factorOverrides: EmissionFactor[
     if (buckets.freight.tons > 0)
       add(3, "Upstream freight", buckets.freight.tons, "useeio.freight.v2",
         `Spend-based (USEEIO): ${buckets.freight.parts.join(" + ")} = ${fmt(r2(buckets.freight.tons))} tCO2e`, "spend_based");
+    // Contracts invariant: unmapped spend is flagged, never silently dropped.
+    // Zero tons so totals are unaffected, but the gap is visible in the audit trail.
+    if (unmapped.length > 0) {
+      const totalUnmapped = unmapped.reduce((s, u) => s + u.spend, 0);
+      add(3, "Unmapped spend — needs categorization", 0, null,
+        `FLAGGED: $${fmt(totalUnmapped)} across ${unmapped.length} expense categor${unmapped.length === 1 ? "y" : "ies"} has no USEEIO mapping and is NOT included in totals: ${unmapped.map((u) => `${u.cat} ($${fmt(u.spend)})`).join(", ")}`,
+        "estimated");
+    }
   }
 
   if (inp.commute_avg_miles && inp.commute_mode && inp.commute_days_in_office != null) {

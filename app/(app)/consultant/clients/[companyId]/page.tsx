@@ -3,7 +3,7 @@ import { redirect, notFound } from "next/navigation";
 import { eq, desc, and, isNull } from "drizzle-orm";
 import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { consultantClients, companies, intakeSessions, dataRequests, pipelineStatus } from "@/lib/db/schema";
+import { consultantClients, companies, intakeSessions, dataRequests, pipelineStatus, emissionLineItems } from "@/lib/db/schema";
 import { SessionActions } from "./session-actions";
 import { DataRequestForm } from "./data-request-form";
 import { LockPipelineButton } from "./lock-pipeline-button";
@@ -43,17 +43,25 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ c
     );
   if (!link) notFound();
 
-  const [company, sessions, openRequests, pipeline] = await Promise.all([
+  const [company, sessions, openRequests, pipeline, unmappedItems] = await Promise.all([
     db.select().from(companies).where(eq(companies.id, companyId)).then(r => r[0]),
     db.select().from(intakeSessions).where(eq(intakeSessions.companyId, companyId)).orderBy(desc(intakeSessions.createdAt)).limit(20),
     db.select().from(dataRequests).where(eq(dataRequests.companyId, companyId)).orderBy(desc(dataRequests.createdAt)),
     db.select().from(pipelineStatus).where(eq(pipelineStatus.companyId, companyId)).then(r => r[0] ?? null),
+    db.select({ mappingProfileId: emissionLineItems.mappingProfileId })
+      .from(emissionLineItems)
+      .where(and(eq(emissionLineItems.companyId, companyId), eq(emissionLineItems.status, "unmapped"))),
   ]);
 
   if (!company) notFound();
 
   const pStatus = pipeline?.status ?? "not_started";
   const pendingSessions = sessions.filter(s => s.status === "pending_review" || s.status === "needs_info");
+  const unmappedByProfile: Record<string, number> = {};
+  for (const item of unmappedItems) {
+    if (!item.mappingProfileId) continue;
+    unmappedByProfile[item.mappingProfileId] = (unmappedByProfile[item.mappingProfileId] ?? 0) + 1;
+  }
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
@@ -99,6 +107,11 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ c
                     <p className="mt-0.5 text-xs" style={{ color: "var(--text-muted)" }}>
                       {s.dataType} · {s.rowCount} rows · score {s.sessionScore} · {new Date(s.createdAt).toLocaleDateString()}
                     </p>
+                    {s.mappingProfileId && (unmappedByProfile[s.mappingProfileId] ?? 0) > 0 && (
+                      <p className="mt-1 text-xs font-semibold" style={{ color: "#dc2626" }}>
+                        ⚠ {unmappedByProfile[s.mappingProfileId]} unmapped row{unmappedByProfile[s.mappingProfileId] !== 1 ? "s" : ""} — zero emissions until categorized
+                      </p>
+                    )}
                   </div>
                   <span
                     className="shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold"
