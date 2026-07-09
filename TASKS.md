@@ -312,7 +312,7 @@ Generated from PLANS.md (approved). Updated after each task completes.
 - [x] **T3.3** — Restatement alerts with diff email (+ tested diff helper)
 - [x] **T3.4** — Workspace snapshots card (create/list/share/revoke)
 ### T4 — Reshaping engine v1
-- [ ] **T4.1** — lib/formats.ts registry + CSV/Excel export
-- [ ] **T4.2** — SB 253-style disclosure + generic questionnaire formats
-- [ ] **T4.3** — PACT-compatible JSON draft
-- [ ] **T4.4** — /api/snapshots/[id]/export + UI buttons
+- [x] **T4.1** — lib/formats.ts registry + CSV/Excel export
+- [x] **T4.2** — SB 253-style disclosure + generic questionnaire formats
+- [x] **T4.3** — PACT-compatible JSON draft
+- [x] **T4.4** — /api/snapshots/[id]/export + UI buttons

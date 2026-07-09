@@ -424,6 +424,13 @@ export default async function ClientWorkspacePage({
                       <p className="text-xs" style={{ color: "var(--text-muted)" }}>
                         {new Date(snap.createdAt).toLocaleDateString()} · {snap.itemCount} items · {snap.sha256.slice(0, 8)}…
                       </p>
+                      <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1 text-xs">
+                        {[["excel", "Excel"], ["sb253", "SB 253"], ["questionnaire", "Questionnaire"], ["pact", "PACT"]].map(([f, label]) => (
+                          <a key={f} href={`/api/snapshots/${snap.id}/export?format=${f}`} className="underline" style={{ color: "var(--primary)" }}>
+                            {label} ↓
+                          </a>
+                        ))}
+                      </div>
                       {snapShares.map((sh) => (
                         <div key={sh.token} className="mt-1.5 flex items-center gap-2">
                           <ShareLinkButton token={sh.token} />
