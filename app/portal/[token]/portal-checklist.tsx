@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import * as XLSX from "xlsx";
 import type { ChecklistItem } from "@/lib/portal";
 import { parsePastedRows } from "@/lib/portal-paste";
+import { parseSheetMatrix } from "@/lib/ingestion/sheet-parse";
 
 type EntryRow = { date: string; kind: string; quantity: string };
 
@@ -127,16 +128,16 @@ export function PortalChecklist({ token, items }: { token: string; items: Checkl
   async function handleFile(item: ChecklistItem, file: File) {
     setError(null);
     const buf = await file.arrayBuffer();
-    const wb = XLSX.read(buf);
+    // codepage 65001 = UTF-8, so CSVs with em-dashes etc. don't mojibake
+    const wb = XLSX.read(buf, { codepage: 65001 });
 
-    // Parse every sheet; workbooks often carry multiple tabs and only the
-    // person who made the file knows which one holds the data.
+    // Parse every sheet as a raw matrix and auto-detect the real header row —
+    // files often carry a title and blank rows above the actual table.
     const sheets = wb.SheetNames.map((name) => {
-      const parsed = XLSX.utils.sheet_to_json<Record<string, unknown>>(wb.Sheets[name], { defval: "" });
-      return {
-        name,
-        rows: parsed.map((r) => Object.fromEntries(Object.entries(r).map(([k, v]) => [k, String(v)]))),
-      };
+      const matrix = XLSX.utils.sheet_to_json<unknown[]>(wb.Sheets[name], { header: 1, defval: "" })
+        .map((r) => (r as unknown[]).map((c) => String(c ?? "")));
+      const { rows } = parseSheetMatrix(matrix);
+      return { name, rows };
     }).filter((s) => s.rows.length > 0);
 
     if (sheets.length === 0) {
