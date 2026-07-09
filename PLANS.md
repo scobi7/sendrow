@@ -162,7 +162,7 @@ N1 → N2 → N3 → N4 → N5 → N7 in order; N6 starts the moment a founding 
 
 ---
 
-# Plan T — The Deliverable Machine (APPROVED 2026-07-08)
+# Plan T — The Deliverable Machine (BUILT 2026-07-08, commits afca629→a054bb7)
 
 > Malachi: "draft all the fixes… code as much as we can to get to the final product. Not launch ready — skip paywall/monetization. Just the product itself." Spans the ledger, intake repair, and ROADMAP's Plans O+P. Sequenced by dependency.
 

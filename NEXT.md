@@ -23,6 +23,9 @@ Sendrow is now **the practice platform for climate consultants** — consultants
 - Concierge cap: 3 engagements, then productize or raise price
 - CARB 15-day comment window: publish the explainer within 24h + submit a comment letter when it opens
 
+## 🟢 Plan T — The Deliverable Machine BUILT (2026-07-08, late session)
+The consultant now works data end-to-end in-product: **Data Ledger** (inspect/correct/exclude any line item; rejected uploads leave totals — was a live bug), **intake repair** (supplier confirm-mapping screen, format memory via header fingerprints, unit conversions, paste-from-spreadsheet), **snapshots** (immutable, sha256-hashed, per-recipient shares, restatement alert emails with diffs), **reshaping engine v1** (snapshot → Excel / SB 253 draft / questionnaire CSV / PACT JSON). 179/179 tests. Commits afca629→a054bb7.
+
 ## 🧭 Master-doc alignment (2026-07-08, evening session)
 "Sendrow, Explained in Plain English" (sendrow master.pdf) refines the direction: **the system of record for supplier emissions data, consultant-operated.** GOALS.md rewritten around it (3 personas, 3 promises, workflow spine incl. snapshots/reshaping/restatements, supplier-confirmed parsing, per-active-client pricing, scoreboard). contracts/ §11 re-scoped (requests wear consultant brand; Sendrow = neutral vault); §13 snapshots immutable, §14 never score suppliers added. ROADMAP recast: Plan O (trust core: snapshots/sharing/restatements) → P (reshaping engine) → Q (supplier side: confirmed parsing, reply-by-email, free accounts) → R (buyers, 2027). Built `/how-it-works` public page (5 steps + three-promises band), linked in nav/footer; landing subline updated.
 
