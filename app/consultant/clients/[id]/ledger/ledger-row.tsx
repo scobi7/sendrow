@@ -12,6 +12,7 @@ import { VENDOR_CONFIRM_OPTIONS } from "@/lib/vendor-mappings";
 type Item = {
   id: string;
   sourceRef: string;
+  activityDate: string | null;
   scope: number;
   category: string;
   rawValue: string;
@@ -66,7 +67,9 @@ export function LedgerRow({
         <td className="px-4 py-2.5 text-right font-data" style={{ color: "var(--text)" }}>
           {item.status === "mapped" ? fmt(Number(item.co2eKg) / 1000) : "—"}
         </td>
-        <td className="px-4 py-2.5 text-xs" style={{ color: "var(--text-muted)" }}>{item.period ?? "—"}</td>
+        <td className="px-4 py-2.5 text-xs" style={{ color: "var(--text-muted)" }}>
+          {item.activityDate ?? item.period ?? "—"}
+        </td>
         <td className="px-4 py-2.5 text-xs">
           {uploadName ? (
             <span className="inline-flex items-center gap-1.5">

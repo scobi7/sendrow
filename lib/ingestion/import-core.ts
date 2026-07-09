@@ -100,6 +100,7 @@ export async function processImport(input: ImportInput): Promise<ImportOutcome> 
     inserts = normalized.map((row) => ({
       ...rowToLineItem(row, factors, companyId, profileId, vendorMaps),
       period: periodForDate(row.date, companyRow?.fiscalYearEndMonth ?? null),
+      activityDate: row.date ?? null,
     }));
   }
   // Provenance: every line item's calc log records how it arrived and, for

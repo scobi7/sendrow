@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 import { companies, consultantClients, dataRequests, emissionLineItems, intakeSessions, pipelineStatus } from "@/lib/db/schema";
 import { and, desc, eq, inArray, isNull } from "drizzle-orm";
 import { loadCompany } from "@/lib/store";
-import { totals } from "@/lib/calc";
+import { combinedTotals } from "@/lib/calc";
 import { PageHeader } from "@/components/ui";
 import { archiveClient, deleteClient } from "@/lib/actions";
 import { DeleteClientButton } from "./delete-client-button";
@@ -30,15 +30,15 @@ export default async function ConsultantDashboard({
     .where(and(eq(consultantClients.consultantId, user.id), isNull(consultantClients.archivedAt)));
   const ids = links.map((l) => l.companyId);
 
-  const [rows, requests, pipelines, unmapped, sessions] = ids.length
+  const [rows, requests, pipelines, allItems, sessions] = ids.length
     ? await Promise.all([
         db.select().from(companies).where(inArray(companies.id, ids)),
         db.select().from(dataRequests).where(inArray(dataRequests.companyId, ids)),
         db.select().from(pipelineStatus).where(inArray(pipelineStatus.companyId, ids)),
         db
-          .select({ companyId: emissionLineItems.companyId, id: emissionLineItems.id })
+          .select({ companyId: emissionLineItems.companyId, scope: emissionLineItems.scope, co2eKg: emissionLineItems.co2eKg, status: emissionLineItems.status })
           .from(emissionLineItems)
-          .where(and(inArray(emissionLineItems.companyId, ids), eq(emissionLineItems.status, "unmapped"))),
+          .where(inArray(emissionLineItems.companyId, ids)),
         db
           .select({ companyId: intakeSessions.companyId, status: intakeSessions.status, createdAt: intakeSessions.createdAt })
           .from(intakeSessions)
@@ -50,7 +50,8 @@ export default async function ConsultantDashboard({
   const clientResults = await Promise.allSettled(
     rows.map(async (row) => {
       const company = await loadCompany(row.id);
-      const t = totals(company);
+      const companyItems = allItems.filter((i) => i.companyId === row.id);
+      const t = combinedTotals(company, companyItems.map((i) => ({ ...i, co2eKg: Number(i.co2eKg) })));
 
       const reqs = requests.filter((r) => r.companyId === row.id);
       const openReqs = reqs.filter((r) => r.status === "open");
@@ -63,7 +64,7 @@ export default async function ConsultantDashboard({
       }
 
       const pipeline = pipelines.find((p) => p.companyId === row.id)?.status ?? "not_started";
-      const unmappedCount = unmapped.filter((u) => u.companyId === row.id).length;
+      const unmappedCount = companyItems.filter((u) => u.status === "unmapped").length;
       const clientSessions = sessions.filter((s) => s.companyId === row.id);
       const pendingReview = clientSessions.filter((s) => s.status === "pending_review" || s.status === "needs_info").length;
       const lastActivity = clientSessions[0]?.createdAt ?? reqs[0]?.createdAt ?? null;

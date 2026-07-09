@@ -5,7 +5,7 @@ import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { companies, consultantClients, intakeSessions, dataRequests, pipelineStatus, emissionLineItems, shareLinks, snapshots } from "@/lib/db/schema";
 import { loadCompany } from "@/lib/store";
-import { totals } from "@/lib/calc";
+import { combinedTotals } from "@/lib/calc";
 import { auditForCompany } from "@/lib/audit";
 import { archiveClient, updateClientContact } from "@/lib/actions";
 import { resendPortalEmail, createShareLink, revokeShareLink, createSnapshot, shareSnapshot, convertDollarFuel } from "@/lib/consultant-actions";
@@ -90,7 +90,7 @@ export default async function ClientWorkspacePage({
   const byPeriod = periodTotals(periodItems.map((i) => ({ ...i, co2eKg: Number(i.co2eKg) })));
   const yoy = yoyDelta(byPeriod);
 
-  const t = totals(fullCompany);
+  const t = combinedTotals(fullCompany, periodItems.map((i) => ({ ...i, co2eKg: Number(i.co2eKg) })));
   const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 2 });
   const recent = recentAudit.slice(0, 8);
 

@@ -131,7 +131,7 @@ export default async function LedgerPage({
                 <th className="px-4 py-3">Category</th>
                 <th className="px-4 py-3 text-right">Raw</th>
                 <th className="px-4 py-3 text-right">t CO2e</th>
-                <th className="px-4 py-3">Period</th>
+                <th className="px-4 py-3">Date</th>
                 <th className="px-4 py-3">Upload</th>
                 <th className="px-4 py-3">Status</th>
                 <th className="px-4 py-3 text-right">Fix</th>
@@ -148,6 +148,7 @@ export default async function LedgerPage({
                     item={{
                       id: item.id,
                       sourceRef: item.sourceRef,
+                      activityDate: item.activityDate,
                       scope: item.scope,
                       category: item.category,
                       rawValue: item.rawValue,

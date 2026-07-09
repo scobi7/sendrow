@@ -22,7 +22,7 @@ import { getBrandForCompany } from "./branding";
 import { snapshotHash, restatementDiff } from "./snapshots";
 import type { SnapshotTotals } from "./snapshots";
 import { sendRestatementEmail } from "./email";
-import { totals as computeTotals } from "./calc";
+import { combinedTotals as computeTotals } from "./calc";
 import { desc } from "drizzle-orm";
 import { generatePortalToken, portalExpiry, buildChecklist } from "./portal";
 import type { DataType } from "./ingestion/data-type-templates";
@@ -560,7 +560,7 @@ export async function createSnapshot(companyId: string, formData: FormData) {
       .where(and(eq(emissionLineItems.companyId, companyId), eq(emissionLineItems.status, "mapped"))),
   ]);
 
-  const t = computeTotals(company);
+  const t = computeTotals(company, items.map((i) => ({ scope: i.scope, co2eKg: Number(i.co2eKg), status: i.status })));
   const frozenTotals: SnapshotTotals = {
     scope1: t.scope1,
     scope2Location: t.scope2Location,

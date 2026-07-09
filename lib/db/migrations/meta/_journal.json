@@ -85,6 +85,13 @@
       "when": 1783638364119,
       "tag": "0011_black_iron_man",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1783640566790,
+      "tag": "0012_wide_omega_sentinel",
+      "breakpoints": true
     }
   ]
 }

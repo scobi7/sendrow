@@ -243,6 +243,39 @@ export interface Totals {
   total: number;
 }
 
+/** Tons of CO2e from imported line items (the portal pipeline). Only mapped
+ *  rows count — unmapped/excluded carry zero. Line items don't distinguish
+ *  market-based scope 2, so they add equally to both bases. */
+export function lineItemTotals(items: { scope: number; co2eKg: string | number; status: string }[]): Totals {
+  let s1 = 0, s2 = 0, s3 = 0;
+  for (const i of items) {
+    if (i.status !== "mapped") continue;
+    const tons = Number(i.co2eKg) / 1000;
+    if (i.scope === 1) s1 += tons;
+    else if (i.scope === 2) s2 += tons;
+    else s3 += tons;
+  }
+  return { scope1: r2(s1), scope2Location: r2(s2), scope2Market: r2(s2), scope3: r2(s3), total: r2(s1 + s2 + s3) };
+}
+
+/** The company's full picture: inputs-based calcs (manage-on-behalf, connections)
+ *  PLUS imported line items (portal). Duplicates are the consultant's call —
+ *  the ledger's exclude exists for exactly that. */
+export function combinedTotals(
+  company: Company,
+  items: { scope: number; co2eKg: string | number; status: string }[]
+): Totals {
+  const a = totals(company);
+  const b = lineItemTotals(items);
+  return {
+    scope1: r2(a.scope1 + b.scope1),
+    scope2Location: r2(a.scope2Location + b.scope2Location),
+    scope2Market: r2(a.scope2Market + b.scope2Market),
+    scope3: r2(a.scope3 + b.scope3),
+    total: r2(a.total + b.total),
+  };
+}
+
 export function totals(company: Company): Totals {
   const s = (n: number[]) => r2(n.reduce((a, b) => a + b, 0));
   const scope1 = s(company.calcs.filter((c) => c.scope === 1).map((c) => c.co2eTons));

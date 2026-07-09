@@ -4,7 +4,7 @@ import { companies, emissionLineItems, shareLinks, snapshots } from "@/lib/db/sc
 import { getBrandForCompany } from "@/lib/branding";
 import { periodTotals, yoyDelta } from "@/lib/period";
 import { loadCompany } from "@/lib/store";
-import { totals } from "@/lib/calc";
+import { totals, combinedTotals } from "@/lib/calc";
 
 /** Read-only, consultant-branded results page (Plan N5). This is how a company
  *  "sees their dashboard": a link their consultant shares — no login, and no
@@ -53,7 +53,7 @@ export default async function SharedResultsPage({ params }: { params: Promise<{ 
   type FrozenItem = { period: string | null; scope: number; co2eKg: string; status?: string };
   const t = snapshot
     ? (snapshot.totals as ReturnType<typeof totals>)
-    : totals(fullCompany);
+    : combinedTotals(fullCompany, periodItems.map((i) => ({ ...i, co2eKg: Number(i.co2eKg) })));
   const sourceItems = snapshot
     ? (snapshot.lineItems as FrozenItem[]).map((i) => ({ ...i, status: "mapped" }))
     : periodItems;

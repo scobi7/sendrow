@@ -84,3 +84,23 @@ describe("dollar-fuel conversion (consultant sets the price, we do the math)", (
     expect(isDollarFuelRow({ ...dollarRow, calcLog: { activity_type: "natural gas", reason: "" } })).toBe(false);
   });
 });
+
+describe("line items feed the headline totals (the 'approve changed nothing' bug)", () => {
+  it("combinedTotals = inputs-based calcs + mapped line items", async () => {
+    const { combinedTotals, lineItemTotals } = await import("@/lib/calc");
+    const items = [
+      { scope: 2, co2eKg: 2000, status: "mapped" },   // 2 t
+      { scope: 1, co2eKg: 500, status: "mapped" },    // 0.5 t
+      { scope: 1, co2eKg: 999, status: "unmapped" },  // flagged: zero
+      { scope: 3, co2eKg: 999, status: "excluded" },  // excluded: zero
+    ];
+    const li = lineItemTotals(items);
+    expect(li.scope1).toBe(0.5);
+    expect(li.scope2Location).toBe(2);
+    expect(li.total).toBe(2.5);
+
+    const emptyCompany = { calcs: [] } as unknown as import("@/lib/types").Company;
+    const t = combinedTotals(emptyCompany, items);
+    expect(t.total).toBe(2.5);
+  });
+});
