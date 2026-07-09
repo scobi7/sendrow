@@ -7,6 +7,8 @@ import { db } from "./db";
 import { companies, consultantClients, consultantProfiles, shareLinks, userCompanies, intakeSessions, dataRequests, pipelineStatus, vendorMappings, emissionLineItems } from "./db/schema";
 import { normalizeVendor, matchVendor, VENDOR_CONFIRM_OPTIONS, getVendorMappingsFromDb } from "./vendor-mappings";
 import { rowToLineItem } from "./ingestion/ingest";
+import { recomputeLineItem, excludeLineItem } from "./ledger";
+import { lookupFactor } from "./factor-engine";
 import { getFactorsFromDb } from "./factor-engine";
 import type { UnmappedLog } from "./ingestion/ingest";
 import { loadCompany, loadFactors, persistCompany } from "./store";
@@ -167,7 +169,27 @@ export async function flagSession(sessionId: string, companyId: string, notes: s
 export async function rejectSession(sessionId: string, companyId: string) {
   const user = await currentUser();
   if (!user || user.role !== "consultant") return;
+  const session = await db.query.intakeSessions.findFirst({ where: eq(intakeSessions.id, sessionId) });
+  if (!session || session.companyId !== companyId) return;
+
   await db.update(intakeSessions).set({ status: "rejected", reviewedAt: new Date().toISOString() }).where(eq(intakeSessions.id, sessionId));
+
+  // A rejected upload's rows leave all totals — excluded, never deleted (no silent drops)
+  if (session.mappingProfileId) {
+    const items = await db
+      .select()
+      .from(emissionLineItems)
+      .where(and(eq(emissionLineItems.companyId, companyId), eq(emissionLineItems.mappingProfileId, session.mappingProfileId)));
+    for (const item of items) {
+      if (item.status === "excluded") continue;
+      const patch = excludeLineItem(
+        { ...item, calcLog: (item.calcLog as Record<string, unknown>) ?? {} },
+        user.id,
+        `Upload "${session.filename}" rejected by consultant`
+      );
+      await db.update(emissionLineItems).set(patch).where(eq(emissionLineItems.id, item.id));
+    }
+  }
   revalidatePath(`/consultant/clients/${companyId}`);
 }
 
@@ -402,5 +424,91 @@ export async function revokeShareLink(token: string, companyId: string) {
     .update(shareLinks)
     .set({ revokedAt: new Date().toISOString() })
     .where(and(eq(shareLinks.token, token), eq(shareLinks.companyId, companyId)));
+  revalidatePath(`/consultant/clients/${companyId}`);
+}
+
+// ─────────── Data Ledger row corrections (Plan T1) ───────────
+
+async function ledgerGuard(companyId: string, itemId: string) {
+  const user = await currentUser();
+  if (!user || user.role !== "consultant") return null;
+  const link = await db.query.consultantClients.findFirst({
+    where: and(
+      eq(consultantClients.consultantId, user.id),
+      eq(consultantClients.companyId, companyId),
+      isNull(consultantClients.archivedAt)
+    ),
+  });
+  if (!link) return null;
+  const item = await db.query.emissionLineItems.findFirst({ where: eq(emissionLineItems.id, itemId) });
+  if (!item || item.companyId !== companyId) return null;
+  return { user, item };
+}
+
+/** Recategorize a row to one of the confirmed factor options (same list vendor
+ *  memory uses) and recompute its emissions with a fresh calc log. */
+export async function recategorizeLineItem(companyId: string, itemId: string, optionKey: string) {
+  const ctx = await ledgerGuard(companyId, itemId);
+  if (!ctx) return;
+  const option = VENDOR_CONFIRM_OPTIONS.find((o) => o.key === optionKey);
+  if (!option) return;
+
+  const factors = await getFactorsFromDb();
+  const factor = lookupFactor(factors, { factorId: option.factorId });
+  if (!factor) return;
+
+  const patch = recomputeLineItem(
+    { ...ctx.item, calcLog: (ctx.item.calcLog as Record<string, unknown>) ?? {} },
+    factor,
+    { scope: option.scope, category: option.category, editedBy: ctx.user.id, reason: `Recategorized to "${option.label}"` }
+  );
+  await db.update(emissionLineItems).set(patch).where(eq(emissionLineItems.id, itemId));
+  revalidatePath(`/consultant/clients/${companyId}`);
+}
+
+/** Corrects a row's quantity and recomputes with its existing factor. */
+export async function editLineItemQuantity(companyId: string, itemId: string, formData: FormData) {
+  const ctx = await ledgerGuard(companyId, itemId);
+  if (!ctx) return;
+  const quantity = parseFloat(String(formData.get("quantity") ?? ""));
+  if (isNaN(quantity) || quantity < 0) return;
+  if (!ctx.item.factorId) return; // unmapped rows get a category first, not a quantity edit
+
+  const factors = await getFactorsFromDb();
+  const factor = lookupFactor(factors, { factorId: ctx.item.factorId });
+  if (!factor) return;
+
+  const patch = recomputeLineItem(
+    { ...ctx.item, calcLog: (ctx.item.calcLog as Record<string, unknown>) ?? {} },
+    factor,
+    { quantity, editedBy: ctx.user.id, reason: `Quantity corrected ${ctx.item.rawValue} → ${quantity}` }
+  );
+  await db
+    .update(emissionLineItems)
+    .set({ ...patch, rawValue: quantity.toFixed(4) })
+    .where(eq(emissionLineItems.id, itemId));
+  revalidatePath(`/consultant/clients/${companyId}`);
+}
+
+/** Excludes a row from all totals (kept for audit, never deleted). */
+export async function excludeLineItemAction(companyId: string, itemId: string) {
+  const ctx = await ledgerGuard(companyId, itemId);
+  if (!ctx) return;
+  const patch = excludeLineItem(
+    { ...ctx.item, calcLog: (ctx.item.calcLog as Record<string, unknown>) ?? {} },
+    ctx.user.id,
+    "Excluded by consultant in ledger"
+  );
+  await db.update(emissionLineItems).set(patch).where(eq(emissionLineItems.id, itemId));
+  revalidatePath(`/consultant/clients/${companyId}`);
+}
+
+/** Restores an excluded row to its pre-exclusion status. */
+export async function restoreLineItem(companyId: string, itemId: string) {
+  const ctx = await ledgerGuard(companyId, itemId);
+  if (!ctx || ctx.item.status !== "excluded") return;
+  const log = (ctx.item.calcLog as { exclusion?: { previous_status?: string } }) ?? {};
+  const previous = log.exclusion?.previous_status === "mapped" ? "mapped" : "unmapped";
+  await db.update(emissionLineItems).set({ status: previous }).where(eq(emissionLineItems.id, itemId));
   revalidatePath(`/consultant/clients/${companyId}`);
 }

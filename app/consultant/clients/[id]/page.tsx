@@ -124,6 +124,9 @@ export default async function ClientWorkspacePage({
           </p>
         </div>
         <div className="flex items-center gap-3">
+          <Link href={`/consultant/clients/${id}/ledger`} className="btn btn-primary text-sm">
+            Data Ledger
+          </Link>
           <Link href={`/consultant/clients/${id}/manage`} className="btn btn-secondary text-sm">
             Enter data on behalf
           </Link>
@@ -287,8 +290,11 @@ export default async function ClientWorkspacePage({
 
           {/* All uploads */}
           <div className="rounded-2xl" style={{ background: "var(--card)", border: "1px solid var(--divider)" }}>
-            <div className="px-5 pt-4 pb-3" style={{ borderBottom: "1px solid var(--divider)" }}>
+            <div className="flex items-center justify-between px-5 pt-4 pb-3" style={{ borderBottom: "1px solid var(--divider)" }}>
               <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>All uploads</p>
+              <Link href={`/consultant/clients/${id}/ledger`} className="text-xs font-medium underline" style={{ color: "var(--primary)" }}>
+                Open ledger →
+              </Link>
             </div>
             {sessions.length === 0 ? (
               <p className="px-5 py-4 text-sm" style={{ color: "var(--text-muted)" }}>No uploads yet.</p>

@@ -291,3 +291,28 @@ Generated from PLANS.md (approved). Updated after each task completes.
 ### N7 — Referral admin & ops polish
 - [x] **N7.1** — `/admin/referrals`: lead board with new → routed → converted → dead status tracking
 - [ ] **N7.2** — Real EPA eGRID 2024 + USEEIO v2 factor values — OPEN: needs the actual published datasets loaded via /admin/factors; current values are flagged approximations. Pre-deliverable blocker, not fabricatable.
+
+---
+
+## Plan T — The Deliverable Machine (approved 2026-07-08)
+> Baseline: 158/158 tests, master-doc alignment shipped (4222c6e).
+
+### T1 — Data Ledger + review repair
+- [x] **T1.1** — Ledger table in client workspace (all line items, filters, evidence links)
+- [x] **T1.2** — Row actions: recategorize / edit quantity / exclude (+ pure recompute helper, tests)
+- [x] **T1.3** — Reject fix: rejected sessions exclude their line items from totals
+### T2 — Intake repair
+- [ ] **T2.1** — Unit normalization table + tests
+- [ ] **T2.2** — Portal confirm-mapping screen (+ /api/portal/mapping-preview)
+- [ ] **T2.3** — Format memory via header fingerprints
+- [ ] **T2.4** — Paste-from-spreadsheet in manual entry
+### T3 — Trust core
+- [ ] **T3.1** — gt_snapshots (frozen jsonb + sha256) + migration
+- [ ] **T3.2** — Snapshot shares via share links; /shared renders frozen data
+- [ ] **T3.3** — Restatement alerts with diff email (+ tested diff helper)
+- [ ] **T3.4** — Workspace snapshots card (create/list/share/revoke)
+### T4 — Reshaping engine v1
+- [ ] **T4.1** — lib/formats.ts registry + CSV/Excel export
+- [ ] **T4.2** — SB 253-style disclosure + generic questionnaire formats
+- [ ] **T4.3** — PACT-compatible JSON draft
+- [ ] **T4.4** — /api/snapshots/[id]/export + UI buttons

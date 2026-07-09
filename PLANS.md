@@ -159,3 +159,40 @@ Questionnaire copilot and evidence locker (Plan K), white-label branding (Plan K
 
 ## Sequencing & verification
 N1 → N2 → N3 → N4 → N5 → N7 in order; N6 starts the moment a founding partner supplies a questionnaire (can parallel N3+). Each phase: tests added, `tsc` + build clean, TASKS.md hydrated per workflow. Success criteria per phase written to success/plan-n.md as phases complete.
+
+---
+
+# Plan T — The Deliverable Machine (APPROVED 2026-07-08)
+
+> Malachi: "draft all the fixes… code as much as we can to get to the final product. Not launch ready — skip paywall/monetization. Just the product itself." Spans the ledger, intake repair, and ROADMAP's Plans O+P. Sequenced by dependency.
+
+## T1 — Data Ledger + review repair
+- Ledger view in the client workspace: every line item — source ref, activity, scope/category, raw value+unit, computed CO2e, period, status chip, link to source file (evidence); filter by status and by upload (via mapping profile).
+- Row actions (server actions + pure recompute helper): **recategorize** (pick from the same confirmed-factor options as vendor memory → recompute CO2e, log), **edit quantity** (recompute with same factor), **exclude** (status `excluded`, reason logged — never deleted, per no-silent-drops).
+- **Reject fix:** rejecting an upload marks its line items `excluded` with reason "session rejected" — they leave totals/unmapped counts (periodTotals already counts only `mapped`).
+- Acceptance: consultant can inspect and correct any figure without touching the DB; rejected uploads no longer pollute totals; tests for the recompute/exclude helpers.
+
+## T2 — Intake repair (clean data at the door)
+- **Unit normalization** (`lib/ingestion/units.ts`): gal→gallon, MWh→kWh×1000, ccf→therms×1.037, L→gallons, tonne→ton, mi→mile… applied before factor resolution; tests.
+- **Confirm-mapping screen** in the portal: after parsing, client calls `/api/portal/mapping-preview` (token-authed) with headers → server returns suggested map (memory > template+fuzzy) + confidence; supplier sees "their header → our field" dropdowns with 3 sample values per column, confirms/fixes; confirmed map submits with the import.
+- **Format memory:** `headerFingerprint` (sha256 of normalized sorted headers) on mapping profiles; same shape next time → "Same as last time ✓" prefill.
+- **Paste-friendly entry:** portal manual grid accepts paste-from-spreadsheet (TSV/CSV rows → parsed into grid for review before submit).
+- Acceptance: a supplier confirms a weird file's mapping in one screen; re-uploading the same shape needs zero mapping clicks; MWh/gal/ccf rows stop false-flagging.
+
+## T3 — Trust Core: snapshots, shares, restatements (ROADMAP Plan O)
+- `gt_snapshots`: frozen copy (jsonb) of mapped line items + totals + factor vintages + content sha256, label/period, createdBy/At. Immutable by construction (§13).
+- `gt_share_links` gains `snapshotId`: a share is THIS snapshot; `/shared/[token]` renders the frozen data when set (live view stays for legacy links).
+- **Restatement alerts:** creating a new snapshot for the same period when the prior one was shared → email every recipient a what-changed summary (old vs new totals); pure diff helper, tested.
+- Workspace: Snapshots card — create (label), list, share/revoke per snapshot.
+- Acceptance: shared numbers can never silently change; corrections notify recipients with a diff.
+
+## T4 — Reshaping engine v1 (ROADMAP Plan P, minus the real questionnaire)
+- `lib/formats.ts` registry: snapshot → output. V1 formats: (a) line-items **Excel/CSV** export, (b) **SB 253-style disclosure summary** (scope totals, methodology, factor vintages), (c) **generic customer questionnaire** (reuse `lib/mapping.ts` question builder), (d) **PACT-compatible JSON draft** (basic PCF fields, labeled draft).
+- `/api/snapshots/[id]/export?format=…` (consultant-authed) returns the file; export buttons per snapshot.
+- The first *real* buyer format waits for Kerri's questionnaire (unchanged blocker).
+- Acceptance: one approved snapshot exports to all four formats with zero manual formatting.
+
+**Out of scope (explicitly, per Malachi):** paywall/billing, supplier Pro, buyer features, launch polish. Real factor data remains the standing pre-deliverable blocker (needs actual datasets).
+
+## Verification per phase
+tests + tsc + build green; TASKS.md hydrated; commit + push to sendrow-v2 per phase.
