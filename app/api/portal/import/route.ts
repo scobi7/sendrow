@@ -6,6 +6,7 @@ import { portalTokenValid } from "@/lib/portal";
 import type { ChecklistItem } from "@/lib/portal";
 import { processImport } from "@/lib/ingestion/import-core";
 import { storeEvidence } from "@/lib/evidence";
+import { headerFingerprint } from "@/lib/ingestion/fingerprint";
 import { fuzzyMatchHeaders } from "@/lib/ingestion/fuzzy-match";
 import { applyTemplate } from "@/lib/ingestion/data-type-templates";
 import type { ColumnMap } from "@/lib/ingestion/ingest";
@@ -20,6 +21,7 @@ export async function POST(request: NextRequest) {
   let filename = "portal upload";
   let source: "upload" | "entry" = "upload";
   let fileBytes: Buffer | null = null;
+  let confirmedMap: Record<string, string | null> | null = null;
 
   if (request.headers.get("content-type")?.includes("multipart/form-data")) {
     const form = await request.formData();
@@ -35,6 +37,14 @@ export async function POST(request: NextRequest) {
     if (file instanceof File) {
       filename = file.name || filename;
       fileBytes = Buffer.from(await file.arrayBuffer());
+    }
+    const rawMap = form.get("columnMap");
+    if (typeof rawMap === "string" && rawMap) {
+      try {
+        confirmedMap = JSON.parse(rawMap);
+      } catch {
+        confirmedMap = null;
+      }
     }
   } else {
     const body = await request.json();
@@ -60,13 +70,19 @@ export async function POST(request: NextRequest) {
   // Manual entry sends canonical fields; uploads get the data type's template + fuzzy match.
   // Clients never confirm mappings — low-confidence sessions auto-route to consultant review.
   let columnMap: ColumnMap;
+  let mappingConfirmed = false;
   if (source === "entry") {
     columnMap = { date: "date", activity_type: "activity_type", quantity: "quantity", unit: "unit" };
+  } else if (confirmedMap) {
+    // The supplier confirmed this mapping on the preview screen (Plan T2)
+    columnMap = Object.fromEntries(Object.entries(confirmedMap).filter(([, v]) => v)) as ColumnMap;
+    mappingConfirmed = true;
   } else {
     const headers = Object.keys(rows[0] ?? {});
     const fuzzy = fuzzyMatchHeaders(headers);
     columnMap = applyTemplate(headers, item.dataType, fuzzy) as ColumnMap;
   }
+  const fingerprint = source === "upload" ? headerFingerprint(Object.keys(rows[0] ?? {})) : null;
 
   let evidenceId: string | null = null;
   if (fileBytes) {
@@ -92,6 +108,8 @@ export async function POST(request: NextRequest) {
     dataRequestId: dataRequest.id,
     checklistItemId: item.id,
     evidenceId,
+    headerFingerprint: fingerprint,
+    mappingConfirmed,
   });
 
   return NextResponse.json(outcome);

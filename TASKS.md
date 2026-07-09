@@ -302,10 +302,10 @@ Generated from PLANS.md (approved). Updated after each task completes.
 - [x] **T1.2** — Row actions: recategorize / edit quantity / exclude (+ pure recompute helper, tests)
 - [x] **T1.3** — Reject fix: rejected sessions exclude their line items from totals
 ### T2 — Intake repair
-- [ ] **T2.1** — Unit normalization table + tests
-- [ ] **T2.2** — Portal confirm-mapping screen (+ /api/portal/mapping-preview)
-- [ ] **T2.3** — Format memory via header fingerprints
-- [ ] **T2.4** — Paste-from-spreadsheet in manual entry
+- [x] **T2.1** — Unit normalization table + tests
+- [x] **T2.2** — Portal confirm-mapping screen (+ /api/portal/mapping-preview)
+- [x] **T2.3** — Format memory via header fingerprints
+- [x] **T2.4** — Paste-from-spreadsheet in manual entry
 ### T3 — Trust core
 - [ ] **T3.1** — gt_snapshots (frozen jsonb + sha256) + migration
 - [ ] **T3.2** — Snapshot shares via share links; /shared renders frozen data

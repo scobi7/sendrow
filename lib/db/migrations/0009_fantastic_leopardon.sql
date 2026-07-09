@@ -1,0 +1,1 @@
+ALTER TABLE "gt_mapping_profiles" ADD COLUMN "header_fingerprint" text;

@@ -1,4 +1,5 @@
 import { lookupFactor, applyFactor } from "@/lib/factor-engine";
+import { normalizeQuantity } from "./units";
 import { matchVendor } from "@/lib/vendor-mappings";
 import type { VendorMapping } from "@/lib/vendor-mappings";
 import type { EmissionFactor, CalcLog } from "@/lib/factor-engine";
@@ -240,25 +241,31 @@ export function rowToLineItem(
     return unmappedLineItem(row, "Missing or non-numeric quantity", companyId, mappingProfileId);
   }
 
+  // Normalize units up front (MWh → kWh, ccf → therms, L → gallons…) so factor
+  // matching sees canonical units; the conversion is recorded in the calc log.
+  const norm = normalizeQuantity(row.quantity, row.unit);
+  const qty = norm.quantity;
+  row = { ...row, quantity: qty, unit: norm.unit };
+
   // Vendor memory first: a human-confirmed mapping beats heuristics
   const vendorMatch = matchVendor(row.source_ref, vendorMappings) ?? matchVendor(row.activity_type, vendorMappings);
   if (vendorMatch?.factorId) {
     const factor = lookupFactor(factors, { factorId: vendorMatch.factorId });
     if (factor) {
-      const { co2e_kg, calc_log } = applyFactor(row.quantity, row.unit ?? "", factor);
+      const { co2e_kg, calc_log } = applyFactor(qty, row.unit ?? "", factor);
       return {
         id: newId(),
         companyId,
         sourceRef: row.source_ref ?? "",
         scope: vendorMatch.scope,
         category: vendorMatch.category,
-        rawValue: String(row.quantity),
+        rawValue: String(qty),
         rawUnit: row.unit ?? "",
         co2eKg: co2e_kg.toFixed(4),
         confidence: row.confidence ?? "estimated",
         status: "mapped",
         factorId: factor.factor_id,
-        calcLog: { ...calc_log, vendor_mapping_id: vendorMatch.id } as CalcLog & { vendor_mapping_id: string },
+        calcLog: { ...calc_log, vendor_mapping_id: vendorMatch.id, ...(norm.conversion ? { unit_conversion: norm.conversion } : {}) } as CalcLog & { vendor_mapping_id: string },
         mappingProfileId,
         createdAt: new Date().toISOString(),
       };
@@ -281,7 +288,8 @@ export function rowToLineItem(
     );
   }
 
-  const { co2e_kg, calc_log } = applyFactor(row.quantity, row.unit ?? "", factor);
+  const { co2e_kg, calc_log } = applyFactor(qty, row.unit ?? "", factor);
+  const finalLog = norm.conversion ? { ...calc_log, unit_conversion: norm.conversion } : calc_log;
 
   return {
     id: newId(),
@@ -289,13 +297,13 @@ export function rowToLineItem(
     sourceRef: row.source_ref ?? "",
     scope: scopeInfo.scope,
     category: scopeInfo.category,
-    rawValue: String(row.quantity),
+    rawValue: String(qty),
     rawUnit: row.unit ?? "",
     co2eKg: co2e_kg.toFixed(4),
     confidence: row.confidence ?? "estimated",
     status: "mapped",
     factorId: factor.factor_id,
-    calcLog: calc_log,
+    calcLog: finalLog,
     mappingProfileId,
     createdAt: new Date().toISOString(),
   };

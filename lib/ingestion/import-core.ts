@@ -31,6 +31,9 @@ export type ImportInput = {
   dataRequestId?: string | null;
   checklistItemId?: string | null;
   evidenceId?: string | null;
+  headerFingerprint?: string | null;
+  /** The uploader explicitly confirmed the column mapping (Plan T2). */
+  mappingConfirmed?: boolean;
 };
 
 export type ImportOutcome = {
@@ -60,9 +63,13 @@ export async function processImport(input: ImportInput): Promise<ImportOutcome> 
 
   const headers = Object.keys(rows[0] ?? {});
   const matchResults = fuzzyMatchHeaders(headers);
+  // A human-confirmed mapping outranks any guessing score (doctrine: AI
+  // suggests, human confirms) — flagged rows below still force review.
   const scored = pipelineLocked
     ? { score: 1, autoApproved: true, reasons: ["pipeline locked"] }
-    : scoreSession(dataType, matchResults);
+    : input.mappingConfirmed
+      ? { score: 1, autoApproved: true, reasons: ["column mapping confirmed by uploader"] }
+      : scoreSession(dataType, matchResults);
   const { score } = scored;
   let { autoApproved, reasons } = scored;
 
@@ -72,6 +79,7 @@ export async function processImport(input: ImportInput): Promise<ImportOutcome> 
     companyId,
     name: profileName,
     columnMap: { ...columnMap, _dataType: dataType },
+    headerFingerprint: input.headerFingerprint ?? null,
     effectiveFrom: new Date().toISOString().slice(0, 10),
     createdAt: new Date().toISOString(),
   });

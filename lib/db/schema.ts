@@ -155,6 +155,9 @@ export const mappingProfiles = pgTable("gt_mapping_profiles", {
   companyId: text("company_id").notNull().references(() => companies.id),
   name: text("name").notNull(),
   columnMap: jsonb("column_map").notNull().default({}),
+  // sha256 of the normalized sorted header set — format memory (Plan T2):
+  // the same file shape maps with zero clicks next time
+  headerFingerprint: text("header_fingerprint"),
   effectiveFrom: text("effective_from").notNull(),
   createdAt: text("created_at").notNull(),
 });
