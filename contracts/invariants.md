@@ -28,7 +28,7 @@ These invariants must hold at all times. Tests and code must enforce them.
 
 11. **Requests wear the consultant's brand; Sendrow is the neutral vault.** (Re-scoped 2026-07-08 per the master doc.) Anything sent *on behalf of a consultant* — data requests, portal pages, reminder emails, deliverables — carries the consultant's brand, never Sendrow's. But the supplier owns their data on Sendrow: when they claim their free account or export it, Sendrow appears as the neutral platform. Sendrow still never markets to or contacts a consultant's client uninvited.
 
-12. **Vendor mappings require human confirmation before becoming global.** Auto-applied vendor mappings record the mapping id/version used in the calc log; mapping changes apply forward only, like factor vintages. The same doctrine applies to file-format memory: AI suggests, a human (the supplier) confirms.
+12. **Vendor mappings require human confirmation, and global scope is opt-in.** Confirmations default to this-client-only; a consultant explicitly marks a mapping "all clients" (real vendors like PG&E). Truck IDs, account numbers, and other non-vendor references must never enter the shared memory. Auto-applied vendor mappings record the mapping id/version used in the calc log; mapping changes apply forward only, like factor vintages. The same doctrine applies to file-format memory: AI suggests, a human (the supplier) confirms.
 
 13. **Snapshots are immutable once shared.** Only frozen, dated, approved snapshots ever leave the system. A shared snapshot is never edited; corrections create a new snapshot and trigger restatement alerts to every recipient of the old one.
 

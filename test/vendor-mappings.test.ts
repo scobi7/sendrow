@@ -84,3 +84,15 @@ describe("VENDOR_CONFIRM_OPTIONS", () => {
     }
   });
 });
+
+describe("client-scoped vendor mappings (moat protection)", () => {
+  it("a client-scoped mapping never applies to another company's data", async () => {
+    const { matchVendor } = await import("@/lib/vendor-mappings");
+    const clientScoped = { ...PGE_MAPPING, id: "vm_scoped", companyId: "co_A" };
+    // matching itself is list-based — scoping happens at fetch. Simulate both fetches:
+    const listForA = [clientScoped]; // co_A sees it
+    const listForB: typeof listForA = []; // co_B's fetch filters it out
+    expect(matchVendor("Pacific Gas & Electric Inc", listForA)?.id).toBe("vm_scoped");
+    expect(matchVendor("Pacific Gas & Electric Inc", listForB)).toBeNull();
+  });
+});

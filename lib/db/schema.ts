@@ -257,7 +257,10 @@ export const dataRequests = pgTable("gt_data_requests", {
  *  maps that vendor for every client, forever. Human-confirmed only. */
 export const vendorMappings = pgTable("gt_vendor_mappings", {
   id: text("id").primaryKey(),
-  vendorPattern: text("vendor_pattern").notNull().unique(), // normalized vendor name
+  vendorPattern: text("vendor_pattern").notNull(), // normalized vendor name
+  // null = global (applies to every client); set = only this client.
+  // Truck IDs and account numbers must never enter global memory.
+  companyId: text("company_id"),
   scope: integer("scope").notNull(),
   category: text("category").notNull(),
   factorId: text("factor_id"),

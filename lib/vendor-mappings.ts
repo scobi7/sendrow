@@ -11,6 +11,8 @@ export type VendorMapping = {
   scope: number;
   category: string;
   factorId: string | null;
+  /** null/undefined = global; set = only applies to this client */
+  companyId?: string | null;
 };
 
 const DROPPED_SUFFIXES = new Set(["inc", "incorporated", "llc", "llp", "corp", "corporation", "co", "company", "ltd", "limited", "plc"]);
@@ -61,18 +63,24 @@ export const VENDOR_CONFIRM_OPTIONS: { key: string; label: string; scope: number
 
 /** DB loader with seed-free fallback; callers pass the result into the pure
  *  ingestion functions so tests never need a database. */
-export async function getVendorMappingsFromDb(): Promise<VendorMapping[]> {
+/** Mappings visible to a company: its own client-scoped ones (which win on
+ *  conflict — they sort first) plus the global memory. */
+export async function getVendorMappingsFromDb(companyId?: string): Promise<VendorMapping[]> {
   try {
     const { db } = await import("./db");
     const { vendorMappings } = await import("./db/schema");
     const rows = await db.select().from(vendorMappings);
-    return rows.map((r) => ({
-      id: r.id,
-      vendorPattern: r.vendorPattern,
-      scope: r.scope,
-      category: r.category,
-      factorId: r.factorId ?? null,
-    }));
+    return rows
+      .filter((r) => !r.companyId || r.companyId === companyId)
+      .sort((a, b) => (a.companyId ? 0 : 1) - (b.companyId ? 0 : 1))
+      .map((r) => ({
+        id: r.id,
+        vendorPattern: r.vendorPattern,
+        scope: r.scope,
+        category: r.category,
+        factorId: r.factorId ?? null,
+        companyId: r.companyId ?? null,
+      }));
   } catch {
     return [];
   }

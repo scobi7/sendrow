@@ -86,7 +86,7 @@ export async function processImport(input: ImportInput): Promise<ImportOutcome> 
 
   const [factors, vendorMaps, companyRow] = await Promise.all([
     getFactorsFromDb(),
-    getVendorMappingsFromDb(),
+    getVendorMappingsFromDb(companyId),
     db.query.companies.findFirst({ where: eq(companies.id, companyId) }),
   ]);
   const normalized = applyProfile(rows, columnMap);

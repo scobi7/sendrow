@@ -78,7 +78,7 @@ async function asConsultantFor(companyId: string): Promise<{ user: User; company
 
 async function persist(company: Company) {
   const overrides = await loadFactors();
-  const vendorMaps = await getVendorMappingsFromDb();
+  const vendorMaps = await getVendorMappingsFromDb(company.id);
   recalcCompany(company, overrides, vendorMaps);
   refreshSectionStatus(company);
   await persistCompany(company);
@@ -259,7 +259,7 @@ export async function resendPortalEmail(requestId: string, companyId: string) {
 
 /** Confirms a vendor→category mapping globally (contracts/ §12: human-confirmed
  *  only) and remaps this company's flagged rows that match the vendor. */
-export async function confirmVendorMapping(companyId: string, vendorRaw: string, optionKey: string) {
+export async function confirmVendorMapping(companyId: string, vendorRaw: string, optionKey: string, scopeChoice: "client" | "global" = "client") {
   const user = await currentUser();
   if (!user || user.role !== "consultant") return;
   const link = await db.query.consultantClients.findFirst({
@@ -275,12 +275,32 @@ export async function confirmVendorMapping(companyId: string, vendorRaw: string,
   const pattern = normalizeVendor(vendorRaw);
   if (!option || !pattern) return;
 
-  const mappingId = newId("vm");
-  await db
-    .insert(vendorMappings)
-    .values({
+  // Scope decides who this mapping applies to: "global" = every client (real
+  // vendors like PG&E); "client" = only this company (truck IDs, account
+  // numbers — anything that must never enter the shared moat).
+  const scopeCompanyId = scopeChoice === "global" ? null : companyId;
+  const existing = (await db.select().from(vendorMappings).where(eq(vendorMappings.vendorPattern, pattern)))
+    .find((m) => (m.companyId ?? null) === scopeCompanyId);
+
+  let mappingId: string;
+  if (existing) {
+    mappingId = existing.id;
+    await db
+      .update(vendorMappings)
+      .set({
+        scope: option.scope,
+        category: option.category,
+        factorId: option.factorId,
+        confirmedBy: user.id,
+        confirmedAt: new Date().toISOString(),
+      })
+      .where(eq(vendorMappings.id, existing.id));
+  } else {
+    mappingId = newId("vm");
+    await db.insert(vendorMappings).values({
       id: mappingId,
       vendorPattern: pattern,
+      companyId: scopeCompanyId,
       scope: option.scope,
       category: option.category,
       factorId: option.factorId,
@@ -289,17 +309,8 @@ export async function confirmVendorMapping(companyId: string, vendorRaw: string,
       confirmedAt: new Date().toISOString(),
       sourceCompanyId: companyId,
       timesApplied: 0,
-    })
-    .onConflictDoUpdate({
-      target: vendorMappings.vendorPattern,
-      set: {
-        scope: option.scope,
-        category: option.category,
-        factorId: option.factorId,
-        confirmedBy: user.id,
-        confirmedAt: new Date().toISOString(),
-      },
     });
+  }
 
   // Remap this company's flagged rows that match the confirmed vendor
   const [factors, flagged] = await Promise.all([

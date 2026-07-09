@@ -82,7 +82,7 @@ async function requireConsultant(): Promise<User> {
 
 async function persist(company: Company) {
   const overrides = await loadFactors();
-  const vendorMaps = await getVendorMappingsFromDb();
+  const vendorMaps = await getVendorMappingsFromDb(company.id);
   recalcCompany(company, overrides, vendorMaps);
   refreshSectionStatus(company);
   await persistCompany(company);
@@ -144,7 +144,7 @@ export async function startUtilityConnectForClient(companyId: string, formData: 
     authUid: null,
   };
   const overrides = await loadFactors();
-  const vendorMaps = await getVendorMappingsFromDb();
+  const vendorMaps = await getVendorMappingsFromDb(company.id);
   recalcCompany(company, overrides, vendorMaps);
   refreshSectionStatus(company);
   await persistCompany(company);
