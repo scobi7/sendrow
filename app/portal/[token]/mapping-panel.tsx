@@ -69,6 +69,7 @@ export function MappingPanel({
   }, [headerRow]);
 
   const hasQuantity = Object.values(map).includes("quantity");
+  const unnamedCount = headers.filter((h) => /^Column \d+$/.test(h)).length;
   const previewRows = rows.slice(0, 6);
   const contextRows = matrix.slice(0, headerRow); // title/junk rows above the header
 
@@ -152,7 +153,24 @@ export function MappingPanel({
 
             {/* Their actual data */}
             {previewRows.map((r, i) => (
-              <tr key={i} style={{ borderBottom: "1px solid var(--divider)" }}>
+              <tr
+                key={i}
+                style={{ borderBottom: "1px solid var(--divider)", cursor: i < 3 ? "pointer" : undefined }}
+                title={i < 3 ? "Click if this row is actually the column headers" : undefined}
+                onClick={() => {
+                  if (busy || i >= 3) return;
+                  // translate preview index back to a matrix row index
+                  let seen = -1;
+                  for (let m = headerRow + 1; m < matrix.length; m++) {
+                    if (matrix[m].every((c) => (c ?? "").trim() === "")) continue;
+                    seen++;
+                    if (seen === i) {
+                      setHeaderRow(m);
+                      return;
+                    }
+                  }
+                }}
+              >
                 <td className="px-2 py-1 text-center" style={{ color: "var(--text-muted)" }}>{headerRow + 2 + i}</td>
                 {headers.map((h) => (
                   <td
@@ -169,10 +187,17 @@ export function MappingPanel({
         </table>
       </div>
 
-      <p className="mt-1.5 text-xs" style={{ color: "var(--text-muted)" }}>
-        {rows.length > previewRows.length ? `Showing ${previewRows.length} of ${rows.length} rows. ` : ""}
-        Wrong header row? Click the correct one in the grid.
-      </p>
+      {unnamedCount >= 2 ? (
+        <p className="mt-2 rounded-lg px-3 py-2 text-xs font-medium" style={{ background: "var(--warning-tint)", color: "var(--warning-strong)" }}>
+          Most columns came through unnamed — that usually means we grabbed the wrong header row.
+          If you can see your real column names in the grid below (like &ldquo;Month&rdquo; or &ldquo;Total&rdquo;), <strong>click that row</strong> and everything fixes itself.
+        </p>
+      ) : (
+        <p className="mt-1.5 text-xs" style={{ color: "var(--text-muted)" }}>
+          {rows.length > previewRows.length ? `Showing ${previewRows.length} of ${rows.length} rows. ` : ""}
+          Wrong header row? Click the correct one in the grid.
+        </p>
+      )}
 
       {dollarHints.length > 0 && (
         <p className="mt-2 rounded-lg px-3 py-2 text-xs" style={{ background: "var(--warning-tint)", color: "var(--warning-strong)" }}>

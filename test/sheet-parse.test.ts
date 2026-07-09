@@ -57,3 +57,18 @@ describe("header-row override (spreadsheet-view mapping)", () => {
     expect(wrong.rows).toHaveLength(2);
   });
 });
+
+describe("title-row fallback (belt and suspenders)", () => {
+  it("a one-cell title row can never win the header slot", async () => {
+    const { parseSheetMatrix } = await import("@/lib/ingestion/sheet-parse");
+    // pathological: only two rows, title then headers, no data below to score
+    const p = parseSheetMatrix([
+      ["Fleet Fuel Card — Monthly Statement (raw export from card provider)", "", "", "", ""],
+      ["", "", "", "", ""],
+      ["Month", "Vehicle ID", "Fuel Type", "Total $ Charged", "Notes"],
+      ["Jan", "TRK-01", "Diesel", "612.4", ""],
+    ]);
+    expect(p.headerRowIndex).toBe(2);
+    expect(p.headers[3]).toBe("Total $ Charged");
+  });
+});

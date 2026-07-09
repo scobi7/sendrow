@@ -39,6 +39,19 @@ export function parseSheetMatrix(matrix: string[][]): ParsedSheet {
       bestIdx = i;
     }
   }
+
+  // Belt and suspenders: a "winning" row that names almost nothing (a title
+  // spanning one cell) loses to any nearby row that names most columns.
+  const chosenNamed = (trimmed[bestIdx] ?? []).filter((c) => c !== "").length;
+  if (chosenNamed < 2) {
+    for (let i = 0; i < searchLimit; i++) {
+      const named = (trimmed[i] ?? []).filter((c) => c !== "").length;
+      if (named >= 2) {
+        bestIdx = i;
+        break;
+      }
+    }
+  }
   return parseSheetMatrixAt(matrix, bestIdx);
 }
 
