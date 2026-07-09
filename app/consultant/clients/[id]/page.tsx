@@ -8,7 +8,8 @@ import { loadCompany } from "@/lib/store";
 import { totals } from "@/lib/calc";
 import { auditForCompany } from "@/lib/audit";
 import { archiveClient, updateClientContact } from "@/lib/actions";
-import { resendPortalEmail, createShareLink, revokeShareLink, createSnapshot, shareSnapshot } from "@/lib/consultant-actions";
+import { resendPortalEmail, createShareLink, revokeShareLink, createSnapshot, shareSnapshot, convertDollarFuel } from "@/lib/consultant-actions";
+import { isDollarFuelRow, fuelKindOf } from "@/lib/ledger";
 import { periodTotals, yoyDelta } from "@/lib/period";
 import { SessionActions } from "./session-actions";
 import { DataRequestForm } from "./data-request-form";
@@ -58,6 +59,8 @@ export default async function ClientWorkspacePage({
     db.select({
       mappingProfileId: emissionLineItems.mappingProfileId,
       sourceRef: emissionLineItems.sourceRef,
+      rawUnit: emissionLineItems.rawUnit,
+      status: emissionLineItems.status,
       calcLog: emissionLineItems.calcLog,
     })
       .from(emissionLineItems)
@@ -99,10 +102,18 @@ export default async function ClientWorkspacePage({
     if (item.mappingProfileId) {
       unmappedByProfile[item.mappingProfileId] = (unmappedByProfile[item.mappingProfileId] ?? 0) + 1;
     }
+    // $-fuel rows resolve via price conversion, not vendor confirmation
+    if (isDollarFuelRow({ status: item.status, rawUnit: item.rawUnit, calcLog: (item.calcLog as Record<string, unknown>) ?? {} })) continue;
     const log = item.calcLog as { activity_type?: string } | null;
     const vendor = item.sourceRef?.trim() || log?.activity_type?.trim();
     if (vendor) vendorCounts[vendor] = (vendorCounts[vendor] ?? 0) + 1;
   }
+  // Dollar-fuel rows get their own resolution path (price conversion), not vendor confirmation
+  const dollarFuel = unmappedItems.filter((i) =>
+    isDollarFuelRow({ status: i.status, rawUnit: i.rawUnit, calcLog: (i.calcLog as Record<string, unknown>) ?? {} })
+  );
+  const fuelKinds = [...new Set(dollarFuel.map((i) => fuelKindOf({ calcLog: (i.calcLog as Record<string, unknown>) ?? {} })).filter(Boolean))] as string[];
+
   const unmappedVendors = Object.entries(vendorCounts)
     .map(([name, count]) => ({ name, count }))
     .sort((a, b) => b.count - a.count);
@@ -160,6 +171,45 @@ export default async function ClientWorkspacePage({
             </div>
             {pStatus === "in_progress" && <LockPipelineButton companyId={id} />}
           </div>
+
+          {/* Dollar-based fuel: consultant sets the price, we do the math with receipts */}
+          {dollarFuel.length > 0 && (
+            <div className="rounded-2xl" style={{ background: "var(--card)", border: "1px solid var(--warning-border)" }}>
+              <div className="px-5 pt-4 pb-3" style={{ borderBottom: "1px solid var(--divider)" }}>
+                <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "var(--warning-strong)" }}>
+                  Dollar-based fuel ({dollarFuel.length} rows)
+                </p>
+                <p className="mt-1 text-xs" style={{ color: "var(--text-muted)" }}>
+                  These rows are $ spent on fuel. Set the price you&apos;re applying ($/gallon) and every row
+                  converts to gallons × EPA factor — the price, derivation, and your name land in each calc log.
+                </p>
+              </div>
+              <form action={convertDollarFuel.bind(null, id)} className="flex flex-wrap items-end gap-3 px-5 py-4">
+                {fuelKinds.includes("diesel") && (
+                  <div>
+                    <label className="label text-xs">Diesel $/gal</label>
+                    <input name="diesel_price" type="number" step="0.01" min="0.5" placeholder="4.10" className="input w-28 text-sm" />
+                  </div>
+                )}
+                {fuelKinds.includes("gasoline") && (
+                  <div>
+                    <label className="label text-xs">Gasoline $/gal</label>
+                    <input name="gasoline_price" type="number" step="0.01" min="0.5" placeholder="3.60" className="input w-28 text-sm" />
+                  </div>
+                )}
+                {fuelKinds.includes("propane") && (
+                  <div>
+                    <label className="label text-xs">Propane $/gal</label>
+                    <input name="propane_price" type="number" step="0.01" min="0.5" placeholder="2.80" className="input w-28 text-sm" />
+                  </div>
+                )}
+                <button className="btn btn-primary text-sm">Convert rows</button>
+                <p className="w-full text-xs" style={{ color: "var(--text-muted)" }}>
+                  Tip: use the client&apos;s average paid price if known, else the EIA state average for the period.
+                </p>
+              </form>
+            </div>
+          )}
 
           {/* Unmapped vendors — confirm once, mapped for every client (vendor memory) */}
           <VendorConfirm companyId={id} vendors={unmappedVendors} />

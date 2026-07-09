@@ -7,7 +7,7 @@ import { db } from "./db";
 import { companies, consultantClients, consultantProfiles, shareLinks, snapshots, userCompanies, intakeSessions, dataRequests, pipelineStatus, vendorMappings, emissionLineItems } from "./db/schema";
 import { normalizeVendor, matchVendor, VENDOR_CONFIRM_OPTIONS, getVendorMappingsFromDb } from "./vendor-mappings";
 import { rowToLineItem } from "./ingestion/ingest";
-import { recomputeLineItem, excludeLineItem } from "./ledger";
+import { recomputeLineItem, excludeLineItem, convertDollarFuelItem, isDollarFuelRow } from "./ledger";
 import { lookupFactor } from "./factor-engine";
 import { getFactorsFromDb } from "./factor-engine";
 import type { UnmappedLog } from "./ingestion/ingest";
@@ -649,4 +649,44 @@ export async function shareSnapshot(companyId: string, snapshotId: string, formD
     createdAt: new Date().toISOString(),
   });
   revalidatePath(`/consultant/clients/${companyId}`);
+}
+
+/** Converts all flagged $-fuel rows using consultant-set prices (the judgment
+ *  is the price; the math and the audit trail are ours). */
+export async function convertDollarFuel(companyId: string, formData: FormData) {
+  const user = await currentUser();
+  if (!user || user.role !== "consultant") return;
+  const link = await db.query.consultantClients.findFirst({
+    where: and(
+      eq(consultantClients.consultantId, user.id),
+      eq(consultantClients.companyId, companyId),
+      isNull(consultantClients.archivedAt)
+    ),
+  });
+  if (!link) return;
+
+  const parse = (k: string) => {
+    const n = parseFloat(String(formData.get(k) ?? ""));
+    return isNaN(n) || n <= 0 ? undefined : n;
+  };
+  const prices = { diesel: parse("diesel_price"), gasoline: parse("gasoline_price"), propane: parse("propane_price") };
+  if (!prices.diesel && !prices.gasoline && !prices.propane) return;
+
+  const [factors, flagged] = await Promise.all([
+    getFactorsFromDb(),
+    db
+      .select()
+      .from(emissionLineItems)
+      .where(and(eq(emissionLineItems.companyId, companyId), eq(emissionLineItems.status, "unmapped"))),
+  ]);
+
+  for (const item of flagged) {
+    const withLog = { ...item, calcLog: (item.calcLog as Record<string, unknown>) ?? {} };
+    if (!isDollarFuelRow(withLog)) continue;
+    const patch = convertDollarFuelItem(withLog, prices, factors, user.id);
+    if (!patch) continue;
+    await db.update(emissionLineItems).set(patch).where(eq(emissionLineItems.id, item.id));
+  }
+  revalidatePath(`/consultant/clients/${companyId}`);
+  revalidatePath(`/consultant/clients/${companyId}/ledger`);
 }

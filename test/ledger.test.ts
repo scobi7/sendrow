@@ -50,3 +50,37 @@ describe("ledger corrections (Plan T1)", () => {
     expect(patch.calcLog.reason).toBe("no factor");
   });
 });
+
+describe("dollar-fuel conversion (consultant sets the price, we do the math)", () => {
+  const dollarRow = {
+    rawValue: "612.40",
+    rawUnit: "",
+    scope: 1,
+    category: "mobile_combustion",
+    status: "unmapped",
+    factorId: null,
+    co2eKg: "0",
+    calcLog: { reason: "no factor", activity_type: "Diesel", raw_unit: "" },
+  };
+
+  it("converts $ → gallons → CO2e with the full derivation logged", async () => {
+    const { convertDollarFuelItem, isDollarFuelRow } = await import("@/lib/ledger");
+    expect(isDollarFuelRow(dollarRow)).toBe(true);
+    const patch = convertDollarFuelItem(dollarRow, { diesel: 4.1 }, SEED_FACTORS, "user_c1")!;
+    const gallons = 612.4 / 4.1;
+    expect(patch.status).toBe("mapped");
+    expect(Number(patch.co2eKg)).toBeCloseTo(gallons * 0.01021 * 1000, 1);
+    expect(patch.calcLog.price_per_gal).toBe(4.1);
+    expect(patch.calcLog.derived_gallons).toBeCloseTo(gallons);
+  });
+
+  it("no price for that fuel → no conversion (never guesses)", async () => {
+    const { convertDollarFuelItem } = await import("@/lib/ledger");
+    expect(convertDollarFuelItem(dollarRow, { gasoline: 3.6 }, SEED_FACTORS, "u")).toBeNull();
+  });
+
+  it("natural gas rows are never mistaken for vehicle fuel", async () => {
+    const { isDollarFuelRow } = await import("@/lib/ledger");
+    expect(isDollarFuelRow({ ...dollarRow, calcLog: { activity_type: "natural gas", reason: "" } })).toBe(false);
+  });
+});
