@@ -18,7 +18,7 @@ Make the Kerri engagement (and every white-label fulfillment after it) run throu
 ## Plan V — Visual Identity Refresh (BUILT 2026-07-08)
 "The Ledger": Fraunces/Instrument Sans/IBM Plex Mono + paper-ink-forest palette with one terracotta accent. Research + spec: docs/design-direction.md; plan in PLANS.md. Small surface (tokens + fonts), also the white-label prerequisite.
 
-## Plan O — The Trust Core (next)
+## Plan O — The Trust Core (BUILT 2026-07-08 as Plan T3)
 Snapshots, sharing, restatements — the mechanics that make Sendrow's data believable and shareable.
 1. **Snapshots:** approving a dataset freezes a locked, dated version — the ONLY artifact ever shared (invariant §13)
 2. **Sharing permissions:** each share = THIS snapshot, to THIS recipient, in THIS format; supplier/consultant explicit OK; recipients never see each other's shares
@@ -26,13 +26,13 @@ Snapshots, sharing, restatements — the mechanics that make Sendrow's data beli
 4. **Trust-level labels:** self-reported / consultant-reviewed / assured, on every dataset (§14: verification status, never a grade)
 5. Methodology labels: every calculated number tagged with formula + factor vintage (mostly exists via calc logs — surface it)
 
-## Plan P — The Reshaping Engine (absorbs old N6 copilot)
+## Plan P — The Reshaping Engine (v1 BUILT 2026-07-08 as Plan T4 — Excel/SB 253/questionnaire/PACT; first REAL buyer format still needs Kerri's questionnaire)
 One approved snapshot → any output format. Maintained centrally: when CARB/CDP change their forms, WE update templates and everyone's exports keep working.
 1. Format template system (SB 253 disclosure, CDP, generic customer questionnaire, plain Excel)
 2. First real format built from an actual buyer questionnaire (Kerri's client) — formats only from real requests, built once sold forever
 3. PACT-compatible export (the "your data is yours" weapon + standard on-ramp)
 
-## Plan Q — The Supplier Side
+## Plan Q — The Supplier Side (next; T2 already shipped supplier-confirmed mapping + format memory)
 1. **Supplier-confirmed parsing:** AI first-pass on uploads ("column D looks like kWh — right?"), supplier confirms in the portal; file-format memory remembers the shape (vendor-memory doctrine applied to layouts)
 2. **Reply-by-email:** replying to a request email (with text or an attached bill) lands in the right place automatically
 3. **Free claimable supplier accounts:** after responding via magic link, a supplier can claim their record (own it, view it, export it); prefill next year from last approved data
