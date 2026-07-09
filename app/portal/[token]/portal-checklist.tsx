@@ -8,6 +8,9 @@ import { parsePastedRows } from "@/lib/portal-paste";
 import { parseSheetMatrix } from "@/lib/ingestion/sheet-parse";
 import { templateCsv } from "@/lib/ingestion/data-type-templates";
 import type { DataType } from "@/lib/ingestion/data-type-templates";
+import { MappingPanel } from "./mapping-panel";
+import type { MappingSuggestion } from "./mapping-panel";
+import { Walkthrough } from "./walkthrough";
 
 type EntryRow = { date: string; kind: string; quantity: string };
 
@@ -18,40 +21,26 @@ const ENTRY_KINDS: Record<string, { label: string; activity_type: string; unit: 
   diesel: { label: "Diesel (gallons)", activity_type: "diesel", unit: "gallon" },
   gasoline: { label: "Gasoline (gallons)", activity_type: "gasoline", unit: "gallon" },
   propane: { label: "Propane (gallons)", activity_type: "propane", unit: "gallon" },
+  commute: { label: "Commuting (miles)", activity_type: "commute", unit: "mile" },
   waste_landfill: { label: "Waste — landfilled (tons)", activity_type: "waste landfilled", unit: "ton" },
   waste_recycled: { label: "Waste — recycled (tons)", activity_type: "waste recycled", unit: "ton" },
   other: { label: "Other (will be reviewed)", activity_type: "other", unit: "" },
 };
 
-/** Field choices on the confirm-mapping screen, in supplier language. */
-const FIELD_OPTIONS: { value: string; label: string }[] = [
-  { value: "", label: "Skip this column" },
-  { value: "date", label: "Date / billing period" },
-  { value: "activity_type", label: "Activity or fuel type" },
-  { value: "quantity", label: "Quantity / amount used" },
-  { value: "unit", label: "Unit (kWh, gallons…)" },
-  { value: "source_ref", label: "Vendor / account / reference" },
-  { value: "category", label: "Category" },
-  { value: "scope", label: "GHG scope" },
-  { value: "confidence", label: "Data quality note" },
-  { value: "notes", label: "Notes" },
-];
-
 type PendingUpload = {
   itemId: string;
   file: File;
   filename: string;
-  rows: Record<string, string>[];
-  headers: string[];
-  map: Record<string, string | null>;
-  source: "memory" | "suggested";
+  matrix: string[][];
+  headerRowIndex: number;
+  suggestion: MappingSuggestion;
 };
 
 type SheetChoice = {
   itemId: string;
   file: File;
   filename: string;
-  sheets: { name: string; rows: Record<string, string>[] }[];
+  sheets: { name: string; matrix: string[][]; rowCount: number; preview: string[] }[];
 };
 
 /** Fuzzy-picks a manual-entry kind from pasted text ("PG&E electric" → electricity). */
@@ -60,6 +49,7 @@ function guessKind(text: string): string {
   if (t.includes("electric") || t.includes("kwh")) return "electricity";
   if (t.includes("diesel")) return "diesel";
   if (t.includes("propane")) return "propane";
+  if (t.includes("commut") || t.includes("mile")) return "commute";
   if (t.includes("gasoline") || t.includes("fuel")) return "gasoline";
   if (t.includes("gas") || t.includes("therm")) return "natgas";
   if (t.includes("recycl")) return "waste_recycled";
@@ -70,13 +60,27 @@ function guessKind(text: string): string {
 export function PortalChecklist({ token, items }: { token: string; items: ChecklistItem[] }) {
   const router = useRouter();
   const [openItem, setOpenItem] = useState<string | null>(null);
-  const [mode, setMode] = useState<"upload" | "entry">("upload");
+  const [mode, setMode] = useState<"upload" | "entry" | "guided">("upload");
   const [rows, setRows] = useState<EntryRow[]>([{ date: "", kind: "electricity", quantity: "" }]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [doneMsg, setDoneMsg] = useState<string | null>(null);
   const [pending, setPending] = useState<PendingUpload | null>(null);
   const [sheetChoice, setSheetChoice] = useState<SheetChoice | null>(null);
+  const [stuckOpen, setStuckOpen] = useState<string | null>(null);
+  const [stuckMsg, setStuckMsg] = useState("");
+  const [stuckSent, setStuckSent] = useState<string | null>(null);
+
+  async function fetchSuggestion(item: ChecklistItem, headers: string[]): Promise<MappingSuggestion> {
+    const res = await fetch("/api/portal/mapping-preview", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token, itemId: item.id, headers }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error ?? "Could not read that file");
+    return { map: data.map, source: data.source };
+  }
 
   async function submit(
     item: ChecklistItem,
@@ -133,14 +137,15 @@ export function PortalChecklist({ token, items }: { token: string; items: Checkl
     // codepage 65001 = UTF-8, so CSVs with em-dashes etc. don't mojibake
     const wb = XLSX.read(buf, { codepage: 65001 });
 
-    // Parse every sheet as a raw matrix and auto-detect the real header row —
-    // files often carry a title and blank rows above the actual table.
+    // Every sheet as a raw matrix — header detection and mapping happen on
+    // the confirm screen where the supplier can see and override everything.
     const sheets = wb.SheetNames.map((name) => {
-      const matrix = XLSX.utils.sheet_to_json<unknown[]>(wb.Sheets[name], { header: 1, defval: "" })
+      const matrix = XLSX.utils
+        .sheet_to_json<unknown[]>(wb.Sheets[name], { header: 1, defval: "" })
         .map((r) => (r as unknown[]).map((c) => String(c ?? "")));
-      const { rows } = parseSheetMatrix(matrix);
-      return { name, rows };
-    }).filter((s) => s.rows.length > 0);
+      const parsed = parseSheetMatrix(matrix);
+      return { name, matrix, rowCount: parsed.rows.length, preview: parsed.headers.slice(0, 3) };
+    }).filter((s) => s.rowCount > 0);
 
     if (sheets.length === 0) {
       setError("That file looks empty — please check it and try again.");
@@ -150,35 +155,37 @@ export function PortalChecklist({ token, items }: { token: string; items: Checkl
       setSheetChoice({ itemId: item.id, file, filename: file.name, sheets });
       return;
     }
-    await startMapping(item, file, file.name, sheets[0].rows);
+    await startMapping(item, file, file.name, sheets[0].matrix);
   }
 
-  async function startMapping(item: ChecklistItem, file: File, filename: string, stringRows: Record<string, string>[]) {
-    const headers = Object.keys(stringRows[0]);
-
-    // Ask the server how it reads this file (memory beats suggestions),
-    // then let the person who knows the file confirm before anything counts.
+  async function startMapping(item: ChecklistItem, file: File, filename: string, matrix: string[][]) {
     setBusy(true);
     try {
-      const res = await fetch("/api/portal/mapping-preview", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, itemId: item.id, headers }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Could not read that file");
+      const parsed = parseSheetMatrix(matrix);
+      const suggestion = await fetchSuggestion(item, parsed.headers);
       setSheetChoice(null);
-      setPending({
-        itemId: item.id,
-        file,
-        filename,
-        rows: stringRows,
-        headers,
-        map: data.map,
-        source: data.source,
-      });
+      setPending({ itemId: item.id, file, filename, matrix, headerRowIndex: parsed.headerRowIndex, suggestion });
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not read that file — please try again.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function sendStuck(item: ChecklistItem) {
+    setBusy(true);
+    try {
+      const res = await fetch("/api/portal/stuck", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token, itemId: item.id, message: stuckMsg }),
+      });
+      if (!res.ok) throw new Error((await res.json()).error ?? "Could not send");
+      setStuckSent(item.id);
+      setStuckOpen(null);
+      setStuckMsg("");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not send — please try again.");
     } finally {
       setBusy(false);
     }
@@ -215,6 +222,7 @@ export function PortalChecklist({ token, items }: { token: string; items: Checkl
         const isOpen = openItem === item.id;
         const received = item.status === "received";
         const itemPending = pending?.itemId === item.id ? pending : null;
+        const itemSheets = sheetChoice?.itemId === item.id ? sheetChoice : null;
         return (
           <div key={item.id} className="rounded-2xl" style={{ background: "var(--card)", border: isOpen ? "1px solid var(--primary)" : "1px solid var(--divider)" }}>
             <button
@@ -239,24 +247,24 @@ export function PortalChecklist({ token, items }: { token: string; items: Checkl
 
             {isOpen && !received && (
               <div className="px-5 pb-5">
-                {sheetChoice?.itemId === item.id && !itemPending ? (
+                {itemSheets ? (
                   /* ── Sheet picker: multi-tab workbooks ── */
                   <div>
                     <div className="mb-3 rounded-lg px-3 py-2 text-sm" style={{ background: "var(--warning-tint)", color: "var(--warning-strong)" }}>
-                      &ldquo;{sheetChoice.filename}&rdquo; has {sheetChoice.sheets.length} tabs — which one holds this data?
+                      &ldquo;{itemSheets.filename}&rdquo; has {itemSheets.sheets.length} tabs — which one holds this data?
                     </div>
                     <div className="space-y-2">
-                      {sheetChoice.sheets.map((sh) => (
+                      {itemSheets.sheets.map((sh) => (
                         <button
                           key={sh.name}
                           disabled={busy}
                           className="flex w-full items-center justify-between rounded-lg px-4 py-3 text-left text-sm transition-colors hover:opacity-80"
                           style={{ border: "1px solid var(--divider)", background: "var(--bg)" }}
-                          onClick={() => startMapping(item, sheetChoice.file, `${sheetChoice.filename} — ${sh.name}`, sh.rows)}
+                          onClick={() => startMapping(item, itemSheets.file, `${itemSheets.filename} — ${sh.name}`, sh.matrix)}
                         >
                           <span className="font-medium" style={{ color: "var(--text)" }}>{sh.name}</span>
                           <span className="text-xs" style={{ color: "var(--text-muted)" }}>
-                            {sh.rows.length} row{sh.rows.length !== 1 ? "s" : ""} · {Object.keys(sh.rows[0] ?? {}).slice(0, 3).join(", ")}…
+                            {sh.rowCount} row{sh.rowCount !== 1 ? "s" : ""} · {sh.preview.join(", ")}…
                           </span>
                         </button>
                       ))}
@@ -266,138 +274,90 @@ export function PortalChecklist({ token, items }: { token: string; items: Checkl
                     </button>
                   </div>
                 ) : itemPending ? (
-                  /* ── Confirm-mapping screen ── */
-                  <div>
-                    <div
-                      className="mb-3 rounded-lg px-3 py-2 text-sm"
-                      style={
-                        itemPending.source === "memory"
-                          ? { background: "var(--primary-tint)", color: "var(--primary)" }
-                          : { background: "var(--warning-tint)", color: "var(--warning-strong)" }
-                      }
-                    >
-                      {itemPending.source === "memory"
-                        ? "✓ Same file shape as last time — mapping remembered. Quick check and you're done."
-                        : `Here's how we read “${itemPending.filename}”. Fix anything that looks wrong — you know this file best.`}
-                    </div>
-                    <div className="overflow-x-auto rounded-lg" style={{ border: "1px solid var(--divider)" }}>
-                      <table className="w-full text-xs">
-                        <thead>
-                          <tr className="text-left" style={{ borderBottom: "1px solid var(--divider)", color: "var(--text-muted)" }}>
-                            <th className="px-3 py-2">Your column</th>
-                            <th className="px-3 py-2">First values</th>
-                            <th className="px-3 py-2">What it is</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {itemPending.headers.map((h) => (
-                            <tr key={h} style={{ borderBottom: "1px solid var(--divider)" }}>
-                              <td className="px-3 py-2 font-semibold" style={{ color: "var(--text)" }}>{h}</td>
-                              <td className="px-3 py-2" style={{ color: "var(--text-muted)" }}>
-                                {itemPending.rows.slice(0, 3).map((r) => r[h]).filter(Boolean).join(" · ") || "—"}
-                              </td>
-                              <td className="px-3 py-2">
-                                <select
-                                  className="input py-1 text-xs"
-                                  value={itemPending.map[h] ?? ""}
-                                  onChange={(e) =>
-                                    setPending((p) =>
-                                      p ? { ...p, map: { ...p.map, [h]: e.target.value || null } } : p
-                                    )
-                                  }
-                                >
-                                  {FIELD_OPTIONS.map((o) => (
-                                    <option key={o.value} value={o.value}>{o.label}</option>
-                                  ))}
-                                </select>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                    <div className="mt-3 flex items-center justify-between">
-                      <button className="text-xs underline" style={{ color: "var(--text-muted)" }} onClick={() => setPending(null)} disabled={busy}>
-                        Choose a different file
-                      </button>
-                      <button
-                        className="btn btn-primary text-sm"
-                        disabled={busy || !Object.values(itemPending.map).includes("quantity")}
-                        onClick={() =>
-                          submit(item, {
-                            rows: itemPending.rows,
-                            filename: itemPending.filename,
-                            source: "upload",
-                            file: itemPending.file,
-                            columnMap: itemPending.map,
-                          })
-                        }
-                      >
-                        {busy ? "Importing…" : `Looks right — import ${itemPending.rows.length} rows`}
-                      </button>
-                    </div>
-                    {!Object.values(itemPending.map).includes("quantity") && (
-                      <p className="mt-2 text-xs" style={{ color: "var(--warning-strong)" }}>
-                        Pick which column holds the quantity/amount to continue.
-                      </p>
-                    )}
-                  </div>
+                  /* ── Spreadsheet-view mapping ── */
+                  <MappingPanel
+                    filename={itemPending.filename}
+                    matrix={itemPending.matrix}
+                    initialHeaderRow={itemPending.headerRowIndex}
+                    initialSuggestion={itemPending.suggestion}
+                    busy={busy}
+                    fetchSuggestion={(headers) => fetchSuggestion(item, headers)}
+                    onCancel={() => setPending(null)}
+                    onConfirm={(mappedRows, map) =>
+                      submit(item, {
+                        rows: mappedRows,
+                        filename: itemPending.filename,
+                        source: "upload",
+                        file: itemPending.file,
+                        columnMap: map,
+                      })
+                    }
+                  />
                 ) : (
                   <>
-                    <div className="mb-4 flex gap-2">
-                      <button
-                        className={mode === "upload" ? "btn btn-primary text-xs px-3 py-1.5" : "btn btn-secondary text-xs px-3 py-1.5"}
-                        onClick={() => setMode("upload")}
-                      >
-                        Upload a file
-                      </button>
-                      <button
-                        className={mode === "entry" ? "btn btn-primary text-xs px-3 py-1.5" : "btn btn-secondary text-xs px-3 py-1.5"}
-                        onClick={() => setMode("entry")}
-                      >
-                        Type it in
-                      </button>
+                    <div className="mb-4 flex flex-wrap gap-2">
+                      {([
+                        ["upload", "Upload a file"],
+                        ["entry", "Type it in"],
+                        ["guided", "Walk me through it"],
+                      ] as const).map(([m, label]) => (
+                        <button
+                          key={m}
+                          className={mode === m ? "btn btn-primary text-xs px-3 py-1.5" : "btn btn-secondary text-xs px-3 py-1.5"}
+                          onClick={() => setMode(m)}
+                        >
+                          {label}
+                        </button>
+                      ))}
                     </div>
 
                     {mode === "upload" ? (
                       <>
-                      <label
-                        className="block cursor-pointer rounded-xl p-8 text-center text-sm"
-                        style={{ border: "2px dashed var(--divider)", color: "var(--text-muted)" }}
-                      >
-                        {busy ? "Reading…" : "Click to choose a CSV or Excel file"}
-                        <input
-                          type="file"
-                          accept=".csv,.xlsx,.xls"
-                          className="hidden"
-                          disabled={busy}
-                          onChange={(e) => {
-                            const f = e.target.files?.[0];
-                            if (f) handleFile(item, f);
-                            e.target.value = "";
-                          }}
-                        />
-                      </label>
-                      <p className="mt-2 text-xs" style={{ color: "var(--text-muted)" }}>
-                        Any spreadsheet works — you&apos;ll confirm how we read it. Want zero fuss?{" "}
-                        <button
-                          className="underline"
-                          style={{ color: "var(--primary)" }}
-                          onClick={() => {
-                            const csv = templateCsv(item.dataType as DataType);
-                            const url = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
-                            const a = document.createElement("a");
-                            a.href = url;
-                            a.download = `${item.dataType}-template.csv`;
-                            a.click();
-                            URL.revokeObjectURL(url);
-                          }}
+                        <label
+                          className="block cursor-pointer rounded-xl p-8 text-center text-sm"
+                          style={{ border: "2px dashed var(--divider)", color: "var(--text-muted)" }}
                         >
-                          Download our template
-                        </button>{" "}
-                        and fill it in.
-                      </p>
+                          {busy ? "Reading…" : "Click to choose a CSV or Excel file"}
+                          <input
+                            type="file"
+                            accept=".csv,.xlsx,.xls"
+                            className="hidden"
+                            disabled={busy}
+                            onChange={(e) => {
+                              const f = e.target.files?.[0];
+                              if (f) handleFile(item, f);
+                              e.target.value = "";
+                            }}
+                          />
+                        </label>
+                        <p className="mt-2 text-xs" style={{ color: "var(--text-muted)" }}>
+                          Any spreadsheet works — you&apos;ll confirm how we read it. Want zero fuss?{" "}
+                          <button
+                            className="underline"
+                            style={{ color: "var(--primary)" }}
+                            onClick={() => {
+                              const csv = templateCsv(item.dataType as DataType);
+                              const url = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+                              const a = document.createElement("a");
+                              a.href = url;
+                              a.download = `${item.dataType}-template.csv`;
+                              a.click();
+                              URL.revokeObjectURL(url);
+                            }}
+                          >
+                            Download our template
+                          </button>{" "}
+                          and fill it in.
+                        </p>
                       </>
+                    ) : mode === "guided" ? (
+                      <Walkthrough
+                        dataType={item.dataType as DataType}
+                        busy={busy}
+                        onSubmit={(walkedRows) =>
+                          submit(item, { rows: walkedRows, filename: "guided walkthrough", source: "entry" })
+                        }
+                      />
                     ) : (
                       <div
                         onPaste={(e) => {
@@ -456,6 +416,38 @@ export function PortalChecklist({ token, items }: { token: string; items: Checkl
                         </div>
                       </div>
                     )}
+
+                    {/* Stuck escape hatch: confusion becomes a flag, not abandonment */}
+                    <div className="mt-4 pt-3" style={{ borderTop: "1px solid var(--divider)" }}>
+                      {stuckSent === item.id ? (
+                        <p className="text-xs" style={{ color: "var(--primary)" }}>
+                          ✓ Sent — your consultant will follow up.
+                        </p>
+                      ) : stuckOpen === item.id ? (
+                        <div>
+                          <textarea
+                            className="input w-full text-sm"
+                            rows={2}
+                            placeholder="What's tripping you up? e.g. 'my bills only show dollars, not kWh'"
+                            value={stuckMsg}
+                            onChange={(e) => setStuckMsg(e.target.value)}
+                            autoFocus
+                          />
+                          <div className="mt-2 flex items-center gap-3">
+                            <button className="btn btn-secondary px-3 py-1 text-xs" disabled={busy || !stuckMsg.trim()} onClick={() => sendStuck(item)}>
+                              {busy ? "Sending…" : "Send to my consultant"}
+                            </button>
+                            <button className="text-xs underline" style={{ color: "var(--text-muted)" }} onClick={() => setStuckOpen(null)}>
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <button className="text-xs underline" style={{ color: "var(--text-muted)" }} onClick={() => setStuckOpen(item.id)}>
+                          Stuck? Ask your consultant →
+                        </button>
+                      )}
+                    </div>
                   </>
                 )}
 

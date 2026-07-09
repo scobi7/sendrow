@@ -8,6 +8,8 @@ export type ChecklistItem = {
   label: string;
   instructions: string;
   status: "pending" | "received";
+  /** Set when the client hit "I'm stuck" — the consultant sees and clears it. */
+  stuckNote?: string;
 };
 
 export const PORTAL_TOKEN_TTL_DAYS = 30;

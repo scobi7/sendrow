@@ -197,3 +197,23 @@ ${brand ? `<p>— ${brand.brandName}</p>` : ""}`,
     brand ? { fromName: brand.brandName, replyTo: brand.replyTo } : undefined
   );
 }
+
+export async function sendClientStuckEmail(
+  consultantEmail: string,
+  consultantName: string,
+  companyName: string,
+  itemLabel: string,
+  message: string
+) {
+  const firstName = consultantName.split(" ")[0];
+  await send(
+    consultantEmail,
+    `${companyName} needs help with "${itemLabel}"`,
+    `<p>Hi ${firstName},</p>
+<p><strong>${companyName}</strong> hit a wall on the portal item <strong>&ldquo;${itemLabel}&rdquo;</strong> and asked for your help:</p>
+<blockquote><p>${message}</p></blockquote>
+<p>A quick reply usually keeps the response moving — stuck items are where portals lose people.</p>
+<p><a href="${APP_URL}/consultant/review">Open your review queue →</a></p>
+<p>— The Sendrow team</p>`
+  );
+}

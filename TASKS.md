@@ -316,3 +316,8 @@ Generated from PLANS.md (approved). Updated after each task completes.
 - [x] **T4.2** — SB 253-style disclosure + generic questionnaire formats
 - [x] **T4.3** — PACT-compatible JSON draft
 - [x] **T4.4** — /api/snapshots/[id]/export + UI buttons
+
+### T5 — The ingestion edge (approved 2026-07-09: "our best edge — needs a good UI")
+- [x] **T5.1** — Spreadsheet-view mapping: real grid of their file, assign fields on column headers, header-row override, dollar-value hints
+- [x] **T5.2** — "I'm stuck — ask my consultant" per checklist item → flags item + emails consultant
+- [x] **T5.3** — Guided walkthrough mode (hybrid): step-by-step plain-language entry per data type, no account, minutes not an hour

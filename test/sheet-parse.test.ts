@@ -39,3 +39,21 @@ describe("header-row detection (the 'headers in row 3' fix)", () => {
     expect(rows[1]["Column 2"]).toBe("y");
   });
 });
+
+describe("header-row override (spreadsheet-view mapping)", () => {
+  it("parseSheetMatrixAt honors a human-chosen header row", async () => {
+    const { parseSheetMatrixAt } = await import("@/lib/ingestion/sheet-parse");
+    const matrix = [
+      ["Quarterly Report", "", ""],
+      ["Month", "kWh", "Cost"],
+      ["Jan", "1200", "310"],
+    ];
+    const forced = parseSheetMatrixAt(matrix, 1);
+    expect(forced.headers).toEqual(["Month", "kWh", "Cost"]);
+    expect(forced.rows).toHaveLength(1);
+    // forcing row 0 treats the title as headers — the human's call is honored either way
+    const wrong = parseSheetMatrixAt(matrix, 0);
+    expect(wrong.headers[0]).toBe("Quarterly Report");
+    expect(wrong.rows).toHaveLength(2);
+  });
+});

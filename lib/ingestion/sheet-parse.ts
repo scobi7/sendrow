@@ -39,7 +39,12 @@ export function parseSheetMatrix(matrix: string[][]): ParsedSheet {
       bestIdx = i;
     }
   }
+  return parseSheetMatrixAt(matrix, bestIdx);
+}
 
+/** Same parse, but the human said "headers are THIS row" (mapping-screen override). */
+export function parseSheetMatrixAt(matrix: string[][], bestIdx: number): ParsedSheet {
+  const trimmed = matrix.map((r) => r.map((c) => (c ?? "").trim()));
   const headerRow = trimmed[bestIdx] ?? [];
   const width = Math.max(headerRow.length, ...trimmed.slice(bestIdx + 1).map((r) => r.length), 0);
   const headers: string[] = [];

@@ -263,18 +263,28 @@ export default async function ClientWorkspacePage({
                           {req.status}
                         </span>
                       </div>
+                      {checklist.some((c) => c.stuckNote && c.status !== "received") && (
+                        <div className="mt-2 rounded-lg px-3 py-2 text-xs" style={{ background: "var(--danger-tint)", color: "var(--danger)" }}>
+                          {checklist.filter((c) => c.stuckNote && c.status !== "received").map((c) => (
+                            <p key={c.id}>⚑ <strong>{c.label}:</strong> &ldquo;{c.stuckNote}&rdquo;</p>
+                          ))}
+                        </div>
+                      )}
                       <div className="mt-2 flex flex-wrap items-center gap-1.5">
                         {checklist.map((item) => (
                           <span
                             key={item.id}
                             className="rounded-full px-2 py-0.5 text-xs"
+                            title={item.stuckNote ? `Client is stuck: "${item.stuckNote}"` : undefined}
                             style={
                               item.status === "received"
                                 ? { background: "var(--primary-tint)", color: "var(--primary)" }
-                                : { background: "var(--divider)", color: "var(--text-muted)" }
+                                : item.stuckNote
+                                  ? { background: "var(--danger-tint)", color: "var(--danger)" }
+                                  : { background: "var(--divider)", color: "var(--text-muted)" }
                             }
                           >
-                            {item.status === "received" ? "✓ " : "○ "}{item.label}
+                            {item.status === "received" ? "✓ " : item.stuckNote ? "⚑ " : "○ "}{item.label}
                           </span>
                         ))}
                         {req.token && <PortalLinkButton token={req.token} />}
