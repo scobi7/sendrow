@@ -33,3 +33,18 @@ describe("unit normalization (Plan T2)", () => {
     expect(item.status).toBe("unmapped");
   });
 });
+
+describe("fuel rows without a gallons unit never silently map", () => {
+  it("a 'Gasoline' row with a bare number (probably dollars) flags for review", () => {
+    const row = { quantity: 401.55, unit: "", activity_type: "Gasoline", source_ref: "TRK-03" };
+    const item = rowToLineItem(row, SEED_FACTORS, "co_t", null, []);
+    expect(item.status).toBe("unmapped");
+  });
+
+  it("real gallons still map", () => {
+    const row = { quantity: 120, unit: "gallons", activity_type: "Gasoline", source_ref: "TRK-03" };
+    const item = rowToLineItem(row, SEED_FACTORS, "co_t", null, []);
+    expect(item.status).toBe("mapped");
+    expect(item.scope).toBe(1);
+  });
+});

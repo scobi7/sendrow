@@ -93,8 +93,10 @@ function resolveFactorQuery(row: NormalizedRow) {
   // average — a category query would pick an arbitrary subregion.
   if (u.includes("kwh") || t.includes("electric")) return { factorId: "egrid.USAVG.2024" };
   if (u.includes("therm") || (t.includes("gas") && !t.includes("gasoline"))) return { category: "stationary_combustion", unit: "therm" };
+  // Fuel quantities must arrive in gallons — an activity of "gasoline" with no
+  // unit is usually a $ amount, and dollars are never treated as gallons.
   if (u.includes("gallon") && t.includes("diesel")) return { category: "mobile_combustion", unit: "gallon" };
-  if (u.includes("gallon") || t.includes("gasoline")) return { category: "mobile_combustion", unit: "gallon" };
+  if (u.includes("gallon")) return { category: "mobile_combustion", unit: "gallon" };
   if (u.includes("mile")) return { category: "commute", unit: "mile" };
   if (u.includes("ton") || t.includes("waste")) return { category: "waste", unit: "ton" };
   return null;
