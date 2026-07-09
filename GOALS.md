@@ -1,49 +1,69 @@
 # GOALS.md — Sendrow Project Goals
-> Direction reset 2026-07-08 (supersedes the company-first positioning). Source: "Sendrow Model and Expansion Plan" doc + industry research; see PLANS.md and ROADMAP.md.
+> Updated 2026-07-08 from "Sendrow, Explained in Plain English" (the master doc, incl. Masao's parsing note). Supersedes the practice-platform-only framing; see ROADMAP.md for the build sequence.
 
 ## What is Sendrow?
-**The practice platform for climate consultants.** Sendrow turns a client's messy data into one audited emissions inventory, then answers every buyer and regulator format from it — under the consultant's brand. What Clio is to law firms, Sendrow is to climate consulting practices.
+**Sendrow is the one organized place where a supplier's emissions information lives — collected once with a consultant's help, kept with proof attached, and shared out to any customer or regulator who asks, in whatever format they ask for.**
 
-We are NOT "another carbon accounting platform." That category is crowded, venture-funded, and enterprise-aimed (Persefoni, Watershed, Greenly). A solo consultant is a salesperson, analyst, PM, bookkeeper, and delivery staff at once; Sendrow is their back office.
+Instead of a supplier's emissions data living in seventeen email threads and five conflicting spreadsheets, it lives in ONE trusted record. The consultant helps build and check it. The supplier owns it. Any customer who asks gets a clean, verified copy shaped the way they need. We are the system of record for supplier emissions data, operated through consultants — the boring, trustworthy plumbing; the drama stays out of the pipes.
 
-## Who pays us
-- **Consultants (only paying customer):** solo climate/ESG consultants and small firms serving CA mid-size suppliers. ~30 named targets to start; Kerri is Founding Partner seat one.
-- **Companies (referral revenue, not customers):** inbound companies are routed to partner consultants for a referral fee ($500–1.5k or % of first engagement). The direct-to-company sales motion is **paused, not disproven** — it was never pitched to anyone. The self-serve code was removed from v2 entirely (Plan M, 2026-07-08) — v1 IS the archive; the full v1 direction is documented in `docs/direction-v1-company-first.md` and on branch `sendrow-v1` if we ever want it back.
+## The three people who use it
+1. **Suppliers** (mid-size companies) — own their data. They answer questions, upload proof, and approve what gets shared. **Always free to respond.**
+2. **Consultants** — run the show: send requests, check numbers, fix mistakes, sign off. **Our main paying customer.**
+3. **Buyers** (big companies, Phase 2 in 2027) — demand this data by law; eventually pay us to collect it from hundreds of suppliers at once.
 
-## The Timing Thesis (why now — verified July 2026)
-- SB 253's first deadline moved to Nov 10, 2026; first year is leniency (report what you already collected, no assurance). **Don't sell November panic — sophisticated consultants know it's overstated and it burns credibility.**
-- The real wave is **2027**: Scope 3 reporting starts, limited assurance begins, and $1B+ filers must chase supplier data. Those surveys cascade onto exactly our ICP. Spreadsheets die at limited assurance.
-- Anchor demand in what survives litigation: buyer supply-chain programs (CDP Supply Chain, EcoVadis, retailer surveys) and EPR/SB 54 — not SB 253/261 themselves (SB 261 enjoined; both under challenge).
+## The three promises that make us different (put them on the homepage)
+1. **Suppliers actually respond.** Magic links, reply-by-email, plain-language forms, ten-minute completion — a supplier can reply as easily as answering an email. Response rate (target ≥60–70%) is our #1 measurable advantage; we publish it.
+2. **The supplier owns their data and can take it anywhere.** Full export in the industry-standard PACT format, anytime. Competitors lock data inside their walls; we don't — the ability to leave is why they trust us.
+3. **We never replace the consultant and we never grade the supplier.** No scorecards (anti-EcoVadis), no "you don't need a consultant" (anti-managed-service). We're the tool both use together — positioning competitors can't copy without blowing up their business models.
 
-## The Moat — Vendor-Mapping Memory
-Confirm a vendor once ("PG&E = Scope 2 electricity, this factor"), mapped forever, **shared across every client**. Businesses share vendors (utilities, carriers, suppliers), so the mapping database compounds with every client onboarded. It can only be earned through real client volume — Persefoni cannot buy or code its way to it. Every human-assisted engagement is a permanent deposit into this asset.
+## The workflow spine (what the product IS)
+Data request (field-specific, plain English) → magic-link response + reply-by-email → guided forms → **evidence stapled to every number** → comment threads pinned to specific data lines → consultant review & approve → **snapshot** (frozen, dated version — the ONLY thing ever shared) → **reshaping** (one snapshot → SB 253, CDP, any customer questionnaire, Excel) → explicit per-share permissions (THIS snapshot, to THIS company, in THIS format) → **restatement alerts** (corrections auto-notify everyone who received the old version) → prefill next year from last approved data ("answer once, share many" — the moment suppliers fall in love, and the upgrade trigger).
 
-## Product Doctrine
-1. **Three hardened intake paths, not universal ingestion:** structured CSV template, accounting-system spend export, document upload with human-confirmed extraction. Guided data entry orchestrated by the portal replaces "parse anything" engineering.
-2. **Data-request portal (the consultant's worst week, killed):** magic link (no client login), guided checklist per data type, uploads + simple structured entry, missing-item tracking, automatic reminders, consultant status board.
-3. **Questionnaire-response copilot (possibly the actual product):** one audited inventory in, any buyer/regulator format out. Formats are built from real client requests only — built once, sold forever, each addition announced as marketing.
-4. **Evidence locker / assurance-ready by construction:** every figure clicks back to its source document and emission-factor vintage; one-click assurance binder for the 2027 season. This is the Plan I audit-trail engineering — it carries over untouched.
-5. **White-label by default:** the consultant's client never sees Sendrow's name.
+## Supplier-Confirmed Parsing (Masao's note — the real consultant pain)
+The consultant's actual job is decoding what suppliers send ("they sent me a thing; I have to figure out what the thing is"). Ingestion/normalization — not categorization — and unlike categorization, **there's a right answer and the supplier knows it.** Four layers:
+1. **Prevent the mess upstream:** field-specific requests ("upload your 12 electricity bills"), not "send your data." Most format chaos dies in the request.
+2. **Parse with the supplier in the room:** AI takes the first pass ("column D looks like monthly kWh — right?"); the *supplier* confirms or fixes. Decoding moves from the consultant (expensive, guessing, offline) to the supplier (free, knows the answer, right there). AI suggests; a human confirms — but the human is the supplier.
+3. **Remember the shape:** file-format memory — decode Acme's utility export once, zero work next quarter; SoCal Edison bills look like SoCal Edison bills across suppliers.
+4. **Accept the floor:** fast manual entry for scanned receipts. Target 80% automated decoding, not 100%.
 
-## Revenue Ladder (in order)
-1. **White-label fulfillment (now):** footprint sprint (Scope 1–2 + spend-based Scope 3 screen, 2-week turnaround) — consultant bills $8–15k, Sendrow takes $2.5–4k fixed. Survey response package: $1–2.5k per questionnaire. Rush tier at 1.5–2x. The service is the R&D lab that pays us; every engagement produces an SOP → software spec.
-2. **Referral routing:** inbound companies → partner consultants, tracked and counted as a formal partnership benefit.
-3. **Software subscription:** only once the portal + copilot are real. Price against consultant project value (per-deliverable), not seats.
+## The Moats
+- **Vendor-mapping memory:** confirm a vendor once, mapped forever, shared across every client (human-confirmed only). Compounds with volume; can't be bought or coded.
+- **File-format memory:** the same idea applied to file layouts (less privacy-fraught — a bill layout isn't competitively sensitive).
+- **Trust mechanics for the 2027 audit wave:** restatement alerts + trust-level provenance badges ("self-reported" / "consultant-reviewed" / "assured"), designed WITH actual verifiers. When 2027 audits find incumbent data trails are Swiss cheese, we're the platform auditors recommend.
+- **Response rate:** competitors' products are anchored to buyer-side portals; they structurally can't rebuild around the supplier's inbox.
 
-**What people pay generously for (ranked):** making money > removing risk/fear > status > speed under deadline > saving time. Consultants pay for referred leads, white-label polish, monitoring retainers they can resell, and crunch capacity. Nobody pays for dashboards or "insights."
+## How we make money (in order)
+1. **Consultants:** free workspace, **pay per active client (~$150–250/month per client slot)** — passed through as a line item on the consultant's invoice, so there's no overhead objection. 12 active clients ≈ $21–36k/yr from someone who paid $0 to start. (White-label fulfillment services remain available as the R&D lab that pays us meanwhile.)
+2. **Suppliers:** free to respond forever; **Pro ~$1.5–3k/yr** (unlimited sharing, full history, priority formats) — the upgrade trigger is always the *second* customer request.
+3. **Buyers (2027):** ~$10–25k/yr platform + $30–60 per active supplier for bulk campaigns; every campaign floods the network with new supplier records for free.
+4. **The compounding trick:** every consultant brings 5–20 clients; every buyer campaign brings 100+ suppliers; every reuse event creates a Pro prospect. We never pay to acquire suppliers one at a time.
+
+Rough early math: 15 consultant workspaces ≈ $300k+/yr before a single buyer contract; one buyer pilot adds ~$25k + ~200 supplier records.
+
+## The Timing Thesis (verified July 2026)
+- SB 253's first deadline: Nov 10, 2026; first year is leniency. **Don't sell November panic.**
+- The real wave is **2027**: Scope 3 reporting starts, limited assurance begins, $1B+ filers chase supplier data — surveys cascade onto exactly our ICP. Spreadsheets die at limited assurance.
+- Own one beach: **California + SB 253 + consultant-operated.** A knowable list of affected companies (CARB publishes it), a consultant community we're already inside (Kerri, ISOS), a geography we live in. Giants can't focus this small; TrackZero (UK proof the consultant-first model works) would have to cross an ocean. We don't need to win "supplier data exchange" — we need to win California, 2026–2028.
 
 ## Go-to-Market
-- **Tiny and deep:** one geography (California), one workflow (data request → inventory → any format out).
-- **Soft-verticalize into food & beverage / agriculture** — CA-dense, buyer-pressured, shared vendors compound the mapping moat fastest. Bias the outreach list; no rebrand.
-- **Note-taker of the niche:** summarize every CARB docket move within 24 hours; comment letters; format announcements as content cadence; free lead-magnet tools (in-scope checker, deadline calendar, survey decoder).
-- **Trust basics before asked:** DPA template, one-page security overview, export/delete button. Tool-not-advice ToS; consultant owns professional judgment.
+- **Tiny and deep:** one geography (California), one workflow (request → record → any format out). Soft-verticalize into food & beverage / agriculture.
+- **Kerri = Founding Partner seat one**; ~30 named consultant targets.
+- **Note-taker of the niche:** CARB docket summaries within 24h, comment letters, format announcements as marketing. Free lead-magnet tools (in-scope checker, deadline calendar, survey decoder) whose output becomes a **claimable starter profile** — the free tool feeds the real product.
+- **Trust before asked:** DPA, security overview, export/delete. Tool-not-advice ToS; the consultant owns professional judgment. **Start SOC 2 early** — supplier spending data is competitively sensitive; a leak would end the company.
+
+## The scoreboard (what tells us it's working)
+1. Supplier response rate ≥60–70% via magic link — the headline number
+2. Request → approved-snapshot cycle time (days, not months)
+3. % of records with evidence attached
+4. Paying consultant workspaces × their client counts
+5. Reuse events (second-customer shares) — the leading indicator of Supplier Pro revenue
 
 ## Explicitly Out of Scope
-- Universal/arbitrary-format ingestion as a product promise
-- Direct-to-company self-serve sales (code deleted from v2; branch `sendrow-v1` keeps it)
-- Enterprise SSO and procurement features
-- Speculative output formats no real client has requested
-- SOC 2 (transparency substitutes at this stage)
+- Universal/arbitrary-format ingestion as a promise (supplier-confirmed parsing + format memory instead)
+- Scoring/grading suppliers, ever
+- Replacing the consultant ("we do it for you" managed service)
+- Direct-to-company self-serve sales (code deleted from v2; branch `sendrow-v1` keeps it; inbound companies → referral routing)
+- Enterprise SSO/procurement features; speculative output formats no real client requested
 
 ## Technical Stack
-Next.js 15 App Router, multi-tenant, Clerk v6, NeonDB + Drizzle, Stripe, Resend, Vercel Blob (evidence storage). Per-client differences live in config (mapping profiles, intake answers, branding config) — never forked code.
+Next.js 15 App Router, multi-tenant, Clerk v6, NeonDB + Drizzle, Stripe, Resend, Vercel Blob (evidence + branding). PACT-compatible data model from day one. Per-client differences live in config — never forked code.

@@ -23,6 +23,11 @@ Sendrow is now **the practice platform for climate consultants** — consultants
 - Concierge cap: 3 engagements, then productize or raise price
 - CARB 15-day comment window: publish the explainer within 24h + submit a comment letter when it opens
 
+## 🧭 Master-doc alignment (2026-07-08, evening session)
+"Sendrow, Explained in Plain English" (sendrow master.pdf) refines the direction: **the system of record for supplier emissions data, consultant-operated.** GOALS.md rewritten around it (3 personas, 3 promises, workflow spine incl. snapshots/reshaping/restatements, supplier-confirmed parsing, per-active-client pricing, scoreboard). contracts/ §11 re-scoped (requests wear consultant brand; Sendrow = neutral vault); §13 snapshots immutable, §14 never score suppliers added. ROADMAP recast: Plan O (trust core: snapshots/sharing/restatements) → P (reshaping engine) → Q (supplier side: confirmed parsing, reply-by-email, free accounts) → R (buyers, 2027). Built `/how-it-works` public page (5 steps + three-promises band), linked in nav/footer; landing subline updated.
+
+**Open decisions for you/Masao:** confirm per-client pricing ($150–250/mo) before it goes on /pricing; PACT schema research task; SOC 2 timing (doc says start early — reversed from before).
+
 ## 🟡 Current state (updated 2026-07-08, Plan N session)
 - **Plan N phases N1–N5 + N7.1 BUILT on `sendrow-v2`** (158/158 tests): client-contact email repair (portal emails actually deliver now), one merged consultant workspace + practice board, evidence locker (original files on Vercel Blob, hash-always provenance), reporting periods + YoY, white-label branding (brand profiles, branded portal/emails, `/shared/[token]` client results links), `/admin/referrals` lead board.
 - **N6 (questionnaire copilot) blocked** on one real buyer questionnaire from Kerri.

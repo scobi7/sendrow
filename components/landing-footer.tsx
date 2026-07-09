@@ -15,7 +15,7 @@ export function LandingFooter() {
           <div>
             <Logo />
             <p className="mt-3 max-w-xs text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>
-              The practice platform for climate consultants. One audited inventory in, every buyer and regulator format out.
+              The one organized place where a supplier's emissions information lives — collected once, kept with proof attached, shared in any format asked.
             </p>
           </div>
 
@@ -24,6 +24,7 @@ export function LandingFooter() {
               <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>Product</p>
               <ul className="mt-3 space-y-2">
                 {[
+                  ["How it works", "/how-it-works"],
                   ["For consultants", "/for-consultants"],
                   ["Get matched (companies)", "/get-matched"],
                   ["Pricing", "/pricing"],

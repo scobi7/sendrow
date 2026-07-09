@@ -73,7 +73,7 @@ export default async function Home() {
             className="mx-auto mt-6 max-w-lg text-lg leading-relaxed"
             style={{ color: "var(--text-muted)" }}
           >
-            Turn a client&rsquo;s messy data into one audited emissions inventory, then answer every buyer and regulator format from it — under your brand.
+            The one organized place where your client&rsquo;s emissions data lives — collected once, kept with proof attached, and shared to any customer or regulator in whatever format they ask for. Under your brand.
           </p>
 
           {/* Audience cards */}

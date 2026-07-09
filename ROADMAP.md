@@ -1,6 +1,6 @@
 # ROADMAP.md — Release Themes & Priorities
-> Direction reset 2026-07-08: practice platform for climate consultants. Order rationale: make the first fulfillment engagement runnable, then make every figure defensible, then make the 2027 product.
-> Last updated: 2026-07-08
+> Updated 2026-07-08 from the master doc ("Sendrow, Explained in Plain English"): Sendrow = the system of record for supplier emissions data, consultant-operated. Order rationale: make the workflow spine real (request → evidence → approve → snapshot → reshape → share), then the supplier side, then buyers.
+> Last updated: 2026-07-08 (evening, master-doc session)
 
 ## Plan M — Remove Company Self-Serve (BUILT 2026-07-08)
 v1/v2 split made real: company dashboard, setup wizard, invite-login flow, and 25 orphaned company actions deleted from v2 (all preserved on `sendrow-v1`). Onboarding is consultant-only; companies route to /get-matched.
@@ -18,24 +18,37 @@ Make the Kerri engagement (and every white-label fulfillment after it) run throu
 ## Plan V — Visual Identity Refresh (BUILT 2026-07-08)
 "The Ledger": Fraunces/Instrument Sans/IBM Plex Mono + paper-ink-forest palette with one terracotta accent. Research + spec: docs/design-direction.md; plan in PLANS.md. Small surface (tokens + fonts), also the white-label prerequisite.
 
-## Plan K — Evidence & Copilot Release (absorbed into Plan N: N3, N5, N6)
-The 2027 story.
-1. **Evidence locker:** source documents (Vercel Blob) attached to line items; every figure clicks to its bill/invoice + factor vintage
-2. **Questionnaire-response copilot prototype:** built against a real buyer questionnaire from a founding partner's client — question → inventory-field mapping, drafted answers, consultant review/sign; each new format saved as a permanent template and announced
-3. **White-label branding:** consultant logo/colors on all client-facing surfaces (portal, emails, PDFs); Sendrow's name never shown to end clients
+## Plan O — The Trust Core (next)
+Snapshots, sharing, restatements — the mechanics that make Sendrow's data believable and shareable.
+1. **Snapshots:** approving a dataset freezes a locked, dated version — the ONLY artifact ever shared (invariant §13)
+2. **Sharing permissions:** each share = THIS snapshot, to THIS recipient, in THIS format; supplier/consultant explicit OK; recipients never see each other's shares
+3. **Restatement alerts:** correcting shared data auto-notifies every recipient of the old version with a what-changed diff
+4. **Trust-level labels:** self-reported / consultant-reviewed / assured, on every dataset (§14: verification status, never a grade)
+5. Methodology labels: every calculated number tagged with formula + factor vintage (mostly exists via calc logs — surface it)
 
-## Plan L — Assurance & Practice Depth (6–12 months; N4 lays the YoY groundwork)
-1. One-click assurance binder export, timed to the 2027 limited-assurance season
-2. Year-over-year delta narratives ("emissions rose 12% because…")
-3. Consultant practice dashboard: every client's status, missing data, deadlines in one view
-4. Format library growth as ongoing cadence
+## Plan P — The Reshaping Engine (absorbs old N6 copilot)
+One approved snapshot → any output format. Maintained centrally: when CARB/CDP change their forms, WE update templates and everyone's exports keep working.
+1. Format template system (SB 253 disclosure, CDP, generic customer questionnaire, plain Excel)
+2. First real format built from an actual buyer questionnaire (Kerri's client) — formats only from real requests, built once sold forever
+3. PACT-compatible export (the "your data is yours" weapon + standard on-ramp)
 
-## Backlog (post-L, roughly ordered)
-- Anonymous peer benchmarking (data network effect)
-- Reduction hotspot flagging + playbook actions (sells the consultant a follow-on engagement)
-- EPR / SB 54 packaging module (smooths seasonal revenue; live thread via Mishel's contacts)
-- Free lead-magnet tools: in-scope checker, CA climate deadline calendar, survey decoder
-- "Sendrow Certified" consultant training (pipeline + switching costs — noted, not soon)
+## Plan Q — The Supplier Side
+1. **Supplier-confirmed parsing:** AI first-pass on uploads ("column D looks like kWh — right?"), supplier confirms in the portal; file-format memory remembers the shape (vendor-memory doctrine applied to layouts)
+2. **Reply-by-email:** replying to a request email (with text or an attached bill) lands in the right place automatically
+3. **Free claimable supplier accounts:** after responding via magic link, a supplier can claim their record (own it, view it, export it); prefill next year from last approved data
+4. **Comment threads on data lines:** clarifying questions pinned to the exact figure, not lost in email
+5. Supplier Pro tier ($1.5–3k/yr) once reuse events start happening — the trigger is the second customer request
+
+## Plan R — Buyers (2027)
+Bulk campaigns (300 suppliers at once), snapshot inbox (clean approved packages, never raw workspace access), response analytics. Priced ~$10–25k/yr + per-supplier.
+
+## Backlog (roughly ordered)
+- SOC 2 track — start early (supplier spend data is competitively sensitive; master doc reverses the old "out of scope")
+- Consultant engagement templates ("my standard SB 253 request package," reusable per client)
+- Claimable starter profile from the free calculator lead-magnet
+- QuickBooks/utility auto-integrations (email + upload covers v1)
+- Anonymous peer benchmarking · reduction hotspot flagging · EPR/SB 54 module
+- Free lead-magnet tools: in-scope checker, CA deadline calendar, survey decoder
 
 ## Paused / dormant (2026-07-08 — recoverable, see docs/direction-v1-company-first.md + branch `sendrow-v1`)
 - ~~Plan J (old) — annual company Stripe pricing~~ — direct-to-company motion paused (never pitched, not disproven); self-serve code dormant, not deleted
