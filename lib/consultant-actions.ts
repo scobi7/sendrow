@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { and, eq, isNull } from "drizzle-orm";
 import { db } from "./db";
-import { companies, consultantClients, consultantProfiles, shareLinks, userCompanies, intakeSessions, dataRequests, pipelineStatus, vendorMappings, emissionLineItems } from "./db/schema";
+import { companies, consultantClients, consultantProfiles, shareLinks, snapshots, userCompanies, intakeSessions, dataRequests, pipelineStatus, vendorMappings, emissionLineItems } from "./db/schema";
 import { normalizeVendor, matchVendor, VENDOR_CONFIRM_OPTIONS, getVendorMappingsFromDb } from "./vendor-mappings";
 import { rowToLineItem } from "./ingestion/ingest";
 import { recomputeLineItem, excludeLineItem } from "./ledger";
@@ -19,6 +19,11 @@ import { logChange } from "./audit";
 import { Company, User } from "./types";
 import { sendDataRequestEmail } from "./email";
 import { getBrandForCompany } from "./branding";
+import { snapshotHash, restatementDiff } from "./snapshots";
+import type { SnapshotTotals } from "./snapshots";
+import { sendRestatementEmail } from "./email";
+import { totals as computeTotals } from "./calc";
+import { desc } from "drizzle-orm";
 import { generatePortalToken, portalExpiry, buildChecklist } from "./portal";
 import type { DataType } from "./ingestion/data-type-templates";
 
@@ -510,5 +515,127 @@ export async function restoreLineItem(companyId: string, itemId: string) {
   const log = (ctx.item.calcLog as { exclusion?: { previous_status?: string } }) ?? {};
   const previous = log.exclusion?.previous_status === "mapped" ? "mapped" : "unmapped";
   await db.update(emissionLineItems).set({ status: previous }).where(eq(emissionLineItems.id, itemId));
+  revalidatePath(`/consultant/clients/${companyId}`);
+}
+
+// ─────────── Snapshots — the trust core (Plan T3, invariant §13) ───────────
+
+function snapId() {
+  return "snap_" + Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
+}
+
+/** Freezes the current approved state into an immutable, dated snapshot.
+ *  If earlier snapshots were shared with named recipients, they get a
+ *  restatement alert spelling out exactly what changed. */
+export async function createSnapshot(companyId: string, formData: FormData) {
+  const user = await currentUser();
+  if (!user || user.role !== "consultant") return;
+  const link = await db.query.consultantClients.findFirst({
+    where: and(
+      eq(consultantClients.consultantId, user.id),
+      eq(consultantClients.companyId, companyId),
+      isNull(consultantClients.archivedAt)
+    ),
+  });
+  if (!link) return;
+
+  const label = String(formData.get("label") ?? "").trim() || `Snapshot ${new Date().toISOString().slice(0, 10)}`;
+
+  const [company, items] = await Promise.all([
+    loadCompany(companyId),
+    db
+      .select()
+      .from(emissionLineItems)
+      .where(and(eq(emissionLineItems.companyId, companyId), eq(emissionLineItems.status, "mapped"))),
+  ]);
+
+  const t = computeTotals(company);
+  const frozenTotals: SnapshotTotals = {
+    scope1: t.scope1,
+    scope2Location: t.scope2Location,
+    scope2Market: t.scope2Market,
+    scope3: t.scope3,
+    total: t.total,
+  };
+  const frozenItems = items.map((i) => ({
+    sourceRef: i.sourceRef,
+    scope: i.scope,
+    category: i.category,
+    rawValue: i.rawValue,
+    rawUnit: i.rawUnit,
+    co2eKg: i.co2eKg,
+    period: i.period,
+    factorId: i.factorId,
+    calcLog: i.calcLog,
+  }));
+
+  const id = snapId();
+  await db.insert(snapshots).values({
+    id,
+    companyId,
+    label,
+    period: null,
+    totals: frozenTotals,
+    lineItems: frozenItems,
+    itemCount: frozenItems.length,
+    sha256: snapshotHash(frozenTotals, frozenItems),
+    createdBy: user.id,
+    createdAt: new Date().toISOString(),
+  });
+
+  // Restatement alerts: anyone who received an earlier snapshot learns what changed
+  const previous = await db
+    .select()
+    .from(snapshots)
+    .where(eq(snapshots.companyId, companyId))
+    .orderBy(desc(snapshots.createdAt))
+    .limit(2);
+  const prior = previous.find((p) => p.id !== id);
+  if (prior) {
+    const changes = restatementDiff(prior.totals as SnapshotTotals, frozenTotals);
+    if (changes.length > 0) {
+      const shares = await db
+        .select()
+        .from(shareLinks)
+        .where(and(eq(shareLinks.companyId, companyId), isNull(shareLinks.revokedAt)));
+      const brand = await getBrandForCompany(companyId);
+      const company_ = await db.query.companies.findFirst({ where: eq(companies.id, companyId) });
+      for (const share of shares) {
+        if (!share.recipientEmail || !share.snapshotId) continue;
+        sendRestatementEmail(
+          share.recipientEmail,
+          company_?.name ?? "your supplier",
+          prior.label,
+          changes,
+          null,
+          brand
+        ).catch(() => {});
+      }
+    }
+  }
+
+  revalidatePath(`/consultant/clients/${companyId}`);
+}
+
+/** Shares a specific frozen snapshot — THIS snapshot, to THIS recipient. */
+export async function shareSnapshot(companyId: string, snapshotId: string, formData: FormData) {
+  const user = await currentUser();
+  if (!user || user.role !== "consultant") return;
+  const snap = await db.query.snapshots.findFirst({ where: eq(snapshots.id, snapshotId) });
+  if (!snap || snap.companyId !== companyId) return;
+
+  const recipientEmail = String(formData.get("recipient_email") ?? "").trim();
+  const recipientLabel = String(formData.get("recipient_label") ?? "").trim();
+
+  const { generatePortalToken } = await import("./portal");
+  await db.insert(shareLinks).values({
+    token: generatePortalToken(),
+    companyId,
+    snapshotId,
+    recipientEmail: recipientEmail || null,
+    recipientLabel: recipientLabel || null,
+    createdBy: user.id,
+    createdAt: new Date().toISOString(),
+  });
   revalidatePath(`/consultant/clients/${companyId}`);
 }

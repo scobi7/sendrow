@@ -136,9 +136,30 @@ export const consultantProfiles = pgTable("gt_consultant_profiles", {
 export const shareLinks = pgTable("gt_share_links", {
   token: text("token").primaryKey(),
   companyId: text("company_id").notNull().references(() => companies.id),
+  // When set, the link shows this frozen snapshot (§13); null = legacy live view
+  snapshotId: text("snapshot_id"),
+  // Who received it — lets restatement alerts reach them when data is corrected
+  recipientEmail: text("recipient_email"),
+  recipientLabel: text("recipient_label"),
   createdBy: text("created_by").notNull(),
   createdAt: text("created_at").notNull(),
   revokedAt: text("revoked_at"),
+});
+
+/** Frozen, dated, approved versions (Plan T3 / invariant §13): the ONLY thing
+ *  ever shared. Immutable by construction — corrections create a new snapshot
+ *  and restatement-alert every recipient of the old one. */
+export const snapshots = pgTable("gt_snapshots", {
+  id: text("id").primaryKey(),
+  companyId: text("company_id").notNull().references(() => companies.id),
+  label: text("label").notNull(),
+  period: text("period"),
+  totals: jsonb("totals").notNull(),      // { scope1, scope2Location, scope2Market, scope3, total } in tons
+  lineItems: jsonb("line_items").notNull(), // frozen mapped items incl. calc logs
+  itemCount: integer("item_count").notNull().default(0),
+  sha256: text("sha256").notNull(),        // content hash — proves immutability
+  createdBy: text("created_by").notNull(),
+  createdAt: text("created_at").notNull(),
 });
 
 export const inviteTokens = pgTable("gt_invite_tokens", {

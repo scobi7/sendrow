@@ -1,6 +1,6 @@
 import { eq, isNull, and } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { companies, emissionLineItems, shareLinks } from "@/lib/db/schema";
+import { companies, emissionLineItems, shareLinks, snapshots } from "@/lib/db/schema";
 import { getBrandForCompany } from "@/lib/branding";
 import { periodTotals, yoyDelta } from "@/lib/period";
 import { loadCompany } from "@/lib/store";
@@ -29,6 +29,10 @@ export default async function SharedResultsPage({ params }: { params: Promise<{ 
     );
   }
 
+  const snapshot = link.snapshotId
+    ? await db.query.snapshots.findFirst({ where: eq(snapshots.id, link.snapshotId) })
+    : null;
+
   const [companyRow, brand, fullCompany, periodItems] = await Promise.all([
     db.query.companies.findFirst({ where: eq(companies.id, link.companyId) }),
     getBrandForCompany(link.companyId),
@@ -45,8 +49,15 @@ export default async function SharedResultsPage({ params }: { params: Promise<{ 
   ]);
   if (!companyRow || !fullCompany) return null;
 
-  const t = totals(fullCompany);
-  const byPeriod = periodTotals(periodItems.map((i) => ({ ...i, co2eKg: Number(i.co2eKg) })));
+  // A snapshot link shows the frozen version — never the live workspace (§13)
+  type FrozenItem = { period: string | null; scope: number; co2eKg: string; status?: string };
+  const t = snapshot
+    ? (snapshot.totals as ReturnType<typeof totals>)
+    : totals(fullCompany);
+  const sourceItems = snapshot
+    ? (snapshot.lineItems as FrozenItem[]).map((i) => ({ ...i, status: "mapped" }))
+    : periodItems;
+  const byPeriod = periodTotals(sourceItems.map((i) => ({ period: i.period, scope: i.scope, status: i.status ?? "mapped", co2eKg: Number(i.co2eKg) })));
   const yoy = yoyDelta(byPeriod);
   const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 2 });
 
@@ -75,6 +86,11 @@ export default async function SharedResultsPage({ params }: { params: Promise<{ 
       <h1 className="mt-1 text-2xl font-extrabold font-display" style={{ color: "var(--text)" }}>
         {companyRow.name}
       </h1>
+      {snapshot && (
+        <p className="mt-2 inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium" style={{ background: "var(--primary-tint)", color: "var(--primary)" }}>
+          🔒 {snapshot.label} — frozen {new Date(snapshot.createdAt).toLocaleDateString()} · this version can never silently change
+        </p>
+      )}
 
       <div className="card mt-8">
         <dl className="space-y-3 text-sm">
@@ -129,7 +145,10 @@ export default async function SharedResultsPage({ params }: { params: Promise<{ 
       )}
 
       <p className="mt-8 text-xs" style={{ color: "var(--text-muted)" }}>
-        Prepared by {brand?.brandName ?? "your consultant"}. Figures reflect data received and reviewed to date.
+        Prepared by {brand?.brandName ?? "your consultant"}.{" "}
+        {snapshot
+          ? `Frozen snapshot ${snapshot.sha256.slice(0, 12)}… — corrections are issued as new versions with change notices.`
+          : "Figures reflect data received and reviewed to date."}
       </p>
     </main>
   );

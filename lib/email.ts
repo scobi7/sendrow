@@ -170,3 +170,30 @@ ${unmappedCount > 0 ? `<p><strong>${unmappedCount}</strong> row${unmappedCount =
   );
 }
 
+
+export async function sendRestatementEmail(
+  to: string,
+  companyName: string,
+  snapshotLabel: string,
+  changes: { label: string; previous: number; current: number; pct: number | null }[],
+  newLink: string | null,
+  brand?: { brandName: string; replyTo: string | null } | null
+) {
+  const rows = changes
+    .map(
+      (c) =>
+        `<tr><td style="padding:4px 12px 4px 0">${c.label}</td><td style="padding:4px 12px">${c.previous.toLocaleString("en-US", { maximumFractionDigits: 2 })} t</td><td style="padding:4px 12px">${c.current.toLocaleString("en-US", { maximumFractionDigits: 2 })} t</td><td style="padding:4px 0">${c.pct === null ? "—" : `${c.pct > 0 ? "+" : ""}${c.pct.toFixed(1)}%`}</td></tr>`
+    )
+    .join("");
+  await send(
+    to,
+    `Restatement: updated emissions data for ${companyName}`,
+    `<p>Hello,</p>
+<p>Emissions data previously shared with you for <strong>${companyName}</strong> (&ldquo;${snapshotLabel}&rdquo;) has been corrected. Here is exactly what changed:</p>
+<table style="border-collapse:collapse;font-size:14px"><tr><th align="left" style="padding:4px 12px 4px 0">Figure</th><th align="left" style="padding:4px 12px">Previous</th><th align="left" style="padding:4px 12px">Corrected</th><th align="left">Change</th></tr>${rows}</table>
+${newLink ? `<p><a href="${newLink}">View the corrected version →</a></p>` : ""}
+<p>The previous version remains on record; nothing was silently changed.</p>
+${brand ? `<p>— ${brand.brandName}</p>` : ""}`,
+    brand ? { fromName: brand.brandName, replyTo: brand.replyTo } : undefined
+  );
+}

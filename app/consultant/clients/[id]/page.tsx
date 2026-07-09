@@ -3,12 +3,12 @@ import { notFound } from "next/navigation";
 import { and, desc, eq, isNull } from "drizzle-orm";
 import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { companies, consultantClients, intakeSessions, dataRequests, pipelineStatus, emissionLineItems, shareLinks } from "@/lib/db/schema";
+import { companies, consultantClients, intakeSessions, dataRequests, pipelineStatus, emissionLineItems, shareLinks, snapshots } from "@/lib/db/schema";
 import { loadCompany } from "@/lib/store";
 import { totals } from "@/lib/calc";
 import { auditForCompany } from "@/lib/audit";
 import { archiveClient, updateClientContact } from "@/lib/actions";
-import { resendPortalEmail, createShareLink, revokeShareLink } from "@/lib/consultant-actions";
+import { resendPortalEmail, createShareLink, revokeShareLink, createSnapshot, shareSnapshot } from "@/lib/consultant-actions";
 import { periodTotals, yoyDelta } from "@/lib/period";
 import { SessionActions } from "./session-actions";
 import { DataRequestForm } from "./data-request-form";
@@ -67,9 +67,13 @@ export default async function ClientWorkspacePage({
   ]);
   if (!companyRow || !fullCompany) notFound();
 
-  const activeShare = await db.query.shareLinks.findFirst({
-    where: and(eq(shareLinks.companyId, id), isNull(shareLinks.revokedAt)),
-  });
+  const [activeShare, snapshotList, allShares] = await Promise.all([
+    db.query.shareLinks.findFirst({
+      where: and(eq(shareLinks.companyId, id), isNull(shareLinks.revokedAt)),
+    }),
+    db.select().from(snapshots).where(eq(snapshots.companyId, id)).orderBy(desc(snapshots.createdAt)).limit(10),
+    db.select().from(shareLinks).where(and(eq(shareLinks.companyId, id), isNull(shareLinks.revokedAt))),
+  ]);
 
   const periodItems = await db
     .select({
@@ -392,6 +396,56 @@ export default async function ClientWorkspacePage({
               </p>
             </div>
           )}
+
+          <div className="card h-fit">
+            <h2 className="text-sm font-bold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
+              Snapshots
+            </h2>
+            <p className="mt-2 text-xs" style={{ color: "var(--text-muted)" }}>
+              Frozen, dated versions — the only thing that ever gets shared. Corrections create a new snapshot and notify recipients.
+            </p>
+            <form action={createSnapshot.bind(null, id)} className="mt-3 flex gap-2">
+              <input name="label" placeholder={`FY${new Date().getFullYear()} footprint`} className="input flex-1 text-xs" />
+              <button className="btn btn-secondary shrink-0 px-3 py-1.5 text-xs">Freeze</button>
+            </form>
+            {snapshotList.length > 0 && (
+              <div className="mt-3 space-y-3">
+                {snapshotList.map((snap) => {
+                  const st = snap.totals as { total: number };
+                  const snapShares = allShares.filter((sh) => sh.snapshotId === snap.id);
+                  return (
+                    <div key={snap.id} className="rounded-lg px-3 py-2" style={{ border: "1px solid var(--divider)" }}>
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs font-semibold" style={{ color: "var(--text)" }}>🔒 {snap.label}</p>
+                        <span className="font-data text-xs" style={{ color: "var(--text)" }}>
+                          {st.total.toLocaleString("en-US", { maximumFractionDigits: 1 })} t
+                        </span>
+                      </div>
+                      <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+                        {new Date(snap.createdAt).toLocaleDateString()} · {snap.itemCount} items · {snap.sha256.slice(0, 8)}…
+                      </p>
+                      {snapShares.map((sh) => (
+                        <div key={sh.token} className="mt-1.5 flex items-center gap-2">
+                          <ShareLinkButton token={sh.token} />
+                          <span className="truncate text-xs" style={{ color: "var(--text-muted)" }}>
+                            → {sh.recipientLabel || sh.recipientEmail || "unnamed recipient"}
+                          </span>
+                          <form action={revokeShareLink.bind(null, sh.token, id)}>
+                            <button className="text-xs" style={{ color: "var(--text-muted)" }}>✕</button>
+                          </form>
+                        </div>
+                      ))}
+                      <form action={shareSnapshot.bind(null, id, snap.id)} className="mt-2 flex gap-1.5">
+                        <input name="recipient_label" placeholder="Recipient (e.g. Walmart)" className="input flex-1 text-xs" />
+                        <input name="recipient_email" type="email" placeholder="their@email.com" className="input flex-1 text-xs" />
+                        <button className="btn btn-secondary shrink-0 px-2 py-1 text-xs">Share</button>
+                      </form>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
 
           <div className="card h-fit">
             <h2 className="text-sm font-bold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>

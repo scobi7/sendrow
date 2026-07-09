@@ -307,10 +307,10 @@ Generated from PLANS.md (approved). Updated after each task completes.
 - [x] **T2.3** — Format memory via header fingerprints
 - [x] **T2.4** — Paste-from-spreadsheet in manual entry
 ### T3 — Trust core
-- [ ] **T3.1** — gt_snapshots (frozen jsonb + sha256) + migration
-- [ ] **T3.2** — Snapshot shares via share links; /shared renders frozen data
-- [ ] **T3.3** — Restatement alerts with diff email (+ tested diff helper)
-- [ ] **T3.4** — Workspace snapshots card (create/list/share/revoke)
+- [x] **T3.1** — gt_snapshots (frozen jsonb + sha256) + migration
+- [x] **T3.2** — Snapshot shares via share links; /shared renders frozen data
+- [x] **T3.3** — Restatement alerts with diff email (+ tested diff helper)
+- [x] **T3.4** — Workspace snapshots card (create/list/share/revoke)
 ### T4 — Reshaping engine v1
 - [ ] **T4.1** — lib/formats.ts registry + CSV/Excel export
 - [ ] **T4.2** — SB 253-style disclosure + generic questionnaire formats

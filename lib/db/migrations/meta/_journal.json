@@ -71,6 +71,13 @@
       "when": 1783562500910,
       "tag": "0009_fantastic_leopardon",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1783562783065,
+      "tag": "0010_flat_stardust",
+      "breakpoints": true
     }
   ]
 }
