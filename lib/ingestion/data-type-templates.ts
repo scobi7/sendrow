@@ -104,3 +104,38 @@ export function applyTemplate(
   }
   return map;
 }
+
+/** Downloadable starter template (Plan T2 follow-up): canonical headers that
+ *  auto-map perfectly, with example rows per data type. Always optional —
+ *  any file shape still works through the confirm-mapping screen. */
+export const TEMPLATE_HEADERS = ["Date", "Activity Type", "Quantity", "Unit", "Vendor / Reference", "Notes"] as const;
+
+const TEMPLATE_EXAMPLES: Record<DataType, string[][]> = {
+  utility_bills: [
+    ["2026-01", "electricity", "1240", "kWh", "PG&E acct 4402", ""],
+    ["2026-01", "natural gas", "84", "therms", "PG&E acct 4402", ""],
+  ],
+  fleet_fuel_dollar: [
+    ["2026-01", "diesel", "120", "gallons", "TRK-01", "or enter $ spent and your consultant converts"],
+    ["2026-01", "gasoline", "95", "gallons", "TRK-03", ""],
+  ],
+  vendor_invoices: [
+    ["2026-01", "shipping", "5200", "USD", "Speedy Shipping Co", "invoice 1183"],
+    ["2026-02", "packaging supplies", "1400", "USD", "BoxCo Inc", "invoice 2210"],
+  ],
+  commute_survey: [
+    ["2026-01", "commute", "8200", "miles", "all employees, monthly total", ""],
+  ],
+  business_travel: [
+    ["2026-03", "air travel", "2400", "USD", "Delta / corporate card", ""],
+    ["2026-03", "hotels", "980", "USD", "Marriott", ""],
+  ],
+  custom: [
+    ["2026-01", "describe the activity", "100", "unit (kWh, gallons, USD…)", "who it came from", ""],
+  ],
+};
+
+export function templateCsv(dataType: DataType): string {
+  const rows = TEMPLATE_EXAMPLES[dataType] ?? TEMPLATE_EXAMPLES.custom;
+  return [TEMPLATE_HEADERS.join(","), ...rows.map((r) => r.map((c) => (c.includes(",") ? `"${c}"` : c)).join(","))].join("\n");
+}

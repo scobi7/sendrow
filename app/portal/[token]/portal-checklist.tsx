@@ -6,6 +6,8 @@ import * as XLSX from "xlsx";
 import type { ChecklistItem } from "@/lib/portal";
 import { parsePastedRows } from "@/lib/portal-paste";
 import { parseSheetMatrix } from "@/lib/ingestion/sheet-parse";
+import { templateCsv } from "@/lib/ingestion/data-type-templates";
+import type { DataType } from "@/lib/ingestion/data-type-templates";
 
 type EntryRow = { date: string; kind: string; quantity: string };
 
@@ -358,6 +360,7 @@ export function PortalChecklist({ token, items }: { token: string; items: Checkl
                     </div>
 
                     {mode === "upload" ? (
+                      <>
                       <label
                         className="block cursor-pointer rounded-xl p-8 text-center text-sm"
                         style={{ border: "2px dashed var(--divider)", color: "var(--text-muted)" }}
@@ -375,6 +378,26 @@ export function PortalChecklist({ token, items }: { token: string; items: Checkl
                           }}
                         />
                       </label>
+                      <p className="mt-2 text-xs" style={{ color: "var(--text-muted)" }}>
+                        Any spreadsheet works — you&apos;ll confirm how we read it. Want zero fuss?{" "}
+                        <button
+                          className="underline"
+                          style={{ color: "var(--primary)" }}
+                          onClick={() => {
+                            const csv = templateCsv(item.dataType as DataType);
+                            const url = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+                            const a = document.createElement("a");
+                            a.href = url;
+                            a.download = `${item.dataType}-template.csv`;
+                            a.click();
+                            URL.revokeObjectURL(url);
+                          }}
+                        >
+                          Download our template
+                        </button>{" "}
+                        and fill it in.
+                      </p>
+                      </>
                     ) : (
                       <div
                         onPaste={(e) => {
