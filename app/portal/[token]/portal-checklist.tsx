@@ -44,6 +44,13 @@ type PendingUpload = {
   source: "memory" | "suggested";
 };
 
+type SheetChoice = {
+  itemId: string;
+  file: File;
+  filename: string;
+  sheets: { name: string; rows: Record<string, string>[] }[];
+};
+
 /** Fuzzy-picks a manual-entry kind from pasted text ("PG&E electric" → electricity). */
 function guessKind(text: string): string {
   const t = text.toLowerCase();
@@ -66,6 +73,7 @@ export function PortalChecklist({ token, items }: { token: string; items: Checkl
   const [error, setError] = useState<string | null>(null);
   const [doneMsg, setDoneMsg] = useState<string | null>(null);
   const [pending, setPending] = useState<PendingUpload | null>(null);
+  const [sheetChoice, setSheetChoice] = useState<SheetChoice | null>(null);
 
   async function submit(
     item: ChecklistItem,
@@ -120,15 +128,29 @@ export function PortalChecklist({ token, items }: { token: string; items: Checkl
     setError(null);
     const buf = await file.arrayBuffer();
     const wb = XLSX.read(buf);
-    const sheet = wb.Sheets[wb.SheetNames[0]];
-    const parsed = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet, { defval: "" });
-    if (parsed.length === 0) {
+
+    // Parse every sheet; workbooks often carry multiple tabs and only the
+    // person who made the file knows which one holds the data.
+    const sheets = wb.SheetNames.map((name) => {
+      const parsed = XLSX.utils.sheet_to_json<Record<string, unknown>>(wb.Sheets[name], { defval: "" });
+      return {
+        name,
+        rows: parsed.map((r) => Object.fromEntries(Object.entries(r).map(([k, v]) => [k, String(v)]))),
+      };
+    }).filter((s) => s.rows.length > 0);
+
+    if (sheets.length === 0) {
       setError("That file looks empty — please check it and try again.");
       return;
     }
-    const stringRows = parsed.map((r) =>
-      Object.fromEntries(Object.entries(r).map(([k, v]) => [k, String(v)]))
-    );
+    if (sheets.length > 1) {
+      setSheetChoice({ itemId: item.id, file, filename: file.name, sheets });
+      return;
+    }
+    await startMapping(item, file, file.name, sheets[0].rows);
+  }
+
+  async function startMapping(item: ChecklistItem, file: File, filename: string, stringRows: Record<string, string>[]) {
     const headers = Object.keys(stringRows[0]);
 
     // Ask the server how it reads this file (memory beats suggestions),
@@ -142,10 +164,11 @@ export function PortalChecklist({ token, items }: { token: string; items: Checkl
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Could not read that file");
+      setSheetChoice(null);
       setPending({
         itemId: item.id,
         file,
-        filename: file.name,
+        filename,
         rows: stringRows,
         headers,
         map: data.map,
@@ -213,7 +236,33 @@ export function PortalChecklist({ token, items }: { token: string; items: Checkl
 
             {isOpen && !received && (
               <div className="px-5 pb-5">
-                {itemPending ? (
+                {sheetChoice?.itemId === item.id && !itemPending ? (
+                  /* ── Sheet picker: multi-tab workbooks ── */
+                  <div>
+                    <div className="mb-3 rounded-lg px-3 py-2 text-sm" style={{ background: "var(--warning-tint)", color: "var(--warning-strong)" }}>
+                      &ldquo;{sheetChoice.filename}&rdquo; has {sheetChoice.sheets.length} tabs — which one holds this data?
+                    </div>
+                    <div className="space-y-2">
+                      {sheetChoice.sheets.map((sh) => (
+                        <button
+                          key={sh.name}
+                          disabled={busy}
+                          className="flex w-full items-center justify-between rounded-lg px-4 py-3 text-left text-sm transition-colors hover:opacity-80"
+                          style={{ border: "1px solid var(--divider)", background: "var(--bg)" }}
+                          onClick={() => startMapping(item, sheetChoice.file, `${sheetChoice.filename} — ${sh.name}`, sh.rows)}
+                        >
+                          <span className="font-medium" style={{ color: "var(--text)" }}>{sh.name}</span>
+                          <span className="text-xs" style={{ color: "var(--text-muted)" }}>
+                            {sh.rows.length} row{sh.rows.length !== 1 ? "s" : ""} · {Object.keys(sh.rows[0] ?? {}).slice(0, 3).join(", ")}…
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                    <button className="mt-3 text-xs underline" style={{ color: "var(--text-muted)" }} onClick={() => setSheetChoice(null)} disabled={busy}>
+                      Choose a different file
+                    </button>
+                  </div>
+                ) : itemPending ? (
                   /* ── Confirm-mapping screen ── */
                   <div>
                     <div

@@ -245,7 +245,11 @@ export default async function ClientWorkspacePage({
                         <div>
                           <p className="text-sm" style={{ color: "var(--text)" }}>{req.description}</p>
                           <p className="mt-0.5 text-xs" style={{ color: "var(--text-muted)" }}>
-                            {req.dueDate ? `Due ${req.dueDate} · ` : ""}sent {new Date(req.createdAt).toLocaleDateString()}
+                            {req.dueDate ? `Due ${req.dueDate} · ` : ""}
+                            {companyRow.clientContactEmail
+                              ? `emailed to ${companyRow.clientContactEmail} `
+                              : "created (no contact email — share the link manually) "}
+                            {new Date(req.createdAt).toLocaleDateString()}
                             {lastReminder ? ` · day-${lastReminder} reminder sent` : ""}
                           </p>
                         </div>
@@ -275,9 +279,9 @@ export default async function ClientWorkspacePage({
                         ))}
                         {req.token && <PortalLinkButton token={req.token} />}
                         {req.token && req.status === "open" && companyRow.clientContactEmail && (
-                          <form action={resendPortalEmail.bind(null, req.id, id)}>
+                          <form action={resendPortalEmail.bind(null, req.id, id)} title={`Resends the portal link to ${companyRow.clientContactEmail}`}>
                             <button className="rounded-full px-2 py-0.5 text-xs font-medium transition-opacity hover:opacity-70" style={{ background: "var(--primary-tint)", color: "var(--primary)" }}>
-                              ✉ Email link to {companyRow.clientContactEmail}
+                              ↻ Resend email
                             </button>
                           </form>
                         )}

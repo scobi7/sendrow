@@ -31,9 +31,14 @@ export function DataRequestForm({ companyId, consultantId }: { companyId: string
 
   if (!open) {
     return (
-      <button className="btn btn-secondary text-sm" onClick={() => setOpen(true)}>
-        + New request
-      </button>
+      <div className="flex items-center gap-3">
+        <button className="btn btn-secondary text-sm" onClick={() => setOpen(true)}>
+          + New request
+        </button>
+        <span className="text-xs" style={{ color: "var(--text-muted)" }}>
+          Creating a request automatically emails the secure portal link to your client contact.
+        </span>
+      </div>
     );
   }
 
