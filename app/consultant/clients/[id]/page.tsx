@@ -8,7 +8,7 @@ import { loadCompany } from "@/lib/store";
 import { combinedTotals } from "@/lib/calc";
 import { auditForCompany } from "@/lib/audit";
 import { archiveClient, updateClientContact } from "@/lib/actions";
-import { resendPortalEmail, createShareLink, revokeShareLink, createSnapshot, shareSnapshot, convertDollarFuel } from "@/lib/consultant-actions";
+import { resendPortalEmail, renewPortalLink, createShareLink, revokeShareLink, createSnapshot, shareSnapshot, convertDollarFuel } from "@/lib/consultant-actions";
 import { isDollarFuelRow, fuelKindOf } from "@/lib/ledger";
 import { periodTotals, yoyDelta } from "@/lib/period";
 import { SessionActions } from "./session-actions";
@@ -141,6 +141,9 @@ export default async function ClientWorkspacePage({
         <div className="flex items-center gap-3">
           <Link href={`/consultant/clients/${id}/ledger`} className="btn btn-primary text-sm">
             Data Ledger
+          </Link>
+          <Link href={`/consultant/clients/${id}/activity`} className="btn btn-secondary text-sm">
+            Activity
           </Link>
           <Link href={`/consultant/clients/${id}/manage`} className="btn btn-secondary text-sm">
             Enter data on behalf
@@ -295,12 +298,16 @@ export default async function ClientWorkspacePage({
                         <div>
                           <p className="text-sm" style={{ color: "var(--text)" }}>{req.description}</p>
                           <p className="mt-0.5 text-xs" style={{ color: "var(--text-muted)" }}>
+                            {req.periodLabel ? `Covers ${req.periodLabel} · ` : ""}
                             {req.dueDate ? `Due ${req.dueDate} · ` : ""}
                             {companyRow.clientContactEmail
                               ? `emailed to ${companyRow.clientContactEmail} `
                               : "created (no contact email — share the link manually) "}
                             {new Date(req.createdAt).toLocaleDateString()}
                             {lastReminder ? ` · day-${lastReminder} reminder sent` : ""}
+                            {req.expiresAt && new Date(req.expiresAt) < new Date() && req.status === "open" && (
+                              <span style={{ color: "var(--danger)" }}> · link expired</span>
+                            )}
                           </p>
                         </div>
                         <span
@@ -338,6 +345,13 @@ export default async function ClientWorkspacePage({
                           </span>
                         ))}
                         {req.token && <PortalLinkButton token={req.token} />}
+                        {req.token && req.status === "open" && req.expiresAt && new Date(req.expiresAt) < new Date() && (
+                          <form action={renewPortalLink.bind(null, req.id, id)}>
+                            <button className="rounded-full px-2 py-0.5 text-xs font-medium transition-opacity hover:opacity-70" style={{ background: "var(--danger-tint)", color: "var(--danger)" }}>
+                              ↻ Renew link (30 days)
+                            </button>
+                          </form>
+                        )}
                         {req.token && req.status === "open" && companyRow.clientContactEmail && (
                           <form action={resendPortalEmail.bind(null, req.id, id)} title={`Resends the portal link to ${companyRow.clientContactEmail}`}>
                             <button className="rounded-full px-2 py-0.5 text-xs font-medium transition-opacity hover:opacity-70" style={{ background: "var(--primary-tint)", color: "var(--primary)" }}>

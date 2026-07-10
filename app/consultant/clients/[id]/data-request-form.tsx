@@ -11,6 +11,8 @@ export function DataRequestForm({ companyId, consultantId }: { companyId: string
   const [open, setOpen] = useState(false);
   const [description, setDescription] = useState("");
   const [dueDate, setDueDate] = useState("");
+  const [period, setPeriod] = useState("");
+  const [customPeriod, setCustomPeriod] = useState("");
   const [types, setTypes] = useState<DataType[]>([]);
   const [isPending, startTransition] = useTransition();
 
@@ -18,12 +20,23 @@ export function DataRequestForm({ companyId, consultantId }: { companyId: string
     setTypes((prev) => (prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]));
   }
 
+  const year = new Date().getFullYear();
+  const PERIOD_PRESETS = [
+    `Calendar year ${year - 1}`,
+    `Calendar year ${year} (year to date)`,
+    `Q1 ${year}`,
+    `Q2 ${year}`,
+  ];
+
   function submit() {
     if (!description.trim()) return;
+    const periodLabel = period === "custom" ? customPeriod : period;
     startTransition(async () => {
-      await createDataRequest(companyId, consultantId, description, dueDate || null, types);
+      await createDataRequest(companyId, consultantId, description, dueDate || null, types, periodLabel || null);
       setDescription("");
       setDueDate("");
+      setPeriod("");
+      setCustomPeriod("");
       setTypes([]);
       setOpen(false);
     });
@@ -77,9 +90,30 @@ export function DataRequestForm({ companyId, consultantId }: { companyId: string
           None selected = a single item using your description above.
         </p>
       </div>
-      <div>
-        <label className="label">Due date (optional)</label>
-        <input type="date" className="input text-sm" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
+      <div className="flex flex-wrap gap-4">
+        <div>
+          <label className="label">Data covers (time period)</label>
+          <select className="input text-sm" value={period} onChange={(e) => setPeriod(e.target.value)}>
+            <option value="">Not specified</option>
+            {PERIOD_PRESETS.map((p) => (
+              <option key={p} value={p}>{p}</option>
+            ))}
+            <option value="custom">Custom…</option>
+          </select>
+          {period === "custom" && (
+            <input
+              className="input mt-2 text-sm"
+              placeholder="e.g. Jul 2025 – Jun 2026"
+              value={customPeriod}
+              onChange={(e) => setCustomPeriod(e.target.value)}
+              autoFocus
+            />
+          )}
+        </div>
+        <div>
+          <label className="label">Due date (optional)</label>
+          <input type="date" className="input text-sm" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
+        </div>
       </div>
       <div className="flex gap-2">
         <button className="btn btn-primary text-sm" disabled={isPending || !description.trim()} onClick={submit}>

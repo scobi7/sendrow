@@ -5,6 +5,7 @@ import { companies, consultantClients, dataRequests, userCompanies } from "@/lib
 import { portalTokenValid } from "@/lib/portal";
 import type { ChecklistItem } from "@/lib/portal";
 import { sendClientStuckEmail } from "@/lib/email";
+import { logEvent } from "@/lib/events";
 
 /** "I'm stuck — ask my consultant" (Plan T5.2): turns silent abandonment into
  *  an actionable flag. Token is the auth. */
@@ -49,5 +50,6 @@ export async function POST(request: NextRequest) {
     }
   }
 
+  logEvent({ companyId: dataRequest.companyId, actor: `portal:${dataRequest.id}`, actorType: "supplier", verb: "client.stuck", subject: item.label, subjectId: itemId, meta: { message } });
   return NextResponse.json({ ok: true });
 }

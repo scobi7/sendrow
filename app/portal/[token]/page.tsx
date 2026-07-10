@@ -1,10 +1,12 @@
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { dataRequests, companies } from "@/lib/db/schema";
+import { dataRequests, companies, emissionLineItems } from "@/lib/db/schema";
+import { desc, and } from "drizzle-orm";
 import { portalTokenValid } from "@/lib/portal";
 import type { ChecklistItem } from "@/lib/portal";
 import { PortalChecklist } from "./portal-checklist";
 import { getBrandForCompany } from "@/lib/branding";
+import { RequestNewLink } from "./request-new-link";
 
 export default async function PortalPage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
@@ -20,16 +22,37 @@ export default async function PortalPage({ params }: { params: Promise<{ token: 
           This link has expired
         </h1>
         <p className="mt-2 text-sm" style={{ color: "var(--text-muted)" }}>
-          Data upload links are valid for 30 days. Please ask your consultant to send a new one.
+          Data upload links are valid for 30 days — but getting a fresh one takes a single click.
         </p>
+        <RequestNewLink token={token} />
       </main>
     );
   }
 
-  const [[company], brand] = await Promise.all([
+  const [[company], brand, priorRows] = await Promise.all([
     db.select({ name: companies.name }).from(companies).where(eq(companies.id, request.companyId)),
     getBrandForCompany(request.companyId),
+    // Prefill from last time (U1.4): the supplier's most recent approved rows
+    db
+      .select({
+        activityDate: emissionLineItems.activityDate,
+        rawValue: emissionLineItems.rawValue,
+        rawUnit: emissionLineItems.rawUnit,
+        calcLog: emissionLineItems.calcLog,
+        period: emissionLineItems.period,
+      })
+      .from(emissionLineItems)
+      .where(and(eq(emissionLineItems.companyId, request.companyId), eq(emissionLineItems.status, "mapped")))
+      .orderBy(desc(emissionLineItems.createdAt))
+      .limit(24),
   ]);
+  const prefill = priorRows.map((r) => ({
+    date: r.activityDate ?? "",
+    activity: String((r.calcLog as { activity_type?: string } | null)?.activity_type ?? ""),
+    quantity: String(Number(r.rawValue)),
+    unit: r.rawUnit,
+    period: r.period,
+  }));
   const checklist = (request.checklist as ChecklistItem[] | null) ?? [];
   const received = checklist.filter((i) => i.status === "received").length;
 
@@ -60,6 +83,11 @@ export default async function PortalPage({ params }: { params: Promise<{ token: 
           {company?.name ?? "your company"}
         </h1>
         <p className="mt-2 text-sm" style={{ color: "var(--text-muted)" }}>{request.description}</p>
+        {request.periodLabel && (
+          <p className="mt-1 text-sm font-medium" style={{ color: "var(--text)" }}>
+            📅 Data should cover: {request.periodLabel}
+          </p>
+        )}
         {request.dueDate && (
           <p className="mt-1 text-sm font-medium" style={{ color: "var(--warning)" }}>Due {request.dueDate}</p>
         )}
@@ -77,7 +105,7 @@ export default async function PortalPage({ params }: { params: Promise<{ token: 
           <p className="mb-4 text-sm" style={{ color: "var(--text-muted)" }}>
             {received} of {checklist.length} item{checklist.length !== 1 ? "s" : ""} received. No account needed — this page is your secure upload link.
           </p>
-          <PortalChecklist token={token} items={checklist} />
+          <PortalChecklist token={token} items={checklist} prefill={prefill} />
         </>
       )}
     </main>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import * as XLSX from "xlsx";
 import type { ChecklistItem } from "@/lib/portal";
@@ -57,7 +57,17 @@ function guessKind(text: string): string {
   return "other";
 }
 
-export function PortalChecklist({ token, items }: { token: string; items: ChecklistItem[] }) {
+export type PrefillRow = { date: string; activity: string; quantity: string; unit: string; period: string | null };
+
+export function PortalChecklist({
+  token,
+  items,
+  prefill = [],
+}: {
+  token: string;
+  items: ChecklistItem[];
+  prefill?: PrefillRow[];
+}) {
   const router = useRouter();
   const [openItem, setOpenItem] = useState<string | null>(null);
   const [mode, setMode] = useState<"upload" | "entry" | "guided">("upload");
@@ -70,6 +80,38 @@ export function PortalChecklist({ token, items }: { token: string; items: Checkl
   const [stuckOpen, setStuckOpen] = useState<string | null>(null);
   const [stuckMsg, setStuckMsg] = useState("");
   const [stuckSent, setStuckSent] = useState<string | null>(null);
+  const [draftRestored, setDraftRestored] = useState(false);
+  const [prefillUsed, setPrefillUsed] = useState(false);
+  const draftKey = `sendrow-draft-${token}`;
+
+  // Save & resume (U1.6): suppliers fill these out in stolen moments —
+  // losing work once means they never come back.
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(draftKey);
+      if (saved) {
+        const parsed = JSON.parse(saved) as EntryRow[];
+        if (Array.isArray(parsed) && parsed.some((r) => r.quantity?.trim())) {
+          setRows(parsed);
+          setDraftRestored(true);
+        }
+      }
+    } catch {
+      /* corrupted draft — start fresh */
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    try {
+      if (rows.some((r) => r.quantity.trim() !== "")) {
+        localStorage.setItem(draftKey, JSON.stringify(rows));
+      }
+    } catch {
+      /* storage full/blocked — non-fatal */
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rows]);
 
   async function fetchSuggestion(item: ChecklistItem, headers: string[]): Promise<MappingSuggestion> {
     const res = await fetch("/api/portal/mapping-preview", {
@@ -123,6 +165,9 @@ export function PortalChecklist({ token, items }: { token: string; items: Checkl
       );
       setOpenItem(null);
       setPending(null);
+      try {
+        localStorage.removeItem(draftKey);
+      } catch { /* noop */ }
       router.refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong — please try again.");
@@ -367,6 +412,39 @@ export function PortalChecklist({ token, items }: { token: string; items: Checkl
                           }
                         }}
                       >
+                        {draftRestored && (
+                          <p className="mb-2 rounded-lg px-3 py-2 text-xs" style={{ background: "var(--primary-tint)", color: "var(--primary)" }}>
+                            ✓ Picked up where you left off — your draft was saved automatically.
+                          </p>
+                        )}
+                        {prefill.length > 0 && !prefillUsed && (
+                          <div className="mb-2 flex items-center justify-between rounded-lg px-3 py-2" style={{ background: "var(--warning-tint)" }}>
+                            <p className="text-xs" style={{ color: "var(--warning-strong)" }}>
+                              You submitted {prefill.length} entries last time{prefill[0]?.period ? ` (${prefill[0].period})` : ""}.
+                              Start from those and just update what changed?
+                            </p>
+                            <button
+                              className="btn btn-secondary ml-3 shrink-0 px-2.5 py-1 text-xs"
+                              onClick={() => {
+                                setRows(
+                                  prefill.map((p) => ({
+                                    date: (p.date.match(/^\d{4}-\d{2}/) ? p.date.slice(0, 7) : ""),
+                                    kind: guessKind(`${p.activity} ${p.unit}`),
+                                    quantity: p.quantity,
+                                  }))
+                                );
+                                setPrefillUsed(true);
+                              }}
+                            >
+                              Use last submission
+                            </button>
+                          </div>
+                        )}
+                        {prefillUsed && (
+                          <p className="mb-2 rounded-lg px-3 py-2 text-xs" style={{ background: "var(--warning-tint)", color: "var(--warning-strong)" }}>
+                            From your last submission — <strong>confirm or update</strong> each number before submitting.
+                          </p>
+                        )}
                         <p className="mb-2 text-xs" style={{ color: "var(--text-muted)" }}>
                           Tip: copy rows straight from your spreadsheet and paste anywhere below.
                         </p>

@@ -217,3 +217,41 @@ export async function sendClientStuckEmail(
 <p>— The Sendrow team</p>`
   );
 }
+
+export async function sendNewLinkRequestEmail(
+  consultantEmail: string,
+  consultantName: string,
+  companyName: string,
+  requestDescription: string,
+  companyId: string
+) {
+  await send(
+    consultantEmail,
+    `${companyName} needs a new upload link`,
+    `<p>Hi ${consultantName.split(" ")[0]},</p>
+<p><strong>${companyName}</strong> tried to open an expired upload link for the request
+&ldquo;${requestDescription}&rdquo; and asked for a new one.</p>
+<p><a href="${APP_URL}/consultant/clients/${companyId}">Open the client — the &ldquo;Renew link&rdquo; button is on the request →</a></p>
+<p>— The Sendrow team</p>`
+  );
+}
+
+export async function sendCommentEmail(
+  clientEmail: string,
+  clientName: string,
+  companyName: string,
+  lineLabel: string,
+  body: string,
+  brand?: { brandName: string; replyTo: string | null } | null
+) {
+  await send(
+    clientEmail,
+    `Question about your ${companyName} data`,
+    `<p>Hi ${clientName.split(" ")[0]},</p>
+<p>Your reviewer left a note on <strong>${lineLabel}</strong>:</p>
+<blockquote><p>${body}</p></blockquote>
+<p>You can reply to this email directly.</p>
+${brand ? `<p>— ${brand.brandName}</p>` : ""}`,
+    brand ? { fromName: brand.brandName, replyTo: brand.replyTo } : undefined
+  );
+}

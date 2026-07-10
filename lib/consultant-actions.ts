@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { and, eq, isNull } from "drizzle-orm";
 import { db } from "./db";
-import { companies, consultantClients, consultantProfiles, shareLinks, snapshots, userCompanies, intakeSessions, dataRequests, pipelineStatus, vendorMappings, emissionLineItems } from "./db/schema";
+import { companies, comments, consultantClients, consultantProfiles, shareLinks, snapshots, userCompanies, intakeSessions, dataRequests, pipelineStatus, vendorMappings, emissionLineItems } from "./db/schema";
 import { normalizeVendor, matchVendor, VENDOR_CONFIRM_OPTIONS, getVendorMappingsFromDb } from "./vendor-mappings";
 import { rowToLineItem } from "./ingestion/ingest";
 import { recomputeLineItem, excludeLineItem, convertDollarFuelItem, isDollarFuelRow } from "./ledger";
@@ -19,9 +19,10 @@ import { logChange } from "./audit";
 import { Company, User } from "./types";
 import { sendDataRequestEmail } from "./email";
 import { getBrandForCompany } from "./branding";
+import { logEvent } from "./events";
 import { snapshotHash, restatementDiff } from "./snapshots";
 import type { SnapshotTotals } from "./snapshots";
-import { sendRestatementEmail } from "./email";
+import { sendRestatementEmail, sendCommentEmail } from "./email";
 import { combinedTotals as computeTotals } from "./calc";
 import { desc } from "drizzle-orm";
 import { generatePortalToken, portalExpiry, buildChecklist } from "./portal";
@@ -150,6 +151,7 @@ export async function approveSession(sessionId: string, companyId: string) {
   const user = await currentUser();
   if (!user || user.role !== "consultant") return;
   await db.update(intakeSessions).set({ status: "approved", reviewedAt: new Date().toISOString() }).where(eq(intakeSessions.id, sessionId));
+  logEvent({ companyId, actor: user.id, actorType: "consultant", verb: "session.approved", subject: sessionId, subjectId: sessionId });
   await db
     .insert(pipelineStatus)
     .values({ companyId, status: "in_progress", updatedAt: new Date().toISOString() })
@@ -178,6 +180,7 @@ export async function rejectSession(sessionId: string, companyId: string) {
   if (!session || session.companyId !== companyId) return;
 
   await db.update(intakeSessions).set({ status: "rejected", reviewedAt: new Date().toISOString() }).where(eq(intakeSessions.id, sessionId));
+  logEvent({ companyId, actor: user.id, actorType: "consultant", verb: "session.rejected", subject: session.filename, subjectId: sessionId });
 
   // A rejected upload's rows leave all totals — excluded, never deleted (no silent drops)
   if (session.mappingProfileId) {
@@ -203,26 +206,30 @@ export async function createDataRequest(
   consultantId: string,
   description: string,
   dueDate: string | null,
-  checklistTypes: DataType[] = []
+  checklistTypes: DataType[] = [],
+  periodLabel: string | null = null
 ) {
   const user = await currentUser();
   if (!user || user.role !== "consultant") return;
   if (!description.trim()) return;
 
   const token = generatePortalToken();
+  const requestId = newId("dr");
   await db.insert(dataRequests).values({
-    id: newId("dr"),
+    id: requestId,
     companyId,
     requestedBy: consultantId,
     description: description.trim(),
     status: "open",
     dueDate: dueDate || null,
+    periodLabel: periodLabel?.trim() || null,
     createdAt: new Date().toISOString(),
     token,
     expiresAt: portalExpiry(),
     checklist: buildChecklist(checklistTypes, description.trim()),
     remindersSentAt: {},
   });
+  logEvent({ companyId, actor: user.id, actorType: "consultant", verb: "request.created", subject: description.trim(), subjectId: requestId, meta: { dueDate, periodLabel } });
 
   // Notify the client — fire-and-forget so email failures never block the request
   notifyClientOfDataRequest(companyId, description.trim(), dueDate || null, token).catch(() => {});
@@ -254,6 +261,24 @@ export async function resendPortalEmail(requestId: string, companyId: string) {
   const req = await db.query.dataRequests.findFirst({ where: eq(dataRequests.id, requestId) });
   if (!req?.token || req.status !== "open" || req.companyId !== companyId) return;
   await notifyClientOfDataRequest(companyId, req.description, req.dueDate, req.token);
+  revalidatePath(`/consultant/clients/${companyId}`);
+}
+
+/** Issues a fresh 30-day link for an expired/stale request and emails it —
+ *  the other half of the expired page's "request a new link" (U1.2). */
+export async function renewPortalLink(requestId: string, companyId: string) {
+  const user = await currentUser();
+  if (!user || user.role !== "consultant") return;
+  const req = await db.query.dataRequests.findFirst({ where: eq(dataRequests.id, requestId) });
+  if (!req || req.companyId !== companyId || req.status === "cancelled") return;
+
+  const token = generatePortalToken();
+  await db
+    .update(dataRequests)
+    .set({ token, expiresAt: portalExpiry(), status: "open" })
+    .where(eq(dataRequests.id, requestId));
+  logEvent({ companyId, actor: user.id, actorType: "consultant", verb: "request.renewed", subject: req.description, subjectId: requestId });
+  notifyClientOfDataRequest(companyId, req.description, req.dueDate, token).catch(() => {});
   revalidatePath(`/consultant/clients/${companyId}`);
 }
 
@@ -311,6 +336,8 @@ export async function confirmVendorMapping(companyId: string, vendorRaw: string,
       timesApplied: 0,
     });
   }
+
+  logEvent({ companyId, actor: user.id, actorType: "consultant", verb: "vendor.confirmed", subject: vendorRaw, subjectId: mappingId, meta: { option: optionKey, scope: scopeChoice } });
 
   // Remap this company's flagged rows that match the confirmed vendor
   const [factors, flagged] = await Promise.all([
@@ -440,6 +467,7 @@ export async function revokeShareLink(token: string, companyId: string) {
     .update(shareLinks)
     .set({ revokedAt: new Date().toISOString() })
     .where(and(eq(shareLinks.token, token), eq(shareLinks.companyId, companyId)));
+  logEvent({ companyId, actor: user.id, actorType: "consultant", verb: "share.revoked", subject: token.slice(0, 8) + "…" });
   revalidatePath(`/consultant/clients/${companyId}`);
 }
 
@@ -479,6 +507,7 @@ export async function recategorizeLineItem(companyId: string, itemId: string, op
     { scope: option.scope, category: option.category, editedBy: ctx.user.id, reason: `Recategorized to "${option.label}"` }
   );
   await db.update(emissionLineItems).set(patch).where(eq(emissionLineItems.id, itemId));
+  logEvent({ companyId, actor: ctx.user.id, actorType: "consultant", verb: "item.recategorized", subject: ctx.item.sourceRef || itemId, subjectId: itemId, meta: { option: optionKey } });
   revalidatePath(`/consultant/clients/${companyId}`);
 }
 
@@ -503,6 +532,7 @@ export async function editLineItemQuantity(companyId: string, itemId: string, fo
     .update(emissionLineItems)
     .set({ ...patch, rawValue: quantity.toFixed(4) })
     .where(eq(emissionLineItems.id, itemId));
+  logEvent({ companyId, actor: ctx.user.id, actorType: "consultant", verb: "item.quantity_edited", subject: ctx.item.sourceRef || itemId, subjectId: itemId, meta: { from: ctx.item.rawValue, to: quantity } });
   revalidatePath(`/consultant/clients/${companyId}`);
 }
 
@@ -516,6 +546,7 @@ export async function excludeLineItemAction(companyId: string, itemId: string) {
     "Excluded by consultant in ledger"
   );
   await db.update(emissionLineItems).set(patch).where(eq(emissionLineItems.id, itemId));
+  logEvent({ companyId, actor: ctx.user.id, actorType: "consultant", verb: "item.excluded", subject: ctx.item.sourceRef || itemId, subjectId: itemId });
   revalidatePath(`/consultant/clients/${companyId}`);
 }
 
@@ -526,6 +557,7 @@ export async function restoreLineItem(companyId: string, itemId: string) {
   const log = (ctx.item.calcLog as { exclusion?: { previous_status?: string } }) ?? {};
   const previous = log.exclusion?.previous_status === "mapped" ? "mapped" : "unmapped";
   await db.update(emissionLineItems).set({ status: previous }).where(eq(emissionLineItems.id, itemId));
+  logEvent({ companyId, actor: ctx.user.id, actorType: "consultant", verb: "item.restored", subject: ctx.item.sourceRef || itemId, subjectId: itemId });
   revalidatePath(`/consultant/clients/${companyId}`);
 }
 
@@ -625,6 +657,7 @@ export async function createSnapshot(companyId: string, formData: FormData) {
     }
   }
 
+  logEvent({ companyId, actor: user.id, actorType: "consultant", verb: "snapshot.created", subject: label, subjectId: id, meta: { items: frozenItems.length } });
   revalidatePath(`/consultant/clients/${companyId}`);
 }
 
@@ -648,6 +681,7 @@ export async function shareSnapshot(companyId: string, snapshotId: string, formD
     createdBy: user.id,
     createdAt: new Date().toISOString(),
   });
+  logEvent({ companyId, actor: user.id, actorType: "consultant", verb: "snapshot.shared", subject: snap.label, subjectId: snapshotId, meta: { recipient: recipientLabel || recipientEmail || "link only" } });
   revalidatePath(`/consultant/clients/${companyId}`);
 }
 
@@ -687,6 +721,105 @@ export async function convertDollarFuel(companyId: string, formData: FormData) {
     if (!patch) continue;
     await db.update(emissionLineItems).set(patch).where(eq(emissionLineItems.id, item.id));
   }
+  logEvent({ companyId, actor: user.id, actorType: "consultant", verb: "fuel.converted", subject: "dollar-fuel conversion", meta: prices });
   revalidatePath(`/consultant/clients/${companyId}`);
   revalidatePath(`/consultant/clients/${companyId}/ledger`);
+}
+
+// ─────────── U1.5 / U1.7 / U1.8 — comments, estimate→actual, extra evidence ───────────
+
+/** Adds a comment pinned to a line item and emails the client contact (U1.5). */
+export async function addLineItemComment(companyId: string, itemId: string, formData: FormData) {
+  const ctx = await ledgerGuard(companyId, itemId);
+  if (!ctx) return;
+  const body = String(formData.get("body") ?? "").trim().slice(0, 2000);
+  if (!body) return;
+
+  await db.insert(comments).values({
+    id: newId("cm"),
+    companyId,
+    lineItemId: itemId,
+    author: ctx.user.id,
+    authorType: "consultant",
+    body,
+    createdAt: new Date().toISOString(),
+  });
+  logEvent({ companyId, actor: ctx.user.id, actorType: "consultant", verb: "comment.added", subject: ctx.item.sourceRef || itemId, subjectId: itemId, meta: { body: body.slice(0, 140) } });
+
+  const [company, brand] = await Promise.all([
+    db.query.companies.findFirst({ where: eq(companies.id, companyId) }),
+    getBrandForCompany(companyId),
+  ]);
+  if (company?.clientContactEmail) {
+    sendCommentEmail(
+      company.clientContactEmail,
+      company.clientContactName ?? "there",
+      company.name,
+      ctx.item.sourceRef || "a data line",
+      body,
+      brand
+    ).catch(() => {});
+  }
+  revalidatePath(`/consultant/clients/${companyId}/ledger`);
+}
+
+/** Marks an estimated value as actual, optionally correcting the quantity (U1.7). */
+export async function markLineItemActual(companyId: string, itemId: string, formData: FormData) {
+  const ctx = await ledgerGuard(companyId, itemId);
+  if (!ctx) return;
+  const raw = String(formData.get("quantity") ?? "").trim();
+  const quantity = raw ? parseFloat(raw) : null;
+
+  if (quantity !== null && !isNaN(quantity) && quantity >= 0 && ctx.item.factorId) {
+    const factors = await getFactorsFromDb();
+    const factor = lookupFactor(factors, { factorId: ctx.item.factorId });
+    if (factor) {
+      const patch = recomputeLineItem(
+        { ...ctx.item, calcLog: (ctx.item.calcLog as Record<string, unknown>) ?? {} },
+        factor,
+        { quantity, editedBy: ctx.user.id, reason: `Estimate replaced with actual (${ctx.item.rawValue} → ${quantity})` }
+      );
+      await db
+        .update(emissionLineItems)
+        .set({ ...patch, rawValue: quantity.toFixed(4), confidence: "actual" })
+        .where(eq(emissionLineItems.id, itemId));
+    }
+  } else {
+    await db.update(emissionLineItems).set({ confidence: "actual" }).where(eq(emissionLineItems.id, itemId));
+  }
+  logEvent({ companyId, actor: ctx.user.id, actorType: "consultant", verb: "item.marked_actual", subject: ctx.item.sourceRef || itemId, subjectId: itemId });
+  revalidatePath(`/consultant/clients/${companyId}/ledger`);
+  revalidatePath(`/consultant/clients/${companyId}`);
+}
+
+/** Attaches an additional source document to a specific row (U1.8). */
+export async function attachEvidenceToItem(companyId: string, itemId: string, formData: FormData) {
+  const ctx = await ledgerGuard(companyId, itemId);
+  if (!ctx) return;
+  const file = formData.get("file");
+  if (!(file instanceof File) || file.size === 0) return;
+
+  const { storeEvidence } = await import("./evidence");
+  const evidenceId = await storeEvidence({
+    bytes: Buffer.from(await file.arrayBuffer()),
+    filename: file.name,
+    companyId,
+    uploadedVia: "consultant_upload",
+  });
+
+  const log = (ctx.item.calcLog as Record<string, unknown>) ?? {};
+  const extra = Array.isArray(log.extra_evidence) ? (log.extra_evidence as string[]) : [];
+  await db
+    .update(emissionLineItems)
+    .set({ calcLog: { ...log, extra_evidence: [...extra, evidenceId] } })
+    .where(eq(emissionLineItems.id, itemId));
+  logEvent({ companyId, actor: ctx.user.id, actorType: "consultant", verb: "evidence.attached", subject: file.name, subjectId: itemId });
+  revalidatePath(`/consultant/clients/${companyId}/ledger`);
+}
+
+/** Comments for a set of line items — read side for the ledger. */
+export async function getCommentsForCompany(companyId: string) {
+  const user = await currentUser();
+  if (!user || user.role !== "consultant") return [];
+  return db.select().from(comments).where(eq(comments.companyId, companyId));
 }

@@ -10,6 +10,7 @@ import { fuzzyMatchHeaders } from "./fuzzy-match";
 import { scoreSession } from "./session-score";
 import { checklistComplete } from "@/lib/portal";
 import { periodForDate } from "@/lib/period";
+import { logEvent } from "@/lib/events";
 import { companies } from "@/lib/db/schema";
 import type { ChecklistItem } from "@/lib/portal";
 import type { ColumnMap, FuelPrices } from "./ingest";
@@ -164,6 +165,16 @@ export async function processImport(input: ImportInput): Promise<ImportOutcome> 
         setWhere: eq(pipelineStatus.status, "not_started"),
       });
   }
+
+  logEvent({
+    companyId,
+    actor: uploadedBy,
+    actorType: uploadedBy.startsWith("portal:") ? "supplier" : "consultant",
+    verb: uploadedBy.startsWith("portal:") && filename === "manual entry" ? "entry.received" : "upload.received",
+    subject: filename,
+    subjectId: sessionId,
+    meta: { rows: inserts.length, unmapped: unmappedCount, autoApproved },
+  });
 
   if (input.dataRequestId) {
     await markChecklistItemReceived(input.dataRequestId, input.checklistItemId ?? null);

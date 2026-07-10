@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { and, desc, eq, isNull } from "drizzle-orm";
 import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { companies, consultantClients, emissionLineItems, intakeSessions } from "@/lib/db/schema";
+import { companies, comments, consultantClients, emissionLineItems, intakeSessions } from "@/lib/db/schema";
 import { LedgerRow } from "./ledger-row";
 
 const FILTERS = ["all", "mapped", "unmapped", "excluded"] as const;
@@ -32,7 +32,7 @@ export default async function LedgerPage({
   });
   if (!link) notFound();
 
-  const [company, items, sessions] = await Promise.all([
+  const [company, items, sessions, allComments] = await Promise.all([
     db.query.companies.findFirst({ where: eq(companies.id, id) }),
     db
       .select()
@@ -44,6 +44,7 @@ export default async function LedgerPage({
       .from(intakeSessions)
       .where(eq(intakeSessions.companyId, id))
       .orderBy(desc(intakeSessions.createdAt)),
+    db.select().from(comments).where(eq(comments.companyId, id)),
   ]);
   if (!company) notFound();
 
@@ -140,7 +141,11 @@ export default async function LedgerPage({
             <tbody>
               {displayed.map((item) => {
                 const session = item.mappingProfileId ? sessionByProfile.get(item.mappingProfileId) : undefined;
-                const log = item.calcLog as { evidence_id?: string; reason?: string } | null;
+                const log = item.calcLog as { evidence_id?: string; reason?: string; extra_evidence?: string[] } | null;
+                const itemComments = allComments
+                  .filter((c) => c.lineItemId === item.id)
+                  .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+                  .map((c) => ({ id: c.id, body: c.body, authorType: c.authorType, createdAt: c.createdAt }));
                 return (
                   <LedgerRow
                     key={item.id}
@@ -156,8 +161,11 @@ export default async function LedgerPage({
                       co2eKg: item.co2eKg,
                       status: item.status,
                       period: item.period,
+                      confidence: item.confidence,
                       flagReason: log?.reason ?? null,
                     }}
+                    comments={itemComments}
+                    extraEvidence={log?.extra_evidence ?? []}
                     evidenceId={log?.evidence_id ?? session?.evidenceId ?? null}
                     uploadName={session?.filename ?? null}
                     uploadHref={item.mappingProfileId ? `/consultant/clients/${id}/ledger?upload=${item.mappingProfileId}` : null}

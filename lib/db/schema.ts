@@ -98,6 +98,33 @@ export const utilityData = pgTable("gt_utility_data", {
   therms: numeric("therms", { precision: 14, scale: 2 }).notNull().default("0"),
 });
 
+/** Unified immutable event log (pipeline Ground Rule 3): every create /
+ *  approve / share / convert / edit / comment, from day one. Append-only —
+ *  no update or delete path exists in code. */
+export const events = pgTable("gt_events", {
+  id: text("id").primaryKey(),
+  companyId: text("company_id").notNull().references(() => companies.id),
+  actor: text("actor").notNull(),          // clerk id, "portal:<requestId>", or "system"
+  actorType: text("actor_type").notNull(), // consultant | supplier | system
+  verb: text("verb").notNull(),            // request.created, upload.received, session.approved, snapshot.shared…
+  subject: text("subject").notNull(),      // human-readable: filename, request description, snapshot label
+  subjectId: text("subject_id"),
+  meta: jsonb("meta"),
+  ts: text("ts").notNull(),
+});
+
+/** Comment threads pinned to specific data lines (U1.5/#6): the conversation
+ *  lives ON the number, not in an email chain. */
+export const comments = pgTable("gt_comments", {
+  id: text("id").primaryKey(),
+  companyId: text("company_id").notNull().references(() => companies.id),
+  lineItemId: text("line_item_id").notNull(),
+  author: text("author").notNull(),
+  authorType: text("author_type").notNull(), // consultant | supplier
+  body: text("body").notNull(),
+  createdAt: text("created_at").notNull(),
+});
+
 export const auditLog = pgTable("gt_audit_log", {
   id: text("id").primaryKey(),
   ts: text("ts").notNull(),
@@ -244,6 +271,8 @@ export const dataRequests = pgTable("gt_data_requests", {
   description: text("description").notNull(),
   status: text("status").notNull().default("open"),
   dueDate: text("due_date"),
+  // What timeframe the data should cover — "Calendar year 2025", "Q1 2026"…
+  periodLabel: text("period_label"),
   createdAt: text("created_at").notNull(),
   fulfilledAt: text("fulfilled_at"),
   // Magic-link portal (Plan J): client accesses /portal/[token] without login
