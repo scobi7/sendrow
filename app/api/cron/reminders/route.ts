@@ -19,6 +19,8 @@ export async function GET(request: NextRequest) {
       id: r.id,
       status: r.status,
       createdAt: r.createdAt,
+      dueDate: r.dueDate,
+      remindersEnabled: r.remindersEnabled,
       remindersSentAt: r.remindersSentAt as Partial<Record<string, string>> | null,
     }))
   );
@@ -51,7 +53,7 @@ export async function GET(request: NextRequest) {
         company.name,
         req.description,
         req.token,
-        reminder.tier,
+        reminder,
         consultantEmail,
         await getBrandForCompany(req.companyId)
       );

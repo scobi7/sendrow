@@ -33,7 +33,7 @@ describe("review-queue notification emails (Plan I / H17)", () => {
 
   it("sendPortalReminderEmail carries no Sendrow signature (contracts §11)", async () => {
     const { sendPortalReminderEmail } = await import("@/lib/email");
-    await sendPortalReminderEmail("client@acme.com", "Jane", "Acme", "utility bills", "tok_r", 7, null);
+    await sendPortalReminderEmail("client@acme.com", "Jane", "Acme", "utility bills", "tok_r", { tier: "due-2", daysUntilDue: 2 }, null);
     const body = JSON.parse(fetchMock.mock.calls[0][1].body);
     expect(body.html).toContain("/portal/tok_r");
     expect(body.html).not.toContain("Sendrow team");

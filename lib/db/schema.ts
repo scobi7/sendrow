@@ -11,6 +11,8 @@ export const companies = pgTable("gt_companies", {
   // Who receives portal links + reminders (v2: clients have no login)
   clientContactName: text("client_contact_name"),
   clientContactEmail: text("client_contact_email"),
+  // 2-digit NAICS sector — benchmarking prerequisite (#46)
+  naicsCode: text("naics_code"),
   onboardingComplete: boolean("onboarding_complete").notNull().default(false),
   setupComplete: boolean("setup_complete").notNull().default(false),
   createdAt: text("created_at").notNull(),
@@ -189,6 +191,19 @@ export const snapshots = pgTable("gt_snapshots", {
   createdAt: text("created_at").notNull(),
 });
 
+/** Engagement templates (#23): a consultant's standard request package,
+ *  reusable in one click. Stored as config (Ground Rule #1). */
+export const requestTemplates = pgTable("gt_request_templates", {
+  id: text("id").primaryKey(),
+  consultantId: text("consultant_id").notNull(),
+  name: text("name").notNull(),
+  description: text("description").notNull(),
+  dataTypes: jsonb("data_types").notNull().default([]),
+  periodLabel: text("period_label"),
+  dueInDays: integer("due_in_days"),
+  createdAt: text("created_at").notNull(),
+});
+
 export const inviteTokens = pgTable("gt_invite_tokens", {
   token: text("token").primaryKey(),
   consultantId: text("consultant_id").notNull(),
@@ -280,8 +295,10 @@ export const dataRequests = pgTable("gt_data_requests", {
   expiresAt: text("expires_at"),
   // Array of { id, dataType, label, instructions, status: "pending" | "received" }
   checklist: jsonb("checklist"),
-  // ISO timestamps of reminders already sent, keyed by day offset ("3" | "7" | "14")
+  // ISO timestamps of reminders already sent, keyed by tier
   remindersSentAt: jsonb("reminders_sent_at"),
+  // Per-request kill switch for automatic chasing (#21)
+  remindersEnabled: boolean("reminders_enabled").notNull().default(true),
 });
 
 /** Cross-client vendor → category memory (Plan J). Global: one confirmation

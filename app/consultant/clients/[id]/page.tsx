@@ -3,12 +3,12 @@ import { notFound } from "next/navigation";
 import { and, desc, eq, isNull } from "drizzle-orm";
 import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { companies, consultantClients, intakeSessions, dataRequests, pipelineStatus, emissionLineItems, shareLinks, snapshots } from "@/lib/db/schema";
+import { companies, consultantClients, intakeSessions, dataRequests, pipelineStatus, emissionLineItems, shareLinks, snapshots, requestTemplates } from "@/lib/db/schema";
 import { loadCompany } from "@/lib/store";
 import { combinedTotals } from "@/lib/calc";
 import { auditForCompany } from "@/lib/audit";
 import { archiveClient, updateClientContact } from "@/lib/actions";
-import { resendPortalEmail, renewPortalLink, createShareLink, revokeShareLink, createSnapshot, shareSnapshot, convertDollarFuel } from "@/lib/consultant-actions";
+import { resendPortalEmail, renewPortalLink, toggleRequestReminders, createShareLink, revokeShareLink, createSnapshot, shareSnapshot, convertDollarFuel } from "@/lib/consultant-actions";
 import { isDollarFuelRow, fuelKindOf } from "@/lib/ledger";
 import { periodTotals, yoyDelta } from "@/lib/period";
 import { SessionActions } from "./session-actions";
@@ -69,6 +69,8 @@ export default async function ClientWorkspacePage({
     auditForCompany(id),
   ]);
   if (!companyRow || !fullCompany) notFound();
+
+  const templates = await db.select().from(requestTemplates).where(eq(requestTemplates.consultantId, user!.id));
 
   const [activeShare, snapshotList, allShares] = await Promise.all([
     db.query.shareLinks.findFirst({
@@ -352,6 +354,13 @@ export default async function ClientWorkspacePage({
                             </button>
                           </form>
                         )}
+                        {req.status === "open" && (
+                          <form action={toggleRequestReminders.bind(null, req.id, id)} title={req.remindersEnabled ? "Automatic reminders are on — click to pause" : "Reminders paused — click to resume"}>
+                            <button className="rounded-full px-2 py-0.5 text-xs font-medium transition-opacity hover:opacity-70" style={req.remindersEnabled ? { background: "var(--divider)", color: "var(--text-muted)" } : { background: "var(--warning-tint)", color: "var(--warning-strong)" }}>
+                              {req.remindersEnabled ? "🔔 Auto-chasing on" : "🔕 Chasing paused"}
+                            </button>
+                          </form>
+                        )}
                         {req.token && req.status === "open" && companyRow.clientContactEmail && (
                           <form action={resendPortalEmail.bind(null, req.id, id)} title={`Resends the portal link to ${companyRow.clientContactEmail}`}>
                             <button className="rounded-full px-2 py-0.5 text-xs font-medium transition-opacity hover:opacity-70" style={{ background: "var(--primary-tint)", color: "var(--primary)" }}>
@@ -366,7 +375,18 @@ export default async function ClientWorkspacePage({
               </div>
             )}
             <div className="px-5 py-4" style={{ borderTop: "1px solid var(--divider)" }}>
-              <DataRequestForm companyId={id} consultantId={user!.id} />
+              <DataRequestForm
+                companyId={id}
+                consultantId={user!.id}
+                templates={templates.map((t) => ({
+                  id: t.id,
+                  name: t.name,
+                  description: t.description,
+                  dataTypes: (t.dataTypes as string[]) ?? [],
+                  periodLabel: t.periodLabel,
+                  dueInDays: t.dueInDays,
+                }))}
+              />
             </div>
           </div>
 

@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { and, eq, isNull } from "drizzle-orm";
 import { db } from "./db";
-import { companies, comments, consultantClients, consultantProfiles, shareLinks, snapshots, userCompanies, intakeSessions, dataRequests, pipelineStatus, vendorMappings, emissionLineItems } from "./db/schema";
+import { companies, comments, requestTemplates, consultantClients, consultantProfiles, shareLinks, snapshots, userCompanies, intakeSessions, dataRequests, pipelineStatus, vendorMappings, emissionLineItems } from "./db/schema";
 import { normalizeVendor, matchVendor, VENDOR_CONFIRM_OPTIONS, getVendorMappingsFromDb } from "./vendor-mappings";
 import { rowToLineItem } from "./ingestion/ingest";
 import { recomputeLineItem, excludeLineItem, convertDollarFuelItem, isDollarFuelRow } from "./ledger";
@@ -147,9 +147,24 @@ function newId(prefix: string) {
   return prefix + "_" + Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
 }
 
-export async function approveSession(sessionId: string, companyId: string) {
+/** The separation wall (#20): every consultant action passes through here.
+ *  Returns the user only when they own an active link to this company. */
+async function ownsClient(companyId: string): Promise<User | null> {
   const user = await currentUser();
-  if (!user || user.role !== "consultant") return;
+  if (!user || user.role !== "consultant") return null;
+  const link = await db.query.consultantClients.findFirst({
+    where: and(
+      eq(consultantClients.consultantId, user.id),
+      eq(consultantClients.companyId, companyId),
+      isNull(consultantClients.archivedAt)
+    ),
+  });
+  return link ? user : null;
+}
+
+export async function approveSession(sessionId: string, companyId: string) {
+  const user = await ownsClient(companyId);
+  if (!user) return;
   await db.update(intakeSessions).set({ status: "approved", reviewedAt: new Date().toISOString() }).where(eq(intakeSessions.id, sessionId));
   logEvent({ companyId, actor: user.id, actorType: "consultant", verb: "session.approved", subject: sessionId, subjectId: sessionId });
   await db
@@ -164,8 +179,8 @@ export async function approveSession(sessionId: string, companyId: string) {
 }
 
 export async function flagSession(sessionId: string, companyId: string, notes: string) {
-  const user = await currentUser();
-  if (!user || user.role !== "consultant") return;
+  const user = await ownsClient(companyId);
+  if (!user) return;
   await db
     .update(intakeSessions)
     .set({ status: "needs_info", reviewerNotes: notes, reviewedAt: new Date().toISOString() })
@@ -174,8 +189,8 @@ export async function flagSession(sessionId: string, companyId: string, notes: s
 }
 
 export async function rejectSession(sessionId: string, companyId: string) {
-  const user = await currentUser();
-  if (!user || user.role !== "consultant") return;
+  const user = await ownsClient(companyId);
+  if (!user) return;
   const session = await db.query.intakeSessions.findFirst({ where: eq(intakeSessions.id, sessionId) });
   if (!session || session.companyId !== companyId) return;
 
@@ -209,8 +224,8 @@ export async function createDataRequest(
   checklistTypes: DataType[] = [],
   periodLabel: string | null = null
 ) {
-  const user = await currentUser();
-  if (!user || user.role !== "consultant") return;
+  const user = await ownsClient(companyId);
+  if (!user) return;
   if (!description.trim()) return;
 
   const token = generatePortalToken();
@@ -256,8 +271,8 @@ async function notifyClientOfDataRequest(companyId: string, description: string,
 
 /** Re-sends the portal link email for an open request (e.g. after adding a contact email). */
 export async function resendPortalEmail(requestId: string, companyId: string) {
-  const user = await currentUser();
-  if (!user || user.role !== "consultant") return;
+  const user = await ownsClient(companyId);
+  if (!user) return;
   const req = await db.query.dataRequests.findFirst({ where: eq(dataRequests.id, requestId) });
   if (!req?.token || req.status !== "open" || req.companyId !== companyId) return;
   await notifyClientOfDataRequest(companyId, req.description, req.dueDate, req.token);
@@ -267,8 +282,8 @@ export async function resendPortalEmail(requestId: string, companyId: string) {
 /** Issues a fresh 30-day link for an expired/stale request and emails it —
  *  the other half of the expired page's "request a new link" (U1.2). */
 export async function renewPortalLink(requestId: string, companyId: string) {
-  const user = await currentUser();
-  if (!user || user.role !== "consultant") return;
+  const user = await ownsClient(companyId);
+  if (!user) return;
   const req = await db.query.dataRequests.findFirst({ where: eq(dataRequests.id, requestId) });
   if (!req || req.companyId !== companyId || req.status === "cancelled") return;
 
@@ -377,8 +392,8 @@ export async function confirmVendorMapping(companyId: string, vendorRaw: string,
 }
 
 export async function lockPipeline(companyId: string, notes: string) {
-  const user = await currentUser();
-  if (!user || user.role !== "consultant") return;
+  const user = await ownsClient(companyId);
+  if (!user) return;
   await db
     .insert(pipelineStatus)
     .values({ companyId, status: "locked", lockedAt: new Date().toISOString(), lockedBy: user.id, notes: notes || null, updatedAt: new Date().toISOString() })
@@ -461,8 +476,8 @@ export async function createShareLink(companyId: string) {
 }
 
 export async function revokeShareLink(token: string, companyId: string) {
-  const user = await currentUser();
-  if (!user || user.role !== "consultant") return;
+  const user = await ownsClient(companyId);
+  if (!user) return;
   await db
     .update(shareLinks)
     .set({ revokedAt: new Date().toISOString() })
@@ -663,8 +678,8 @@ export async function createSnapshot(companyId: string, formData: FormData) {
 
 /** Shares a specific frozen snapshot — THIS snapshot, to THIS recipient. */
 export async function shareSnapshot(companyId: string, snapshotId: string, formData: FormData) {
-  const user = await currentUser();
-  if (!user || user.role !== "consultant") return;
+  const user = await ownsClient(companyId);
+  if (!user) return;
   const snap = await db.query.snapshots.findFirst({ where: eq(snapshots.id, snapshotId) });
   if (!snap || snap.companyId !== companyId) return;
 
@@ -688,16 +703,8 @@ export async function shareSnapshot(companyId: string, snapshotId: string, formD
 /** Converts all flagged $-fuel rows using consultant-set prices (the judgment
  *  is the price; the math and the audit trail are ours). */
 export async function convertDollarFuel(companyId: string, formData: FormData) {
-  const user = await currentUser();
-  if (!user || user.role !== "consultant") return;
-  const link = await db.query.consultantClients.findFirst({
-    where: and(
-      eq(consultantClients.consultantId, user.id),
-      eq(consultantClients.companyId, companyId),
-      isNull(consultantClients.archivedAt)
-    ),
-  });
-  if (!link) return;
+  const user = await ownsClient(companyId);
+  if (!user) return;
 
   const parse = (k: string) => {
     const n = parseFloat(String(formData.get(k) ?? ""));
@@ -822,4 +829,42 @@ export async function getCommentsForCompany(companyId: string) {
   const user = await currentUser();
   if (!user || user.role !== "consultant") return [];
   return db.select().from(comments).where(eq(comments.companyId, companyId));
+}
+
+// ─────────── U2 — engagement templates & chasing controls ───────────
+
+/** Saves the request setup as a reusable template (#23, config not code). */
+export async function saveRequestTemplate(formData: FormData) {
+  const user = await currentUser();
+  if (!user || user.role !== "consultant") return;
+  const name = String(formData.get("name") ?? "").trim();
+  const description = String(formData.get("description") ?? "").trim();
+  if (!name || !description) return;
+  let dataTypes: string[] = [];
+  try {
+    dataTypes = JSON.parse(String(formData.get("data_types") ?? "[]"));
+  } catch { /* empty */ }
+  const dueInDays = parseInt(String(formData.get("due_in_days") ?? ""), 10);
+
+  await db.insert(requestTemplates).values({
+    id: newId("rt"),
+    consultantId: user.id,
+    name,
+    description,
+    dataTypes,
+    periodLabel: String(formData.get("period_label") ?? "").trim() || null,
+    dueInDays: isNaN(dueInDays) ? null : dueInDays,
+    createdAt: new Date().toISOString(),
+  });
+  revalidatePath("/consultant", "layout");
+}
+
+/** Pauses/resumes automatic chasing for one request (#21). */
+export async function toggleRequestReminders(requestId: string, companyId: string) {
+  const user = await ownsClient(companyId);
+  if (!user) return;
+  const req = await db.query.dataRequests.findFirst({ where: eq(dataRequests.id, requestId) });
+  if (!req || req.companyId !== companyId) return;
+  await db.update(dataRequests).set({ remindersEnabled: !req.remindersEnabled }).where(eq(dataRequests.id, requestId));
+  revalidatePath(`/consultant/clients/${companyId}`);
 }

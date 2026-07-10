@@ -1,29 +1,62 @@
-/** Pure reminder-selection logic for open data requests (Plan J Phase 2).
- *  Nudges the client at 3, 7, and 14 days after the request was created;
- *  the 14-day reminder CCs the consultant. Each tier fires at most once. */
+/** Automatic chasing (#21), deadline-relative: nudge at 7 days out, 2 days
+ *  out, day-of, and 3 days overdue (consultant CC'd on overdue). Requests
+ *  without a due date fall back to the age-based 3/7/14 schedule. Each tier
+ *  fires once; submission (status != open) stops everything instantly. */
 
-export const REMINDER_TIERS = [3, 7, 14] as const;
-export type ReminderTier = (typeof REMINDER_TIERS)[number];
-
-export type ReminderCandidate = {
+export type ReminderRequest = {
   id: string;
   status: string;
   createdAt: string;
+  dueDate?: string | null;
+  remindersEnabled?: boolean;
   remindersSentAt: Partial<Record<string, string>> | null;
 };
 
-export type DueReminder = { id: string; tier: ReminderTier; ccConsultant: boolean };
+export type DueReminder = { id: string; tier: string; daysUntilDue: number | null; ccConsultant: boolean };
 
-export function dueReminders(requests: ReminderCandidate[], now: Date = new Date()): DueReminder[] {
-  const due: DueReminder[] = [];
+const DAY = 86_400_000;
+
+/** Deadline tiers: key → days BEFORE due date (negative = after). */
+const DUE_TIERS: [string, number, boolean][] = [
+  ["due-7", 7, false],
+  ["due-2", 2, false],
+  ["due-0", 0, false],
+  ["overdue", -3, true],
+];
+
+/** Age tiers for requests without a due date: key → days since created. */
+const AGE_TIERS: [string, number, boolean][] = [
+  ["3", 3, false],
+  ["7", 7, false],
+  ["14", 14, true],
+];
+
+export function dueReminders(requests: ReminderRequest[], now: Date = new Date()): DueReminder[] {
+  const out: DueReminder[] = [];
   for (const req of requests) {
     if (req.status !== "open") continue;
-    const ageDays = (now.getTime() - new Date(req.createdAt).getTime()) / 86_400_000;
+    if (req.remindersEnabled === false) continue;
     const sent = req.remindersSentAt ?? {};
-    // Only the highest overdue tier not yet sent — a stale request doesn't get
-    // three emails in one cron run.
-    const tier = [...REMINDER_TIERS].reverse().find((t) => ageDays >= t && !sent[String(t)]);
-    if (tier) due.push({ id: req.id, tier, ccConsultant: tier === 14 });
+
+    if (req.dueDate) {
+      const due = new Date(req.dueDate + "T12:00:00Z").getTime();
+      const daysUntil = Math.floor((due - now.getTime()) / DAY);
+      // highest applicable unsent tier only — a stale request gets one email, not four
+      for (const [tier, daysBefore, cc] of [...DUE_TIERS].reverse()) {
+        if (daysUntil <= daysBefore && !sent[tier]) {
+          out.push({ id: req.id, tier, daysUntilDue: daysUntil, ccConsultant: cc });
+          break;
+        }
+      }
+    } else {
+      const age = Math.floor((now.getTime() - new Date(req.createdAt).getTime()) / DAY);
+      for (const [tier, minAge, cc] of [...AGE_TIERS].reverse()) {
+        if (age >= minAge && !sent[tier]) {
+          out.push({ id: req.id, tier, daysUntilDue: null, ccConsultant: cc });
+          break;
+        }
+      }
+    }
   }
-  return due;
+  return out;
 }

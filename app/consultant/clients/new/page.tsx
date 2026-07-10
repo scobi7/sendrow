@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { consultantAddClient } from "@/lib/actions";
 import { PageHeader } from "@/components/ui";
+import { NAICS_SECTORS } from "@/lib/naics";
 
 const INDUSTRIES = [
   "Logistics",
@@ -60,6 +61,15 @@ export default async function NewClientPage({
           <p className="mt-1 text-xs" style={{ color: "var(--text-muted)" }}>
             Portal links and reminders are emailed here. You can add it later, but requests won&apos;t be delivered until you do.
           </p>
+        </div>
+        <div>
+          <label className="label">Industry sector (NAICS)</label>
+          <select name="naics" className="input">
+            <option value="">Select sector…</option>
+            {NAICS_SECTORS.map((s) => (
+              <option key={s.code} value={s.code}>{s.code} — {s.label}</option>
+            ))}
+          </select>
         </div>
         <div>
           <label className="label">Industry</label>

@@ -132,22 +132,54 @@ export async function sendPortalReminderEmail(
   companyName: string,
   description: string,
   portalToken: string,
-  daysOpen: number,
+  reminder: { tier: string; daysUntilDue: number | null },
   ccConsultant: string | null,
   brand?: { brandName: string; replyTo: string | null } | null
 ) {
   const firstName = clientName.split(" ")[0];
   const to = ccConsultant ? [clientEmail, ccConsultant] : clientEmail;
+  const urgency =
+    reminder.tier === "overdue"
+      ? "This is now past due — a few minutes today keeps everything on track."
+      : reminder.tier === "due-0"
+        ? "It's due today."
+        : reminder.daysUntilDue !== null
+          ? `It's due in ${reminder.daysUntilDue} day${reminder.daysUntilDue === 1 ? "" : "s"}.`
+          : "A quick reminder — this is still waiting on you.";
   await send(
     to,
-    `Reminder: data still needed for ${companyName}`,
+    reminder.tier === "overdue"
+      ? `Past due: data needed for ${companyName}`
+      : `Reminder: data still needed for ${companyName}`,
     `<p>Hi ${firstName},</p>
-<p>A quick reminder — your reviewer is still waiting on data for <strong>${companyName}</strong> (requested ${daysOpen} days ago):</p>
+<p>Your reviewer is still waiting on data for <strong>${companyName}</strong>. ${urgency}</p>
 <blockquote><p>${description}</p></blockquote>
 <p><a href="${APP_URL}/portal/${portalToken}">Open your secure upload link →</a></p>
 <p>It usually takes just a few minutes. No account or password needed.</p>
 ${brand ? `<p>— ${brand.brandName}</p>` : ""}`,
     brand ? { fromName: brand.brandName, replyTo: brand.replyTo } : undefined
+  );
+}
+
+export async function sendSubmissionEmail(
+  consultantEmail: string,
+  consultantName: string,
+  companyName: string,
+  filename: string,
+  imported: number,
+  unmapped: number,
+  companyId: string,
+  autoApproved: boolean
+) {
+  const firstName = consultantName.split(" ")[0];
+  await send(
+    consultantEmail,
+    `${companyName} just submitted data`,
+    `<p>Hi ${firstName},</p>
+<p><strong>${companyName}</strong> submitted <strong>${filename}</strong> — ${imported} row${imported === 1 ? "" : "s"}${unmapped > 0 ? `, ${unmapped} flagged for your review` : ""}.</p>
+<p>${autoApproved ? "It auto-processed (mapping was confirmed by the uploader)." : "It's waiting in your review queue."}</p>
+<p><a href="${APP_URL}/consultant/clients/${companyId}">Open the client →</a></p>
+<p>— The Sendrow team</p>`
   );
 }
 

@@ -1,0 +1,21 @@
+/** 2-digit NAICS sectors (#46) — the benchmarking prerequisite. */
+export const NAICS_SECTORS: { code: string; label: string }[] = [
+  { code: "11", label: "Agriculture, Forestry, Fishing" },
+  { code: "21", label: "Mining, Oil & Gas" },
+  { code: "22", label: "Utilities" },
+  { code: "23", label: "Construction" },
+  { code: "31-33", label: "Manufacturing" },
+  { code: "42", label: "Wholesale Trade" },
+  { code: "44-45", label: "Retail Trade" },
+  { code: "48-49", label: "Transportation & Warehousing" },
+  { code: "51", label: "Information" },
+  { code: "52", label: "Finance & Insurance" },
+  { code: "53", label: "Real Estate" },
+  { code: "54", label: "Professional & Technical Services" },
+  { code: "56", label: "Administrative & Waste Services" },
+  { code: "61", label: "Educational Services" },
+  { code: "62", label: "Health Care" },
+  { code: "71", label: "Arts & Entertainment" },
+  { code: "72", label: "Accommodation & Food Services" },
+  { code: "81", label: "Other Services" },
+];

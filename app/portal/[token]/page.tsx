@@ -108,6 +108,9 @@ export default async function PortalPage({ params }: { params: Promise<{ token: 
           <PortalChecklist token={token} items={checklist} prefill={prefill} />
         </>
       )}
+      <p className="mt-12 border-t pt-4 text-center text-xs" style={{ borderColor: "var(--divider)", color: "var(--text-muted)", opacity: 0.7 }}>
+        Powered by Sendrow
+      </p>
     </main>
   );
 }

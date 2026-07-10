@@ -336,7 +336,14 @@ Generated from PLANS.md (approved). Updated after each task completes.
 - [x] **U1.6** — Save & resume on the portal (autosave entry/walkthrough state)
 - [x] **U1.7** — Estimate vs. actual flags, visible + toggleable with logged corrections
 - [x] **U1.8** — Attach additional evidence to a ledger row
-### U2 — Demo & design-partner readiness (queued)
+### U2 — Demo & design-partner readiness
+- [x] **U2.1** — Demo workspace: `npx tsx scripts/reset-demo.ts` seeds 3 clients at 3 stages, restorable before every demo
+- [x] **U2.2** — Client-separation contract tests — CAUGHT + FIXED real holes: approveSession/createDataRequest/lockPipeline/shareSnapshot et al. lacked ownership checks; all consultant actions now pass ownsClient()
+- [x] **U2.3** — "Powered by Sendrow" footer on portal + shared pages
+- [x] **U2.4** — Engagement templates: save request setup, one-click reuse (⚡ chips on the form)
+- [x] **U2.5** — Deadline-relative chasing (7/2/day-of/overdue, consultant CC on overdue) + per-request 🔔 pause toggle
+- [x] **U2.6** — NAICS sector + size band at client creation
+- [x] **U2.7** — Consultant emailed on every portal submission with deep link
 ### U3 — Format engine as config (queued; blocked inputs: CARB template, Kerri questionnaire)
 ### U4 — Supplier trust & stickiness (queued)
 ### U5 — Audit-grade depth (queued)

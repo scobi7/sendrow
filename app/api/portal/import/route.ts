@@ -7,6 +7,9 @@ import type { ChecklistItem } from "@/lib/portal";
 import { processImport } from "@/lib/ingestion/import-core";
 import { storeEvidence } from "@/lib/evidence";
 import { headerFingerprint } from "@/lib/ingestion/fingerprint";
+import { sendSubmissionEmail } from "@/lib/email";
+import { and, isNull } from "drizzle-orm";
+import { companies, consultantClients, userCompanies } from "@/lib/db/schema";
 import { fuzzyMatchHeaders } from "@/lib/ingestion/fuzzy-match";
 import { applyTemplate } from "@/lib/ingestion/data-type-templates";
 import type { ColumnMap } from "@/lib/ingestion/ingest";
@@ -111,6 +114,29 @@ export async function POST(request: NextRequest) {
     headerFingerprint: fingerprint,
     mappingConfirmed,
   });
+
+  // Response notification (U2.7): the consultant hears the moment data lands
+  (async () => {
+    const [company, link] = await Promise.all([
+      db.query.companies.findFirst({ where: eq(companies.id, dataRequest.companyId) }),
+      db.query.consultantClients.findFirst({
+        where: and(eq(consultantClients.companyId, dataRequest.companyId), isNull(consultantClients.archivedAt)),
+      }),
+    ]);
+    if (!link) return;
+    const consultant = await db.query.userCompanies.findFirst({ where: eq(userCompanies.clerkId, link.consultantId) });
+    if (!consultant?.email) return;
+    await sendSubmissionEmail(
+      consultant.email,
+      consultant.name ?? "there",
+      company?.name ?? "A client",
+      filename,
+      outcome.imported,
+      outcome.unmapped,
+      dataRequest.companyId,
+      outcome.autoApproved
+    );
+  })().catch(() => {});
 
   return NextResponse.json(outcome);
 }

@@ -150,6 +150,9 @@ export default async function SharedResultsPage({ params }: { params: Promise<{ 
           ? `Frozen snapshot ${snapshot.sha256.slice(0, 12)}… — corrections are issued as new versions with change notices.`
           : "Figures reflect data received and reviewed to date."}
       </p>
+      <p className="mt-12 border-t pt-4 text-center text-xs" style={{ borderColor: "var(--divider)", color: "var(--text-muted)", opacity: 0.7 }}>
+        Powered by Sendrow
+      </p>
     </main>
   );
 }

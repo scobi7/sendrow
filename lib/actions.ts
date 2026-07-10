@@ -171,6 +171,7 @@ export async function consultantAddClient(formData: FormData) {
   const headcount = String(formData.get("headcount") ?? "") as HeadcountRange;
   const contactName = String(formData.get("contact_name") ?? "").trim();
   const contactEmail = String(formData.get("contact_email") ?? "").trim();
+  const naicsCode = String(formData.get("naics") ?? "").trim();
 
   if (!name) redirect("/consultant/clients/new?error=" + encodeURIComponent("Client name is required."));
 
@@ -185,6 +186,7 @@ export async function consultantAddClient(formData: FormData) {
     headcountRange: company.headcountRange ?? null,
     clientContactName: contactName || null,
     clientContactEmail: contactEmail || null,
+    naicsCode: naicsCode || null,
     createdAt: company.createdAt,
     setupComplete: false,
     sectionStatus: company.sectionStatus,
