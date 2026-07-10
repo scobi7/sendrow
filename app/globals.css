@@ -3,38 +3,47 @@
 @tailwind utilities;
 
 :root {
-  /* ── "The Ledger" palette (docs/design-direction.md) — paper, ink, forest, one terracotta ── */
-  --bg:             #FAF8F2;   /* warm paper — ledger stock, not screen-green */
-  --surface:        #F2EFE7;   /* nav, sidebar, alternate section backgrounds */
-  --card:           #FFFFFF;   /* cards are white paper with hairline borders */
-  --text:           #161D18;   /* ink with a forest undertone */
-  --text-muted:     #5F6B62;   /* desaturated — no green cast */
-  --primary:        #1D5A36;   /* forest — CTAs and links; an accent you earn, not wallpaper */
-  --primary-tint:   #EAF2EC;
-  --accent:         #C96F4A;   /* terracotta — one warm moment per screen, never a CTA */
-  --accent-tint:    #F8EDE6;
-  --ink-band:       #122619;   /* deep forest-ink — footer + one band per page */
-  --ink-band-text:  #E9EFE9;
-  --track-bg:       #E2DFD3;   /* progress/chart tracks in paper tones */
-  --scope1:         #2E7D4F;
-  --scope2:         #1D5A36;
-  --scope3:         #7A9B85;
-  --divider:        #E4DFD2;   /* paper-toned hairlines */
-  --status-green:   #2E7D4F;
-  --warning:        #A87B2F;
-  --warning-strong: #7C5A1E;
-  --warning-tint:   #F8F1E2;
-  --warning-border: #E7D9B7;
-  --danger:         #B8554A;
-  --danger-tint:    #F9EDEB;
-  --danger-border:  #ECCEC9;
-  --neutral-muted:  #8A8578;   /* rejected/archived chips */
-  --radius-lg:      16px;
-  --radius-sm:      10px;
-  --shadow-card:  0 1px 3px rgba(22,29,24,0.06), 0 1px 2px rgba(22,29,24,0.04);
+  /* ── "Aurora Pop" palette (2026-07-10, Malachi's greens) — glass cards over a soft mint/teal wash ── */
+  --bg:             #F8FCFA;   /* airy green-white base; the aurora wash lives on body::before */
+  --surface:        rgba(255, 255, 255, 0.66);  /* nav/sidebar — glass */
+  --card:           rgba(255, 255, 255, 0.66);  /* main glass cards */
+  --card-strong:    rgba(255, 255, 255, 0.78);  /* inner/nested cards */
+  --text:           #17211C;
+  --text-muted:     #61736A;
+  --primary:        #178B5A;   /* dark green — links, buttons, anything that must read */
+  --primary-strong: #1FA85B;
+  --primary-tint:   #EAF8F1;   /* light mint chip */
+  --chip-border:    #D7F0E3;
+  --green:          #22C55E;   /* bright greens: highlights and washes, never body text */
+  --emerald:        #10B981;
+  --mint:           #6EE7B7;
+  --teal:           #2DD4BF;
+  --accent:         #6366F1;   /* the one small indigo moment per screen */
+  --accent-tint:    #EEF0FE;
+  --ink-band:       #12271C;   /* deep green-ink — footer + one band per page */
+  --ink-band-text:  #EAF8F1;
+  --track-bg:       #E7F0EB;
+  --scope1:         #178B5A;
+  --scope2:         #10B981;
+  --scope3:         #2DD4BF;
+  --divider:        #E7F0EB;
+  --status-green:   #1FA85B;
+  --success-bg:     #ECFDF5;
+  --success-border: #D5F6E4;
+  --warning:        #B45309;
+  --warning-strong: #92400E;
+  --warning-tint:   #FEF7EC;
+  --warning-border: #F5E3C2;
+  --danger:         #DC2626;
+  --danger-tint:    #FEF1F1;
+  --danger-border:  #F8D7D7;
+  --neutral-muted:  #8A968F;
+  --radius-lg:      18px;
+  --radius-sm:      11px;
+  --shadow-card:    0 8px 30px rgba(23, 33, 28, 0.06), 0 1px 2px rgba(23, 33, 28, 0.04);
 
   /* ── Fonts — injected by layout.tsx via next/font ── */
-  /* --font-display: Fraunces (serif, headlines) · --font-body: Instrument Sans · --font-data: IBM Plex Mono */
+  /* --font-display / --font-body: Plus Jakarta Sans · --font-data: JetBrains Mono */
 }
 
 html {
@@ -46,6 +55,22 @@ body {
   color: var(--text);
   font-family: var(--font-body), sans-serif;
   -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  position: relative;
+}
+
+/* The aurora: three soft washes — mint top-right, teal left, a whisper of
+   indigo below. Fixed so it glows through the glass while content scrolls. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(1100px 700px at 85% -10%, rgba(110, 231, 183, 0.28), transparent 60%),
+    radial-gradient(900px 650px at -10% 25%, rgba(45, 212, 191, 0.16), transparent 55%),
+    radial-gradient(850px 600px at 70% 115%, rgba(99, 102, 241, 0.10), transparent 60%);
 }
 
 section[id] {
@@ -68,26 +93,28 @@ section[id] {
 @media print {
   .no-print { display: none !important; }
   body { background: white; }
+  body::before { display: none; }
+  .card { backdrop-filter: none; background: white; }
 }
 
 /* ── Utility classes ── */
 
 .input {
   width: 100%;
-  border: 1px solid var(--divider);
+  border: 1px solid var(--chip-border);
   border-radius: var(--radius-sm);
-  background: #ffffff;
+  background: rgba(255, 255, 255, 0.85);
   color: var(--text);
   padding: 0.5rem 0.75rem;
   font-size: 0.875rem;
   font-family: var(--font-body), sans-serif;
-  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.04);
+  box-shadow: 0 1px 2px 0 rgba(23, 33, 28, 0.04);
   transition: border-color 0.15s, box-shadow 0.15s;
 }
 .input:focus {
   outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(26,92,48,0.12);
+  border-color: var(--emerald);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.14);
 }
 
 .btn {
@@ -99,8 +126,8 @@ section[id] {
   font-size: 0.875rem;
   font-weight: 600;
   font-family: var(--font-body), sans-serif;
-  border-radius: var(--radius-sm);
-  transition: opacity 0.15s, background-color 0.15s, transform 0.15s;
+  border-radius: 999px;   /* pill buttons — the "pop" */
+  transition: opacity 0.15s, background-color 0.15s, transform 0.15s, box-shadow 0.15s;
   cursor: pointer;
 }
 .btn:disabled {
@@ -109,22 +136,24 @@ section[id] {
 }
 
 .btn-primary {
-  background-color: var(--primary);
+  background-image: linear-gradient(135deg, #10B981, #178B5A);
   color: #fff;
   border: none;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.28);
 }
 .btn-primary:hover:not(:disabled) {
-  opacity: 0.88;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(16, 185, 129, 0.34);
 }
 
 .btn-secondary {
-  border: 1px solid var(--divider);
-  background: #ffffff;
-  color: var(--text);
+  border: 1px solid var(--chip-border);
+  background: var(--card-strong);
+  color: var(--primary);
 }
 .btn-secondary:hover:not(:disabled) {
-  background-color: var(--card);
-  border-color: rgba(26,92,48,0.2);
+  background-color: var(--primary-tint);
+  border-color: var(--emerald);
 }
 
 .nav-link:hover {
@@ -135,9 +164,11 @@ section[id] {
 .card {
   padding: 1.5rem;
   background: var(--card);
-  border: 1px solid var(--divider);
+  border: 1px solid var(--chip-border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-card);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
 }
 
 .label {
