@@ -23,7 +23,12 @@ Sendrow is now **the practice platform for climate consultants** — consultants
 - Concierge cap: 3 engagements, then productize or raise price
 - CARB 15-day comment window: publish the explainer within 24h + submit a comment letter when it opens
 
-## 🧭 Build Pipeline received (2026-07-10) — Plan U drafted, PENDING APPROVAL
+## 🟢 Plan U approved — U1 + U2 BUILT (2026-07-10, 199/199 tests)
+**U1 (core loop hardened):** reporting periods on requests, expired-link "request a new one" rescue, unified immutable event log + Activity page + CSV export, prefill-from-last-approved ("confirm or update"), comment threads on line items (emails client), portal save-&-resume, estimate/actual flags with logged corrections, per-row extra evidence.
+**U2 (demo-ready):** `npx tsx scripts/reset-demo.ts` seeds 3 demo clients at 3 stages (run before every demo); **separation contract tests caught & fixed real cross-client holes** (approveSession, createDataRequest, lockPipeline, shareSnapshot etc. lacked ownership checks — all actions now pass ownsClient()); engagement templates; deadline-relative chasing (7/2/0/overdue + per-request pause); NAICS capture; consultant notified on every submission.
+**Next: U3 — the format engine as config** (refactor formats.ts to a versioned template registry + admin mapping builder). Partially blocked: CARB SB 253 draft template + Kerri questionnaire from Masao.
+
+## 🧭 Build Pipeline received (2026-07-10) — Plan U context
 Masao's priority list (`docs/build-pipeline-2026-07-10.pdf`) is now the single source of truth for build order. MD files hydrated: SB 253 deadline corrected to **Aug 10, 2026**; ISSA 5000 terminology; PACT V3 only; vendor memory re-scoped to per-workspace (global = LATER); Ground Rules added to contracts (§14a config-driven formats, §14b workspace-scoped memory). Plan U in PLANS.md maps all 6 phases to the codebase. **Blocked on Masao:** CARB draft template, Kerri questionnaire, scoring rubrics, calculator data model. **Conflict noted:** our format engine is hardcoded → U3 refactors to config before adding formats.
 
 ## 🟢 Plan T — The Deliverable Machine BUILT (2026-07-08, late session)
