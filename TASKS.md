@@ -321,3 +321,23 @@ Generated from PLANS.md (approved). Updated after each task completes.
 - [x] **T5.1** — Spreadsheet-view mapping: real grid of their file, assign fields on column headers, header-row override, dollar-value hints
 - [x] **T5.2** — "I'm stuck — ask my consultant" per checklist item → flags item + emails consultant
 - [x] **T5.3** — Guided walkthrough mode (hybrid): step-by-step plain-language entry per data type, no account, minutes not an hour
+
+---
+
+## Plan U — The Build Pipeline (approved 2026-07-10; ship-ready UX bar)
+> Baseline: 194/194 tests. Source: docs/build-pipeline-2026-07-10.pdf.
+
+### U1 — Harden the core loop
+- [ ] **U1.1** — Reporting period on data requests (preset picker + custom), shown to supplier
+- [ ] **U1.2** — Expired-link page: "request a new link" (notifies consultant); consultant renew action
+- [ ] **U1.3** — Unified audit events (gt_events) on every create/approve/share/convert/edit + Activity view + CSV export
+- [ ] **U1.4** — Prefill from last approved data, visibly marked "confirm or update"
+- [ ] **U1.5** — Comment threads on line items (minimal: box + email notification)
+- [ ] **U1.6** — Save & resume on the portal (autosave entry/walkthrough state)
+- [ ] **U1.7** — Estimate vs. actual flags, visible + toggleable with logged corrections
+- [ ] **U1.8** — Attach additional evidence to a ledger row
+### U2 — Demo & design-partner readiness (queued)
+### U3 — Format engine as config (queued; blocked inputs: CARB template, Kerri questionnaire)
+### U4 — Supplier trust & stickiness (queued)
+### U5 — Audit-grade depth (queued)
+### U6 — Retention engine (queued, after design partner)
