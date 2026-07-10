@@ -32,6 +32,10 @@ These invariants must hold at all times. Tests and code must enforce them.
 
 13. **Snapshots are immutable once shared.** Only frozen, dated, approved snapshots ever leave the system. A shared snapshot is never edited; corrections create a new snapshot and trigger restatement alerts to every recipient of the old one.
 
+14a. **Output formats are config, never code** (pipeline Ground Rule #1). Every format (SB 253, CDP, buyer questionnaires) is a template/config the engine reads. Writing `if (format === "CDP")` is a stop-the-line violation — it's what makes the format library and the future EPR module possible.
+
+14b. **Vendor memory is workspace-scoped** (pipeline doc, 2026-07-10). Mappings apply per consultant workspace (or per client); cross-platform suggestions are explicitly LATER for privacy. Nothing a consultant confirms leaks to another consultant's workspace.
+
 14. **Suppliers are never scored.** No grades, badges-as-report-cards, or rankings of suppliers, ever. Trust-level labels describe *verification status of data* ("self-reported" / "consultant-reviewed" / "assured"), never quality of the company.
 
 ## Data Integrity

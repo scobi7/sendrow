@@ -32,7 +32,11 @@ One approved snapshot → any output format. Maintained centrally: when CARB/CDP
 2. First real format built from an actual buyer questionnaire (Kerri's client) — formats only from real requests, built once sold forever
 3. PACT-compatible export (the "your data is yours" weapon + standard on-ramp)
 
-## Plan Q — The Supplier Side (next; T2 already shipped supplier-confirmed mapping + format memory)
+## Build Pipeline (Masao, 2026-07-10) — THE source of truth for build order
+`docs/build-pipeline-2026-07-10.pdf`. Six phases: (1) verify/harden the core loop, (2) demo & design-partner readiness, (3) the format engine ("the moat — deserves the most careful engineering"), (4) supplier trust & stickiness, (5) audit-grade depth, (6) consultant retention engine. Parallel: PACT V3 data model, SOC 2 readiness practices. Explicitly LATER: AI suggestions, buyer features, integrations, benchmarking, EPR. Plan U in PLANS.md maps it to our codebase.
+Key corrections encoded: SB 253 first deadline = Aug 10 2026; ISSA 5000 (not ISAE 3410); PACT V3 only; vendor memory workspace-scoped; referral routing stays a spreadsheet (our /admin/referrals is internal-only convenience, don't extend).
+
+## Plan Q — superseded by the Build Pipeline phases above (T2 already shipped supplier-confirmed mapping + format memory)
 1. **Supplier-confirmed parsing:** AI first-pass on uploads ("column D looks like kWh — right?"), supplier confirms in the portal; file-format memory remembers the shape (vendor-memory doctrine applied to layouts)
 2. **Reply-by-email:** replying to a request email (with text or an attached bill) lands in the right place automatically
 3. **Free claimable supplier accounts:** after responding via magic link, a supplier can claim their record (own it, view it, export it); prefill next year from last approved data

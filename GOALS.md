@@ -27,7 +27,7 @@ The consultant's actual job is decoding what suppliers send ("they sent me a thi
 4. **Accept the floor:** fast manual entry for scanned receipts. Target 80% automated decoding, not 100%.
 
 ## The Moats
-- **Vendor-mapping memory:** confirm a vendor once, mapped forever, shared across every client (human-confirmed only). Compounds with volume; can't be bought or coded.
+- **Vendor-mapping memory:** confirm a vendor once, remembered and auto-applied next time — **per consultant workspace only for now** (cross-platform suggestions are explicitly LATER, for privacy; per Masao's pipeline doc). Compounds with volume; can't be bought or coded.
 - **File-format memory:** the same idea applied to file layouts (less privacy-fraught — a bill layout isn't competitively sensitive).
 - **Trust mechanics for the 2027 audit wave:** restatement alerts + trust-level provenance badges ("self-reported" / "consultant-reviewed" / "assured"), designed WITH actual verifiers. When 2027 audits find incumbent data trails are Swiss cheese, we're the platform auditors recommend.
 - **Response rate:** competitors' products are anchored to buyer-side portals; they structurally can't rebuild around the supplier's inbox.
@@ -41,9 +41,9 @@ The consultant's actual job is decoding what suppliers send ("they sent me a thi
 Rough early math: 15 consultant workspaces ≈ $300k+/yr before a single buyer contract; one buyer pilot adds ~$25k + ~200 supplier records.
 
 ## The Timing Thesis (verified July 2026)
-- SB 253's first deadline: Nov 10, 2026; first year is leniency. **Don't sell November panic.**
+- **SB 253's first Scope 1/2 deadline: August 10, 2026** (corrected per Masao's 2026-07-10 pipeline doc — not November); first year is leniency. Don't sell deadline panic.
 - The real wave is **2027**: Scope 3 reporting starts, limited assurance begins, $1B+ filers chase supplier data — surveys cascade onto exactly our ICP. Spreadsheets die at limited assurance.
-- Own one beach: **California + SB 253 + consultant-operated.** A knowable list of affected companies (CARB publishes it), a consultant community we're already inside (Kerri, ISOS), a geography we live in. Giants can't focus this small; TrackZero (UK proof the consultant-first model works) would have to cross an ocean. We don't need to win "supplier data exchange" — we need to win California, 2026–2028.
+- Own one beach: **California + SB 253 + consultant-operated.** Assurance language: reference **ISSA 5000** (ISAE 3410 is withdrawn as of Dec 15, 2026). A knowable list of affected companies (CARB publishes it), a consultant community we're already inside (Kerri, ISOS), a geography we live in. Giants can't focus this small; TrackZero (UK proof the consultant-first model works) would have to cross an ocean. We don't need to win "supplier data exchange" — we need to win California, 2026–2028.
 
 ## Go-to-Market
 - **Tiny and deep:** one geography (California), one workflow (request → record → any format out). Soft-verticalize into food & beverage / agriculture.
@@ -66,4 +66,4 @@ Rough early math: 15 consultant workspaces ≈ $300k+/yr before a single buyer c
 - Enterprise SSO/procurement features; speculative output formats no real client requested
 
 ## Technical Stack
-Next.js 15 App Router, multi-tenant, Clerk v6, NeonDB + Drizzle, Stripe, Resend, Vercel Blob (evidence + branding). PACT-compatible data model from day one. Per-client differences live in config — never forked code.
+Next.js 15 App Router, multi-tenant, Clerk v6, NeonDB + Drizzle, Stripe, Resend, Vercel Blob (evidence + branding). **PACT V3 only** data model from day one (V2.x deprecated April 2026; register for the PACT Conformance Tool when ready — free credibility).  Per-client differences live in config — never forked code.

@@ -196,3 +196,74 @@ N1 → N2 → N3 → N4 → N5 → N7 in order; N6 starts the moment a founding 
 
 ## Verification per phase
 tests + tsc + build green; TASKS.md hydrated; commit + push to sendrow-v2 per phase.
+
+---
+
+# Plan U — The Build Pipeline (PENDING APPROVAL)
+
+> Source: Masao's "Sendrow Build Pipeline — Priority List" (2026-07-10, `docs/build-pipeline-2026-07-10.pdf`) — the declared single source of truth for build order. This plan maps his phases onto our actual codebase with honest statuses. Ground rules adopted as invariants: config-driven formats (§14a), snapshots-only sharing (§13), audit-everything, absolute client separation, PACT V3 only, workspace-scoped vendor memory (§14b).
+
+## Conflicts with what we've built (doc wins — encoded)
+1. **SB 253 first deadline is Aug 10, 2026** (we had Nov 10) — GOALS.md corrected.
+2. **Vendor memory: per-workspace only; cross-platform is LATER** (privacy). Our global-scope option gets removed from the UI; existing "global" toggle becomes consultant-workspace scope. (§14b)
+3. **Our format engine is hardcoded TS functions** — violates Ground Rule #1. U3 refactors to config/templates before any new format is added.
+4. **Referral routing stays Masao's spreadsheet** — `/admin/referrals` is frozen as internal convenience; no further build.
+5. Doc says "Render deployment" — we deploy on Vercel; noting, not changing.
+
+## U1 — Phase 1: verify & harden the core loop
+- **U1.1 Request fields (1.1):** add *time period* to data requests (company, data types, period, deadline); shown on the portal.
+- **U1.2 Magic-link polish (1.2):** expired/revoked page gets a "request a new link" button (pings the consultant); QA on mobile.
+- **U1.3 Unified audit events (1.8, Ground Rule 3):** every create/edit/approve/share/convert/comment event writes to the immutable event log; consultant-facing export as CSV. (Today: field-level auditLog + calc logs exist; approve/share/convert events aren't unified.)
+- **U1.4 Prefill from last time (1.9/#12):** new requests pre-fill from the supplier's last approved data, visibly marked "from your 2025 submission — confirm or update."
+- **U1.5 Comment threads, minimal (1.10/#6):** comment box per line item (ledger + portal), email notification to the other party, survives in history. Nothing fancier.
+- **U1.6 Save & resume (1.11):** autosave partial portal answers (entry grid + walkthrough) — close the tab, reopen the link, resume; "3 of 7 sections complete" indicator.
+- **U1.7 Estimate vs. actual (1.12):** visible status flag per value (we store `confidence`; surface + edit it); replacing an estimate with an actual logs a correction and later feeds restatement alerts.
+- **U1.8 Multi-evidence per line item (1.4):** attach additional files to a ledger row (today: one file per upload session).
+
+## U2 — Phase 2: demo & design-partner readiness
+- **U2.1 Demo workspace (#49):** seeded "Pacific Sustainability Advisors" with 3 clients at different stages, realistic data + fake bills; reset script (`scripts/reset-demo.ts`). Do early — every sales conversation depends on it.
+- **U2.2 Client-separation tests (#20):** automated tests attempting cross-client access through every endpoint (route-level, not just query-level).
+- **U2.3 White-label completion (#22):** "Powered by Sendrow" small footer on portal/shared pages (doc explicitly wants it; consistent with re-scoped §11).
+- **U2.4 Engagement templates (#23):** save a request setup as a template; one-click new request from template. Stored as config.
+- **U2.5 Deadline-based chasing (#21):** reminders relative to the due date (7 days out, 2 out, day-of, overdue) replacing creation-relative 3/7/14; per-request cadence toggle; stop instantly on submission (exists); reminders logged (exists).
+- **U2.6 Client profile basics (#46):** NAICS dropdown + employee size band at client creation — benchmarking prerequisite.
+- **U2.7 Response notifications (2.8):** email the consultant on every submission/comment with a deep link (today only review-routed uploads notify).
+
+## U3 — Phase 3: the format engine (the moat — most careful engineering)
+- **U3.1 Config-driven reshaping (#9):** refactor `lib/formats.ts` from hardcoded functions to a **versioned template registry** (DB): field mappings + layout as data, conditional/branching support (CDP routes questions by company size/modules). Ship 3 formats as configs: SB 253 (against CARB's real Oct 2025 draft template — **Masao supplies it**), generic Excel, one real buyer questionnaire (**Masao gets from Kerri**).
+- **U3.2 Format Mapping Builder (#35):** admin-only tool — upload a questionnaire, map each question to a Sendrow field, save as reusable template. Adding a format = an afternoon of clicking, not a code change. Must support conditional questionnaires.
+- **U3.3 Template versioning (#33):** version field on templates; snapshots/exports record which template version produced them; CARB's summer-2026 revision is the fire drill.
+- **U3.4 Answer once, share many (#26) + duplicate detection (3.5):** when a new request overlaps data the supplier already has approved (same period/categories), flag it and offer the snapshot-share path instead of a blank form.
+
+## U4 — Phase 4: supplier trust & stickiness
+- **U4.1 Free supplier account (#24):** after responding, one-click "claim your free account" (Clerk email+password), supplier role sees own data read-only. Never gate responding.
+- **U4.2 Supplier attestation (#37):** "I confirm this data is accurate…" checkbox before shares; name/date/snapshot ID in the audit log.
+- **U4.3 Share receipts (#38):** log recipient views/downloads of shared snapshots; show both sides.
+- **U4.4 Supplier export (#25):** "Download all my data" — PACT V3 JSON + CSV.
+- **U4.5 Reply-by-email v1 (#3):** inbound attachments land in an "unfiled inbox" on the request for the consultant to slot in (needs inbound-email provider setup — Resend inbound or similar; user action for DNS).
+- **U4.6 Section delegation (4.6):** "send this section to a colleague" — scoped magic link per checklist item.
+- **U4.7 Deadline extension request (4.7):** supplier button → consultant one-click approve/deny.
+- **U4.8 Supplier mini-report (4.9):** on approval, one-click 5–8 page branded PDF (VSME Basic Module as skeleton). (#27 claimable starter profile waits on Masao's calculator.)
+
+## U5 — Phase 5: audit-grade depth
+- **U5.1 Method labeling (#17):** every number labeled spend-/activity-based + "X% of this footprint is activity-based" stat (CARB regulatory language).
+- **U5.2 Methodology label schema (#14):** factor labels capture relevant/recent/geographically-correct, not just version (we have vintage; extend).
+- **U5.3 Trust-level badges (#15):** self-reported / consultant-reviewed / assured — per dataset AND per metric; travels with snapshots into shares/exports.
+- **U5.4 Restatements extended (#11):** estimate→actual transitions trigger the existing restatement flow.
+- **U5.5 Factor update recalc preview (#39):** new factor set → one-click preview of a client's recalculated numbers; old snapshots stay frozen.
+- **U5.6 Vendor memory re-scope (#18):** remove global option; workspace-scoped only (see conflict #2).
+- **U5.7 Historical data import (#36):** consultant-side importer (reuse the mapping panel) for prior-year spreadsheets, rows marked "imported." V1 semi-manual is fine.
+- **U5.8 IMP generator (5.8):** auto-generate the Inventory Management Plan / methodology manual from stored labels + boundary settings — the first thing an auditor asks for.
+
+## U6 — Phase 6: consultant retention engine (after first design partner is live)
+Compliance calendar (#44 — Masao maintains dates), monthly client digest (#45), consultant commentary blocks (#43), hotspot report (#40), YoY narrative templates (#41 — templates, not AI), score-gap flags (#42 — blocked on Masao's rubrics), completeness meter (6.7 — build the metric once, reuse everywhere).
+
+## Parallel / process (not phases)
+- PACT V3 data-model alignment as we touch schemas; SOC 2 readiness practices checklist in docs/.
+- **Blocked on Masao:** CARB SB 253 draft template (U3.1), Kerri's buyer questionnaire (U3.1), CDP/EcoVadis scoring rubrics (U6), calculator data model (#27).
+
+## Explicitly NOT building (doc's LATER list)
+AI suggestions (#16), buyer features (#28–30), QuickBooks/utility integrations (#34), peer benchmarking (#47), EPR module (#50), referral-routing software (#48).
+
+## Sequencing & verification
+U1 → U2 → U3 → U4 → U5 → U6, one phase per approval-covered build session; tests + tsc + build green per phase; TASKS.md hydrated; each finished item marked back into the pipeline doc's terms in TASKS.md with date. U3 is the "most careful engineering" phase — it gets the deepest test coverage.

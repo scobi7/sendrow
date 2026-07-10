@@ -23,6 +23,9 @@ Sendrow is now **the practice platform for climate consultants** — consultants
 - Concierge cap: 3 engagements, then productize or raise price
 - CARB 15-day comment window: publish the explainer within 24h + submit a comment letter when it opens
 
+## 🧭 Build Pipeline received (2026-07-10) — Plan U drafted, PENDING APPROVAL
+Masao's priority list (`docs/build-pipeline-2026-07-10.pdf`) is now the single source of truth for build order. MD files hydrated: SB 253 deadline corrected to **Aug 10, 2026**; ISSA 5000 terminology; PACT V3 only; vendor memory re-scoped to per-workspace (global = LATER); Ground Rules added to contracts (§14a config-driven formats, §14b workspace-scoped memory). Plan U in PLANS.md maps all 6 phases to the codebase. **Blocked on Masao:** CARB draft template, Kerri questionnaire, scoring rubrics, calculator data model. **Conflict noted:** our format engine is hardcoded → U3 refactors to config before adding formats.
+
 ## 🟢 Plan T — The Deliverable Machine BUILT (2026-07-08, late session)
 The consultant now works data end-to-end in-product: **Data Ledger** (inspect/correct/exclude any line item; rejected uploads leave totals — was a live bug), **intake repair** (supplier confirm-mapping screen, format memory via header fingerprints, unit conversions, paste-from-spreadsheet), **snapshots** (immutable, sha256-hashed, per-recipient shares, restatement alert emails with diffs), **reshaping engine v1** (snapshot → Excel / SB 253 draft / questionnaire CSV / PACT JSON). 179/179 tests. Commits afca629→a054bb7.
 
