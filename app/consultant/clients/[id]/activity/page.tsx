@@ -76,7 +76,7 @@ export default async function ActivityPage({ params }: { params: Promise<{ id: s
           No activity yet — events appear here the moment anything happens.
         </div>
       ) : (
-        <div className="rounded-2xl" style={{ background: "var(--card)", border: "1px solid var(--divider)" }}>
+        <div className="glass-panel">
           <div className="divide-y" style={{ borderColor: "var(--divider)" }}>
             {rows.map((e) => {
               const v = VERB_LABEL[e.verb] ?? { icon: "•", label: e.verb };

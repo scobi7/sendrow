@@ -121,7 +121,7 @@ export default async function LedgerPage({
           No rows{statusFilter && statusFilter !== "all" ? ` with status "${statusFilter}"` : " yet — data arrives via the portal or on-behalf entry"}.
         </div>
       ) : (
-        <div className="overflow-x-auto" style={{ borderRadius: "var(--radius-lg)", background: "var(--card)", border: "1px solid var(--divider)" }}>
+        <div className="glass-panel overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr

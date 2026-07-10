@@ -85,9 +85,7 @@ export default function HowItWorksPage() {
       <main>
         {/* Hero */}
         <section className="mx-auto max-w-3xl px-6 pt-20 pb-14 text-center">
-          <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "var(--accent)" }}>
-            How Sendrow works
-          </p>
+          <p className="eyebrow">How Sendrow works</p>
           <h1
             className="mt-3 text-4xl font-extrabold leading-tight font-display sm:text-5xl"
             style={{ color: "var(--text)" }}

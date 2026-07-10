@@ -44,7 +44,7 @@ export default async function AdminReferralsPage() {
           No leads yet — they arrive from /get-matched.
         </div>
       ) : (
-        <div className="overflow-hidden" style={{ borderRadius: "var(--radius-lg)", background: "var(--card)" }}>
+        <div className="glass-panel overflow-hidden">
           <table className="w-full text-sm">
             <thead>
               <tr

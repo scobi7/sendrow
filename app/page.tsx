@@ -55,12 +55,7 @@ export default async function Home() {
         style={{ background: "var(--bg)" }}
       >
         <div className="relative z-10 mx-auto max-w-5xl">
-          <p
-            className="mb-5 text-xs font-bold uppercase tracking-[0.2em]"
-            style={{ color: "var(--accent)", fontFamily: "var(--font-body)" }}
-          >
-            For climate consultants
-          </p>
+          <p className="eyebrow mb-5">For climate consultants</p>
           <h1
             className="font-display text-5xl font-extrabold leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl"
             style={{ color: "var(--text)" }}

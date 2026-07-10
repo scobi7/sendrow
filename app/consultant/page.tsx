@@ -128,8 +128,7 @@ export default async function ConsultantDashboard({
         </div>
       ) : (
         <div
-          className="overflow-hidden"
-          style={{ borderRadius: "var(--radius-lg)", background: "var(--card)" }}
+          className="glass-panel overflow-hidden"
         >
           <table className="w-full text-sm">
             <thead>

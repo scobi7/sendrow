@@ -221,7 +221,7 @@ export default async function ClientWorkspacePage({
 
           {/* Sessions requiring action */}
           {pendingSessions.length > 0 && (
-            <div className="rounded-2xl" style={{ background: "var(--card)", border: "1px solid var(--divider)" }}>
+            <div className="glass-panel">
               <div className="px-5 pt-4 pb-3" style={{ borderBottom: "1px solid var(--divider)" }}>
                 <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
                   Needs review ({pendingSessions.length})
@@ -257,7 +257,7 @@ export default async function ClientWorkspacePage({
           )}
 
           {/* Data requests */}
-          <div className="rounded-2xl" style={{ background: "var(--card)", border: "1px solid var(--divider)" }}>
+          <div className="glass-panel">
             <div className="px-5 pt-4 pb-3" style={{ borderBottom: "1px solid var(--divider)" }}>
               <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>Data requests</p>
             </div>
@@ -391,7 +391,7 @@ export default async function ClientWorkspacePage({
           </div>
 
           {/* All uploads */}
-          <div className="rounded-2xl" style={{ background: "var(--card)", border: "1px solid var(--divider)" }}>
+          <div className="glass-panel">
             <div className="flex items-center justify-between px-5 pt-4 pb-3" style={{ borderBottom: "1px solid var(--divider)" }}>
               <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>All uploads</p>
               <Link href={`/consultant/clients/${id}/ledger`} className="text-xs font-medium underline" style={{ color: "var(--primary)" }}>
