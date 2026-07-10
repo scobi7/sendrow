@@ -1,13 +1,7 @@
 import Link from "next/link";
 import { currentUser } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { Logo, ScopeBarChart, ScopeDonutChart } from "@/components/ui";
-
-const SAMPLE_EMISSIONS = [
-  { label: "Scope 1", value: 312 },
-  { label: "Scope 2", value: 484 },
-  { label: "Scope 3", value: 1488 },
-];
+import { Logo } from "@/components/ui";
 
 export default async function Home() {
   const user = await currentUser();
@@ -15,206 +9,159 @@ export default async function Home() {
 
   return (
     <main style={{ background: "var(--bg)", minHeight: "100vh" }}>
-      {/* Header */}
-      <header
-        className="sticky top-0 z-50 flex items-center justify-between px-8 py-5"
-        style={{ background: "var(--surface)", borderBottom: "1px solid var(--divider)" }}
-      >
+      {/* Header — transparent, floats on the wash */}
+      <header className="mx-auto flex h-[78px] max-w-6xl items-center justify-between px-6">
         <Logo />
         <div className="flex items-center gap-6">
-          <Link
-            href="/for-companies"
-            className="hidden text-sm font-medium transition-opacity hover:opacity-70 sm:block"
-            style={{ color: "var(--text-muted)" }}
-          >
+          <Link href="/how-it-works" className="hidden text-sm font-medium transition-opacity hover:opacity-70 sm:block" style={{ color: "var(--text-muted)" }}>
+            How it works
+          </Link>
+          <Link href="/for-companies" className="hidden text-sm font-medium transition-opacity hover:opacity-70 sm:block" style={{ color: "var(--text-muted)" }}>
             For companies
           </Link>
-          <Link
-            href="/for-consultants"
-            className="hidden text-sm font-medium transition-opacity hover:opacity-70 sm:block"
-            style={{ color: "var(--text-muted)" }}
-          >
+          <Link href="/for-consultants" className="hidden text-sm font-medium transition-opacity hover:opacity-70 sm:block" style={{ color: "var(--text-muted)" }}>
             For consultants
           </Link>
-          <Link
-            href="/login"
-            className="text-sm font-medium transition-opacity hover:opacity-70"
-            style={{ color: "var(--text-muted)" }}
-          >
+          <Link href="/login" className="text-sm font-medium transition-opacity hover:opacity-70" style={{ color: "var(--text-muted)" }}>
             Sign in
           </Link>
-          <Link href="/demo" className="btn btn-primary text-sm px-4 py-2">
+          <Link href="/demo" className="btn btn-primary text-sm">
             Request a demo
           </Link>
         </div>
       </header>
 
-      {/* ── Hero ── */}
-      <section
-        className="relative overflow-hidden px-6 py-28 text-center"
-        style={{ background: "var(--bg)" }}
-      >
-        <div className="relative z-10 mx-auto max-w-5xl">
-          <p className="eyebrow mb-5">For climate consultants</p>
+      {/* ── Hero: giant left headline + glass KPI card ── */}
+      <section className="mx-auto grid max-w-6xl items-center gap-14 px-6 pb-10 pt-16 lg:grid-cols-[1.1fr_0.9fr]">
+        <div>
+          <p className="eyebrow">The system of record · clean data, calm workflows</p>
           <h1
-            className="font-display text-5xl font-extrabold leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl"
-            style={{ color: "var(--text)" }}
+            className="mt-4 font-display font-extrabold"
+            style={{ fontSize: "clamp(52px, 7vw, 90px)", lineHeight: 0.95, letterSpacing: "-0.06em", color: "var(--text)" }}
           >
-            The practice platform for
-            <br />
-            <span style={{ color: "var(--primary)" }}>climate consultants.</span>
+            Climate reporting, with a lighter touch.
           </h1>
-          <p
-            className="mx-auto mt-6 max-w-lg text-lg leading-relaxed"
-            style={{ color: "var(--text-muted)" }}
-          >
-            The one organized place where your client&rsquo;s emissions data lives — collected once, kept with proof attached, and shared to any customer or regulator in whatever format they ask for. Under your brand.
+          <p className="mt-5 max-w-xl text-[17px] leading-[1.72]" style={{ color: "var(--text-muted)" }}>
+            Sendrow is the one organized place where your client&rsquo;s emissions data lives —
+            collected once, kept with proof attached, and shared to any customer or regulator
+            in whatever format they ask for. Under your brand.
           </p>
-
-          {/* Audience cards */}
-          <div className="mx-auto mt-14 grid max-w-2xl gap-4 sm:grid-cols-2">
-            <Link
-              href="/get-matched"
-              className="group rounded-2xl p-8 text-left transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg"
-              style={{
-                background: "var(--card)",
-                border: "1px solid var(--divider)",
-                boxShadow: "0 1px 4px rgba(15,50,28,0.05)",
-              }}
-            >
-              <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "var(--primary)" }}>
-                For companies
-              </p>
-              <h2
-                className="mt-3 font-display text-lg font-bold leading-snug"
-                style={{ color: "var(--text)" }}
-              >
-                Got an ESG questionnaire from a customer?
-              </h2>
-              <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>
-                We&rsquo;ll match you with a vetted climate consultant who handles it end to end — free, usually within two business days.
-              </p>
-              <span
-                className="mt-6 inline-flex items-center gap-1 text-sm font-semibold"
-                style={{ color: "var(--primary)" }}
-              >
-                Get matched &rarr;
-              </span>
+          <div className="mt-8 flex flex-wrap items-center gap-4">
+            <Link href="/for-consultants" className="btn btn-primary px-6 py-3 text-sm">
+              See the consultant workspace →
             </Link>
-
-            <Link
-              href="/for-consultants"
-              className="group rounded-2xl p-8 text-left transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg"
-              style={{
-                background: "var(--card)",
-                border: "1px solid var(--divider)",
-                boxShadow: "0 1px 4px rgba(15,50,28,0.05)",
-              }}
-            >
-              <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "var(--primary)" }}>
-                For consultants
-              </p>
-              <h2
-                className="mt-3 font-display text-lg font-bold leading-snug"
-                style={{ color: "var(--text)" }}
-              >
-                Managing clients across spreadsheets?
-              </h2>
-              <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>
-                Run your entire book from one platform. Clients connect their own accounts. You review, report, and deliver.
-              </p>
-              <span
-                className="mt-6 inline-flex items-center gap-1 text-sm font-semibold"
-                style={{ color: "var(--primary)" }}
-              >
-                See how it works &rarr;
-              </span>
+            <Link href="/get-matched" className="btn btn-secondary px-6 py-3 text-sm">
+              I&rsquo;m a company — get matched
             </Link>
-          </div>
-
-          <p className="mt-8 text-xs" style={{ color: "var(--text-muted)" }}>
-            Already have an account?{" "}
-            <Link href="/login" className="underline" style={{ color: "var(--primary)" }}>
-              Sign in
-            </Link>
-          </p>
-
-          {/* Dashboard preview */}
-          <div className="relative z-10 mt-16 w-full">
-            <div
-              className="mx-auto max-w-4xl overflow-hidden rounded-2xl"
-              style={{
-                background: "var(--card)",
-                border: "1px solid rgba(15,50,28,0.12)",
-                boxShadow: "0 2px 0 rgba(255,255,255,0.7) inset, 0 32px 80px rgba(15,50,28,0.1)",
-              }}
-            >
-              {/* Faux titlebar */}
-              <div
-                className="flex items-center gap-2 px-5 py-3.5"
-                style={{ borderBottom: "1px solid rgba(15,50,28,0.08)" }}
-              >
-                <span className="h-2.5 w-2.5 rounded-full" style={{ background: "#FF5F57" }} />
-                <span className="h-2.5 w-2.5 rounded-full" style={{ background: "#FFBD2E" }} />
-                <span className="h-2.5 w-2.5 rounded-full" style={{ background: "#28C840" }} />
-                <span className="ml-4 text-xs font-medium" style={{ color: "var(--text-muted)" }}>
-                  Sendrow &mdash; Emissions Dashboard
-                </span>
-              </div>
-
-              <div className="p-5">
-                {/* Mini KPIs */}
-                <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-                  {[
-                    { label: "Total emissions", value: "2,284", sub: "tCO₂e · YTD", accent: true },
-                    { label: "Scope 1", value: "312", sub: "Direct · tCO₂e", accent: false },
-                    { label: "Scope 2", value: "484", sub: "Electricity · tCO₂e", accent: false },
-                    { label: "Progress", value: "71%", sub: "4 of 7 complete", accent: true },
-                  ].map(({ label, value, sub, accent }) => (
-                    <div
-                      key={label}
-                      className="rounded-xl p-4"
-                      style={{ background: "rgba(255,255,255,0.65)", border: "1px solid rgba(15,50,28,0.07)" }}
-                    >
-                      <p className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
-                        {label}
-                      </p>
-                      <p
-                        className="mt-1.5 font-data text-xl font-bold leading-tight"
-                        style={{ color: accent ? "var(--primary)" : "var(--text)" }}
-                      >
-                        {value}
-                      </p>
-                      <p className="mt-0.5 text-xs" style={{ color: "var(--text-muted)" }}>{sub}</p>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Charts */}
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <div
-                    className="rounded-xl p-4"
-                    style={{ background: "rgba(255,255,255,0.65)", border: "1px solid rgba(15,50,28,0.07)" }}
-                  >
-                    <p className="mb-3 text-xs font-bold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
-                      Emissions by scope
-                    </p>
-                    <ScopeBarChart data={SAMPLE_EMISSIONS} />
-                  </div>
-                  <div
-                    className="rounded-xl p-4"
-                    style={{ background: "rgba(255,255,255,0.65)", border: "1px solid rgba(15,50,28,0.07)" }}
-                  >
-                    <p className="mb-3 text-xs font-bold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
-                      Scope breakdown
-                    </p>
-                    <ScopeDonutChart data={SAMPLE_EMISSIONS} />
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
+
+        <div className="card p-6">
+          <div className="grid grid-cols-2 gap-3">
+            {[
+              { label: "Reporting readiness", value: "84%", sub: "↑ +7% this quarter" },
+              { label: "Open actions", value: "12", sub: "4 due this week" },
+              { label: "Scope 1 + 2", value: "2.3kt", sub: "↓ -6.2% YoY" },
+              { label: "Data coverage", value: "92%", sub: "utility + supplier data" },
+            ].map(({ label, value, sub }) => (
+              <article key={label} className="card-inner">
+                <small className="text-xs" style={{ color: "var(--text-muted)" }}>{label}</small>
+                <strong className="mt-3 block font-data text-[26px] font-medium" style={{ color: "var(--text)" }}>
+                  {value}
+                </strong>
+                <span className="mt-2 block font-data text-[11px]" style={{ color: "var(--primary-strong)" }}>
+                  {sub}
+                </span>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Glass dashboard panels ── */}
+      <section className="mx-auto grid max-w-6xl gap-4 px-6 pb-16 lg:grid-cols-[1.45fr_0.82fr]">
+        <article className="card">
+          <div className="flex items-end justify-between gap-4">
+            <div>
+              <h2 className="text-lg font-bold" style={{ color: "var(--text)" }}>Disclosure readiness</h2>
+              <p className="mt-1 text-[13px]" style={{ color: "var(--text-muted)" }}>
+                Every section&rsquo;s progress, live from the data your clients submit
+              </p>
+            </div>
+            <span className="chip">2025 cycle</span>
+          </div>
+          <div className="mt-6 grid gap-3.5">
+            {[
+              ["Governance", 91],
+              ["Emissions", 84],
+              ["Risk", 69],
+              ["Targets", 76],
+            ].map(([label, pct]) => (
+              <div key={label as string} className="grid grid-cols-[110px_1fr_44px] items-center gap-3 text-[13px]">
+                <span style={{ color: "var(--text)" }}>{label}</span>
+                <div className="track">
+                  <div className="fill" style={{ width: `${pct}%` }} />
+                </div>
+                <b className="font-data text-xs font-medium" style={{ color: "var(--primary)" }}>{pct}%</b>
+              </div>
+            ))}
+          </div>
+        </article>
+
+        <article className="card">
+          <h2 className="text-lg font-bold" style={{ color: "var(--text)" }}>Recent work</h2>
+          <p className="mt-1 text-[13px]" style={{ color: "var(--text-muted)" }}>Current items across the workspace</p>
+          <table className="mt-3 w-full text-[13px]" style={{ borderCollapse: "collapse" }}>
+            <tbody>
+              {[
+                { title: "California SB 253", sub: "Annual disclosure", right: <span className="badge">Ready</span> },
+                { title: "Supplier emissions survey", sub: "Scope 3 collection", right: <span className="font-data text-xs">78%</span> },
+                { title: "Utility bill ingestion", sub: "Electricity + gas", right: <span className="font-data text-xs">Review</span> },
+                { title: "Risk narrative update", sub: "Climate + operations", right: <span className="font-data text-xs">Draft</span> },
+              ].map(({ title, sub, right }) => (
+                <tr key={title}>
+                  <td className="py-3.5" style={{ borderBottom: "1px solid var(--divider)" }}>
+                    <span style={{ color: "var(--text)" }}>{title}</span>
+                    <small className="mt-1 block text-[11px]" style={{ color: "var(--text-muted)" }}>{sub}</small>
+                  </td>
+                  <td className="py-3.5 text-right" style={{ borderBottom: "1px solid var(--divider)", color: "var(--text)" }}>
+                    {right}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </article>
+      </section>
+
+      {/* ── Audience cards ── */}
+      <section className="mx-auto grid max-w-6xl gap-4 px-6 pb-20 sm:grid-cols-2">
+        <Link href="/get-matched" className="card group transition-transform duration-200 hover:-translate-y-0.5">
+          <p className="eyebrow">For companies</p>
+          <h2 className="mt-3 text-lg font-bold leading-snug" style={{ color: "var(--text)" }}>
+            Got an ESG questionnaire from a customer?
+          </h2>
+          <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>
+            We&rsquo;ll match you with a vetted climate consultant who handles it end to end — free,
+            usually within two business days.
+          </p>
+          <span className="mt-5 inline-flex items-center gap-1 text-sm font-semibold" style={{ color: "var(--primary)" }}>
+            Get matched →
+          </span>
+        </Link>
+        <Link href="/for-consultants" className="card group transition-transform duration-200 hover:-translate-y-0.5">
+          <p className="eyebrow">For consultants</p>
+          <h2 className="mt-3 text-lg font-bold leading-snug" style={{ color: "var(--text)" }}>
+            Managing clients across spreadsheets?
+          </h2>
+          <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>
+            Run your entire book from one platform. Clients respond from their inbox in minutes.
+            You review, approve, and deliver in any format.
+          </p>
+          <span className="mt-5 inline-flex items-center gap-1 text-sm font-semibold" style={{ color: "var(--primary)" }}>
+            See how it works →
+          </span>
+        </Link>
       </section>
 
       {/* ── Trust bar ── */}
