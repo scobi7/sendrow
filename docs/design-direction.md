@@ -52,3 +52,8 @@ Replace the green-tinted wash with warm paper neutrals; green becomes an *accent
 - Sweep hardcoded hex in pages (`#fef9c3`, `#fecaca`, `#dc2626`, `#d97706` used inline ~20 places) onto tokens (`--warning-tint` etc.)
 - Landing page: remove hero gradient blobs; add one `--ink-band` section; hero H1 in Fraunces
 - No layout restructuring in this pass — typography + color carries the whole change
+
+---
+
+## Superseded 2026-07-10: "Aurora Pop" (Malachi's palette)
+The Ledger retheme is replaced by Aurora Pop: glass cards (rgba white .66/.78, blur 14px) over #F8FCFA with fixed mint/teal/indigo radial washes; greens #178B5A (readable primary) / #22C55E / #10B981 / #6EE7B7 / #2DD4BF; one small indigo #6366F1 accent; pill gradient buttons; Plus Jakarta Sans + JetBrains Mono. Tokens in app/globals.css are the source of truth.
