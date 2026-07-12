@@ -3,7 +3,7 @@
 ## Directory map
 - `MAPS.md` — this file
 - `GOALS.md` — product vision, business model, architecture (read first, always)
-- `ROADMAP.md` — release themes and priorities (Plan N program + backlog)
+- `ROADMAP.md` — phase status vs. Masao's pipeline doc (the build-order source of truth)
 - `PLANS.md` — the current approved plan, in detail
 - `TASKS.md` — itemized task list generated from PLANS.md; checked off as work completes
 - `NEXT.md` — end-of-session summary: blockers, user actions, what's next
