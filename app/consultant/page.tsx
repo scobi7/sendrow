@@ -1,21 +1,21 @@
 import Link from "next/link";
 import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { companies, consultantClients, dataRequests, emissionLineItems, intakeSessions, pipelineStatus } from "@/lib/db/schema";
+import { companies, consultantClients, dataRequests, intakeSessions, snapshots } from "@/lib/db/schema";
 import { and, desc, eq, inArray, isNull } from "drizzle-orm";
-import { loadCompany } from "@/lib/store";
-import { combinedTotals } from "@/lib/calc";
-import { PageHeader } from "@/components/ui";
+import { StatCard, StatusBadge, CompletenessMeter } from "@/components/workflow";
 import { archiveClient, deleteClient } from "@/lib/actions";
 import { DeleteClientButton } from "./delete-client-button";
+import { workflowStatus, nextDueDate, completenessPercent, type WorkflowStatus } from "@/lib/client-status";
 import type { ChecklistItem } from "@/lib/portal";
 
-const PIPELINE_LABEL: Record<string, string> = {
-  not_started: "Not started",
-  in_progress: "In progress",
-  locked: "Locked",
+const FILTER_STATUS: Record<string, WorkflowStatus> = {
+  overdue: "overdue",
+  ready: "ready_for_review",
+  awaiting: "awaiting_reply",
 };
 
+/** Consultant Dashboard (#19): home screen, logs in here first. */
 export default async function ConsultantDashboard({
   searchParams,
 }: {
@@ -30,191 +30,137 @@ export default async function ConsultantDashboard({
     .where(and(eq(consultantClients.consultantId, user.id), isNull(consultantClients.archivedAt)));
   const ids = links.map((l) => l.companyId);
 
-  const [rows, requests, pipelines, allItems, sessions] = ids.length
+  const [rows, requests, sessions, snapshotRows] = ids.length
     ? await Promise.all([
         db.select().from(companies).where(inArray(companies.id, ids)),
-        db.select().from(dataRequests).where(inArray(dataRequests.companyId, ids)),
-        db.select().from(pipelineStatus).where(inArray(pipelineStatus.companyId, ids)),
+        db.select().from(dataRequests).where(inArray(dataRequests.companyId, ids)).orderBy(desc(dataRequests.createdAt)),
         db
-          .select({ companyId: emissionLineItems.companyId, scope: emissionLineItems.scope, co2eKg: emissionLineItems.co2eKg, status: emissionLineItems.status })
-          .from(emissionLineItems)
-          .where(inArray(emissionLineItems.companyId, ids)),
-        db
-          .select({ companyId: intakeSessions.companyId, status: intakeSessions.status, createdAt: intakeSessions.createdAt })
+          .select({ companyId: intakeSessions.companyId, status: intakeSessions.status })
           .from(intakeSessions)
-          .where(inArray(intakeSessions.companyId, ids))
-          .orderBy(desc(intakeSessions.createdAt)),
+          .where(inArray(intakeSessions.companyId, ids)),
+        db.select({ companyId: snapshots.companyId }).from(snapshots).where(inArray(snapshots.companyId, ids)),
       ])
-    : [[], [], [], [], []];
+    : [[], [], [], []];
 
-  const clientResults = await Promise.allSettled(
-    rows.map(async (row) => {
-      const company = await loadCompany(row.id);
-      const companyItems = allItems.filter((i) => i.companyId === row.id);
-      const t = combinedTotals(company, companyItems.map((i) => ({ ...i, co2eKg: Number(i.co2eKg) })));
+  const clients = rows.map((row) => {
+    const reqs = requests.filter((r) => r.companyId === row.id);
+    const input = {
+      openRequests: reqs
+        .filter((r) => r.status === "open")
+        .map((r) => ({ dueDate: r.dueDate, checklist: r.checklist as ChecklistItem[] | null })),
+      pendingReviewCount: sessions.filter(
+        (s) => s.companyId === row.id && (s.status === "pending_review" || s.status === "needs_info")
+      ).length,
+      hasSnapshot: snapshotRows.some((s) => s.companyId === row.id),
+      hasFulfilledRequest: reqs.some((r) => r.status === "fulfilled"),
+    };
+    return {
+      row,
+      status: workflowStatus(input),
+      due: nextDueDate(input),
+      completeness: completenessPercent(input),
+    };
+  });
 
-      const reqs = requests.filter((r) => r.companyId === row.id);
-      const openReqs = reqs.filter((r) => r.status === "open");
-      let itemsReceived = 0;
-      let itemsTotal = 0;
-      for (const r of openReqs) {
-        const checklist = (r.checklist as ChecklistItem[] | null) ?? [];
-        itemsTotal += checklist.length;
-        itemsReceived += checklist.filter((i) => i.status === "received").length;
-      }
+  const counts = {
+    overdue: clients.filter((c) => c.status === "overdue").length,
+    ready: clients.filter((c) => c.status === "ready_for_review").length,
+    awaiting: clients.filter((c) => c.status === "awaiting_reply").length,
+  };
 
-      const pipeline = pipelines.find((p) => p.companyId === row.id)?.status ?? "not_started";
-      const unmappedCount = companyItems.filter((u) => u.status === "unmapped").length;
-      const clientSessions = sessions.filter((s) => s.companyId === row.id);
-      const pendingReview = clientSessions.filter((s) => s.status === "pending_review" || s.status === "needs_info").length;
-      const lastActivity = clientSessions[0]?.createdAt ?? reqs[0]?.createdAt ?? null;
-      const needsAttention = unmappedCount > 0 || pendingReview > 0 || !row.clientContactEmail;
-
-      return { row, t, openReqs: openReqs.length, itemsReceived, itemsTotal, pipeline, unmappedCount, pendingReview, lastActivity, needsAttention };
-    })
-  );
-
-  const clients = clientResults
-    .filter((r): r is PromiseFulfilledResult<Extract<typeof r, { status: "fulfilled" }>["value"]> => r.status === "fulfilled")
-    .map((r) => r.value);
-
-  const showFilter = rawFilter === "attention";
-  const displayed = showFilter ? clients.filter((c) => c.needsAttention) : clients;
-  const attentionCount = clients.filter((c) => c.needsAttention).length;
-  const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 1 });
+  const activeFilter = rawFilter && FILTER_STATUS[rawFilter] ? rawFilter : null;
+  const displayed = activeFilter ? clients.filter((c) => c.status === FILTER_STATUS[activeFilter]) : clients;
+  const fmtDue = (d: string | null) =>
+    d ? new Date(d + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "—";
 
   return (
     <div className="mx-auto max-w-6xl">
-      <div className="flex items-start justify-between">
-        <PageHeader
-          title={`Welcome back, ${user.name.split(" ")[0]}`}
-          subtitle={`${clients.length} active client${clients.length !== 1 ? "s" : ""}`}
-        />
-        <Link href="/consultant/clients/new" className="btn btn-primary">
-          + Add Client
+      <div className="mb-6 flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-bold font-display" style={{ color: "var(--text)" }}>
+            Welcome back, {user.name.split(" ")[0]}
+          </h1>
+          <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>
+            {clients.length} active client{clients.length !== 1 ? "s" : ""}
+          </p>
+        </div>
+        <Link href="/consultant/requests/new" className="btn btn-primary">
+          + New request
         </Link>
       </div>
 
-      {attentionCount > 0 && (
-        <div className="mb-4 flex items-center gap-3">
-          <Link
-            href={showFilter ? "/consultant" : "/consultant?filter=attention"}
-            className="rounded-full px-3 py-1 text-xs font-medium transition-colors"
-            style={
-              showFilter
-                ? { background: "var(--warning)", color: "#fff" }
-                : { background: "var(--warning-tint)", color: "var(--warning)" }
-            }
-          >
-            {attentionCount} Needs Attention
+      <div className="mb-6 grid grid-cols-3 gap-4">
+        <StatCard label="Overdue" value={counts.overdue} tone="danger" active={activeFilter === "overdue"}
+          href={activeFilter === "overdue" ? "/consultant" : "/consultant?filter=overdue"} />
+        <StatCard label="Ready to review" value={counts.ready} tone="primary" active={activeFilter === "ready"}
+          href={activeFilter === "ready" ? "/consultant" : "/consultant?filter=ready"} />
+        <StatCard label="Awaiting response" value={counts.awaiting} tone="warning" active={activeFilter === "awaiting"}
+          href={activeFilter === "awaiting" ? "/consultant" : "/consultant?filter=awaiting"} />
+      </div>
+
+      <div className="mb-3 flex items-center justify-between">
+        <h2 className="text-sm font-bold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
+          Your clients
+        </h2>
+        {activeFilter && (
+          <Link href="/consultant" className="text-xs transition-opacity hover:opacity-70" style={{ color: "var(--text-muted)" }}>
+            Show all
           </Link>
-          {showFilter && (
-            <Link
-              href="/consultant"
-              className="text-xs transition-opacity hover:opacity-70"
-              style={{ color: "var(--text-muted)" }}
-            >
-              Show all
-            </Link>
-          )}
-        </div>
-      )}
+        )}
+      </div>
 
       {displayed.length === 0 ? (
         <div className="card py-12 text-center" style={{ color: "var(--text-muted)" }}>
-          {showFilter
-            ? "No clients need attention right now."
-            : "No clients yet. Add your first client to get started."}
+          {activeFilter ? (
+            "No clients in this state right now."
+          ) : (
+            <>
+              No clients yet.{" "}
+              <Link href="/consultant/clients/new" className="underline" style={{ color: "var(--primary)" }}>
+                Add your first client
+              </Link>{" "}
+              to get started.
+            </>
+          )}
         </div>
       ) : (
-        <div
-          className="glass-panel overflow-hidden"
-        >
+        <div className="glass-panel overflow-hidden">
           <table className="w-full text-sm">
             <thead>
               <tr
                 className="text-left text-xs font-semibold uppercase tracking-wide"
-                style={{ borderBottom: "1px solid var(--divider)", background: "var(--card)", color: "var(--text-muted)" }}
+                style={{ borderBottom: "1px solid var(--divider)", color: "var(--text-muted)" }}
               >
                 <th className="px-4 py-3">Client</th>
-                <th className="px-4 py-3">Pipeline</th>
-                <th className="px-4 py-3">Open requests</th>
-                <th className="px-4 py-3 text-center">To review</th>
-                <th className="px-4 py-3 text-center">Unmapped</th>
-                <th className="px-4 py-3 text-right">Total CO2e</th>
-                <th className="px-4 py-3 text-right">Last activity</th>
+                <th className="px-4 py-3">Status</th>
+                <th className="px-4 py-3">Due</th>
+                <th className="px-4 py-3">Completeness</th>
                 <th className="px-4 py-3" />
               </tr>
             </thead>
             <tbody>
-              {displayed.map(({ row, t, openReqs, itemsReceived, itemsTotal, pipeline, unmappedCount, pendingReview, lastActivity, needsAttention }) => (
+              {displayed.map(({ row, status, due, completeness }) => (
                 <tr key={row.id} style={{ borderBottom: "1px solid var(--divider)" }}>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      {needsAttention && (
-                        <span
-                          className="h-2 w-2 rounded-full shrink-0"
-                          title={!row.clientContactEmail ? "No client contact email" : "Needs attention"}
-                          style={{ background: "var(--warning)" }}
-                        />
-                      )}
-                      <div>
-                        <p className="font-medium" style={{ color: "var(--text)" }}>{row.name}</p>
-                        <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-                          {row.clientContactEmail ?? "no contact set"}
-                        </p>
-                      </div>
-                    </div>
+                  <td className="px-4 py-3.5">
+                    <Link href={`/consultant/clients/${row.id}`} className="block transition-opacity hover:opacity-70">
+                      <p className="font-medium" style={{ color: "var(--text)" }}>{row.name}</p>
+                      <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+                        {row.clientContactEmail ?? "no contact set"}
+                      </p>
+                    </Link>
                   </td>
-                  <td className="px-4 py-3">
-                    <span
-                      className="rounded-full px-2 py-0.5 text-xs font-medium"
-                      style={
-                        pipeline === "locked"
-                          ? { background: "var(--primary-tint)", color: "var(--primary)" }
-                          : pipeline === "in_progress"
-                            ? { background: "var(--warning-tint)", color: "var(--warning-strong)" }
-                            : { background: "var(--divider)", color: "var(--text-muted)" }
-                      }
-                    >
-                      {PIPELINE_LABEL[pipeline] ?? pipeline}
-                    </span>
+                  <td className="px-4 py-3.5">
+                    <StatusBadge status={status} />
                   </td>
-                  <td className="px-4 py-3">
-                    {openReqs === 0 ? (
-                      <span className="text-xs" style={{ color: "var(--text-muted)" }}>—</span>
-                    ) : (
-                      <span className="text-xs" style={{ color: "var(--text)" }}>
-                        {openReqs} open{itemsTotal > 0 ? ` · ${itemsReceived}/${itemsTotal} items in` : ""}
-                      </span>
-                    )}
+                  <td className="px-4 py-3.5 font-data text-xs" style={{ color: due && new Date(due + "T23:59:59") < new Date() ? "var(--danger)" : "var(--text)" }}>
+                    {fmtDue(due)}
                   </td>
-                  <td className="px-4 py-3 text-center">
-                    {pendingReview > 0 ? (
-                      <span className="text-xs font-semibold" style={{ color: "var(--warning-strong)" }}>{pendingReview}</span>
-                    ) : (
-                      <span className="text-xs" style={{ color: "var(--text-muted)" }}>—</span>
-                    )}
+                  <td className="px-4 py-3.5">
+                    <CompletenessMeter percent={completeness} compact />
                   </td>
-                  <td className="px-4 py-3 text-center">
-                    {unmappedCount > 0 ? (
-                      <span className="text-xs font-semibold" style={{ color: "var(--danger)" }}>{unmappedCount}</span>
-                    ) : (
-                      <span className="text-xs" style={{ color: "var(--text-muted)" }}>—</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-right font-medium font-data" style={{ color: "var(--text)" }}>
-                    {fmt(t.total)} t
-                  </td>
-                  <td className="px-4 py-3 text-right text-xs" style={{ color: "var(--text-muted)" }}>
-                    {lastActivity ? new Date(lastActivity).toLocaleDateString() : "—"}
-                  </td>
-                  <td className="px-4 py-3 text-right">
+                  <td className="px-4 py-3.5 text-right">
                     <div className="flex items-center justify-end gap-2">
-                      <Link
-                        href={`/consultant/clients/${row.id}`}
-                        className="btn btn-secondary px-3 py-1 text-xs"
-                      >
+                      <Link href={`/consultant/clients/${row.id}`} className="btn btn-secondary px-3 py-1 text-xs">
                         Open
                       </Link>
                       <form action={archiveClient.bind(null, row.id)}>

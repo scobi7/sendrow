@@ -1,0 +1,954 @@
+[DOCUMENT] Document
+  [CANVAS] Page 1
+    [TEXT] 6. Retention & Upsell :: "6. Retention & Upsell"
+    [FRAME] Format Library — Add New Format — #35 (builder)
+      [FRAME] Frame
+        [TEXT] Templates are private until you and Malachi confirm the mapping is correct with the buyer directly - not shared across other consultants automatically. :: "Templates are private until you and Malachi confirm the mapping is correct with the buyer directly - not shared across other consultants automatically."
+      [FRAME] Frame
+        [TEXT] CONSULTANT · does this once per new buyer questionnaire, then it's reusable forever :: "CONSULTANT · does this once per new buyer questionnaire, then it's reusable forever"
+      [ROUNDED_RECTANGLE] Rectangle
+      [FRAME] back link
+        [TEXT] ← Dashboard :: "← Dashboard"
+      [FRAME] Frame
+        [FRAME] Frame
+          [TEXT] 2 :: "2"
+        [TEXT] Connect each question :: "Connect each question"
+        [TEXT] For every question, pick which data field it means :: "For every question, pick which \n data field it means"
+        [FRAME] Frame
+          [TEXT] "Scope 2 figure?" :: ""Scope 2 figure?""
+          [TEXT] → scope_2_total :: "→ scope_2_total"
+        [FRAME] Frame
+          [TEXT] "Scope 1 emissions figure?" :: ""Scope 1 emissions figure?""
+          [TEXT] → scope_1_total :: "→ scope_1_total"
+      [LINE] Line
+      [TEXT] → :: "→"
+      [FRAME] Frame
+        [FRAME] Frame
+          [TEXT] 3 :: "3"
+        [TEXT] Save as template :: "Save as template"
+        [TEXT] One-time setup — done forever :: "One-time setup — \n done forever"
+        [FRAME] Frame
+          [TEXT] Private until confirmed w/ buyer :: "Private until confirmed w/ buyer"
+        [FRAME] Frame
+          [TEXT] Save as an output format :: "Save as an output format"
+      [TEXT] → :: "→"
+      [TEXT] → :: "→"
+      [TEXT] Add a new questionnaire format :: "Add a new questionnaire format"
+      [FRAME] Frame
+        [FRAME] Frame
+          [TEXT] 1 :: "1"
+        [TEXT] Upload :: "Upload"
+        [TEXT] Kerri drops in a buyer's questionnaire (PDF/Excel) :: "Kerri drops in a buyer's \n questionnaire (PDF/Excel)"
+        [FRAME] Frame
+          [TEXT] northgate_questionnaire.pdf :: "northgate_questionnaire.pdf"
+      [FRAME] Frame
+        [FRAME] Frame
+          [TEXT] 4 :: "4"
+        [FRAME] Frame
+          [TEXT] Northgate's form :: "Northgate's form"
+        [TEXT] Reuse for any client :: "Reuse for any client"
+        [FRAME] Frame
+          [TEXT] Excel :: "Excel"
+        [TEXT] Shows up as a format option from now on :: "Shows up as a format \n option from now on"
+        [FRAME] Frame
+          [TEXT] CDP :: "CDP"
+        [FRAME] Frame
+          [TEXT] SB 253 :: "SB 253"
+      [FRAME] Frame
+        [TEXT] Consultant-facing, not internal :: "Consultant-facing, not internal"
+    [FRAME] Consultant Dashboard — #19 Multi-Client Dashboard
+      [FRAME] Sidebar
+        [TEXT] sendrow :: "sendrow"
+        [TEXT] Dashboard :: "Dashboard"
+        [TEXT] Settings :: "Settings"
+        [TEXT] New request :: "New request"
+        [TEXT] what to ask for :: "what to ask for"
+        [TEXT] how to output it :: "how to output it"
+        [TEXT] Compliance calendar :: "Compliance calendar"
+        [TEXT] Request templates :: "Request templates"
+        [TEXT] Format library :: "Format library"
+      [FRAME] Client table
+        [TEXT] 100% :: "100%"
+        [TEXT] Jul 28 :: "Jul 28"
+        [TEXT] Client :: "Client"
+        [LINE] Line
+        [TEXT] Aug 3 :: "Aug 3"
+        [TEXT] Status :: "Status"
+        [TEXT] 40% :: "40%"
+        [LINE] Line
+        [TEXT] Bluewater Logistics :: "Bluewater Logistics"
+        [TEXT] Meridian Foods :: "Meridian Foods"
+        [FRAME] Status badge
+          [TEXT] Awaiting reply :: "Awaiting reply"
+        [TEXT] Due :: "Due"
+        [TEXT] Pacific Roasters Co. :: "Pacific Roasters Co."
+        [FRAME] Status badge
+          [TEXT] Ready for review :: "Ready for review"
+        [TEXT] Completeness :: "Completeness"
+        [FRAME] Status badge
+          [TEXT] Overdue :: "Overdue"
+        [TEXT] Jul 18 :: "Jul 18"
+        [TEXT] 15% :: "15%"
+        [LINE] Line
+        [TEXT] Sage & Co. :: "Sage & Co."
+        [FRAME] Status badge
+          [TEXT] Approved :: "Approved"
+        [TEXT] — :: "—"
+        [TEXT] 100% :: "100%"
+      [TEXT] Your clients :: "Your clients"
+      [ROUNDED_RECTANGLE] Rectangle
+      [FRAME] usage label
+        [TEXT] CONSULTANT · home screen, logs in here first :: "CONSULTANT · home screen, logs in here first"
+      [FRAME] Stat card - Overdue
+        [TEXT] Overdue :: "Overdue"
+        [TEXT] 1 :: "1"
+      [FRAME] New request button
+        [TEXT] + New request :: "+ New request"
+      [FRAME] Stat card - Ready to review
+        [TEXT] Ready to review :: "Ready to review"
+        [TEXT] 1 :: "1"
+      [FRAME] Stat card - Awaiting response
+        [TEXT] Awaiting response :: "Awaiting response"
+        [TEXT] 1 :: "1"
+    [FRAME] Engagement Templates — #23
+      [ROUNDED_RECTANGLE] Rectangle
+      [FRAME] Frame
+        [TEXT] Custom buyer questionnaire :: "Custom buyer questionnaire"
+        [TEXT] Built from a buyer's custom format :: "Built from a buyer's custom format"
+        [TEXT] Used on 2 clients :: "Used on 2 clients"
+        [FRAME] Frame
+          [TEXT] Start new request :: "Start new request"
+      [LINE] Line
+      [FRAME] usage label
+        [TEXT] CONSULTANT · reused when starting a new request for any client :: "CONSULTANT · reused when starting a new request for any client"
+      [FRAME] back link
+        [TEXT] ← Dashboard :: "← Dashboard"
+      [FRAME] Frame
+        [TEXT] CDP full disclosure package :: "CDP full disclosure package"
+        [TEXT] All Scope 1/2/3 categories · annual :: "All Scope 1/2/3 categories · annual"
+        [TEXT] Used on 3 clients :: "Used on 3 clients"
+        [FRAME] Frame
+          [TEXT] Start new request :: "Start new request"
+      [TEXT] Engagement templates :: "Engagement templates"
+      [FRAME] Frame
+        [TEXT] Standard SB 253 package :: "Standard SB 253 package"
+        [FRAME] Frame
+          [TEXT] Default :: "Default"
+        [TEXT] Electricity, fuel, spend data · quarterly :: "Electricity, fuel, spend data · quarterly"
+        [FRAME] Frame
+          [TEXT] Start new request :: "Start new request"
+        [TEXT] Used on 8 clients :: "Used on 8 clients"
+      [FRAME] Frame
+        [TEXT] + New template :: "+ New template"
+    [FRAME] Supplier Magic-Link Form — #2 #4 #5 Magic Link + Forms + Evidence
+      [TEXT] Not sure? Leave a note :: "Not sure? Leave a note"
+      [FRAME] File row
+        [TEXT] april_bill.pdf :: "april_bill.pdf"
+        [TEXT] ✓ :: "✓"
+      [TEXT] Bluewater Logistics requested by Pacific Sustainability Advisors :: "Bluewater Logistics requested by Pacific Sustainability Advisors"
+      [FRAME] Note textarea
+        [TEXT] e.g. we don't have bills before March :: "e.g. we don't have bills before March"
+      [TEXT] Section 3 of 5 — Electricity use :: "Section 3 of 5 — Electricity use"
+      [ROUNDED_RECTANGLE] Rectangle
+      [TEXT] Upload your last 12 electricity bills :: "Upload your last 12 electricity bills"
+      [TEXT] A PDF from your utility's website works great. If you only have some months, upload what you have. :: "A PDF from your utility's website works great. If you only have some months, upload what you have."
+      [FRAME] Dropzone
+        [TEXT] Drop files here or click to upload :: "Drop files here or click to upload"
+      [TEXT] Saved automatically :: "Saved automatically"
+      [ROUNDED_RECTANGLE] Rectangle
+      [ROUNDED_RECTANGLE] Rectangle
+      [FRAME] File row
+        [TEXT] march_bill.pdf :: "march_bill.pdf"
+        [TEXT] ✓ :: "✓"
+      [ROUNDED_RECTANGLE] Rectangle
+      [FRAME] Frame
+        [TEXT] Back :: "Back"
+      [FRAME] Frame
+        [TEXT] Continue :: "Continue"
+      [FRAME] usage label
+        [TEXT] SUPPLIER · opens directly from the email link, no login :: "SUPPLIER · opens directly from the email link, no login"
+      [TEXT] Powered by sendrow - a secure way to share data with your customers :: "Powered by sendrow - a secure way to share data with your customers"
+      [FRAME] Frame
+        [TEXT] Send this section to a colleague :: "Send this section to a colleague"
+        [TEXT] Request more time :: "Request more time"
+    [FRAME] Settings — White Label — #22
+      [TEXT] Preview — request email :: "Preview — request email"
+      [FRAME] Frame
+      [ROUNDED_RECTANGLE] Rectangle
+      [FRAME] Frame
+        [FRAME] Frame
+          [FRAME] Frame
+          [TEXT] Pacific Sustainability Advisors :: "Pacific Sustainability Advisors"
+        [TEXT] Hi Bluewater Logistics, :: "Hi Bluewater Logistics,"
+        [TEXT] Pacific Sustainability Advisors is requesting your Q1 2026 emissions data. It only takes a few minutes. :: "Pacific Sustainability Advisors is requesting your Q1 2026 \n emissions data. It only takes a few minutes."
+        [TEXT] Powered by sendrow :: "Powered by sendrow"
+        [FRAME] Frame
+          [TEXT] Answer now :: "Answer now"
+      [FRAME] Frame
+        [TEXT] Pacific Sustainability Advisors :: "Pacific Sustainability Advisors"
+      [LINE] Line
+      [TEXT] Accent color :: "Accent color"
+      [FRAME] Frame
+      [FRAME] Frame
+      [FRAME] Frame
+        [TEXT] Save branding :: "Save branding"
+      [TEXT] Display name :: "Display name"
+      [TEXT] Branding :: "Branding"
+      [FRAME] Frame
+        [TEXT] Upload :: "Upload"
+      [FRAME] Frame
+      [TEXT] Logo :: "Logo"
+      [FRAME] usage label
+        [TEXT] CONSULTANT · one-time setup, in account settings :: "CONSULTANT · one-time setup, in account settings"
+      [FRAME] back link
+        [TEXT] ← Dashboard :: "← Dashboard"
+    [FRAME] Automatic Chasing — #21
+      [FRAME] Frame
+        [TEXT] Cadence auto-set from Compliance Calendar - adjust below if this request needs something different :: "Cadence auto-set from Compliance Calendar - adjust below if this request needs something different"
+      [FRAME] back link
+        [TEXT] ← Dashboard :: "← Dashboard"
+      [ROUNDED_RECTANGLE] Rectangle
+      [FRAME] Frame
+        [TEXT] Approved extensions auto-pause this schedule. Sections finished via delegation stop counting toward what triggers a reminder. :: "Approved extensions auto-pause this schedule. Sections finished via delegation stop counting toward what triggers a reminder."
+      [FRAME] Frame
+        [TEXT] Day of deadline :: "Day of deadline"
+        [TEXT] Scheduled — Aug 3 :: "Scheduled — Aug 3"
+        [FRAME] Frame
+          [FRAME] Frame
+      [LINE] Line
+      [FRAME] Frame
+        [TEXT] If overdue :: "If overdue"
+        [TEXT] Repeats every 3 days :: "Repeats every 3 days"
+        [FRAME] Frame
+          [FRAME] Frame
+      [TEXT] Reminder log :: "Reminder log"
+      [FRAME] Frame
+        [TEXT] Jul 20, 2026 — Reminder sent (7 days out) Tone: polite, includes direct magic link :: "Jul 20, 2026 — Reminder sent (7 days out) \n Tone: polite, includes direct magic link"
+      [FRAME] Frame
+        [TEXT] 2 days before due :: "2 days before due"
+        [TEXT] Scheduled — Aug 1 :: "Scheduled — Aug 1"
+        [FRAME] Frame
+          [FRAME] Frame
+      [TEXT] Reminder schedule — Pacific Roasters Co. :: "Reminder schedule — Pacific Roasters Co."
+      [FRAME] Frame
+        [TEXT] 7 days before due :: "7 days before due"
+        [TEXT] Scheduled — Jul 27 :: "Scheduled — Jul 27"
+        [FRAME] Frame
+          [FRAME] Frame
+      [FRAME] usage label
+        [TEXT] CONSULTANT · configured per-request, runs automatically after :: "CONSULTANT · configured per-request, runs automatically after"
+      [TEXT] Cadence :: "Cadence"
+    [TEXT] 2. Supplier Journey :: "2. Supplier Journey"
+    [TEXT] 4. Format Engine (the moat) :: "4. Format Engine (the moat)"
+    [FRAME] Hotspot Report — #40
+      [FRAME] back link
+        [TEXT] ← Dashboard :: "← Dashboard"
+      [FRAME] Frame
+        [TEXT] CONSULTANT · auto-generated the moment a footprint is approved :: "CONSULTANT · auto-generated the moment a footprint is approved"
+      [ROUNDED_RECTANGLE] Rectangle
+      [FRAME] Frame
+        [FRAME] Frame
+          [TEXT] 4 :: "4"
+        [TEXT] Purchased goods & services :: "Purchased goods & services"
+        [FRAME] Frame
+        [TEXT] 12% :: "12%"
+        [FRAME] Frame
+      [LINE] Line
+      [FRAME] Frame
+        [FRAME] Frame
+          [TEXT] 5 :: "5"
+        [TEXT] Waste :: "Waste"
+        [FRAME] Frame
+        [TEXT] 11% :: "11%"
+        [FRAME] Frame
+      [TEXT] Standard reduction suggestions :: "Standard reduction suggestions"
+      [FRAME] Frame
+        [TEXT] Switch fleet to renewable diesel; explore green electricity contract for main facility. :: "Switch fleet to renewable diesel; explore green electricity contract for main facility."
+      [FRAME] Frame
+        [FRAME] Frame
+          [TEXT] 3 :: "3"
+        [TEXT] Business travel :: "Business travel"
+        [FRAME] Frame
+        [TEXT] 14% :: "14%"
+        [FRAME] Frame
+      [TEXT] Hotspot report — Bluewater Logistics :: "Hotspot report — Bluewater Logistics"
+      [FRAME] Frame
+        [FRAME] Frame
+          [TEXT] 2 :: "2"
+        [TEXT] Fuel combustion (fleet) :: "Fuel combustion (fleet)"
+        [FRAME] Frame
+        [TEXT] 21% :: "21%"
+        [FRAME] Frame
+      [FRAME] Frame
+        [TEXT] Turn into client pitch :: "Turn into client pitch"
+      [FRAME] Frame
+        [FRAME] Frame
+          [TEXT] 1 :: "1"
+        [TEXT] Purchased electricity :: "Purchased electricity"
+        [FRAME] Frame
+        [TEXT] 42% :: "42%"
+        [FRAME] Frame
+    [TEXT] 3. Consultant Management :: "3. Consultant Management"
+    [FRAME] Client Detail View — #19 #6 #13 Drilldown + Comments + Audit
+      [TEXT] Activity timeline :: "Activity timeline"
+      [FRAME] Frame
+        [TEXT] Completeness :: "Completeness"
+        [TEXT] 100% :: "100%"
+        [TEXT] 0 :: "0"
+        [TEXT] Evidence attached :: "Evidence attached"
+        [TEXT] Flags open :: "Flags open"
+        [TEXT] 12 of 12 :: "12 of 12"
+      [ROUNDED_RECTANGLE] Rectangle
+      [FRAME] Frame
+        [FRAME] Frame
+        [TEXT] Jul 9, 2026 — Snapshot approved by Masao Honda :: "Jul 9, 2026 — Snapshot approved by Masao Honda"
+        [TEXT] Jul 1, 2026 — Request sent via magic link :: "Jul 1, 2026 — Request sent via magic link"
+        [FRAME] Frame
+        [FRAME] Frame
+        [TEXT] Jul 8, 2026 — Supplier submitted response (12 files attached) :: "Jul 8, 2026 — Supplier submitted response (12 files attached)"
+      [TEXT] Requests (3) :: "Requests (3)"
+      [LINE] Line
+      [FRAME] Frame
+        [TEXT] Q1 2026 emissions data :: "Q1 2026 emissions data"
+        [FRAME] Frame
+          [TEXT] Ready for review :: "Ready for review"
+      [FRAME] Frame
+        [TEXT] Q4 2025 emissions data :: "Q4 2025 emissions data"
+        [FRAME] Frame
+          [TEXT] Approved :: "Approved"
+      [FRAME] Frame
+        [TEXT] Q3 2025 emissions data :: "Q3 2025 emissions data"
+        [FRAME] Frame
+          [TEXT] Approved :: "Approved"
+      [TEXT] Comment threads :: "Comment threads"
+      [FRAME] Frame
+        [TEXT] + New request :: "+ New request"
+      [FRAME] Frame
+        [TEXT] BL :: "BL"
+      [TEXT] Logistics · 200-500 employees · Ready for review :: "Logistics · 200-500 employees · Ready for review"
+      [TEXT] Data received & review status :: "Data received & review status"
+      [TEXT] Bluewater Logistics :: "Bluewater Logistics"
+      [FRAME] Frame
+        [TEXT] 💬 "Does the fuel figure include delivery trucks?" on Fuel — diesel :: "💬 "Does the fuel figure include delivery trucks?" on Fuel — diesel"
+        [TEXT] Reply from Bluewater Logistics: "Yes — 3 vehicles, added to next update." :: "Reply from Bluewater Logistics: "Yes — 3 vehicles, added to next update.""
+      [FRAME] usage label
+        [TEXT] CONSULTANT · clicking into a client from the dashboard table :: "CONSULTANT · clicking into a client from the dashboard table"
+      [FRAME] back link
+        [TEXT] ← Dashboard :: "← Dashboard"
+      [TEXT] Click any request → opens its own read-only snapshot view (past) or Review & Approve (current) :: "Click any request → opens its own read-only snapshot view (past) or Review & Approve (current)"
+    [FRAME] Modal — Approve With Open Flag Warning
+      [FRAME] Frame
+        [TEXT] ! :: "!"
+      [TEXT] 1 item is still flagged :: "1 item is still flagged"
+      [FRAME] Frame
+        [TEXT] CONSULTANT - popup, not a page :: "CONSULTANT - popup, not a page"
+      [TEXT] Fuel - diesel is flagged (40x higher than last period) and hasn't been resolved. You can still approve and freeze this snapshot with the flag open. :: "Fuel - diesel is flagged (40x higher than last period) and hasn't been resolved. You can still approve and freeze this snapshot with the flag open."
+      [FRAME] Frame
+        [TEXT] Approve with flag open :: "Approve with flag open"
+      [FRAME] Frame
+        [TEXT] Go back :: "Go back"
+    [TEXT] 7. Audit-Grade (Phase 5) :: "7. Audit-Grade (Phase 5)"
+    [TEXT] 5. Supplier Utility Modals :: "5. Supplier Utility Modals"
+    [FRAME] Popup — Answer Once, Share Many — #26
+      [FRAME] Frame
+        [TEXT] ✓ :: "✓"
+      [TEXT] This takes about 10 seconds instead of 20 minutes. :: "This takes about 10 seconds instead of 20 minutes."
+      [TEXT] You already have this :: "You already have this"
+      [FRAME] Frame
+        [TEXT] ← Pops up automatically when supplier opens a NEW magic link that overlaps existing data :: "← Pops up automatically when supplier opens a NEW magic link that overlaps existing data"
+      [FRAME] Frame
+        [TEXT] SUPPLIER · not a page you navigate to — a popup inside the magic-link flow :: "SUPPLIER · not a page you navigate to — a popup inside the magic-link flow"
+      [FRAME] Frame
+        [TEXT] Pacific Sustainability Advisors will be notified this snapshot was reshared :: "Pacific Sustainability Advisors will be notified this snapshot was reshared"
+      [FRAME] Frame
+        [TEXT] Start fresh instead :: "Start fresh instead"
+      [TEXT] Harbor Supply Co. is requesting the same Q1 2026 electricity and fuel data you already gave Pacific Sustainability Advisors. :: "Harbor Supply Co. is requesting the same Q1 2026 electricity and fuel data you already gave Pacific Sustainability Advisors."
+      [FRAME] Frame
+        [TEXT] Share existing snapshot with Harbor Supply Co. :: "Share existing snapshot with Harbor Supply Co."
+      [FRAME] Frame
+        [TEXT] Approved snapshot — Jul 9, 2026 :: "Approved snapshot — Jul 9, 2026"
+        [TEXT] Electricity, fuel · Q1 2026 · 12 files :: "Electricity, fuel · Q1 2026 · 12 files"
+    [FRAME] Review & Approve — #7 #6 #18 Review + Comments + Vendor Memory
+      [TEXT] This takes you straight to Snapshot & Share - it's one continuous action, not two. :: "This takes you straight to Snapshot & Share - it's one continuous action, not two."
+      [FRAME] back link
+        [TEXT] ← Dashboard :: "← Dashboard"
+      [ROUNDED_RECTANGLE] Rectangle
+      [TEXT] Supplier gets this by email and can reply from their inbox or a claimed account - no account required :: "Supplier gets this by email and can reply from their inbox or a claimed account - no account required"
+      [FRAME] Frame
+        [TEXT] Spend data — Q1 2026 :: "Spend data — Q1 2026"
+        [TEXT] $142,000 :: "$142,000"
+      [LINE] Line
+      [FRAME] Frame
+        [TEXT] Category confirmation :: "Category confirmation"
+        [TEXT] Vendor: Shell Fleet Card → Category: Mobile combustion (Scope 1) :: "Vendor: Shell Fleet Card  →  Category: Mobile combustion (Scope 1)"
+        [TEXT] Remembered from last year — click to change :: "Remembered from last year — click to change"
+      [FRAME] Frame
+        [TEXT] Request changes :: "Request changes"
+      [FRAME] Frame
+        [TEXT] Approve, freeze & go to snapshot :: "Approve, freeze & go to snapshot"
+      [TEXT] Reply: "Yes - 3 vehicles, added to next update." - Bluewater Logistics, Jul 8 :: "Reply: "Yes - 3 vehicles, added to next update." - Bluewater Logistics, Jul 8"
+      [FRAME] Frame
+        [TEXT] Fuel — diesel :: "Fuel — diesel"
+        [TEXT] 4,800 gallons :: "4,800 gallons"
+        [FRAME] Frame
+          [TEXT] ✓ Resolved :: "✓ Resolved"
+        [TEXT] 💬 "Does this include delivery trucks?" — Masao, 2 days ago :: "💬 "Does this include delivery trucks?" — Masao, 2 days ago"
+      [TEXT] Review — Bluewater Logistics :: "Review — Bluewater Logistics"
+      [FRAME] Frame
+        [TEXT] Electricity consumption :: "Electricity consumption"
+        [TEXT] 12,400 kWh :: "12,400 kWh"
+        [FRAME] Frame
+          [TEXT] 1 file attached :: "1 file attached"
+      [FRAME] usage label
+        [TEXT] CONSULTANT · opens when supplier submits (from notification or dashboard) :: "CONSULTANT · opens when supplier submits (from notification or dashboard)"
+      [TEXT] Q1 2026 · Electricity, fuel, spend data :: "Q1 2026 · Electricity, fuel, spend data"
+    [FRAME] Snapshot & Share — #8 #10 #9 Snapshots + Sharing + Reshaping
+      [TEXT] Format :: "Format"
+      [FRAME] Frame
+        [TEXT] Elena Ruiz, Northgate Retail :: "Elena Ruiz, Northgate Retail"
+      [FRAME] Frame
+        [TEXT] SB 253 :: "SB 253"
+      [FRAME] Frame
+        [TEXT] Scope 3 :: "Scope 3"
+        [TEXT] 1,180 tCO2e :: "1,180 tCO2e"
+      [LINE] Line
+      [TEXT] Evidence attached (4 files) · Approved by Masao Honda on Jul 9, 2026 :: "Evidence attached (4 files) · Approved by Masao Honda on Jul 9, 2026"
+      [LINE] Line
+      [TEXT] Share this snapshot :: "Share this snapshot"
+      [FRAME] Frame
+        [TEXT] CDP :: "CDP"
+      [FRAME] Frame
+        [TEXT] Scope 2 :: "Scope 2"
+        [TEXT] 220 tCO2e :: "220 tCO2e"
+      [TEXT] Snapshot — Bluewater Logistics :: "Snapshot — Bluewater Logistics"
+      [FRAME] Frame
+        [TEXT] Scope 1 :: "Scope 1"
+        [TEXT] 410 tCO2e :: "410 tCO2e"
+      [TEXT] Recipient :: "Recipient"
+      [FRAME] Frame
+        [TEXT] 🔒 Locked · Jul 9, 2026 :: "🔒 Locked · Jul 9, 2026"
+      [FRAME] Frame
+        [TEXT] Excel :: "Excel"
+      [FRAME] Frame
+        [TEXT] Custom :: "Custom"
+      [FRAME] Frame
+        [TEXT] Requires supplier's explicit OK before this share goes out. :: "Requires supplier's explicit OK before this share goes out."
+      [FRAME] Frame
+        [TEXT] Clicking "Approve" with open flags -> this warning first :: "Clicking "Approve" with open flags -> this warning first"
+      [FRAME] Frame
+        [TEXT] Confirm & share :: "Confirm & share"
+      [FRAME] usage label
+        [TEXT] CONSULTANT · after approving, to freeze + send data out :: "CONSULTANT · after approving, to freeze + send data out"
+      [TEXT] Calculated from approved line items (see Review & Approve) using stored methodology + emission factors :: "Calculated from approved line items (see Review & Approve) using stored methodology + emission factors"
+      [FRAME] Frame
+        [TEXT] Found a mistake? Edit the flagged item directly - the rest of this data stays as-is. A new corrected snapshot gets created, this one stays on record. :: "Found a mistake? Edit the flagged item directly - the rest of this data stays as-is. A new corrected snapshot gets created, this one stays on record."
+      [FRAME] back link
+        [TEXT] ← Dashboard :: "← Dashboard"
+      [FRAME] New reports card
+        [TEXT] New for this client :: "New for this client"
+        [TEXT] → Hotspot report ready (top 5 sources + reduction pitch) :: "→ Hotspot report ready (top 5 sources + reduction pitch)"
+        [TEXT] → Score gap check ready (CDP: B, could reach A) :: "→ Score gap check ready (CDP: B, could reach A)"
+      [FRAME] attestation status
+        [TEXT] Attested by Priya Chen, Bluewater Logistics - Jul 9, 2026 - sharing is enabled :: "Attested by Priya Chen, Bluewater Logistics - Jul 9, 2026 - sharing is enabled"
+    [FRAME] Score-Gap Flags — #42
+      [ROUNDED_RECTANGLE] Rectangle
+      [FRAME] Frame
+        [TEXT] No water risk disclosure :: "No water risk disclosure"
+        [TEXT] Optional module, low impact :: "Optional module, low impact"
+        [FRAME] Frame
+          [TEXT] Low impact :: "Low impact"
+      [LINE] Line
+      [FRAME] Frame
+        [TEXT] Propose score-improvement work :: "Propose score-improvement work"
+      [FRAME] Frame
+        [TEXT] CONSULTANT · checked against CDP/EcoVadis scoring rules, updates as data changes :: "CONSULTANT · checked against CDP/EcoVadis scoring rules, updates as data changes"
+      [FRAME] back link
+        [TEXT] ← Dashboard :: "← Dashboard"
+      [FRAME] Frame
+        [TEXT] Missing verification statement :: "Missing verification statement"
+        [TEXT] Points lost in section C1 :: "Points lost in section C1"
+        [FRAME] Frame
+          [TEXT] High impact :: "High impact"
+      [TEXT] Score gaps — CDP SME, Bluewater Logistics :: "Score gaps — CDP SME, Bluewater Logistics"
+      [FRAME] Frame
+        [TEXT] No Scope 3 screening :: "No Scope 3 screening"
+        [TEXT] Points lost in section C6 :: "Points lost in section C6"
+        [FRAME] Frame
+          [TEXT] High impact :: "High impact"
+      [FRAME] Frame
+        [TEXT] Current :: "Current"
+        [TEXT] B :: "B"
+        [TEXT] → :: "→"
+        [TEXT] A :: "A"
+        [TEXT] Achievable with fixes :: "Achievable with fixes"
+    [FRAME] Monthly Client Digest — #45 #43
+      [TEXT] Jul 9 - Flag resolved, snapshot approved :: "Jul 9 - Flag resolved, snapshot approved"
+      [FRAME] Frame
+      [FRAME] Frame
+        [FRAME] Frame
+        [TEXT] July digest - Bluewater Logistics :: "July digest - Bluewater Logistics"
+      [FRAME] Frame
+      [TEXT] This month's activity :: "This month's activity"
+      [FRAME] Frame
+        [TEXT] Data received :: "Data received"
+        [TEXT] 12 of 12 items :: "12 of 12 items"
+      [FRAME] Frame
+      [TEXT] Jul 1 - Q1 2026 request sent :: "Jul 1 - Q1 2026 request sent"
+      [FRAME] Frame
+      [TEXT] Jul 10 - Shared with Elena Ruiz :: "Jul 10 - Shared with Elena Ruiz"
+      [FRAME] Frame
+        [TEXT] Great progress this quarter - fuel data flagged and resolved quickly. On track for the August SB 253 deadline. :: "Great progress this quarter - fuel data flagged and resolved quickly. On track for the August SB 253 deadline."
+      [FRAME] Frame
+        [TEXT] Flags raised :: "Flags raised"
+        [TEXT] 1, resolved :: "1, resolved"
+      [TEXT] Consultant's note :: "Consultant's note"
+      [TEXT] Jul 8 - Data submitted, 1 flag raised :: "Jul 8 - Data submitted, 1 flag raised"
+      [FRAME] Frame
+        [TEXT] Completeness :: "Completeness"
+        [TEXT] 100% :: "100%"
+      [FRAME] Frame
+        [TEXT] Forward to client :: "Forward to client"
+      [FRAME] Frame
+        [TEXT] CONSULTANT - auto-generated monthly, forwarded as-is to justify retainer :: "CONSULTANT - auto-generated monthly, forwarded as-is to justify retainer"
+      [FRAME] back link
+        [TEXT] ← Dashboard :: "← Dashboard"
+    [FRAME] Compliance Calendar — #44
+      [ROUNDED_RECTANGLE] Rectangle
+      [FRAME] Frame
+        [FRAME] Frame
+          [TEXT] 2027 cycle :: "2027 cycle"
+        [TEXT] SB 253 - Scope 3 disclosure begins :: "SB 253 - Scope 3 disclosure begins"
+        [TEXT] Regulatory, preloaded :: "Regulatory, preloaded"
+      [LINE] Line
+      [FRAME] Frame
+        [TEXT] CONSULTANT - Masao maintains regulatory dates, Malachi builds the plumbing :: "CONSULTANT - Masao maintains regulatory dates, Malachi builds the plumbing"
+      [FRAME] back link
+        [TEXT] ← Dashboard :: "← Dashboard"
+      [FRAME] Frame
+        [TEXT] Deadlines here automatically set the cadence in each request's Automatic Chasing schedule :: "Deadlines here automatically set the cadence in each request's Automatic Chasing schedule"
+      [FRAME] Frame
+        [FRAME] Frame
+          [TEXT] Jul 28, 2026 :: "Jul 28, 2026"
+        [TEXT] Bluewater Logistics - custom deadline :: "Bluewater Logistics - custom deadline"
+        [TEXT] Set by consultant :: "Set by consultant"
+      [TEXT] Compliance calendar :: "Compliance calendar"
+      [FRAME] Frame
+        [FRAME] Frame
+          [TEXT] Sep 14, 2026 :: "Sep 14, 2026"
+        [TEXT] CDP submission window closes :: "CDP submission window closes"
+        [TEXT] 3 clients opted in :: "3 clients opted in"
+      [FRAME] Frame
+        [FRAME] Frame
+          [TEXT] Aug 10, 2026 :: "Aug 10, 2026"
+        [TEXT] SB 253 - Scope 1/2 disclosure :: "SB 253 - Scope 1/2 disclosure"
+        [TEXT] All clients :: "All clients"
+    [FRAME] Components — #43 #6.7 Commentary + Completeness
+      [ROUNDED_RECTANGLE] Rectangle
+      [FRAME] Frame
+        [TEXT] 60% :: "60%"
+        [TEXT] Data received :: "Data received"
+        [FRAME] Frame
+        [FRAME] Frame
+        [TEXT] 83% :: "83%"
+        [TEXT] Reviewed :: "Reviewed"
+        [FRAME] Frame
+        [FRAME] Frame
+        [FRAME] Frame
+        [TEXT] Evidence attached :: "Evidence attached"
+        [FRAME] Frame
+        [TEXT] 100% :: "100%"
+      [LINE] Line
+      [FRAME] Frame
+        [TEXT] COMPONENTS - built once, reused across multiple screens, not standalone pages :: "COMPONENTS - built once, reused across multiple screens, not standalone pages"
+      [TEXT] Completeness meter - used on dashboard, client detail, and digest :: "Completeness meter - used on dashboard, client detail, and digest"
+      [TEXT] Reusable components :: "Reusable components"
+      [FRAME] Frame
+        [TEXT] Consultant's analysis :: "Consultant's analysis"
+        [FRAME] Frame
+          [TEXT] Scope 2 emissions fell 12% this quarter, driven by the switch to a renewable electricity contract at the main facility... :: "Scope 2 emissions fell 12% this quarter, driven by the switch to a renewable electricity contract at the main facility..."
+        [TEXT] Attributed to: Masao Honda, Pacific Sustainability Advisors :: "Attributed to: Masao Honda, Pacific Sustainability Advisors"
+      [TEXT] Consultant commentary block - appears in every export :: "Consultant commentary block - appears in every export"
+    [FRAME] Confirmation Screen — closes magic-link flow
+      [FRAME] Frame
+        [TEXT] ✓ :: "✓"
+      [TEXT] Sent - you're all set :: "Sent - you're all set"
+      [FRAME] Frame
+        [TEXT] SUPPLIER - shown automatically after the last section is submitted :: "SUPPLIER - shown automatically after the last section is submitted"
+      [TEXT] Pacific Sustainability Advisors will review your data. If they have questions, they'll reach out through this same link. :: "Pacific Sustainability Advisors will review your data. If they have questions, they'll reach out through this same link."
+      [TEXT] No thanks, I'm done :: "No thanks, I'm done"
+      [FRAME] Frame
+        [TEXT] Want to see your data anytime? :: "Want to see your data anytime?"
+        [TEXT] Claim a free account - just email and password. :: "Claim a free account - just email and password."
+        [FRAME] Frame
+          [TEXT] Claim your free account :: "Claim your free account"
+    [FRAME] Format Library — #35 (list view)
+      [ROUNDED_RECTANGLE] Rectangle
+      [FRAME] Frame
+        [TEXT] Plain Excel export :: "Plain Excel export"
+        [TEXT] Built-in · generic spreadsheet :: "Built-in · generic spreadsheet"
+        [FRAME] Frame
+          [TEXT] Use :: "Use"
+      [LINE] Line
+      [FRAME] Frame
+        [TEXT] Northgate Retail's questionnaire :: "Northgate Retail's questionnaire"
+        [TEXT] Added by Masao · private until confirmed :: "Added by Masao · private until confirmed"
+        [FRAME] Frame
+          [TEXT] Private :: "Private"
+        [FRAME] Frame
+          [TEXT] Use :: "Use"
+      [FRAME] Frame
+        [TEXT] + Add a new format :: "+ Add a new format"
+      [TEXT] "+ Add a new format" opens the mapping builder below ↓ :: ""+ Add a new format" opens the mapping builder below ↓"
+      [FRAME] Frame
+        [TEXT] CDP SME questionnaire :: "CDP SME questionnaire"
+        [TEXT] Built-in · CDP format :: "Built-in · CDP format"
+        [FRAME] Frame
+          [TEXT] Use :: "Use"
+      [TEXT] Format library :: "Format library"
+      [FRAME] Frame
+        [TEXT] SB 253 draft template :: "SB 253 draft template"
+        [TEXT] Built-in · CARB regulatory format :: "Built-in · CARB regulatory format"
+        [FRAME] Frame
+          [TEXT] Use :: "Use"
+      [TEXT] ← Dashboard :: "← Dashboard"
+    [FRAME] New Data Request — #1 Data Request
+      [FRAME] Frame
+        [TEXT] Fuel :: "Fuel"
+      [FRAME] Frame
+        [TEXT] Electricity :: "Electricity"
+      [ROUNDED_RECTANGLE] Rectangle
+      [FRAME] Frame
+        [TEXT] Spend data :: "Spend data"
+      [TEXT] Start from a template (skips steps below) :: "Start from a template (skips steps below)"
+      [LINE] Line
+      [FRAME] Frame
+        [TEXT] None - build from scratch :: "None - build from scratch"
+        [TEXT] ⌄ :: "⌄"
+      [TEXT] Supplier contact email :: "Supplier contact email"
+      [FRAME] Frame
+        [TEXT] priya@bluewaterlogistics.com :: "priya@bluewaterlogistics.com"
+      [FRAME] Frame
+        [TEXT] Waste :: "Waste"
+      [FRAME] Frame
+        [TEXT] Search or select a supplier... :: "Search or select a supplier..."
+      [TEXT] New data request :: "New data request"
+      [TEXT] Company :: "Company"
+      [TEXT] Data types requested :: "Data types requested"
+      [TEXT] ← Dashboard :: "← Dashboard"
+      [FRAME] Frame
+        [TEXT] Water :: "Water"
+      [TEXT] Time period :: "Time period"
+      [FRAME] Frame
+        [TEXT] Jan 1, 2026 - Jun 30, 2026 :: "Jan 1, 2026 - Jun 30, 2026"
+      [TEXT] Due date :: "Due date"
+      [FRAME] Frame
+        [TEXT] Select a date :: "Select a date"
+      [FRAME] Frame
+        [TEXT] Reminder cadence: auto (7/2/day-of/overdue) :: "Reminder cadence: auto (7/2/day-of/overdue)"
+        [TEXT] Edit → :: "Edit →"
+      [FRAME] Frame
+        [TEXT] Coastal Fixtures Inc. will get a magic link by email - no account needed to respond. :: "Coastal Fixtures Inc. will get a magic link by email - no account needed to respond."
+      [FRAME] Frame
+        [TEXT] Cancel :: "Cancel"
+      [FRAME] Frame
+        [TEXT] Save this setup as a template :: "Save this setup as a template"
+      [FRAME] Frame
+        [TEXT] Send request :: "Send request"
+    [FRAME] Supplier Review & Submit — closes the gap before Confirmation
+      [FRAME] Frame
+        [TEXT] SUPPLIER - shown after the last form section, before Confirmation Screen :: "SUPPLIER - shown after the last form section, before Confirmation Screen"
+      [ROUNDED_RECTANGLE] Rectangle
+      [FRAME] Frame
+      [LINE] Line
+      [TEXT] I confirm this data is accurate to the best of my knowledge :: "I confirm this data is accurate to the best of my knowledge"
+      [TEXT] This confirms only this snapshot (Q1 2026) - future updates need their own confirmation :: "This confirms only this snapshot (Q1 2026) - future updates need their own confirmation"
+      [FRAME] Frame
+        [TEXT] Back :: "Back"
+      [FRAME] Frame
+        [TEXT] Spend data - Q1 2026 :: "Spend data - Q1 2026"
+        [TEXT] $142,000 - 2 files attached :: "$142,000 - 2 files attached"
+        [TEXT] Edit :: "Edit"
+      [TEXT] Review before you submit :: "Review before you submit"
+      [FRAME] Frame
+        [TEXT] Fuel - diesel :: "Fuel - diesel"
+        [TEXT] 4,800 gallons - 1 file attached :: "4,800 gallons - 1 file attached"
+        [TEXT] Edit :: "Edit"
+      [FRAME] Frame
+        [TEXT] Submit to Pacific Sustainability Advisors :: "Submit to Pacific Sustainability Advisors"
+      [FRAME] Frame
+        [TEXT] Electricity :: "Electricity"
+        [TEXT] 12,400 kWh - 1 file attached :: "12,400 kWh - 1 file attached"
+        [TEXT] Edit :: "Edit"
+    [FRAME] Claim Account — behind the Confirmation Screen button
+      [ROUNDED_RECTANGLE] Rectangle
+      [TEXT] Password :: "Password"
+      [LINE] Line
+      [FRAME] Frame
+        [TEXT] ......... :: "........."
+      [FRAME] Frame
+        [TEXT] Create account :: "Create account"
+      [FRAME] Frame
+        [TEXT] SUPPLIER - optional, reached from Confirmation Screen :: "SUPPLIER - optional, reached from Confirmation Screen"
+      [FRAME] Frame
+        [TEXT] priya@bluewaterlogistics.com :: "priya@bluewaterlogistics.com"
+      [TEXT] Claim your free account :: "Claim your free account"
+      [TEXT] Email :: "Email"
+      [TEXT] See your data anytime, reply to questions, and reuse it the next time someone asks. :: "See your data anytime, reply to questions, and reuse it the next time someone asks."
+    [FRAME] Supplier Mini-Report — #4.9, rebuilt after cleanup loss
+      [FRAME] Supplier Account — Trust & Data — #37 #38 #25 #24
+        [FRAME] Frame
+          [TEXT] What you're confirming: Shell Fleet Card -> categorized as Mobile combustion (Scope 1) by your consultant. Looks wrong? :: "What you're confirming: Shell Fleet Card -> categorized as Mobile combustion (Scope 1) by your consultant. Looks wrong?"
+          [TEXT] Flag this -> :: "Flag this ->"
+        [ROUNDED_RECTANGLE] Rectangle
+        [TEXT] Your data is yours :: "Your data is yours"
+        [LINE] Line
+        [FRAME] Frame
+          [TEXT] Download everything, anytime — PACT V3 format or plain CSV. :: "Download everything, anytime — PACT V3 format or plain CSV."
+          [FRAME] Frame
+            [TEXT] Download all my data :: "Download all my data"
+        [FRAME] Frame
+          [TEXT] SUPPLIER · lives in their claimed free account, viewed anytime :: "SUPPLIER · lives in their claimed free account, viewed anytime"
+        [TEXT] Questions from your consultant :: "Questions from your consultant"
+        [FRAME] Frame
+          [TEXT] Pacific Sustainability Advisors :: "Pacific Sustainability Advisors"
+          [TEXT] Viewed Jul 9, 3:42pm :: "Viewed Jul 9, 3:42pm"
+          [TEXT] Elena Ruiz, Northgate Retail :: "Elena Ruiz, Northgate Retail"
+          [TEXT] Downloaded Jul 10, 9:15am :: "Downloaded Jul 10, 9:15am"
+        [TEXT] Your data — Bluewater Logistics :: "Your data — Bluewater Logistics"
+        [TEXT] Share receipts :: "Share receipts"
+        [FRAME] Frame
+          [TEXT] "Does this fuel figure include delivery trucks?" - Masao, on Fuel line item :: ""Does this fuel figure include delivery trucks?" - Masao, on Fuel line item"
+          [FRAME] Frame
+            [TEXT] Type your reply... :: "Type your reply..."
+          [FRAME] Frame
+            [TEXT] Send :: "Send"
+          [TEXT] You were emailed when this was asked - reply here or by email. :: "You were emailed when this was asked - reply here or by email."
+        [FRAME] Frame
+          [TEXT] Before this is shared externally :: "Before this is shared externally"
+          [FRAME] Frame
+            [TEXT] ✓ :: "✓"
+          [TEXT] I confirm this data is accurate to the best of my knowledge :: "I confirm this data is accurate to the best of my knowledge"
+          [TEXT] Signed by Priya Chen (Bluewater Logistics) · Jul 9, 2026 :: "Signed by Priya Chen (Bluewater Logistics) · Jul 9, 2026"
+      [FRAME] Frame
+        [TEXT] SUPPLIER - generated automatically the moment a snapshot is approved :: "SUPPLIER - generated automatically the moment a snapshot is approved"
+      [FRAME] Frame
+        [FRAME] Frame
+        [TEXT] Bluewater Logistics :: "Bluewater Logistics"
+        [TEXT] Sustainability snapshot - 2026 :: "Sustainability snapshot - 2026"
+      [FRAME] Frame
+        [TEXT] Consultant-reviewed - verified by Pacific Sustainability Advisors :: "Consultant-reviewed - verified by Pacific Sustainability Advisors"
+      [FRAME] Frame
+        [TEXT] Scope 1 :: "Scope 1"
+        [TEXT] 410 tCO2e :: "410 tCO2e"
+      [TEXT] Your first sustainability report :: "Your first sustainability report"
+      [TEXT] Share it with customers, put it on your website, or use it to win new business. :: "Share it with customers, put it on your website, or use it to win new business."
+      [FRAME] Frame
+        [TEXT] Download PDF :: "Download PDF"
+      [FRAME] Frame
+        [TEXT] Fleet fuel efficiency improvements reduced Scope 1 emissions 8% year over year. All facility electricity now tracked at the meter level. :: "Fleet fuel efficiency improvements reduced Scope 1 emissions 8% year over year. All facility electricity now tracked at the meter level."
+      [FRAME] Frame
+        [TEXT] Scope 2 :: "Scope 2"
+        [TEXT] 220 tCO2e :: "220 tCO2e"
+      [TEXT] Key initiatives :: "Key initiatives"
+      [FRAME] Frame
+        [TEXT] Share link :: "Share link"
+      [FRAME] Frame
+        [TEXT] Scope 3 :: "Scope 3"
+        [TEXT] 1,180 tCO2e :: "1,180 tCO2e"
+    [FRAME] Flag Confirmation — destination for 'Flag this' link
+      [TEXT] Tell us what looks wrong :: "Tell us what looks wrong"
+      [FRAME] Frame
+        [TEXT] This should be Scope 3, not Scope 1 - we lease these vehicles :: "This should be Scope 3, not Scope 1 - we lease these vehicles"
+      [FRAME] Frame
+        [TEXT] Send to consultant :: "Send to consultant"
+    [FRAME] Modal — Section Delegation — #4.6, destination for 'Send this section to a colleague'
+      [FRAME] Frame
+        [TEXT] → :: "→"
+      [FRAME] Frame
+        [TEXT] Send scoped link :: "Send scoped link"
+      [TEXT] Send this section to a colleague :: "Send this section to a colleague"
+      [FRAME] Frame
+        [TEXT] Section: Electricity :: "Section: Electricity"
+      [TEXT] They'll get a link to just this section - Electricity use. They don't need an account either. :: "They'll get a link to just this section - Electricity use. They don't need an account either."
+      [FRAME] Frame
+        [TEXT] facilities@bluewaterlogistics.com :: "facilities@bluewaterlogistics.com"
+      [TEXT] Colleague's email :: "Colleague's email"
+    [FRAME] Modal — Deadline Extension Request — #4.7, destination for 'Request more time'
+      [FRAME] Frame
+        [TEXT] ◷ :: "◷"
+      [TEXT] Reason (optional) :: "Reason (optional)"
+      [TEXT] Request more time :: "Request more time"
+      [FRAME] Frame
+        [TEXT] Waiting on our utility provider for March data :: "Waiting on our utility provider for March data"
+      [FRAME] Frame
+        [TEXT] Send request :: "Send request"
+      [FRAME] Frame
+        [TEXT] Aug 10, 2026 :: "Aug 10, 2026"
+      [TEXT] Your consultant gets a one-click approve or deny - you'll hear back fast. :: "Your consultant gets a one-click approve or deny - you'll hear back fast."
+      [TEXT] New requested date :: "New requested date"
+      [TEXT] Current due date: Jul 28, 2026 :: "Current due date: Jul 28, 2026"
+    [FRAME] Supplier Account — Trust & Data — #37 #38 #25 #24
+      [FRAME] Frame
+        [TEXT] What you're confirming: Shell Fleet Card -> categorized as Mobile combustion (Scope 1) by your consultant. Looks wrong? :: "What you're confirming: Shell Fleet Card -> categorized as Mobile combustion (Scope 1) by your consultant. Looks wrong?"
+        [TEXT] Flag this -> :: "Flag this ->"
+      [ROUNDED_RECTANGLE] Rectangle
+      [TEXT] Your data is yours :: "Your data is yours"
+      [LINE] Line
+      [FRAME] Frame
+        [TEXT] Download everything, anytime — PACT V3 format or plain CSV. :: "Download everything, anytime — PACT V3 format or plain CSV."
+        [FRAME] Frame
+          [TEXT] Download all my data :: "Download all my data"
+      [FRAME] Frame
+        [TEXT] SUPPLIER · lives in their claimed free account, viewed anytime :: "SUPPLIER · lives in their claimed free account, viewed anytime"
+      [TEXT] Questions from your consultant :: "Questions from your consultant"
+      [FRAME] Frame
+        [TEXT] Pacific Sustainability Advisors :: "Pacific Sustainability Advisors"
+        [TEXT] Viewed Jul 9, 3:42pm :: "Viewed Jul 9, 3:42pm"
+        [TEXT] Elena Ruiz, Northgate Retail :: "Elena Ruiz, Northgate Retail"
+        [TEXT] Downloaded Jul 10, 9:15am :: "Downloaded Jul 10, 9:15am"
+      [TEXT] Your data — Bluewater Logistics :: "Your data — Bluewater Logistics"
+      [TEXT] Share receipts :: "Share receipts"
+      [FRAME] Frame
+        [TEXT] "Does this fuel figure include delivery trucks?" - Masao, on Fuel line item :: ""Does this fuel figure include delivery trucks?" - Masao, on Fuel line item"
+        [FRAME] Frame
+          [TEXT] Yes - 3 vehicles, added to next update. (sent Jul 8) :: "Yes - 3 vehicles, added to next update. (sent Jul 8)"
+        [FRAME] Frame
+          [TEXT] Sent ✓ :: "Sent ✓"
+        [TEXT] Answered Jul 8 - thanks for the quick reply! :: "Answered Jul 8 - thanks for the quick reply!"
+      [FRAME] Frame
+        [TEXT] Before this is shared externally :: "Before this is shared externally"
+        [FRAME] Frame
+          [TEXT] ✓ :: "✓"
+        [TEXT] I confirm this data is accurate to the best of my knowledge :: "I confirm this data is accurate to the best of my knowledge"
+        [TEXT] Signed by Priya Chen (Bluewater Logistics) · Jul 9, 2026 :: "Signed by Priya Chen (Bluewater Logistics) · Jul 9, 2026"
+    [FRAME] Methodology & Trust Detail — #17 #14 #15, expands from a line item
+      [ROUNDED_RECTANGLE] Rectangle
+      [FRAME] Frame
+        [TEXT] Trust level :: "Trust level"
+        [TEXT] Consultant-reviewed by Pacific Sustainability Advisors :: "Consultant-reviewed by Pacific Sustainability Advisors"
+        [FRAME] Frame
+          [TEXT] Reviewed :: "Reviewed"
+      [LINE] Line
+      [FRAME] Frame
+        [TEXT] 87% of this client's total footprint is activity-based (CARB requires disclosing this ratio) :: "87% of this client's total footprint is activity-based (CARB requires disclosing this ratio)"
+      [FRAME] Frame
+        [TEXT] CONSULTANT - click any line item on Review & Approve to expand this :: "CONSULTANT - click any line item on Review & Approve to expand this"
+      [FRAME] Frame
+        [TEXT] Factor relevance check :: "Factor relevance check"
+        [TEXT] Matches activity type, region CAMX, published this year :: "Matches activity type, region CAMX, published this year"
+      [TEXT] Electricity consumption - methodology :: "Electricity consumption - methodology"
+      [FRAME] Frame
+        [TEXT] Emission factor :: "Emission factor"
+        [TEXT] EPA eGRID 2025, v2.1 - regional grid mix :: "EPA eGRID 2025, v2.1 - regional grid mix"
+        [FRAME] Frame
+          [TEXT] Current :: "Current"
+      [FRAME] Frame
+        [TEXT] Calculation method :: "Calculation method"
+        [TEXT] Activity-based - metered kWh, not spend estimate :: "Activity-based - metered kWh, not spend estimate"
+        [FRAME] Frame
+          [TEXT] Activity-based :: "Activity-based"
+    [FRAME] Restatement Alert — #11, auto-sent when corrected data is re-approved
+      [FRAME] Frame
+        [TEXT] Data correction - Bluewater Logistics :: "Data correction - Bluewater Logistics"
+      [TEXT] A snapshot you received on Jul 9, 2026 has been corrected. Here's what changed: :: "A snapshot you received on Jul 9, 2026 has been corrected. Here's what changed:"
+      [FRAME] Frame
+        [TEXT] AUTOMATIC - sent to everyone who received the old snapshot :: "AUTOMATIC - sent to everyone who received the old snapshot"
+      [FRAME] Frame
+        [TEXT] Fuel - diesel consumption :: "Fuel - diesel consumption"
+        [TEXT] Was: 4,800 gallons (estimated) :: "Was: 4,800 gallons (estimated)"
+        [TEXT] Now: 1,240 gallons (actual, from bill) :: "Now: 1,240 gallons (actual, from bill)"
+        [TEXT] Reason: replaced estimate with actual invoice :: "Reason: replaced estimate with actual invoice"
+      [FRAME] Frame
+        [TEXT] View corrected snapshot :: "View corrected snapshot"
+      [TEXT] View original snapshot (still on record) → :: "View original snapshot (still on record) →"
+    [FRAME] Factor Update Recalculation — #39, one-click preview when factors update
+      [ROUNDED_RECTANGLE] Rectangle
+      [FRAME] Frame
+        [TEXT] Apply to future reports :: "Apply to future reports"
+      [LINE] Line
+      [FRAME] Frame
+        [TEXT] CONSULTANT - triggered when a new emission factor set is published :: "CONSULTANT - triggered when a new emission factor set is published"
+      [FRAME] Frame
+        [TEXT] Scope 2 (electricity) :: "Scope 2 (electricity)"
+        [TEXT] With v2.1 (current, frozen on old reports): 220 tCO2e :: "With v2.1 (current, frozen on old reports): 220 tCO2e"
+        [TEXT] With v2.2 (new): 207 tCO2e :: "With v2.2 (new): 207 tCO2e"
+        [TEXT] Old reports stay frozen on v2.1 - this only applies going forward :: "Old reports stay frozen on v2.1 - this only applies going forward"
+        [TEXT] -5.9% change, driven by updated regional grid mix :: "-5.9% change, driven by updated regional grid mix"
+      [TEXT] New EPA factors published :: "New EPA factors published"
+      [TEXT] Preview - Bluewater Logistics :: "Preview - Bluewater Logistics"
+      [FRAME] Frame
+        [TEXT] EPA eGRID 2026 (v2.2) is now available - 6 clients use the old factor set :: "EPA eGRID 2026 (v2.2) is now available - 6 clients use the old factor set"
+    [FRAME] Historical Data Import — #36, biggest adoption unlock per doc
+      [ROUNDED_RECTANGLE] Rectangle
+      [FRAME] Frame
+        [TEXT] Import :: "Import"
+      [LINE] Line
+      [FRAME] Frame
+        [TEXT] CONSULTANT - V1 can be semi-manual, run together with the consultant on a call :: "CONSULTANT - V1 can be semi-manual, run together with the consultant on a call"
+      [FRAME] Frame
+        [TEXT] 3. Preview - imported as prior-year data :: "3. Preview - imported as prior-year data"
+        [TEXT] 2020, 2021 - marked "imported", editable but flagged as historical, not live-collected :: "2020, 2021 - marked "imported", editable but flagged as historical, not live-collected"
+      [TEXT] Import your existing client history :: "Import your existing client history"
+      [FRAME] Frame
+        [TEXT] 2. Map columns to Sendrow fields :: "2. Map columns to Sendrow fields"
+        [FRAME] Frame
+          [TEXT] Column B: "kWh Used" :: "Column B: "kWh Used""
+          [TEXT] → Electricity consumption :: "→ Electricity consumption"
+        [FRAME] Frame
+          [TEXT] Column D: "Diesel Gal" :: "Column D: "Diesel Gal""
+          [TEXT] → Fuel - diesel :: "→ Fuel - diesel"
+        [FRAME] Frame
+          [TEXT] Column F: "Vendor" :: "Column F: "Vendor""
+          [TEXT] → Vendor / category mapping :: "→ Vendor / category mapping"
+      [FRAME] Frame
+        [TEXT] 1. Upload your spreadsheet :: "1. Upload your spreadsheet"
+        [FRAME] Frame
+          [TEXT] bluewater_2020_2022_history.xlsx :: "bluewater_2020_2022_history.xlsx"
+    [FRAME] IMP Generator — #5.8, auto-built from stored methodology data
+      [FRAME] Frame
+        [TEXT] Download IMP :: "Download IMP"
+      [FRAME] Frame
+        [TEXT] Built automatically from stored methodology labels - nothing typed by hand :: "Built automatically from stored methodology labels - nothing typed by hand"
+      [FRAME] Frame
+        [TEXT] Inventory Management Plan :: "Inventory Management Plan"
+        [TEXT] Bluewater Logistics - generated Jul 10, 2026 :: "Bluewater Logistics - generated Jul 10, 2026"
+      [FRAME] Frame
+        [TEXT] CONSULTANT - what an assurance provider asks for first :: "CONSULTANT - what an assurance provider asks for first"
+      [TEXT] Electricity: activity-based, EPA eGRID 2025 v2.1. Fuel: activity-based, EPA v2.1. Spend: spend-based, EEIO factors :: "Electricity: activity-based, EPA eGRID 2025 v2.1. Fuel: activity-based, EPA v2.1. Spend: spend-based, EEIO factors"
+      [TEXT] 1. Organizational boundary :: "1. Organizational boundary"
+      [TEXT] 4. Data quality & estimation :: "4. Data quality & estimation"
+      [TEXT] 1 item currently estimated (fuel, Q1 2026) - flagged, pending actual invoice :: "1 item currently estimated (fuel, Q1 2026) - flagged, pending actual invoice"
+      [TEXT] 5. Correction procedure :: "5. Correction procedure"
+      [TEXT] 3. Methodology per source :: "3. Methodology per source"
+      [TEXT] Operational control - all facilities where Bluewater directs operating policies :: "Operational control - all facilities where Bluewater directs operating policies"
+      [TEXT] Scope 1, 2, and 3 (categories 1, 4, 6) for calendar year 2026 :: "Scope 1, 2, and 3 (categories 1, 4, 6) for calendar year 2026"
+      [TEXT] Restatement via new snapshot, old snapshot retained, all recipients notified automatically :: "Restatement via new snapshot, old snapshot retained, all recipients notified automatically"
+      [TEXT] 2. Reporting boundary :: "2. Reporting boundary"
+    [TEXT] 1. Core Loop — Request to Snapshot :: "1. Core Loop — Request to Snapshot"
+  [CANVAS] Internal Only Canvas
+    [BRUSH] Propaganda
+    [BRUSH] Noir
+    [BRUSH] Heist
+    [BRUSH] Melodrama
+    [BRUSH] Hardboiled
+    [BRUSH] Blockbuster
+    [BRUSH] Vérité
+    [BRUSH] Epic
+    [BRUSH] Screwball
+    [BRUSH] New Wave
+    [BRUSH] Slasher
+    [BRUSH] Grindhouse
+    [BRUSH] Spaghetti Western
+    [BRUSH] Rom-com
+    [BRUSH] Biopic
+    [BRUSH] Bubblegum
+    [BRUSH] Witch house
+    [BRUSH] Shoegaze
+    [BRUSH] Honky-tonk
+    [BRUSH] Screamo
+    [BRUSH] Drone
+    [BRUSH] Doo-wop
+    [BRUSH] Spoken word
+    [BRUSH] Vaporwave
+    [BRUSH] Oi!
+  [CANVAS] Page 2

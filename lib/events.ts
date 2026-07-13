@@ -8,7 +8,8 @@ export type EventVerb =
   | "vendor.confirmed" | "fuel.converted"
   | "item.recategorized" | "item.quantity_edited" | "item.excluded" | "item.restored" | "item.marked_actual"
   | "comment.added" | "evidence.attached"
-  | "snapshot.created" | "snapshot.shared" | "share.revoked"
+  | "snapshot.created" | "snapshot.shared" | "snapshot.approved_with_flags" | "share.revoked"
+  | "review.changes_requested"
   | "client.stuck";
 
 /** Append-only event log (Ground Rule 3). Fire-and-forget — logging must

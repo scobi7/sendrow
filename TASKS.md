@@ -1,38 +1,45 @@
 # TASKS.md — Open Work
-> Generated from the active plan in PLANS.md. Completed plans: A–N, T, U1–U2 — full task history in git (`git log --follow TASKS.md`).
+> Generated from Plan W (PLANS.md). UI spec: `docs/wireframes-2026-07-13.md`. Completed plans: A–N, T, U1–U2 — history in git.
 
-## Plan U — remaining phases
+## Plan W — Wireframe Workflow Alignment
 
-### U3 — Format engine as config (next)
-- [ ] **U3.1** — Refactor `lib/formats.ts` → versioned template registry in DB (field mappings + layout as data; conditional questionnaire support)
-- [ ] **U3.2** — Admin Format Mapping Builder: upload questionnaire → map questions → save template (no code per format)
-- [ ] **U3.3** — Template versioning; snapshots/exports record template version used
-- [ ] **U3.4** — "Answer once, share many" + duplicate request detection
-- [ ] **U3.blocked** — SB 253 config against CARB's real draft template (needs file from Masao); first real buyer questionnaire (needs Kerri)
+### W1 — Consultant IA shell + core-loop reshape — BUILT 2026-07-13
+- [x] **W1.1** — Sidebar per wireframe (Dashboard / New request / Request templates / Format library / Compliance calendar / Settings)
+- [x] **W1.2** — Dashboard #19: stat cards + client table (status · due · completeness) + `+ New request`
+- [x] **W1.3** — StatusBadge, CompletenessMeter, StatCard (`components/workflow.tsx`) + `lib/client-status.ts` (11 tests)
+- [x] **W1.4** — New Data Request page #1 (`/consultant/requests/new`) — template prefill, chips, cadence note, save-as-template, inline contact email
+- [x] **W1.5** — Client Detail rebuild: stats row, requests → review/snapshot, event timeline, comment threads
+- [x] **W1.6** — Engagement Templates page #23 (used-on count = matching request descriptions)
+- [x] **W1.7** — Format Library page #35 (built-ins; add-new = honest W3 placeholder w/ interim path)
+- [x] **W1.8** — Compliance Calendar page #44 (regulatory preloads + live request due dates)
+- [x] **W1.9** — Chasing schedule page #21 (tier dates, sent log, pause/resume; age-based fallback shown)
+- [x] **W1.10** — Settings #22 live email preview (name + accent update as you type)
 
-### U4 — Supplier trust & stickiness
-- [ ] **U4.1** — Free claimable supplier account (never gate responding)
-- [ ] **U4.2** — Supplier attestation checkbox (name/date/snapshot ID in event log)
-- [ ] **U4.3** — Share receipts (recipient views/downloads logged, shown both sides)
-- [ ] **U4.4** — Supplier "download all my data" — PACT V3 JSON + CSV
-- [ ] **U4.5** — Reply-by-email v1: unfiled inbox on the request (needs inbound-email provider — user action for DNS)
-- [ ] **U4.6** — Section delegation: scoped magic link per checklist item
-- [ ] **U4.7** — Deadline extension request (supplier button → consultant approve/deny)
-- [ ] **U4.8** — Supplier mini-report PDF (VSME Basic Module skeleton)
+### W2 — Review & Approve → Snapshot & Share — BUILT 2026-07-13
+- [x] **W2.1** — Review & Approve page: category groups w/ files + threads, vendor confirm, session actions, dollar-fuel, ledger link
+- [x] **W2.2** — `approveFreezeAndGo`: approves pending sessions → freezes snapshot → redirects to Snapshot & Share
+- [x] **W2.3** — Open-flag warning modal (unmapped rows + stuck notes counted; approval logged w/ flags)
+- [x] **W2.4** — Snapshot & Share page: 🔒 header, scope cards, format chips, share + receipts, correction note
+- [ ] **W2.5** — Click-through verification with demo data (needs local Clerk login — Malachi)
 
-### U5 — Audit-grade depth
-- [ ] **U5.1** — Spend/activity method labels + "% activity-based" stat
-- [ ] **U5.2** — Methodology label schema: relevant / recent / geographically-correct
-- [ ] **U5.3** — Trust-level badges (dataset + per-metric), travel with snapshots
-- [ ] **U5.4** — Estimate→actual transitions trigger restatement flow
-- [ ] **U5.5** — Factor-update recalc preview (old snapshots stay frozen)
-- [ ] **U5.6** — Vendor memory: remove global option (workspace-scoped only, §14b)
-- [ ] **U5.7** — Consultant-side historical import (rows marked "imported")
-- [ ] **U5.8** — IMP / methodology-manual generator
+### W3 — Format engine (= U3, the moat)
+- [ ] **W3.1** — `lib/formats.ts` → versioned template registry in DB (mappings + layout as data, conditional support)
+- [ ] **W3.2** — Format Mapping Builder #35: upload questionnaire → connect questions → save template
+- [ ] **W3.3** — Template versioning #33: snapshots/exports record version used
+- [ ] **W3.4** — Answer once, share many #26 + duplicate request detection
+- [ ] **W3.blocked** — SB 253 config vs CARB draft (Masao) · first real buyer questionnaire (Kerri)
 
-### U6 — Retention engine (after first design partner is live)
-- [ ] **U6.1–6.7** — Compliance calendar · monthly digest · commentary blocks · hotspot report · YoY narratives · score-gap flags (blocked: rubrics) · completeness meter
+### W4 — Supplier journey (= U4)
+- [ ] **W4.1** — Portal Review & Submit step + per-snapshot attestation checkbox (#37)
+- [ ] **W4.2** — Confirmation screen → claim free account (#24)
+- [ ] **W4.3** — Supplier account trust page: share receipts (#38), download-all PACT V3 + CSV (#25), Q&A threads, flag path
+- [ ] **W4.4** — Section delegation modal (4.6) · deadline extension request + approve/deny (4.7)
+- [ ] **W4.5** — Supplier mini-report PDF (4.9) · reply-by-email v1 (#3, needs inbound provider)
+
+### W5–W7 — Audit-grade + retention (= U5/U6)
+- [ ] **W5** — Methodology detail (#17/#14/#15) · restatement alert UI (#11) · factor recalc preview (#39) · vendor-memory global removal (#18) · historical import (#36) · IMP (5.8)
+- [ ] **W7** — Calendar plumbing → chasing (#44) · digest (#45) · commentary (#43) · hotspot (#40) · YoY (#41) · score gaps (#42, blocked) 
 
 ## Standing open items
-- [ ] **N7.2** — Real EPA eGRID 2024 + USEEIO v2 factor values via /admin/factors — pre-deliverable blocker; current values are flagged approximations (not fabricatable)
-- [ ] **OPS** — User actions in Vercel: `BLOB_READ_WRITE_TOKEN`, `CRON_SECRET`, `ADMIN_CLERK_ID`, Calendly links; production deploy of v2 is a user decision
+- [ ] **N7.2** — Real EPA eGRID 2024 + USEEIO v2 factor values via /admin/factors — pre-deliverable blocker
+- [ ] **OPS** — Vercel: `BLOB_READ_WRITE_TOKEN`, `CRON_SECRET`, `ADMIN_CLERK_ID`, Calendly links; v2 prod deploy is a user decision

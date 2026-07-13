@@ -3,8 +3,10 @@ import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { consultantProfiles } from "@/lib/db/schema";
 import { saveBrandProfile } from "@/lib/consultant-actions";
-import { PageHeader } from "@/components/ui";
+import { BrandingForm } from "./branding-form";
 
+/** Settings — White Label (#22): one-time setup. The live preview shows the
+ *  request email exactly as a supplier receives it. */
 export default async function ConsultantSettingsPage() {
   const user = await currentUser();
   const profile = await db.query.consultantProfiles.findFirst({
@@ -13,72 +15,24 @@ export default async function ConsultantSettingsPage() {
   const blobConfigured = Boolean(process.env.BLOB_READ_WRITE_TOKEN);
 
   return (
-    <div className="mx-auto max-w-lg">
-      <PageHeader
-        title="Practice Settings"
-        subtitle="Your brand is what clients see on portals, shared results, and emails — never ours."
+    <div className="mx-auto max-w-5xl">
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold font-display" style={{ color: "var(--text)" }}>Branding</h1>
+        <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>
+          Your brand is what suppliers see on portals, shared results, and emails — never ours.
+        </p>
+      </div>
+      <BrandingForm
+        action={saveBrandProfile}
+        initial={{
+          brandName: profile?.brandName ?? "",
+          accentColor: profile?.accentColor ?? "#178B5A",
+          replyTo: profile?.replyTo ?? "",
+          logoUrl: profile?.logoUrl ?? null,
+        }}
+        fallbackName={user!.name}
+        blobConfigured={blobConfigured}
       />
-
-      <form action={saveBrandProfile} className="card space-y-4">
-        <div>
-          <label className="label">Brand name</label>
-          <input
-            name="brand_name"
-            defaultValue={profile?.brandName ?? ""}
-            className="input"
-            placeholder="Meridian Climate Advisory"
-          />
-          <p className="mt-1 text-xs" style={{ color: "var(--text-muted)" }}>
-            Shown to clients in place of your personal name. Leave blank to use your name.
-          </p>
-        </div>
-
-        <div>
-          <label className="label">Accent color</label>
-          <div className="flex items-center gap-3">
-            <input
-              name="accent_color"
-              type="color"
-              defaultValue={profile?.accentColor ?? "#3F6B4F"}
-              className="h-9 w-16 cursor-pointer rounded border-0 p-0"
-            />
-            <span className="text-xs" style={{ color: "var(--text-muted)" }}>
-              Used on client-facing pages (buttons, highlights).
-            </span>
-          </div>
-        </div>
-
-        <div>
-          <label className="label">Reply-to email</label>
-          <input
-            name="reply_to"
-            type="email"
-            defaultValue={profile?.replyTo ?? ""}
-            className="input"
-            placeholder="you@yourfirm.com"
-          />
-          <p className="mt-1 text-xs" style={{ color: "var(--text-muted)" }}>
-            Client replies to portal emails land here.
-          </p>
-        </div>
-
-        <div>
-          <label className="label">Logo</label>
-          {profile?.logoUrl && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={profile.logoUrl} alt="Current logo" className="mb-2 h-10 w-auto rounded" />
-          )}
-          {blobConfigured ? (
-            <input name="logo" type="file" accept="image/png,image/jpeg,image/svg+xml" className="input" />
-          ) : (
-            <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-              Logo upload needs file storage configured (BLOB_READ_WRITE_TOKEN). Brand name is used meanwhile.
-            </p>
-          )}
-        </div>
-
-        <button className="btn btn-primary w-full">Save brand</button>
-      </form>
     </div>
   );
 }

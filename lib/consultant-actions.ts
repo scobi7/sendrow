@@ -674,6 +674,7 @@ export async function createSnapshot(companyId: string, formData: FormData) {
 
   logEvent({ companyId, actor: user.id, actorType: "consultant", verb: "snapshot.created", subject: label, subjectId: id, meta: { items: frozenItems.length } });
   revalidatePath(`/consultant/clients/${companyId}`);
+  return id;
 }
 
 /** Shares a specific frozen snapshot — THIS snapshot, to THIS recipient. */
@@ -867,4 +868,5 @@ export async function toggleRequestReminders(requestId: string, companyId: strin
   if (!req || req.companyId !== companyId) return;
   await db.update(dataRequests).set({ remindersEnabled: !req.remindersEnabled }).where(eq(dataRequests.id, requestId));
   revalidatePath(`/consultant/clients/${companyId}`);
+  revalidatePath(`/consultant/clients/${companyId}/requests/${requestId}/chasing`);
 }

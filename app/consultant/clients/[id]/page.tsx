@@ -1,45 +1,19 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { and, desc, eq, isNull } from "drizzle-orm";
+import { and, desc, eq, inArray, isNull } from "drizzle-orm";
 import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { companies, consultantClients, intakeSessions, dataRequests, pipelineStatus, emissionLineItems, shareLinks, snapshots, requestTemplates } from "@/lib/db/schema";
-import { loadCompany } from "@/lib/store";
-import { combinedTotals } from "@/lib/calc";
-import { auditForCompany } from "@/lib/audit";
+import { companies, comments, consultantClients, dataRequests, emissionLineItems, evidence, events, intakeSessions, snapshots } from "@/lib/db/schema";
 import { archiveClient, updateClientContact } from "@/lib/actions";
-import { resendPortalEmail, renewPortalLink, toggleRequestReminders, createShareLink, revokeShareLink, createSnapshot, shareSnapshot, convertDollarFuel } from "@/lib/consultant-actions";
-import { isDollarFuelRow, fuelKindOf } from "@/lib/ledger";
-import { periodTotals, yoyDelta } from "@/lib/period";
-import { SessionActions } from "./session-actions";
-import { DataRequestForm } from "./data-request-form";
-import { LockPipelineButton } from "./lock-pipeline-button";
+import { resendPortalEmail, renewPortalLink } from "@/lib/consultant-actions";
+import { BackLink, StatusBadge, CompletenessMeter } from "@/components/workflow";
+import { workflowStatus, nextDueDate, completenessPercent, STATUS_META } from "@/lib/client-status";
 import { PortalLinkButton } from "./portal-link-button";
-import { ShareLinkButton } from "./share-link-button";
-import { VendorConfirm } from "./vendor-confirm";
 import type { ChecklistItem } from "@/lib/portal";
 
-const STATUS_LABEL: Record<string, string> = {
-  auto_approved: "Auto-approved",
-  approved: "Approved",
-  pending_review: "Pending review",
-  needs_info: "Needs info",
-  rejected: "Rejected",
-};
-
-const STATUS_COLOR: Record<string, string> = {
-  auto_approved: "var(--primary)",
-  approved: "var(--primary)",
-  pending_review: "#d97706",
-  needs_info: "#dc2626",
-  rejected: "#6b7280",
-};
-
-export default async function ClientWorkspacePage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+/** Client Detail View (#19 #6 #13): clicking into a client from the dashboard
+ *  table. Requests → Review & Approve (current) or the frozen snapshot (past). */
+export default async function ClientDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const [{ id }, user] = await Promise.all([params, currentUser()]);
 
   const link = await db.query.consultantClients.findFirst({
@@ -51,276 +25,193 @@ export default async function ClientWorkspacePage({
   });
   if (!link) notFound();
 
-  const [companyRow, sessions, requests, pipeline, unmappedItems, fullCompany, recentAudit] = await Promise.all([
-    db.select().from(companies).where(eq(companies.id, id)).then(r => r[0]),
-    db.select().from(intakeSessions).where(eq(intakeSessions.companyId, id)).orderBy(desc(intakeSessions.createdAt)).limit(20),
+  const [companyRow, requests, sessions, snapshotList, evidenceRows, timeline, commentRows, flaggedItems] = await Promise.all([
+    db.select().from(companies).where(eq(companies.id, id)).then((r) => r[0]),
     db.select().from(dataRequests).where(eq(dataRequests.companyId, id)).orderBy(desc(dataRequests.createdAt)),
-    db.select().from(pipelineStatus).where(eq(pipelineStatus.companyId, id)).then(r => r[0] ?? null),
-    db.select({
-      mappingProfileId: emissionLineItems.mappingProfileId,
-      sourceRef: emissionLineItems.sourceRef,
-      rawUnit: emissionLineItems.rawUnit,
-      status: emissionLineItems.status,
-      calcLog: emissionLineItems.calcLog,
-    })
+    db.select({ status: intakeSessions.status }).from(intakeSessions).where(eq(intakeSessions.companyId, id)),
+    db.select().from(snapshots).where(eq(snapshots.companyId, id)).orderBy(desc(snapshots.createdAt)),
+    db.select({ id: evidence.id }).from(evidence).where(eq(evidence.companyId, id)),
+    db.select().from(events).where(eq(events.companyId, id)).orderBy(desc(events.ts)).limit(10),
+    db.select().from(comments).where(eq(comments.companyId, id)).orderBy(desc(comments.createdAt)),
+    db
+      .select({ id: emissionLineItems.id, category: emissionLineItems.category, sourceRef: emissionLineItems.sourceRef })
       .from(emissionLineItems)
       .where(and(eq(emissionLineItems.companyId, id), eq(emissionLineItems.status, "unmapped"))),
-    loadCompany(id).catch(() => null),
-    auditForCompany(id),
   ]);
-  if (!companyRow || !fullCompany) notFound();
+  if (!companyRow) notFound();
 
-  const templates = await db.select().from(requestTemplates).where(eq(requestTemplates.consultantId, user!.id));
+  const statusInput = {
+    openRequests: requests
+      .filter((r) => r.status === "open")
+      .map((r) => ({ dueDate: r.dueDate, checklist: r.checklist as ChecklistItem[] | null })),
+    pendingReviewCount: sessions.filter((s) => s.status === "pending_review" || s.status === "needs_info").length,
+    hasSnapshot: snapshotList.length > 0,
+    hasFulfilledRequest: requests.some((r) => r.status === "fulfilled"),
+  };
+  const status = workflowStatus(statusInput);
+  const completeness = completenessPercent(statusInput);
+  const due = nextDueDate(statusInput);
 
-  const [activeShare, snapshotList, allShares] = await Promise.all([
-    db.query.shareLinks.findFirst({
-      where: and(eq(shareLinks.companyId, id), isNull(shareLinks.revokedAt)),
-    }),
-    db.select().from(snapshots).where(eq(snapshots.companyId, id)).orderBy(desc(snapshots.createdAt)).limit(10),
-    db.select().from(shareLinks).where(and(eq(shareLinks.companyId, id), isNull(shareLinks.revokedAt))),
-  ]);
+  const stuckCount = requests
+    .filter((r) => r.status === "open")
+    .flatMap((r) => (r.checklist as ChecklistItem[] | null) ?? [])
+    .filter((c) => c.stuckNote && c.status !== "received").length;
+  const flagsOpen = flaggedItems.length + stuckCount;
 
-  const periodItems = await db
-    .select({
-      period: emissionLineItems.period,
-      scope: emissionLineItems.scope,
-      co2eKg: emissionLineItems.co2eKg,
-      status: emissionLineItems.status,
-    })
-    .from(emissionLineItems)
-    .where(eq(emissionLineItems.companyId, id));
-  const byPeriod = periodTotals(periodItems.map((i) => ({ ...i, co2eKg: Number(i.co2eKg) })));
-  const yoy = yoyDelta(byPeriod);
+  // Received checklist items across all requests — "Evidence attached 12 of 12"
+  const allChecklist = requests.flatMap((r) => (r.checklist as ChecklistItem[] | null) ?? []);
+  const receivedItems = allChecklist.filter((c) => c.status === "received").length;
 
-  const t = combinedTotals(fullCompany, periodItems.map((i) => ({ ...i, co2eKg: Number(i.co2eKg) })));
-  const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 2 });
-  const recent = recentAudit.slice(0, 8);
+  const initials = companyRow.name.split(/\s+/).slice(0, 2).map((w) => w[0]?.toUpperCase() ?? "").join("");
+  const latestSnapshot = snapshotList[0] ?? null;
 
-  const pStatus = pipeline?.status ?? "not_started";
-  const pendingSessions = sessions.filter(s => s.status === "pending_review" || s.status === "needs_info");
-  const unmappedByProfile: Record<string, number> = {};
-  const vendorCounts: Record<string, number> = {};
-  for (const item of unmappedItems) {
-    if (item.mappingProfileId) {
-      unmappedByProfile[item.mappingProfileId] = (unmappedByProfile[item.mappingProfileId] ?? 0) + 1;
-    }
-    // $-fuel rows resolve via price conversion, not vendor confirmation
-    if (isDollarFuelRow({ status: item.status, rawUnit: item.rawUnit, calcLog: (item.calcLog as Record<string, unknown>) ?? {} })) continue;
-    const log = item.calcLog as { activity_type?: string } | null;
-    const vendor = item.sourceRef?.trim() || log?.activity_type?.trim();
-    if (vendor) vendorCounts[vendor] = (vendorCounts[vendor] ?? 0) + 1;
-  }
-  // Dollar-fuel rows get their own resolution path (price conversion), not vendor confirmation
-  const dollarFuel = unmappedItems.filter((i) =>
-    isDollarFuelRow({ status: i.status, rawUnit: i.rawUnit, calcLog: (i.calcLog as Record<string, unknown>) ?? {} })
+  // Comment threads grouped by line item (latest 4 threads)
+  const lineLabels = new Map(
+    (await db
+      .select({ id: emissionLineItems.id, category: emissionLineItems.category, sourceRef: emissionLineItems.sourceRef })
+      .from(emissionLineItems)
+      .where(eq(emissionLineItems.companyId, id))
+    ).map((i) => [i.id, i.sourceRef?.trim() || i.category.replace(/_/g, " ")])
   );
-  const fuelKinds = [...new Set(dollarFuel.map((i) => fuelKindOf({ calcLog: (i.calcLog as Record<string, unknown>) ?? {} })).filter(Boolean))] as string[];
+  const threads = new Map<string, typeof commentRows>();
+  for (const c of commentRows) {
+    const t = threads.get(c.lineItemId) ?? [];
+    t.push(c);
+    threads.set(c.lineItemId, t);
+  }
+  const threadList = [...threads.entries()].slice(0, 4);
 
-  const unmappedVendors = Object.entries(vendorCounts)
-    .map(([name, count]) => ({ name, count }))
-    .sort((a, b) => b.count - a.count);
-
-  const boundArchive = archiveClient.bind(null, id);
+  const fmtDate = (iso: string) =>
+    new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 
   return (
     <div className="mx-auto max-w-5xl">
-      <Link
-        href="/consultant"
-        className="mb-4 inline-block text-sm font-medium transition-opacity hover:opacity-70"
-        style={{ color: "var(--primary)" }}
-      >
-        ← Back to clients
-      </Link>
+      <BackLink />
 
       <div className="mb-6 flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-bold font-display" style={{ color: "var(--text)" }}>{companyRow.name}</h1>
-          <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>
-            {companyRow.industry ?? "Industry not set"} ·{" "}
-            {companyRow.headcountRange ? companyRow.headcountRange.replace(/_/g, "–") : "Headcount not set"} employees
-          </p>
+        <div className="flex items-center gap-4">
+          <span
+            className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl font-data text-sm font-bold text-white"
+            style={{ backgroundImage: "linear-gradient(135deg, var(--green), var(--teal))" }}
+          >
+            {initials}
+          </span>
+          <div>
+            <h1 className="text-2xl font-bold font-display" style={{ color: "var(--text)" }}>{companyRow.name}</h1>
+            <p className="mt-0.5 text-sm" style={{ color: "var(--text-muted)" }}>
+              {companyRow.industry ?? "Industry not set"} ·{" "}
+              {companyRow.headcountRange ? `${companyRow.headcountRange.replace(/_/g, "–")} employees` : "headcount not set"} ·{" "}
+              {STATUS_META[status].label}
+              {due && ` · due ${fmtDate(due + "T12:00:00")}`}
+            </p>
+          </div>
         </div>
         <div className="flex items-center gap-3">
-          <Link href={`/consultant/clients/${id}/ledger`} className="btn btn-primary text-sm">
-            Data Ledger
+          <Link href={`/consultant/requests/new?client=${id}`} className="btn btn-primary text-sm">
+            + New request
           </Link>
-          <Link href={`/consultant/clients/${id}/activity`} className="btn btn-secondary text-sm">
-            Activity
-          </Link>
-          <Link href={`/consultant/clients/${id}/manage`} className="btn btn-secondary text-sm">
-            Enter data on behalf
-          </Link>
-          <form action={boundArchive}>
+          <form action={archiveClient.bind(null, id)}>
             <button className="text-xs transition-opacity hover:opacity-70" style={{ color: "var(--text-muted)" }}>
-              Archive client
+              Archive
             </button>
           </form>
         </div>
       </div>
 
+      {/* Stats row: data received & review status */}
+      <div className="mb-6 grid grid-cols-3 gap-4">
+        <div className="card-inner">
+          <p className="eyebrow">Completeness</p>
+          <p className="mt-2 font-data text-2xl font-bold" style={{ color: "var(--text)" }}>{completeness}%</p>
+          <div className="mt-2"><CompletenessMeter percent={completeness} /></div>
+        </div>
+        <div className="card-inner">
+          <p className="eyebrow">Evidence attached</p>
+          <p className="mt-2 font-data text-2xl font-bold" style={{ color: "var(--text)" }}>
+            {allChecklist.length > 0 ? `${receivedItems} of ${allChecklist.length}` : evidenceRows.length}
+          </p>
+          <p className="mt-1 text-xs" style={{ color: "var(--text-muted)" }}>
+            {evidenceRows.length} source file{evidenceRows.length !== 1 ? "s" : ""} in the locker
+          </p>
+        </div>
+        <div className="card-inner">
+          <p className="eyebrow">Flags open</p>
+          <p className="mt-2 font-data text-2xl font-bold" style={{ color: flagsOpen > 0 ? "var(--danger)" : "var(--text)" }}>
+            {flagsOpen}
+          </p>
+          {flagsOpen > 0 && (
+            <Link href={`/consultant/clients/${id}/review`} className="mt-1 block text-xs underline" style={{ color: "var(--primary)" }}>
+              Resolve in review →
+            </Link>
+          )}
+        </div>
+      </div>
+
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
-          {/* Pipeline status + lock */}
-          <div
-            className="flex items-center justify-between rounded-2xl px-5 py-4"
-            style={{
-              background: pStatus === "locked" ? "var(--primary-tint)" : pStatus === "in_progress" ? "var(--warning-tint)" : "var(--card)",
-              border: `1px solid ${pStatus === "locked" ? "var(--primary)" : pStatus === "in_progress" ? "var(--warning-border)" : "var(--divider)"}`,
-            }}
-          >
-            <div>
-              <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>Pipeline</p>
-              <p className="mt-0.5 font-semibold" style={{ color: "var(--text)" }}>
-                {pStatus === "locked" ? "Locked — all uploads auto-process" : pStatus === "in_progress" ? "In progress" : "Not started"}
-              </p>
-            </div>
-            {pStatus === "in_progress" && <LockPipelineButton companyId={id} />}
-          </div>
-
-          {/* Dollar-based fuel: consultant sets the price, we do the math with receipts */}
-          {dollarFuel.length > 0 && (
-            <div className="rounded-2xl" style={{ background: "var(--card)", border: "1px solid var(--warning-border)" }}>
-              <div className="px-5 pt-4 pb-3" style={{ borderBottom: "1px solid var(--divider)" }}>
-                <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "var(--warning-strong)" }}>
-                  Dollar-based fuel ({dollarFuel.length} rows)
-                </p>
-                <p className="mt-1 text-xs" style={{ color: "var(--text-muted)" }}>
-                  These rows are $ spent on fuel. Set the price you&apos;re applying ($/gallon) and every row
-                  converts to gallons × EPA factor — the price, derivation, and your name land in each calc log.
-                </p>
-              </div>
-              <form action={convertDollarFuel.bind(null, id)} className="flex flex-wrap items-end gap-3 px-5 py-4">
-                {fuelKinds.includes("diesel") && (
-                  <div>
-                    <label className="label text-xs">Diesel $/gal</label>
-                    <input name="diesel_price" type="number" step="0.01" min="0.5" placeholder="4.10" className="input w-28 text-sm" />
-                  </div>
-                )}
-                {fuelKinds.includes("gasoline") && (
-                  <div>
-                    <label className="label text-xs">Gasoline $/gal</label>
-                    <input name="gasoline_price" type="number" step="0.01" min="0.5" placeholder="3.60" className="input w-28 text-sm" />
-                  </div>
-                )}
-                {fuelKinds.includes("propane") && (
-                  <div>
-                    <label className="label text-xs">Propane $/gal</label>
-                    <input name="propane_price" type="number" step="0.01" min="0.5" placeholder="2.80" className="input w-28 text-sm" />
-                  </div>
-                )}
-                <button className="btn btn-primary text-sm">Convert rows</button>
-                <p className="w-full text-xs" style={{ color: "var(--text-muted)" }}>
-                  Tip: use the client&apos;s average paid price if known, else the EIA state average for the period.
-                </p>
-              </form>
-            </div>
-          )}
-
-          {/* Unmapped vendors — confirm once, mapped for every client (vendor memory) */}
-          <VendorConfirm companyId={id} vendors={unmappedVendors} />
-
-          {/* Sessions requiring action */}
-          {pendingSessions.length > 0 && (
-            <div className="glass-panel">
-              <div className="px-5 pt-4 pb-3" style={{ borderBottom: "1px solid var(--divider)" }}>
-                <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
-                  Needs review ({pendingSessions.length})
-                </p>
-              </div>
-              <div className="divide-y" style={{ borderColor: "var(--divider)" }}>
-                {pendingSessions.map((s) => (
-                  <div key={s.id} className="px-5 py-4">
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <p className="text-sm font-medium" style={{ color: "var(--text)" }}>{s.filename}</p>
-                        <p className="mt-0.5 text-xs" style={{ color: "var(--text-muted)" }}>
-                          {s.dataType} · {s.rowCount} rows · score {s.sessionScore} · {new Date(s.createdAt).toLocaleDateString()}
-                        </p>
-                        {s.mappingProfileId && (unmappedByProfile[s.mappingProfileId] ?? 0) > 0 && (
-                          <p className="mt-1 text-xs font-semibold" style={{ color: "var(--danger)" }}>
-                            ⚠ {unmappedByProfile[s.mappingProfileId]} unmapped row{unmappedByProfile[s.mappingProfileId] !== 1 ? "s" : ""} — zero emissions until categorized
-                          </p>
-                        )}
-                      </div>
-                      <span
-                        className="shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold"
-                        style={{ background: `${STATUS_COLOR[s.status]}22`, color: STATUS_COLOR[s.status] }}
-                      >
-                        {STATUS_LABEL[s.status] ?? s.status}
-                      </span>
-                    </div>
-                    <SessionActions sessionId={s.id} companyId={id} />
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Data requests */}
+          {/* Requests */}
           <div className="glass-panel">
-            <div className="px-5 pt-4 pb-3" style={{ borderBottom: "1px solid var(--divider)" }}>
-              <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>Data requests</p>
+            <div className="flex items-center justify-between px-5 pt-4 pb-3" style={{ borderBottom: "1px solid var(--divider)" }}>
+              <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
+                Requests ({requests.length})
+              </p>
+              <span className="text-[11px]" style={{ color: "var(--text-muted)" }}>
+                current → Review & Approve · past → frozen snapshot
+              </span>
             </div>
+
             <div className="px-5 py-3" style={{ borderBottom: "1px solid var(--divider)", background: companyRow.clientContactEmail ? "transparent" : "var(--warning-tint)" }}>
               {!companyRow.clientContactEmail && (
                 <p className="mb-2 text-xs font-medium" style={{ color: "var(--warning-strong)" }}>
-                  No client contact on file — requests and reminders can&apos;t be emailed. Add one below or share the portal link manually.
+                  No supplier contact on file — requests and reminders can&apos;t be emailed.
                 </p>
               )}
               <form action={updateClientContact.bind(null, id)} className="flex flex-wrap items-center gap-2">
-                <input
-                  name="contact_name"
-                  defaultValue={companyRow.clientContactName ?? ""}
-                  placeholder="Contact name"
-                  className="input flex-1 text-xs"
-                  style={{ minWidth: "10rem" }}
-                />
-                <input
-                  name="contact_email"
-                  type="email"
-                  defaultValue={companyRow.clientContactEmail ?? ""}
-                  placeholder="contact@client.com"
-                  className="input flex-1 text-xs"
-                  style={{ minWidth: "12rem" }}
-                />
+                <input name="contact_name" defaultValue={companyRow.clientContactName ?? ""} placeholder="Contact name" className="input flex-1 text-xs" style={{ minWidth: "10rem" }} />
+                <input name="contact_email" type="email" defaultValue={companyRow.clientContactEmail ?? ""} placeholder="contact@supplier.com" className="input flex-1 text-xs" style={{ minWidth: "12rem" }} />
                 <button className="btn btn-secondary shrink-0 px-3 py-1.5 text-xs">Save contact</button>
               </form>
             </div>
+
             {requests.length === 0 ? (
-              <p className="px-5 py-4 text-sm" style={{ color: "var(--text-muted)" }}>No requests sent yet.</p>
+              <p className="px-5 py-5 text-sm" style={{ color: "var(--text-muted)" }}>
+                No requests yet —{" "}
+                <Link href={`/consultant/requests/new?client=${id}`} className="underline" style={{ color: "var(--primary)" }}>
+                  send the first one
+                </Link>
+                .
+              </p>
             ) : (
               <div className="divide-y" style={{ borderColor: "var(--divider)" }}>
                 {requests.map((req) => {
                   const checklist = (req.checklist as ChecklistItem[] | null) ?? [];
-                  const sentMap = (req.remindersSentAt as Record<string, string> | null) ?? {};
-                  const lastReminder = Object.keys(sentMap).sort((a, b) => Number(a) - Number(b)).pop();
+                  const isOpen = req.status === "open";
+                  const target = isOpen
+                    ? `/consultant/clients/${id}/review`
+                    : latestSnapshot
+                      ? `/consultant/clients/${id}/snapshots/${latestSnapshot.id}`
+                      : `/consultant/clients/${id}/review`;
+                  const expired = req.expiresAt && new Date(req.expiresAt) < new Date() && isOpen;
                   return (
-                    <div key={req.id} className="px-5 py-3">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm" style={{ color: "var(--text)" }}>{req.description}</p>
+                    <div key={req.id} className="px-5 py-3.5">
+                      <div className="flex items-center justify-between gap-3">
+                        <Link href={target} className="min-w-0 flex-1 transition-opacity hover:opacity-70">
+                          <p className="truncate text-sm font-medium" style={{ color: "var(--text)" }}>{req.description}</p>
                           <p className="mt-0.5 text-xs" style={{ color: "var(--text-muted)" }}>
-                            {req.periodLabel ? `Covers ${req.periodLabel} · ` : ""}
-                            {req.dueDate ? `Due ${req.dueDate} · ` : ""}
-                            {companyRow.clientContactEmail
-                              ? `emailed to ${companyRow.clientContactEmail} `
-                              : "created (no contact email — share the link manually) "}
-                            {new Date(req.createdAt).toLocaleDateString()}
-                            {lastReminder ? ` · day-${lastReminder} reminder sent` : ""}
-                            {req.expiresAt && new Date(req.expiresAt) < new Date() && req.status === "open" && (
-                              <span style={{ color: "var(--danger)" }}> · link expired</span>
-                            )}
+                            {req.periodLabel ? `${req.periodLabel} · ` : ""}
+                            {req.dueDate ? `due ${fmtDate(req.dueDate + "T12:00:00")} · ` : ""}
+                            {checklist.filter((c) => c.status === "received").length}/{checklist.length} items in
+                            {expired && <span style={{ color: "var(--danger)" }}> · link expired</span>}
                           </p>
-                        </div>
-                        <span
-                          className="shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold"
-                          style={{
-                            background: req.status === "open" ? "var(--warning-tint)" : req.status === "fulfilled" ? "var(--primary-tint)" : "var(--divider)",
-                            color: req.status === "open" ? "var(--warning-strong)" : req.status === "fulfilled" ? "var(--primary)" : "var(--text-muted)",
-                          }}
-                        >
-                          {req.status}
-                        </span>
+                        </Link>
+                        <StatusBadge
+                          status={
+                            req.status === "fulfilled" ? "approved"
+                            : statusInput.pendingReviewCount > 0 && isOpen ? "ready_for_review"
+                            : expired || (req.dueDate && new Date(req.dueDate + "T23:59:59") < new Date() && isOpen) ? "overdue"
+                            : isOpen ? "awaiting_reply" : "none"
+                          }
+                        />
                       </div>
                       {checklist.some((c) => c.stuckNote && c.status !== "received") && (
                         <div className="mt-2 rounded-lg px-3 py-2 text-xs" style={{ background: "var(--danger-tint)", color: "var(--danger)" }}>
@@ -330,39 +221,25 @@ export default async function ClientWorkspacePage({
                         </div>
                       )}
                       <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                        {checklist.map((item) => (
-                          <span
-                            key={item.id}
-                            className="rounded-full px-2 py-0.5 text-xs"
-                            title={item.stuckNote ? `Client is stuck: "${item.stuckNote}"` : undefined}
-                            style={
-                              item.status === "received"
-                                ? { background: "var(--primary-tint)", color: "var(--primary)" }
-                                : item.stuckNote
-                                  ? { background: "var(--danger-tint)", color: "var(--danger)" }
-                                  : { background: "var(--divider)", color: "var(--text-muted)" }
-                            }
-                          >
-                            {item.status === "received" ? "✓ " : item.stuckNote ? "⚑ " : "○ "}{item.label}
-                          </span>
-                        ))}
                         {req.token && <PortalLinkButton token={req.token} />}
-                        {req.token && req.status === "open" && req.expiresAt && new Date(req.expiresAt) < new Date() && (
+                        {isOpen && (
+                          <Link
+                            href={`/consultant/clients/${id}/requests/${req.id}/chasing`}
+                            className="rounded-full px-2 py-0.5 text-xs font-medium transition-opacity hover:opacity-70"
+                            style={{ background: "var(--divider)", color: "var(--text-muted)" }}
+                          >
+                            {req.remindersEnabled ? "🔔 Chasing on" : "🔕 Chasing paused"} · schedule →
+                          </Link>
+                        )}
+                        {expired && (
                           <form action={renewPortalLink.bind(null, req.id, id)}>
                             <button className="rounded-full px-2 py-0.5 text-xs font-medium transition-opacity hover:opacity-70" style={{ background: "var(--danger-tint)", color: "var(--danger)" }}>
                               ↻ Renew link (30 days)
                             </button>
                           </form>
                         )}
-                        {req.status === "open" && (
-                          <form action={toggleRequestReminders.bind(null, req.id, id)} title={req.remindersEnabled ? "Automatic reminders are on — click to pause" : "Reminders paused — click to resume"}>
-                            <button className="rounded-full px-2 py-0.5 text-xs font-medium transition-opacity hover:opacity-70" style={req.remindersEnabled ? { background: "var(--divider)", color: "var(--text-muted)" } : { background: "var(--warning-tint)", color: "var(--warning-strong)" }}>
-                              {req.remindersEnabled ? "🔔 Auto-chasing on" : "🔕 Chasing paused"}
-                            </button>
-                          </form>
-                        )}
-                        {req.token && req.status === "open" && companyRow.clientContactEmail && (
-                          <form action={resendPortalEmail.bind(null, req.id, id)} title={`Resends the portal link to ${companyRow.clientContactEmail}`}>
+                        {req.token && isOpen && companyRow.clientContactEmail && (
+                          <form action={resendPortalEmail.bind(null, req.id, id)}>
                             <button className="rounded-full px-2 py-0.5 text-xs font-medium transition-opacity hover:opacity-70" style={{ background: "var(--primary-tint)", color: "var(--primary)" }}>
                               ↻ Resend email
                             </button>
@@ -374,58 +251,66 @@ export default async function ClientWorkspacePage({
                 })}
               </div>
             )}
-            <div className="px-5 py-4" style={{ borderTop: "1px solid var(--divider)" }}>
-              <DataRequestForm
-                companyId={id}
-                consultantId={user!.id}
-                templates={templates.map((t) => ({
-                  id: t.id,
-                  name: t.name,
-                  description: t.description,
-                  dataTypes: (t.dataTypes as string[]) ?? [],
-                  periodLabel: t.periodLabel,
-                  dueInDays: t.dueInDays,
-                }))}
-              />
-            </div>
           </div>
 
-          {/* All uploads */}
+          {/* Comment threads (#6) */}
           <div className="glass-panel">
-            <div className="flex items-center justify-between px-5 pt-4 pb-3" style={{ borderBottom: "1px solid var(--divider)" }}>
-              <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>All uploads</p>
-              <Link href={`/consultant/clients/${id}/ledger`} className="text-xs font-medium underline" style={{ color: "var(--primary)" }}>
-                Open ledger →
-              </Link>
+            <div className="px-5 pt-4 pb-3" style={{ borderBottom: "1px solid var(--divider)" }}>
+              <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>Comment threads</p>
             </div>
-            {sessions.length === 0 ? (
-              <p className="px-5 py-4 text-sm" style={{ color: "var(--text-muted)" }}>No uploads yet.</p>
+            {threadList.length === 0 ? (
+              <p className="px-5 py-4 text-sm" style={{ color: "var(--text-muted)" }}>
+                No threads yet — comment on any line item in Review & Approve.
+              </p>
             ) : (
               <div className="divide-y" style={{ borderColor: "var(--divider)" }}>
-                {sessions.map((s) => (
-                  <div key={s.id} className="flex items-center justify-between px-5 py-3">
-                    <div>
-                      <p className="text-sm font-medium" style={{ color: "var(--text)" }}>{s.filename}</p>
-                      <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-                        {s.dataType} · {s.rowCount} rows · {new Date(s.createdAt).toLocaleDateString()}
-                        {s.evidenceId && (
-                          <>
-                            {" · "}
-                            <a href={`/api/evidence/${s.evidenceId}`} className="underline" style={{ color: "var(--primary)" }}>
-                              source file ↓
-                            </a>
-                          </>
-                        )}
+                {threadList.map(([lineItemId, thread]) => {
+                  const ordered = [...thread].sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+                  const first = ordered[0];
+                  const reply = ordered.find((c) => c.authorType !== first.authorType);
+                  return (
+                    <div key={lineItemId} className="px-5 py-3.5 text-sm">
+                      <p style={{ color: "var(--text)" }}>
+                        💬 &ldquo;{first.body}&rdquo;{" "}
+                        <span className="text-xs" style={{ color: "var(--text-muted)" }}>
+                          on {lineLabels.get(lineItemId) ?? "a line item"}
+                        </span>
+                      </p>
+                      {reply && (
+                        <p className="mt-1.5 rounded-lg px-3 py-2 text-xs" style={{ background: "var(--primary-tint)", color: "var(--text)" }}>
+                          Reply from {companyRow.name}: &ldquo;{reply.body}&rdquo;
+                        </p>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Activity timeline (#13) */}
+          <div className="glass-panel">
+            <div className="px-5 pt-4 pb-3" style={{ borderBottom: "1px solid var(--divider)" }}>
+              <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>Activity timeline</p>
+            </div>
+            {timeline.length === 0 ? (
+              <p className="px-5 py-4 text-sm" style={{ color: "var(--text-muted)" }}>Nothing yet.</p>
+            ) : (
+              <div className="px-5 py-4">
+                <div className="space-y-3">
+                  {timeline.map((e) => (
+                    <div key={e.id} className="flex items-start gap-3 text-sm">
+                      <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full" style={{ background: "var(--emerald)" }} />
+                      <p style={{ color: "var(--text)" }}>
+                        <span className="font-data text-xs" style={{ color: "var(--text-muted)" }}>{fmtDate(e.ts)}</span>{" "}
+                        — {eventLabel(e.verb, e.subject)}
                       </p>
                     </div>
-                    <span
-                      className="shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold"
-                      style={{ background: `${STATUS_COLOR[s.status]}22`, color: STATUS_COLOR[s.status] }}
-                    >
-                      {STATUS_LABEL[s.status] ?? s.status}
-                    </span>
-                  </div>
-                ))}
+                  ))}
+                </div>
+                <Link href={`/consultant/clients/${id}/activity`} className="mt-3 inline-block text-xs underline" style={{ color: "var(--primary)" }}>
+                  Full activity log →
+                </Link>
               </div>
             )}
           </div>
@@ -434,118 +319,41 @@ export default async function ClientWorkspacePage({
         {/* Sidebar */}
         <div className="space-y-6">
           <div className="card h-fit">
-            <h2 className="text-sm font-bold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
-              Emissions Summary
-            </h2>
-            <dl className="mt-4 space-y-3 text-sm">
-              {[
-                ["Scope 1", fmt(t.scope1)],
-                ["Scope 2 (location)", fmt(t.scope2Location)],
-                ["Scope 2 (market)", fmt(t.scope2Market)],
-                ["Scope 3", fmt(t.scope3)],
-              ].map(([label, val]) => (
-                <div key={label} className="flex justify-between">
-                  <dt style={{ color: "var(--text-muted)" }}>{label}</dt>
-                  <dd className="font-semibold font-data" style={{ color: "var(--text)" }}>{val} t</dd>
-                </div>
-              ))}
-              <div
-                className="flex justify-between pt-3 text-base"
-                style={{ borderTop: "1px solid var(--divider)" }}
-              >
-                <dt className="font-bold" style={{ color: "var(--text)" }}>Total CO2e</dt>
-                <dd className="font-bold font-data" style={{ color: "var(--primary)" }}>{fmt(t.total)} t</dd>
-              </div>
-            </dl>
-            <p className="mt-4 text-xs" style={{ color: "var(--text-muted)" }}>Updates as data is approved.</p>
+            <h2 className="text-sm font-bold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>Review & Approve</h2>
+            <p className="mt-2 text-xs" style={{ color: "var(--text-muted)" }}>
+              Every submitted figure, its receipt, and its math — approve to freeze a snapshot.
+            </p>
+            <Link href={`/consultant/clients/${id}/review`} className="btn btn-primary mt-3 w-full text-sm">
+              Open review
+            </Link>
+            <Link href={`/consultant/clients/${id}/ledger`} className="mt-2 block text-center text-xs underline" style={{ color: "var(--text-muted)" }}>
+              Full data ledger →
+            </Link>
           </div>
 
-          {byPeriod.length > 0 && (
-            <div className="card h-fit">
-              <h2 className="text-sm font-bold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
-                By Reporting Period
-              </h2>
-              {yoy && (
-                <p
-                  className="mt-3 rounded-lg px-3 py-2 text-sm font-semibold"
-                  style={
-                    yoy.pct <= 0
-                      ? { background: "var(--primary-tint)", color: "var(--primary)" }
-                      : { background: "var(--warning-tint)", color: "var(--warning-strong)" }
-                  }
-                >
-                  {yoy.pct <= 0 ? "▼" : "▲"} {Math.abs(yoy.pct).toFixed(1)}% vs {yoy.previous}
-                </p>
-              )}
-              <dl className="mt-3 space-y-2 text-sm">
-                {byPeriod.map((p) => (
-                  <div key={p.period} className="flex justify-between">
-                    <dt style={{ color: p.period === "untagged" ? "var(--text-muted)" : "var(--text)" }}>
-                      {p.period === "untagged" ? "No date on rows" : p.period}
-                    </dt>
-                    <dd className="font-semibold font-data" style={{ color: "var(--text)" }}>
-                      {(p.total / 1000).toLocaleString("en-US", { maximumFractionDigits: 2 })} t
-                    </dd>
-                  </div>
-                ))}
-              </dl>
-              <p className="mt-3 text-xs" style={{ color: "var(--text-muted)" }}>
-                From imported line items, tagged by row date{companyRow.fiscalYearEndMonth && companyRow.fiscalYearEndMonth !== 12 ? " (fiscal year)" : ""}.
-              </p>
-            </div>
-          )}
-
           <div className="card h-fit">
-            <h2 className="text-sm font-bold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
-              Snapshots
-            </h2>
+            <h2 className="text-sm font-bold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>Snapshots</h2>
             <p className="mt-2 text-xs" style={{ color: "var(--text-muted)" }}>
-              Frozen, dated versions — the only thing that ever gets shared. Corrections create a new snapshot and notify recipients.
+              Frozen, dated versions — the only thing that ever gets shared.
             </p>
-            <form action={createSnapshot.bind(null, id)} className="mt-3 flex gap-2">
-              <input name="label" placeholder={`FY${new Date().getFullYear()} footprint`} className="input flex-1 text-xs" />
-              <button className="btn btn-secondary shrink-0 px-3 py-1.5 text-xs">Freeze</button>
-            </form>
-            {snapshotList.length > 0 && (
-              <div className="mt-3 space-y-3">
-                {snapshotList.map((snap) => {
+            {snapshotList.length === 0 ? (
+              <p className="mt-3 text-xs" style={{ color: "var(--text-muted)" }}>None yet — approve a review to create one.</p>
+            ) : (
+              <div className="mt-3 space-y-2">
+                {snapshotList.slice(0, 5).map((snap) => {
                   const st = snap.totals as { total: number };
-                  const snapShares = allShares.filter((sh) => sh.snapshotId === snap.id);
                   return (
-                    <div key={snap.id} className="rounded-lg px-3 py-2" style={{ border: "1px solid var(--divider)" }}>
-                      <div className="flex items-center justify-between">
-                        <p className="text-xs font-semibold" style={{ color: "var(--text)" }}>🔒 {snap.label}</p>
-                        <span className="font-data text-xs" style={{ color: "var(--text)" }}>
-                          {st.total.toLocaleString("en-US", { maximumFractionDigits: 1 })} t
-                        </span>
-                      </div>
-                      <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-                        {new Date(snap.createdAt).toLocaleDateString()} · {snap.itemCount} items · {snap.sha256.slice(0, 8)}…
-                      </p>
-                      <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1 text-xs">
-                        {[["excel", "Excel"], ["sb253", "SB 253"], ["questionnaire", "Questionnaire"], ["pact", "PACT"]].map(([f, label]) => (
-                          <a key={f} href={`/api/snapshots/${snap.id}/export?format=${f}`} className="underline" style={{ color: "var(--primary)" }}>
-                            {label} ↓
-                          </a>
-                        ))}
-                      </div>
-                      {snapShares.map((sh) => (
-                        <div key={sh.token} className="mt-1.5 flex items-center gap-2">
-                          <ShareLinkButton token={sh.token} />
-                          <span className="truncate text-xs" style={{ color: "var(--text-muted)" }}>
-                            → {sh.recipientLabel || sh.recipientEmail || "unnamed recipient"}
-                          </span>
-                          <form action={revokeShareLink.bind(null, sh.token, id)}>
-                            <button className="text-xs" style={{ color: "var(--text-muted)" }}>✕</button>
-                          </form>
-                        </div>
-                      ))}
-                      <form action={shareSnapshot.bind(null, id, snap.id)} className="mt-2 flex gap-1.5">
-                        <input name="recipient_label" placeholder="Recipient (e.g. Walmart)" className="input flex-1 text-xs" />
-                        <input name="recipient_email" type="email" placeholder="their@email.com" className="input flex-1 text-xs" />
-                        <button className="btn btn-secondary shrink-0 px-2 py-1 text-xs">Share</button>
-                      </form>
-                    </div>
+                    <Link
+                      key={snap.id}
+                      href={`/consultant/clients/${id}/snapshots/${snap.id}`}
+                      className="flex items-center justify-between rounded-lg px-3 py-2 transition-colors hover:bg-white/40"
+                      style={{ border: "1px solid var(--divider)" }}
+                    >
+                      <span className="truncate text-xs font-semibold" style={{ color: "var(--text)" }}>🔒 {snap.label}</span>
+                      <span className="ml-2 shrink-0 font-data text-xs" style={{ color: "var(--text)" }}>
+                        {st.total.toLocaleString("en-US", { maximumFractionDigits: 1 })} t
+                      </span>
+                    </Link>
                   );
                 })}
               </div>
@@ -553,57 +361,35 @@ export default async function ClientWorkspacePage({
           </div>
 
           <div className="card h-fit">
-            <h2 className="text-sm font-bold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
-              Client Results Link
-            </h2>
-            <p className="mt-2 text-xs" style={{ color: "var(--text-muted)" }}>
-              A read-only, branded summary your client can view — no account needed.
-            </p>
-            {activeShare ? (
-              <div className="mt-3 flex items-center gap-3">
-                <ShareLinkButton token={activeShare.token} />
-                <form action={revokeShareLink.bind(null, activeShare.token, id)}>
-                  <button className="text-xs transition-opacity hover:opacity-70" style={{ color: "var(--text-muted)" }}>
-                    Revoke
-                  </button>
-                </form>
-              </div>
-            ) : (
-              <form action={createShareLink.bind(null, id)} className="mt-3">
-                <button className="btn btn-secondary text-xs">Create results link</button>
-              </form>
-            )}
-          </div>
-
-          <div className="card h-fit">
-            <h2 className="text-sm font-bold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
-              Recent Activity
-            </h2>
-            {recent.length === 0 ? (
-              <p className="mt-3 text-sm" style={{ color: "var(--text-muted)" }}>No activity yet.</p>
-            ) : (
-              <div className="mt-3 space-y-2">
-                {recent.map((row) => (
-                  <div
-                    key={row.id}
-                    className="flex items-start justify-between gap-4 pb-2 last:border-0"
-                    style={{ borderBottom: "1px solid var(--divider)" }}
-                  >
-                    <div>
-                      <span className="text-xs font-medium capitalize" style={{ color: "var(--text)" }}>{row.section}</span>
-                      <span className="mx-1" style={{ color: "var(--divider)" }}>·</span>
-                      <span className="text-xs" style={{ color: "var(--text-muted)" }}>{row.field}</span>
-                    </div>
-                    <span className="shrink-0 text-xs" style={{ color: "var(--text-muted)" }}>
-                      {new Date(row.ts).toLocaleDateString()}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
+            <h2 className="text-sm font-bold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>More</h2>
+            <div className="mt-3 space-y-2 text-xs">
+              <Link href={`/consultant/clients/${id}/manage`} className="block underline" style={{ color: "var(--text-muted)" }}>
+                Enter data on behalf →
+              </Link>
+              <Link href={`/consultant/clients/${id}/activity`} className="block underline" style={{ color: "var(--text-muted)" }}>
+                Activity + CSV export →
+              </Link>
+            </div>
           </div>
         </div>
       </div>
     </div>
   );
+}
+
+/** Wireframe-style plain-language event lines. */
+function eventLabel(verb: string, subject: string): string {
+  switch (verb) {
+    case "request.created": return `Request sent via magic link — ${subject}`;
+    case "request.renewed": return `Portal link renewed — ${subject}`;
+    case "upload.received": return `Supplier submitted ${subject}`;
+    case "session.approved": return `Upload approved — ${subject}`;
+    case "session.flagged": return `Changes requested — ${subject}`;
+    case "snapshot.created": return `Snapshot frozen — ${subject}`;
+    case "snapshot.shared": return `Snapshot shared — ${subject}`;
+    case "snapshot.approved_with_flags": return subject;
+    case "review.changes_requested": return `Changes requested: "${subject}"`;
+    case "comment.added": return `New comment on ${subject}`;
+    default: return subject || verb;
+  }
 }
