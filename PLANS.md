@@ -14,6 +14,7 @@
 | T5+QA | Spreadsheet-view mapping, sheet picker, header detection, stuck button, walkthrough, template CSV, $-fuel conversion, scoped vendor memory | 2026-07-09/10 |
 | U1–U2 | Core loop hardened + demo-ready (see below) | 2026-07-10 |
 | — | Aurora Green retheme + landing rebuilt to Malachi's mockup | 2026-07-10, 217cb94 |
+| W1–W2 | Consultant app restructured to Figma wireframes: dashboard/client hub/new request + Review & Approve → Snapshot & Share | 2026-07-13, a7d8734 |
 
 ---
 
@@ -23,18 +24,9 @@
 > **Scope source unchanged:** `docs/build-pipeline-2026-07-10.pdf`. Ground rules as invariants: config-driven formats (§14a), snapshots-only sharing (§13), audit-everything, absolute client separation (ownsClient guard + contract tests), PACT V3 only, workspace-scoped vendor memory (§14b).
 > U1 — BUILT (03e55cf) · U2 — BUILT (89d55d9). Details in git history.
 
-## The gap (current app vs wireframes)
-Functionality largely exists (requests → portal → ledger → snapshots → exports) but the **shape** differs:
-- Current `/consultant` is not the wireframe dashboard (stat cards Overdue/Ready/Awaiting + client table w/ status·due·completeness + sidebar nav incl. Compliance calendar / Request templates / Format library).
-- `/consultant/clients/[id]/manage/scope1-3` is v1 data-entry-centric; wireframes are **request-centric**: client hub (stats, requests list, timeline, comment threads) → per-request Review & Approve → Snapshot & Share as one continuous action.
-- Supplier portal exists but lacks: Review & Submit step w/ scoped attestation, Confirmation → claim-account path, the whole supplier account area (trust page, share receipts, mini-report), and the three utility modals.
-- No UI at all yet for: format library + mapping builder (U3), compliance calendar, chasing schedule page, digest, hotspot, score-gap, methodology detail, IMP, historical import.
+**W1 — BUILT** (a7d8734): sidebar per wireframe, dashboard #19 (stat cards + status/due/completeness table), client detail hub #19/#6/#13 (stats row, requests → review/snapshot, event timeline, threads), New Data Request page #1, engagement templates page #23, format library page #35 (builder = W3 placeholder), compliance calendar #44 (regulatory preloads + live due dates), chasing schedule page #21, settings #22 live email preview. `manage/scope1-3` + full ledger kept as quiet power tools under "More".
 
-## W1 — Consultant IA shell + core-loop reshape (no new backend)
-Sidebar nav per wireframe (Dashboard, New request, Compliance calendar*, Request templates, Format library*, Settings — *placeholder until W3/W7) · Dashboard #19: stat cards + client table (status badge, due, completeness meter) · Client Detail #19/#6/#13: stats row, requests list (click → snapshot view or Review & Approve), activity timeline, comment threads · New Data Request #1: template-first dropdown, data-type chips, cadence preview + edit link, save-as-template · retire/fold `manage/scope1-3` pages into the request-centric flow (decision: keep ledger as the line-item engine under Review & Approve).
-
-## W2 — Review & Approve → Snapshot & Share as one continuous action
-Review & Approve #7/#6/#18 on top of existing ledger: line items w/ evidence + comment threads (resolve state), vendor-memory confirmation row ("remembered from last year"), Request changes / **Approve, freeze & go to snapshot** · open-flag warning modal · Snapshot & Share #8/#10/#9: locked header, scope cards, attestation status line, share panel (recipient + format chips), supplier-OK gate before external share, correction path note, "New for this client" slots (wired in W7).
+**W2 — BUILT** (a7d8734): Review & Approve #7/#6/#18 (category groups w/ files + threads, vendor confirm, dollar-fuel, session actions) → **Approve, freeze & go to snapshot** (approves pending sessions, freezes, redirects — one continuous action) · open-flag warning modal (unmapped + stuck notes) · Snapshot & Share #8/#10/#9 (locked header, scope cards, format chips, recipient shares + receipts, correction note). Deferred within W2: supplier attestation line + supplier-OK share gate (need W4's attestation), "New for this client" slots (W7). Open: W2.5 click-through with demo data (Malachi — needs Clerk login).
 
 ## W3 — Format engine UI (= U3, the moat)
 - **W3.1 (U3.1) Config-driven reshaping (#9):** refactor `lib/formats.ts` → versioned template registry (DB): mappings + layout as data, conditional/branching (CDP). Ship configs: SB 253 (**CARB draft — Masao**), generic Excel, one real buyer questionnaire (**Kerri**).
