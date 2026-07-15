@@ -1,9 +1,11 @@
 # NEXT.md
 > Current state + what only the user can do. History lives in git; build order in PLANS.md; UI spec: `docs/wireframes-2026-07-13.md`.
-> Last updated: 2026-07-13
+> Last updated: 2026-07-14
 
 ## 🟢 Where the product stands
-- **Branch `sendrow-v2`** = active. `main` = **deployed to production 2026-07-14** (742405c, same as v2) — sendrow.app now runs the wireframe workflow.
+- **Plan X shipped on `sendrow-v2` (2026-07-14, 08b2385) — NOT yet in production.** First feedback round triaged (QA.md) and fixed: portal upload crash-proofing + PDF path, completeness math, supplier↔consultant flag/reply loop, review-page flags, clarity pass (period presets, reminder copy, ledger chips, format intake, scope 2 override, scope 3 undo), QuickBooks/connections gone from consultant UI, /for-companies = minimal get-matched funnel, emojis stripped. Deploying runs drizzle push (adds nullable comment columns — additive, safe). **Deploy to main = your call.**
+- **Demo kit:** demo consultant `contact@sendrow.app` (Clerk `user_3GVr5Css8qERqxyWiySrhNeX3WF`), reseed w/ `npx tsx scripts/reset-demo.ts user_3GVr5Css8qERqxyWiySrhNeX3WF` before each demo · 12-slide pitch deck w/ prod screenshots: https://claude.ai/code/artifact/8cfbdcd9-aa65-4226-a901-92d46bc1b2e7
+- **Branch `sendrow-v2`** = active. `main` = deployed to production 2026-07-14 (742405c, pre-Plan-X) — sendrow.app runs the wireframe workflow.
 - **W1+W2 built (2026-07-13):** consultant app restructured to your Figma wireframes — sidebar (Dashboard / New request / Templates / Format library / Calendar / Settings), dashboard stat cards + client table w/ status·due·completeness, client detail hub (stats row, requests → review or snapshot, timeline, threads), standalone New Data Request page, Review & Approve w/ open-flag warning modal → **Approve, freeze & go to snapshot** → Snapshot & Share page (format chips + recipient shares), chasing schedule page, compliance calendar, engagement templates page, format library, white-label settings w/ live email preview.
 - Backend flow unchanged underneath: request → magic-link portal → evidence + events → ledger → immutable snapshots → restatements → exports. Old power tools still reachable (full ledger, enter-on-behalf, activity CSV).
 - **Theme:** Aurora Green throughout.
