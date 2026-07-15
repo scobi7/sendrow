@@ -15,9 +15,9 @@ export default async function LedgerPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ status?: string; upload?: string }>;
+  searchParams: Promise<{ status?: string; upload?: string; category?: string }>;
 }) {
-  const [{ id }, { status: statusFilter, upload: uploadFilter }, user] = await Promise.all([
+  const [{ id }, { status: statusFilter, upload: uploadFilter, category: categoryFilter }, user] = await Promise.all([
     params,
     searchParams,
     currentUser(),
@@ -53,6 +53,7 @@ export default async function LedgerPage({
   let displayed = items;
   if (statusFilter && statusFilter !== "all") displayed = displayed.filter((i) => i.status === statusFilter);
   if (uploadFilter) displayed = displayed.filter((i) => i.mappingProfileId === uploadFilter);
+  if (categoryFilter) displayed = displayed.filter((i) => i.category === categoryFilter);
 
   const counts = {
     all: items.length,
@@ -95,11 +96,11 @@ export default async function LedgerPage({
           <Link
             key={f}
             href={`/consultant/clients/${id}/ledger${f === "all" ? "" : `?status=${f}`}`}
-            className="rounded-full px-3 py-1 text-xs font-medium capitalize"
+            className="rounded-full px-3 py-1 text-xs font-medium capitalize transition-colors hover:opacity-80"
             style={
               (statusFilter ?? "all") === f && !uploadFilter
                 ? { background: "var(--primary)", color: "#fff" }
-                : { background: "var(--card)", color: "var(--text-muted)", border: "1px solid var(--divider)" }
+                : { background: "var(--card)", color: "var(--text)", border: "1px solid var(--chip-border, var(--divider))" }
             }
           >
             {f} ({counts[f]})
@@ -112,6 +113,15 @@ export default async function LedgerPage({
             style={{ background: "var(--warning-tint)", color: "var(--warning-strong)" }}
           >
             Upload: {sessionByProfile.get(uploadFilter)?.filename ?? "unknown"} ✕
+          </Link>
+        )}
+        {categoryFilter && (
+          <Link
+            href={`/consultant/clients/${id}/ledger`}
+            className="rounded-full px-3 py-1 text-xs font-medium"
+            style={{ background: "var(--warning-tint)", color: "var(--warning-strong)" }}
+          >
+            Category: {categoryFilter} ✕
           </Link>
         )}
       </div>

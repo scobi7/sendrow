@@ -114,7 +114,7 @@ export function DataRequestForm({
                 style={{ background: "var(--primary-tint)", color: "var(--primary)" }}
                 title={t.description}
               >
-                ⚡ {t.name}
+                {t.name}
               </button>
             ))}
           </div>

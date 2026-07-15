@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { dataRequests, companies, emissionLineItems } from "@/lib/db/schema";
+import { comments, dataRequests, companies, emissionLineItems } from "@/lib/db/schema";
 import { desc, and } from "drizzle-orm";
 import { portalTokenValid } from "@/lib/portal";
 import type { ChecklistItem } from "@/lib/portal";
@@ -29,9 +29,19 @@ export default async function PortalPage({ params }: { params: Promise<{ token: 
     );
   }
 
-  const [[company], brand, priorRows] = await Promise.all([
+  const [[company], brand, threadRows, priorRows] = await Promise.all([
     db.select({ name: companies.name }).from(companies).where(eq(companies.id, request.companyId)),
     getBrandForCompany(request.companyId),
+    // Per-item conversation (X2): the supplier's stuck messages + consultant replies
+    db
+      .select({
+        checklistItemId: comments.checklistItemId,
+        authorType: comments.authorType,
+        body: comments.body,
+        createdAt: comments.createdAt,
+      })
+      .from(comments)
+      .where(eq(comments.dataRequestId, request.id)),
     // Prefill from last time (U1.4): the supplier's most recent approved rows
     db
       .select({
@@ -55,6 +65,11 @@ export default async function PortalPage({ params }: { params: Promise<{ token: 
   }));
   const checklist = (request.checklist as ChecklistItem[] | null) ?? [];
   const received = checklist.filter((i) => i.status === "received").length;
+  const threads: Record<string, { authorType: string; body: string; createdAt: string }[]> = {};
+  for (const t of threadRows.sort((a, b) => a.createdAt.localeCompare(b.createdAt))) {
+    if (!t.checklistItemId) continue;
+    (threads[t.checklistItemId] ??= []).push({ authorType: t.authorType, body: t.body, createdAt: t.createdAt });
+  }
 
   return (
     <main
@@ -85,7 +100,7 @@ export default async function PortalPage({ params }: { params: Promise<{ token: 
         <p className="mt-2 text-sm" style={{ color: "var(--text-muted)" }}>{request.description}</p>
         {request.periodLabel && (
           <p className="mt-1 text-sm font-medium" style={{ color: "var(--text)" }}>
-            📅 Data should cover: {request.periodLabel}
+            Data should cover: {request.periodLabel}
           </p>
         )}
         {request.dueDate && (
@@ -105,7 +120,7 @@ export default async function PortalPage({ params }: { params: Promise<{ token: 
           <p className="mb-4 text-sm" style={{ color: "var(--text-muted)" }}>
             {received} of {checklist.length} item{checklist.length !== 1 ? "s" : ""} received. No account needed — this page is your secure upload link.
           </p>
-          <PortalChecklist token={token} items={checklist} prefill={prefill} />
+          <PortalChecklist token={token} items={checklist} prefill={prefill} threads={threads} />
         </>
       )}
       <p className="mt-12 border-t pt-4 text-center text-xs" style={{ borderColor: "var(--divider)", color: "var(--text-muted)", opacity: 0.7 }}>

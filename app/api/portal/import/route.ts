@@ -18,6 +18,20 @@ import type { ColumnMap } from "@/lib/ingestion/ingest";
  *  Uploads arrive as multipart (original file kept for the evidence locker);
  *  manual entry arrives as JSON. */
 export async function POST(request: NextRequest) {
+  try {
+    return await handleImport(request);
+  } catch (e) {
+    // Whatever happens, the portal gets JSON back — never an empty 500 that
+    // surfaces as "Unexpected end of JSON input" for the supplier.
+    console.error("portal/import failed:", e);
+    return NextResponse.json(
+      { error: "We couldn't process that submission. Please try again — if it keeps failing, type the numbers in instead." },
+      { status: 500 }
+    );
+  }
+}
+
+async function handleImport(request: NextRequest) {
   let token = "";
   let itemId = "";
   let rows: Record<string, string>[] = [];

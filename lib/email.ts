@@ -4,30 +4,46 @@ const FROM = process.env.FROM_EMAIL ?? "hello@sendrow.app";
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://sendrow.app";
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? "malachi.nguyen@sendrow.app";
 
+/** Sends via Resend. Returns false when the send definitively failed (no key,
+ *  rejected by Resend, network error) so callers can record it — a silent
+ *  drop here is a consultant waiting on a reply that never went out. */
 async function send(
   to: string | string[],
   subject: string,
   html: string,
   opts?: { fromName?: string; replyTo?: string | null }
-) {
-  if (!process.env.RESEND_API_KEY) return;
+): Promise<boolean> {
+  if (!process.env.RESEND_API_KEY) {
+    console.error(`email not sent (no RESEND_API_KEY): "${subject}"`);
+    return false;
+  }
   // Client-facing sends use the consultant's brand as the display name (§11);
   // the address stays on our domain until custom sending domains land.
   const fromName = opts?.fromName ?? "Sendrow";
-  await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      from: `${fromName} <${FROM}>`,
-      to: Array.isArray(to) ? to : [to],
-      subject,
-      html,
-      ...(opts?.replyTo ? { reply_to: opts.replyTo } : {}),
-    }),
-  });
+  try {
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: `${fromName} <${FROM}>`,
+        to: Array.isArray(to) ? to : [to],
+        subject,
+        html,
+        ...(opts?.replyTo ? { reply_to: opts.replyTo } : {}),
+      }),
+    });
+    if (!res.ok) {
+      console.error(`email rejected (${res.status}): "${subject}" — ${await res.text().catch(() => "")}`);
+      return false;
+    }
+    return true;
+  } catch (e) {
+    console.error(`email send error: "${subject}"`, e);
+    return false;
+  }
 }
 
 export async function sendDemoRequest(name: string, email: string, company: string) {
@@ -46,8 +62,8 @@ export async function sendWelcomeEmail(name: string, email: string) {
     email,
     "Welcome to Sendrow",
     `<p>Hi ${firstName},</p>
-<p>Your Sendrow account is ready. Connect your <strong>QuickBooks</strong> and <strong>utility account</strong> first — those two do most of the work automatically.</p>
-<p><a href="${APP_URL}/dashboard">Go to your dashboard →</a></p>
+<p>Your Sendrow workspace is ready. Add your first client and send them a data request — they get a secure link, no account needed.</p>
+<p><a href="${APP_URL}/consultant">Go to your workspace →</a></p>
 <p>— The Sendrow team</p>`
   );
 }
@@ -96,10 +112,10 @@ export async function sendDataRequestEmail(
   dueDate: string | null,
   portalToken: string,
   brand?: { brandName: string; replyTo: string | null } | null
-) {
+): Promise<boolean> {
   const firstName = clientName.split(" ")[0];
   const link = `${APP_URL}/portal/${portalToken}`;
-  await send(
+  return send(
     clientEmail,
     `New data request for ${companyName}`,
     `<p>Hi ${firstName},</p>
@@ -265,6 +281,28 @@ export async function sendNewLinkRequestEmail(
 &ldquo;${requestDescription}&rdquo; and asked for a new one.</p>
 <p><a href="${APP_URL}/consultant/clients/${companyId}">Open the client — the &ldquo;Renew link&rdquo; button is on the request →</a></p>
 <p>— The Sendrow team</p>`
+  );
+}
+
+/** Consultant answered a supplier's "I'm stuck" flag (X2) — the reply lives on
+ *  the portal thread, so the email carries the link back there. */
+export async function sendFlagReplyEmail(
+  clientEmail: string,
+  clientName: string,
+  itemLabel: string,
+  body: string,
+  portalToken: string,
+  brand?: { brandName: string; replyTo: string | null } | null
+): Promise<boolean> {
+  return send(
+    clientEmail,
+    `Reply about “${itemLabel}”`,
+    `<p>Hi ${clientName.split(" ")[0]},</p>
+<p>You asked about <strong>${itemLabel}</strong> — here's the answer:</p>
+<blockquote><p>${body}</p></blockquote>
+<p><a href="${APP_URL}/portal/${portalToken}">Open your secure upload link to continue →</a></p>
+${brand ? `<p>— ${brand.brandName}</p>` : ""}`,
+    brand ? { fromName: brand.brandName, replyTo: brand.replyTo } : undefined
   );
 }
 

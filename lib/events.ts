@@ -10,7 +10,8 @@ export type EventVerb =
   | "comment.added" | "evidence.attached"
   | "snapshot.created" | "snapshot.shared" | "snapshot.approved_with_flags" | "share.revoked"
   | "review.changes_requested"
-  | "client.stuck";
+  | "client.stuck" | "flag.replied"
+  | "email.sent" | "email.failed";
 
 /** Append-only event log (Ground Rule 3). Fire-and-forget — logging must
  *  never break the action it describes. */

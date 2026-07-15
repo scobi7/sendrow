@@ -39,17 +39,19 @@ export default function FormatLibraryPage() {
       <div className="card" style={{ border: "1px dashed var(--chip-border)" }}>
         <p className="font-semibold" style={{ color: "var(--text)" }}>+ Add a new format</p>
         <p className="mt-1.5 text-sm" style={{ color: "var(--text-muted)" }}>
-          Got a buyer&apos;s custom questionnaire (PDF/Excel)? The self-serve mapping builder — upload it, connect each
-          question to a data field once, reuse it forever — is the next build phase. Until it ships, send the
-          questionnaire over and it gets added as a config, usually within a day. New formats are private to your
-          practice until the mapping is confirmed with the buyer.
+          Got a buyer&apos;s custom questionnaire (PDF/Excel)? Email it over and it gets added as a config for your
+          practice, usually within a day. The self-serve builder — upload it, connect each question to a data field
+          once, reuse it forever — is the next build phase.
         </p>
-        <p className="mt-3 text-xs" style={{ color: "var(--text-muted)" }}>
-          To use a format now: open a client →{" "}
-          <Link href="/consultant" className="underline" style={{ color: "var(--primary)" }}>
-            approve their review
-          </Link>{" "}
-          → pick the format on Snapshot &amp; Share.
+        <a
+          href={`mailto:${process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "hello@sendrow.app"}?subject=${encodeURIComponent("New format request: [buyer / framework name]")}&body=${encodeURIComponent("Attach the questionnaire (PDF or Excel) and tell us which client it's for.")}`}
+          className="btn btn-primary mt-4 inline-block text-sm"
+        >
+          Email us the format
+        </a>
+        <p className="mt-4 text-xs" style={{ color: "var(--text-muted)" }}>
+          Where formats show up: every frozen snapshot&apos;s <strong>Snapshot &amp; Share</strong> screen has these as
+          download chips (open a client, then the snapshot under Requests).
         </p>
       </div>
     </div>

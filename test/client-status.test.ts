@@ -112,4 +112,16 @@ describe("completenessPercent (6.7 meter)", () => {
       completenessPercent({ openRequests: [], pendingReviewCount: 0, hasSnapshot: false, hasFulfilledRequest: false })
     ).toBe(0);
   });
+
+  it("never resets to 0% when a new request lands on a finished client (X1.3, feedback #8)", () => {
+    expect(
+      completenessPercent({
+        openRequests: [{ dueDate: null, checklist: [item("pending")] }],
+        fulfilledRequests: [{ checklist: [item("received"), item("received")] }],
+        pendingReviewCount: 0,
+        hasSnapshot: true,
+        hasFulfilledRequest: true,
+      })
+    ).toBe(67);
+  });
 });

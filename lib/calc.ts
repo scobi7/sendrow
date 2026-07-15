@@ -280,7 +280,13 @@ export function totals(company: Company): Totals {
   const s = (n: number[]) => r2(n.reduce((a, b) => a + b, 0));
   const scope1 = s(company.calcs.filter((c) => c.scope === 1).map((c) => c.co2eTons));
   const scope2Location = s(company.calcs.filter((c) => c.scope === 2).map((c) => c.co2eTons));
-  const scope2Market = s(company.calcs.filter((c) => c.scope === 2).map((c) => c.marketBasedTons ?? c.co2eTons));
+  // Consultant override (X3.4) wins over the derived market-based figure —
+  // set on the Scope 2 page, audit-logged via logChange.
+  const override = company.inputs.scope2_market_override_tons;
+  const scope2Market =
+    override !== null && override !== undefined
+      ? r2(override)
+      : s(company.calcs.filter((c) => c.scope === 2).map((c) => c.marketBasedTons ?? c.co2eTons));
   const scope3 = s(company.calcs.filter((c) => c.scope === 3).map((c) => c.co2eTons));
   return { scope1, scope2Location, scope2Market, scope3, total: r2(scope1 + scope2Location + scope3) };
 }

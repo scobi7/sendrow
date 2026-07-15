@@ -74,7 +74,7 @@ export default async function SnapshotSharePage({
             {!isLatest && " · superseded by a newer snapshot"}
           </p>
         </div>
-        <span className="chip">🔒 Locked · {fmtDate(snap.createdAt)}</span>
+        <span className="chip">Locked · {fmtDate(snap.createdAt)}</span>
       </div>
 
       {/* Scope cards */}

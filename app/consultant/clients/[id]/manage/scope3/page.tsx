@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { and, eq, isNull } from "drizzle-orm";
 import { currentUser } from "@/lib/auth";
@@ -36,19 +35,9 @@ export default async function ManageScope3({ params }: { params: Promise<{ id: s
         subtitle={`Managing on behalf of ${company.name}.`}
       />
 
-      {!qbConnected && (
-        <Link
-          href={`${base}/connections`}
-          className="mb-6 block px-5 py-4 text-sm font-medium transition-opacity hover:opacity-80"
-          style={{ borderRadius: "var(--radius-sm)", border: "1px solid var(--warning-tint)", background: "var(--warning-tint)", color: "var(--warning)" }}
-        >
-          Connect QuickBooks to pre-fill business travel, purchased goods, and freight automatically →
-        </Link>
-      )}
-
       {qbConnected && (
         <div className="card mb-5">
-          <h2 className="font-semibold font-display" style={{ color: "var(--text)" }}>Pre-filled from QuickBooks</h2>
+          <h2 className="font-semibold font-display" style={{ color: "var(--text)" }}>Pre-filled from spend data</h2>
           <div className="mt-3 space-y-2 text-sm">
             {[
               ["Business travel", "Airlines, hotels, and car rentals from vendor spend", find("business travel")],
@@ -142,8 +131,21 @@ export default async function ManageScope3({ params }: { params: Promise<{ id: s
               <div key={cat} className="flex items-center justify-between rounded-lg px-4 py-2.5 text-sm" style={{ border: "1px solid var(--divider)" }}>
                 <span className="font-medium" style={{ color: "var(--text)" }}>{cat}</span>
                 {d ? (
-                  <span className="text-xs font-semibold" style={{ color: d === "na" ? "var(--text-muted)" : "var(--warning)" }}>
-                    {d === "na" ? "Marked not applicable" : "Industry average estimate (low confidence)"}
+                  <span className="flex items-center gap-2">
+                    <span
+                      className="text-xs font-semibold"
+                      style={{ color: d === "na" ? "var(--text-muted)" : "var(--warning)" }}
+                      title={
+                        d === "industry_average"
+                          ? "Estimates from sector averages are always labeled low confidence — replacing them with the client's actual data upgrades the label automatically."
+                          : undefined
+                      }
+                    >
+                      {d === "na" ? "Marked not applicable" : "Industry average estimate (low confidence)"}
+                    </span>
+                    <form action={consultantSaveScope3Decision.bind(null, id, cat, "clear")}>
+                      <button className="text-xs underline" style={{ color: "var(--text-muted)" }}>undo</button>
+                    </form>
                   </span>
                 ) : (
                   <span className="flex gap-2">

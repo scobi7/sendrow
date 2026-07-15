@@ -88,7 +88,7 @@ export default async function SharedResultsPage({ params }: { params: Promise<{ 
       </h1>
       {snapshot && (
         <p className="mt-2 inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium" style={{ background: "var(--primary-tint)", color: "var(--primary)" }}>
-          🔒 {snapshot.label} — frozen {new Date(snapshot.createdAt).toLocaleDateString()} · this version can never silently change
+          {snapshot.label} — frozen {new Date(snapshot.createdAt).toLocaleDateString()} · this version can never silently change
         </p>
       )}
 

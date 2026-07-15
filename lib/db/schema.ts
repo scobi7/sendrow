@@ -120,7 +120,9 @@ export const events = pgTable("gt_events", {
 export const comments = pgTable("gt_comments", {
   id: text("id").primaryKey(),
   companyId: text("company_id").notNull().references(() => companies.id),
-  lineItemId: text("line_item_id").notNull(),
+  lineItemId: text("line_item_id"), // null for checklist-item threads (X2)
+  dataRequestId: text("data_request_id"), // thread anchored to a request…
+  checklistItemId: text("checklist_item_id"), // …and one of its checklist items
   author: text("author").notNull(),
   authorType: text("author_type").notNull(), // consultant | supplier
   body: text("body").notNull(),

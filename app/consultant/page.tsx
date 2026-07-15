@@ -48,6 +48,9 @@ export default async function ConsultantDashboard({
       openRequests: reqs
         .filter((r) => r.status === "open")
         .map((r) => ({ dueDate: r.dueDate, checklist: r.checklist as ChecklistItem[] | null })),
+      fulfilledRequests: reqs
+        .filter((r) => r.status === "fulfilled")
+        .map((r) => ({ checklist: r.checklist as ChecklistItem[] | null })),
       pendingReviewCount: sessions.filter(
         (s) => s.companyId === row.id && (s.status === "pending_review" || s.status === "needs_info")
       ).length,

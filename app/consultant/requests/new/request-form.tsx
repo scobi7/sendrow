@@ -5,6 +5,15 @@ import Link from "next/link";
 import { createRequestFromPage } from "@/lib/workflow-actions";
 import { SubmitButton } from "@/components/submit-button";
 
+/** Common reporting windows — same pick-don't-type pattern as the due date. */
+const PERIOD_PRESETS = [
+  "Calendar year 2025",
+  "Calendar year 2026 to date",
+  "Last 12 months",
+  "Q1 2026",
+  "Q2 2026",
+];
+
 const DATA_TYPE_CHIPS: { key: string; label: string }[] = [
   { key: "utility_bills", label: "Electricity & gas" },
   { key: "fleet_fuel_dollar", label: "Fleet fuel" },
@@ -42,6 +51,9 @@ export function NewRequestForm({
   );
   const [selectedTypes, setSelectedTypes] = useState<string[]>(initialTemplate?.dataTypes ?? []);
   const [period, setPeriod] = useState(initialTemplate?.periodLabel ?? "");
+  const [customPeriod, setCustomPeriod] = useState(
+    Boolean(initialTemplate?.periodLabel && !PERIOD_PRESETS.includes(initialTemplate.periodLabel))
+  );
   const [description, setDescription] = useState(initialTemplate?.description ?? "");
   const [dueDate, setDueDate] = useState(() => (initialTemplate?.dueInDays ? inDays(initialTemplate.dueInDays) : ""));
   const [contactEmail, setContactEmail] = useState(
@@ -157,14 +169,38 @@ export function NewRequestForm({
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="label">Time period</label>
-          <input
-            name="period_label"
+          <label className="label">Data covers</label>
+          <select
             className="input"
-            placeholder="Jan 1, 2026 – Jun 30, 2026"
-            value={period}
-            onChange={(e) => setPeriod(e.target.value)}
-          />
+            value={customPeriod ? "__custom" : period}
+            onChange={(e) => {
+              if (e.target.value === "__custom") {
+                setCustomPeriod(true);
+                setPeriod("");
+              } else {
+                setCustomPeriod(false);
+                setPeriod(e.target.value);
+              }
+            }}
+          >
+            <option value="">Choose a period…</option>
+            {PERIOD_PRESETS.map((p) => (
+              <option key={p} value={p}>{p}</option>
+            ))}
+            <option value="__custom">Custom range…</option>
+          </select>
+          {customPeriod ? (
+            <input
+              name="period_label"
+              className="input mt-2"
+              placeholder="Jan 1, 2026 – Jun 30, 2026"
+              value={period}
+              onChange={(e) => setPeriod(e.target.value)}
+              autoFocus
+            />
+          ) : (
+            <input type="hidden" name="period_label" value={period} />
+          )}
         </div>
         <div>
           <label className="label">Due date</label>
@@ -177,9 +213,10 @@ export function NewRequestForm({
         style={{ background: "var(--primary-tint)", border: "1px solid var(--chip-border)" }}
       >
         <span style={{ color: "var(--text)" }}>
-          Reminder cadence: <span className="font-data">auto (7 / 2 / day-of / overdue)</span>
+          Automatic reminders go out <strong>7 days before</strong>, <strong>2 days before</strong>, <strong>on the due
+          date</strong>, and <strong>when overdue</strong> — no chasing by hand.
         </span>
-        <span style={{ color: "var(--text-muted)" }}>Editable per request after sending</span>
+        <span className="shrink-0" style={{ color: "var(--text-muted)" }}>Pausable per request</span>
       </div>
 
       <label className="flex items-center gap-2 text-sm" style={{ color: "var(--text)" }}>

@@ -85,7 +85,7 @@ export default async function ChasingSchedulePage({
                   : { background: "var(--warning-tint)", color: "var(--warning-strong)", border: "1px solid var(--warning-border)" }
               }
             >
-              {req.remindersEnabled ? "🔔 Chasing on — pause" : "🔕 Paused — resume"}
+              {req.remindersEnabled ? "Chasing on — pause" : "Paused — resume"}
             </button>
           </form>
         )}

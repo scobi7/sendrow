@@ -36,6 +36,25 @@ type PendingUpload = {
   suggestion: MappingSuggestion;
 };
 
+/** Vercel rejects bodies over ~4.5 MB with an empty non-JSON response, so we
+ *  stop oversized files client-side with a message the supplier can act on. */
+const MAX_UPLOAD_BYTES = 4 * 1024 * 1024;
+
+/** Reads a response body as JSON without ever throwing "Unexpected end of
+ *  JSON input" at the supplier — non-JSON failures (413s, crashes, timeouts)
+ *  become actionable messages instead. */
+async function readJson(res: Response): Promise<{ error?: string; [k: string]: unknown }> {
+  const text = await res.text();
+  try {
+    return JSON.parse(text);
+  } catch {
+    if (res.status === 413) {
+      return { error: "That file is too large to send (about 4 MB max). Export a smaller date range, or type the numbers in instead." };
+    }
+    return { error: "The upload didn't go through — please try again. If it keeps failing, use “Type it in” and we'll take it from there." };
+  }
+}
+
 type SheetChoice = {
   itemId: string;
   file: File;
@@ -59,14 +78,18 @@ function guessKind(text: string): string {
 
 export type PrefillRow = { date: string; activity: string; quantity: string; unit: string; period: string | null };
 
+export type ItemThread = { authorType: string; body: string; createdAt: string }[];
+
 export function PortalChecklist({
   token,
   items,
   prefill = [],
+  threads = {},
 }: {
   token: string;
   items: ChecklistItem[];
   prefill?: PrefillRow[];
+  threads?: Record<string, ItemThread>;
 }) {
   const router = useRouter();
   const [openItem, setOpenItem] = useState<string | null>(null);
@@ -82,6 +105,10 @@ export function PortalChecklist({
   const [stuckSent, setStuckSent] = useState<string | null>(null);
   const [draftRestored, setDraftRestored] = useState(false);
   const [prefillUsed, setPrefillUsed] = useState(false);
+  // A PDF the supplier tried to upload: kept client-side and attached as
+  // evidence when their manual entry for that item is submitted.
+  const [evidenceStash, setEvidenceStash] = useState<{ itemId: string; file: File } | null>(null);
+  const [pdfNotice, setPdfNotice] = useState<string | null>(null);
   const draftKey = `sendrow-draft-${token}`;
 
   // Save & resume (U1.6): suppliers fill these out in stolen moments —
@@ -119,9 +146,9 @@ export function PortalChecklist({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ token, itemId: item.id, headers }),
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error ?? "Could not read that file");
-    return { map: data.map, source: data.source };
+    const data = await readJson(res);
+    if (!res.ok) throw new Error((data.error as string) ?? "Could not read that file");
+    return { map: data.map as MappingSuggestion["map"], source: data.source as MappingSuggestion["source"] };
   }
 
   async function submit(
@@ -156,11 +183,12 @@ export function PortalChecklist({
           body: JSON.stringify({ token, itemId: item.id, rows: payload.rows, filename: payload.filename, source: payload.source }),
         });
       }
-      const data = await res.json();
+      const data = (await readJson(res)) as { error?: string; imported?: number; unmapped?: number };
       if (!res.ok) throw new Error(data.error ?? "Something went wrong");
+      const unmapped = data.unmapped ?? 0;
       setDoneMsg(
-        data.unmapped > 0
-          ? `Received — ${data.imported} rows. ${data.unmapped} need${data.unmapped === 1 ? "s" : ""} a closer look, and your consultant will handle that.`
+        unmapped > 0
+          ? `Received — ${data.imported} rows. ${unmapped} need${unmapped === 1 ? "s" : ""} a closer look, and your consultant will handle that.`
           : `Received — ${data.imported} rows. Thank you!`
       );
       setOpenItem(null);
@@ -178,9 +206,31 @@ export function PortalChecklist({
 
   async function handleFile(item: ChecklistItem, file: File) {
     setError(null);
+    if (file.size > MAX_UPLOAD_BYTES) {
+      setError("That file is over 4 MB, which is more than this page can send. Export a smaller date range, or type the numbers in instead.");
+      return;
+    }
+    // PDFs can't be auto-read (yet) — keep the file as proof and route the
+    // supplier to manual entry so nothing dead-ends.
+    if (file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf")) {
+      setEvidenceStash({ itemId: item.id, file });
+      setMode("entry");
+      setError(null);
+      setDoneMsg(null);
+      setPdfNotice(
+        `We can't read numbers out of PDFs automatically yet. Your file “${file.name}” will be attached as proof — type the totals from it below and submit.`
+      );
+      return;
+    }
     const buf = await file.arrayBuffer();
-    // codepage 65001 = UTF-8, so CSVs with em-dashes etc. don't mojibake
-    const wb = XLSX.read(buf, { codepage: 65001 });
+    let wb: XLSX.WorkBook;
+    try {
+      // codepage 65001 = UTF-8, so CSVs with em-dashes etc. don't mojibake
+      wb = XLSX.read(buf, { codepage: 65001 });
+    } catch {
+      setError("We couldn't read that file as a spreadsheet. CSV and Excel exports work best — or type the numbers in instead.");
+      return;
+    }
 
     // Every sheet as a raw matrix — header detection and mapping happen on
     // the confirm screen where the supplier can see and override everything.
@@ -225,7 +275,7 @@ export function PortalChecklist({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token, itemId: item.id, message: stuckMsg }),
       });
-      if (!res.ok) throw new Error((await res.json()).error ?? "Could not send");
+      if (!res.ok) throw new Error((await readJson(res)).error ?? "Could not send");
       setStuckSent(item.id);
       setStuckOpen(null);
       setStuckMsg("");
@@ -289,6 +339,21 @@ export function PortalChecklist({
                 {received ? "✓ Received" : "Needed"}
               </span>
             </button>
+
+            {/* Conversation on this item (X2): what you sent, what they answered */}
+            {(threads[item.id]?.length ?? 0) > 0 && (
+              <div className="mx-5 mb-3 space-y-2 rounded-xl px-4 py-3" style={{ background: "var(--bg)", border: "1px solid var(--divider)" }}>
+                {threads[item.id].map((t, i) => (
+                  <p key={i} className="text-xs leading-relaxed" style={{ color: "var(--text)" }}>
+                    <span className="font-semibold" style={{ color: t.authorType === "supplier" ? "var(--text-muted)" : "var(--primary)" }}>
+                      {t.authorType === "supplier" ? "You" : "Your consultant"}:
+                    </span>{" "}
+                    {t.body}
+                    <span className="ml-1.5" style={{ color: "var(--text-muted)" }}>· {t.createdAt.slice(0, 10)}</span>
+                  </p>
+                ))}
+              </div>
+            )}
 
             {isOpen && !received && (
               <div className="px-5 pb-5">
@@ -417,6 +482,11 @@ export function PortalChecklist({
                             ✓ Picked up where you left off — your draft was saved automatically.
                           </p>
                         )}
+                        {pdfNotice && evidenceStash?.itemId === item.id && (
+                          <p className="mb-2 rounded-lg px-3 py-2 text-xs" style={{ background: "var(--warning-tint)", color: "var(--warning-strong)" }}>
+                            {pdfNotice}
+                          </p>
+                        )}
                         {prefill.length > 0 && !prefillUsed && (
                           <div className="mb-2 flex items-center justify-between rounded-lg px-3 py-2" style={{ background: "var(--warning-tint)" }}>
                             <p className="text-xs" style={{ color: "var(--warning-strong)" }}>
@@ -487,7 +557,19 @@ export function PortalChecklist({
                           <button
                             className="btn btn-primary text-sm"
                             disabled={busy || entryToRows().length === 0}
-                            onClick={() => submit(item, { rows: entryToRows(), filename: "manual entry", source: "entry" })}
+                            onClick={() => {
+                              const stash = evidenceStash?.itemId === item.id ? evidenceStash : null;
+                              submit(item, {
+                                rows: entryToRows(),
+                                filename: stash ? stash.file.name : "manual entry",
+                                source: "entry",
+                                file: stash?.file,
+                              });
+                              if (stash) {
+                                setEvidenceStash(null);
+                                setPdfNotice(null);
+                              }
+                            }}
                           >
                             {busy ? "Sending…" : "Submit"}
                           </button>

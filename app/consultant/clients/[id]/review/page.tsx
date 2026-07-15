@@ -89,6 +89,29 @@ export default async function ReviewApprovePage({ params }: { params: Promise<{ 
         </Link>
       </div>
 
+      {/* Open flags the dashboard counted — visible here, not just tallied (X2.4) */}
+      {stuckNotes.length > 0 && (
+        <div className="glass-panel mb-6">
+          <div className="px-5 pt-4 pb-3" style={{ borderBottom: "1px solid var(--divider)" }}>
+            <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "var(--danger)" }}>
+              Client is stuck ({stuckNotes.length})
+            </p>
+          </div>
+          <div className="divide-y" style={{ borderColor: "var(--divider)" }}>
+            {stuckNotes.map((c) => (
+              <div key={c.id} className="px-5 py-3">
+                <p className="text-sm" style={{ color: "var(--text)" }}>
+                  <strong>Flag — {c.label}:</strong> &ldquo;{c.stuckNote}&rdquo;
+                </p>
+                <Link href={`/consultant/clients/${id}`} className="mt-1 inline-block text-xs underline" style={{ color: "var(--primary)" }}>
+                  Reply from the client page →
+                </Link>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Uploads waiting on a decision */}
       {pendingSessions.length > 0 && (
         <div className="glass-panel mb-6">
@@ -207,17 +230,17 @@ export default async function ReviewApprovePage({ params }: { params: Promise<{ 
                   <div className="flex shrink-0 items-center gap-2">
                     {flagged > 0 ? (
                       <span className="rounded-full px-2.5 py-1 font-data text-[11px] font-semibold" style={{ background: "var(--danger-tint)", color: "var(--danger)" }}>
-                        ⚑ {flagged} flagged
+                        {flagged} flagged
                       </span>
                     ) : (
                       <span className="badge">✓ mapped</span>
                     )}
                     <Link
-                      href={`/consultant/clients/${id}/ledger?status=${flagged > 0 ? "unmapped" : "all"}`}
+                      href={`/consultant/clients/${id}/ledger?category=${encodeURIComponent(category)}${flagged > 0 ? "&status=unmapped" : ""}`}
                       className="text-xs underline"
                       style={{ color: "var(--text-muted)" }}
                     >
-                      inspect
+                      inspect rows
                     </Link>
                   </div>
                 </div>
@@ -226,7 +249,7 @@ export default async function ReviewApprovePage({ params }: { params: Promise<{ 
                   <div className="mt-3 space-y-1.5 rounded-xl px-3 py-2.5" style={{ background: "var(--card-strong)", border: "1px solid var(--divider)" }}>
                     {groupComments.map((c) => (
                       <p key={c.id} className="text-xs" style={{ color: "var(--text)" }}>
-                        💬 <span className="font-semibold">{c.authorType === "consultant" ? "You" : company.name}:</span> {c.body}
+                        <span className="font-semibold">{c.authorType === "consultant" ? "You" : company.name}:</span> {c.body}
                         <span className="ml-1" style={{ color: "var(--text-muted)" }}>· {fmtDate(c.createdAt)}</span>
                       </p>
                     ))}

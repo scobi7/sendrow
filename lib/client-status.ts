@@ -14,6 +14,9 @@ export const STATUS_META: Record<WorkflowStatus, { label: string; tone: "warning
 
 export type ClientWorkflowInput = {
   openRequests: { dueDate: string | null; checklist: ChecklistItem[] | null }[];
+  /** Completed rounds — kept in the completeness tally so a new request never
+   *  resets a finished client to 0%. */
+  fulfilledRequests?: { checklist: ChecklistItem[] | null }[];
   pendingReviewCount: number;
   hasSnapshot: boolean;
   hasFulfilledRequest: boolean;
@@ -34,8 +37,10 @@ export function nextDueDate(c: ClientWorkflowInput): string | null {
   return dates[0] ?? null;
 }
 
-/** Completeness = received / requested across open checklists (6.7).
- *  Nothing open but data approved before → 100. Nothing at all → 0. */
+/** Completeness = received / requested across ALL checklists — open and
+ *  fulfilled (6.7). Fulfilled rounds stay in the tally so a brand-new request
+ *  moves a finished client from 100% to e.g. 67%, never back to 0%.
+ *  Nothing tracked but data approved before → 100. Nothing at all → 0. */
 export function completenessPercent(c: ClientWorkflowInput): number {
   let total = 0;
   let received = 0;
@@ -43,6 +48,11 @@ export function completenessPercent(c: ClientWorkflowInput): number {
     const items = r.checklist ?? [];
     total += items.length;
     received += items.filter((i) => i.status === "received").length;
+  }
+  for (const r of c.fulfilledRequests ?? []) {
+    const items = r.checklist ?? [];
+    total += items.length;
+    received += items.length; // fulfilled = everything in it was received
   }
   if (total === 0) return c.hasSnapshot || c.hasFulfilledRequest ? 100 : 0;
   return Math.round((received / total) * 100);

@@ -63,7 +63,7 @@ export function LedgerRow({
         <td className="px-4 py-2.5">
           <p className="font-medium" style={{ color: "var(--text)" }}>{item.sourceRef || "—"}</p>
           {item.flagReason && item.status === "unmapped" && (
-            <p className="text-xs" style={{ color: "var(--warning-strong)" }}>⚠ {item.flagReason}</p>
+            <p className="text-xs" style={{ color: "var(--warning-strong)" }}>Flagged: {item.flagReason}</p>
           )}
         </td>
         <td className="px-4 py-2.5">
@@ -163,7 +163,7 @@ export function LedgerRow({
                   className="underline"
                   style={{ color: comments.length > 0 ? "var(--primary)" : "var(--text-muted)" }}
                 >
-                  💬{comments.length > 0 ? ` ${comments.length}` : ""}
+                  notes{comments.length > 0 ? ` (${comments.length})` : ""}
                 </button>
                 <button
                   disabled={pending}
@@ -172,7 +172,7 @@ export function LedgerRow({
                   style={{ color: "var(--text-muted)" }}
                   title="Attach a source document to this row"
                 >
-                  📎{extraEvidence.length > 0 ? ` ${extraEvidence.length}` : ""}
+                  attach{extraEvidence.length > 0 ? ` (${extraEvidence.length})` : ""}
                 </button>
                 <button
                   disabled={pending}

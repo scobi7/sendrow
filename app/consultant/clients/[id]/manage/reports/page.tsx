@@ -40,7 +40,7 @@ export default async function ManageReports({
   const boundGenerate = consultantGenerateReport.bind(null, id);
 
   const checks: [string, boolean, string][] = [
-    ["Connections complete", s.connections === "complete", "QuickBooks and utility connected"],
+    ["Connections complete", s.connections === "complete", "Spend and utility data on file"],
     ["Scope 1 complete", s.scope1 === "complete", "All subsections answered or N/A"],
     ["Scope 2 complete", s.scope2 === "complete", "Utility data reviewed"],
     ["Scope 3 complete (recommended)", s.scope3 === "complete", "Required for CDP/EcoVadis completeness"],

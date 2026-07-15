@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { and, eq, isNull } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { companies, consultantClients, dataRequests, userCompanies } from "@/lib/db/schema";
+import { comments, companies, consultantClients, dataRequests, userCompanies } from "@/lib/db/schema";
 import { portalTokenValid } from "@/lib/portal";
 import type { ChecklistItem } from "@/lib/portal";
 import { sendClientStuckEmail } from "@/lib/email";
@@ -29,6 +29,20 @@ export async function POST(request: NextRequest) {
 
   const updated = checklist.map((i) => (i.id === itemId ? { ...i, stuckNote: message } : i));
   await db.update(dataRequests).set({ checklist: updated }).where(eq(dataRequests.id, dataRequest.id));
+
+  // The message also lands in the item's thread (X2) so the supplier sees
+  // what they sent and the consultant's reply shows up right under it.
+  await db.insert(comments).values({
+    id: "cm_" + Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4),
+    companyId: dataRequest.companyId,
+    lineItemId: null,
+    dataRequestId: dataRequest.id,
+    checklistItemId: itemId,
+    author: `portal:${dataRequest.id}`,
+    authorType: "supplier",
+    body: message,
+    createdAt: new Date().toISOString(),
+  });
 
   // Notify the consultant who manages this client
   const [company, link] = await Promise.all([

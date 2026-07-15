@@ -5,28 +5,33 @@ import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { companies, consultantClients, events } from "@/lib/db/schema";
 
-const VERB_LABEL: Record<string, { icon: string; label: string }> = {
-  "request.created": { icon: "📨", label: "Data request sent" },
-  "request.renewed": { icon: "🔄", label: "Portal link renewed" },
-  "request.link_requested": { icon: "🙋", label: "Client asked for a new link" },
-  "upload.received": { icon: "📎", label: "File received" },
-  "entry.received": { icon: "⌨️", label: "Manual entry received" },
-  "session.approved": { icon: "✅", label: "Upload approved" },
-  "session.flagged": { icon: "🚩", label: "Upload flagged" },
-  "session.rejected": { icon: "🚫", label: "Upload rejected" },
-  "vendor.confirmed": { icon: "🏷", label: "Vendor categorized" },
-  "fuel.converted": { icon: "⛽", label: "Dollar fuel converted" },
-  "item.recategorized": { icon: "✏️", label: "Row recategorized" },
-  "item.quantity_edited": { icon: "✏️", label: "Quantity corrected" },
-  "item.excluded": { icon: "➖", label: "Row excluded" },
-  "item.restored": { icon: "➕", label: "Row restored" },
-  "item.marked_actual": { icon: "🎯", label: "Estimate replaced with actual" },
-  "comment.added": { icon: "💬", label: "Comment" },
-  "evidence.attached": { icon: "🧾", label: "Evidence attached" },
-  "snapshot.created": { icon: "🔒", label: "Snapshot frozen" },
-  "snapshot.shared": { icon: "📤", label: "Snapshot shared" },
-  "share.revoked": { icon: "🚫", label: "Share revoked" },
-  "client.stuck": { icon: "⚑", label: "Client asked for help" },
+const VERB_LABEL: Record<string, string> = {
+  "request.created": "Data request sent",
+  "request.renewed": "Portal link renewed",
+  "request.link_requested": "Client asked for a new link",
+  "upload.received": "File received",
+  "entry.received": "Manual entry received",
+  "session.approved": "Upload approved",
+  "session.flagged": "Upload flagged",
+  "session.rejected": "Upload rejected",
+  "vendor.confirmed": "Vendor categorized",
+  "fuel.converted": "Dollar fuel converted",
+  "item.recategorized": "Row recategorized",
+  "item.quantity_edited": "Quantity corrected",
+  "item.excluded": "Row excluded",
+  "item.restored": "Row restored",
+  "item.marked_actual": "Estimate replaced with actual",
+  "comment.added": "Comment",
+  "evidence.attached": "Evidence attached",
+  "snapshot.created": "Snapshot frozen",
+  "snapshot.shared": "Snapshot shared",
+  "snapshot.approved_with_flags": "Approved with open flags",
+  "share.revoked": "Share revoked",
+  "review.changes_requested": "Changes requested",
+  "client.stuck": "Client asked for help",
+  "flag.replied": "Reply sent to client",
+  "email.sent": "Email handed to the mail service",
+  "email.failed": "Email failed to send",
 };
 
 /** The immutable activity log (U1.3 / Ground Rule 3): who did what, when —
@@ -63,7 +68,8 @@ export default async function ActivityPage({ params }: { params: Promise<{ id: s
         <div>
           <h1 className="text-2xl font-bold font-display" style={{ color: "var(--text)" }}>Activity</h1>
           <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>
-            Every action, permanently recorded. This log can&apos;t be edited or deleted.
+            Every action, permanently recorded — this log can&apos;t be edited or deleted. It stays here as the
+            audit trail; the numbers and methodology ship inside each snapshot&apos;s exports.
           </p>
         </div>
         <a href={`/api/events/export?companyId=${id}`} className="btn btn-secondary text-sm">
@@ -79,13 +85,12 @@ export default async function ActivityPage({ params }: { params: Promise<{ id: s
         <div className="glass-panel">
           <div className="divide-y" style={{ borderColor: "var(--divider)" }}>
             {rows.map((e) => {
-              const v = VERB_LABEL[e.verb] ?? { icon: "•", label: e.verb };
+              const label = VERB_LABEL[e.verb] ?? e.verb.replace(/[._]/g, " ");
               return (
                 <div key={e.id} className="flex items-start gap-3 px-5 py-3">
-                  <span className="mt-0.5 shrink-0 text-base">{v.icon}</span>
                   <div className="min-w-0 flex-1">
                     <p className="text-sm" style={{ color: "var(--text)" }}>
-                      <span className="font-medium">{v.label}</span>
+                      <span className="font-medium">{label}</span>
                       {e.subject && <span style={{ color: "var(--text-muted)" }}> — {e.subject}</span>}
                     </p>
                     <p className="text-xs" style={{ color: "var(--text-muted)" }}>

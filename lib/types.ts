@@ -64,6 +64,10 @@ export interface Inputs {
   has_recs?: boolean;
   rec_coverage_pct?: number | null;
   rec_certificate_name?: string;
+  /** Consultant-set market-based Scope 2 override in tCO2e (X3.4) — wins over
+   *  the derived market-based figure; reason is audit-logged with it. */
+  scope2_market_override_tons?: number | null;
+  scope2_market_override_reason?: string;
   // Scope 3
   qb_data_reviewed?: boolean;
   commute_avg_miles?: number | null; // round trip daily miles

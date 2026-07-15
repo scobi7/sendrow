@@ -5,7 +5,7 @@ import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { companies, comments, consultantClients, dataRequests, emissionLineItems, evidence, events, intakeSessions, snapshots } from "@/lib/db/schema";
 import { archiveClient, updateClientContact } from "@/lib/actions";
-import { resendPortalEmail, renewPortalLink } from "@/lib/consultant-actions";
+import { resendPortalEmail, renewPortalLink, replyToFlag, resolveFlag } from "@/lib/consultant-actions";
 import { BackLink, StatusBadge, CompletenessMeter } from "@/components/workflow";
 import { workflowStatus, nextDueDate, completenessPercent, STATUS_META } from "@/lib/client-status";
 import { PortalLinkButton } from "./portal-link-button";
@@ -44,6 +44,9 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
     openRequests: requests
       .filter((r) => r.status === "open")
       .map((r) => ({ dueDate: r.dueDate, checklist: r.checklist as ChecklistItem[] | null })),
+    fulfilledRequests: requests
+      .filter((r) => r.status === "fulfilled")
+      .map((r) => ({ checklist: r.checklist as ChecklistItem[] | null })),
     pendingReviewCount: sessions.filter((s) => s.status === "pending_review" || s.status === "needs_info").length,
     hasSnapshot: snapshotList.length > 0,
     hasFulfilledRequest: requests.some((r) => r.status === "fulfilled"),
@@ -75,6 +78,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
   );
   const threads = new Map<string, typeof commentRows>();
   for (const c of commentRows) {
+    if (!c.lineItemId) continue; // checklist-item threads render on the flag cards, not here
     const t = threads.get(c.lineItemId) ?? [];
     t.push(c);
     threads.set(c.lineItemId, t);
@@ -213,13 +217,30 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
                           }
                         />
                       </div>
-                      {checklist.some((c) => c.stuckNote && c.status !== "received") && (
-                        <div className="mt-2 rounded-lg px-3 py-2 text-xs" style={{ background: "var(--danger-tint)", color: "var(--danger)" }}>
-                          {checklist.filter((c) => c.stuckNote && c.status !== "received").map((c) => (
-                            <p key={c.id}>⚑ <strong>{c.label}:</strong> &ldquo;{c.stuckNote}&rdquo;</p>
-                          ))}
+                      {checklist.filter((c) => c.stuckNote && c.status !== "received").map((c) => (
+                        <div key={c.id} className="mt-2 rounded-lg px-3 py-2.5" style={{ background: "var(--danger-tint)" }}>
+                          <p className="text-xs" style={{ color: "var(--danger)" }}>
+                            <strong>Flag — {c.label}:</strong> &ldquo;{c.stuckNote}&rdquo;
+                          </p>
+                          {/* Reply lands on the portal thread + goes out by email (X2) */}
+                          <form action={replyToFlag.bind(null, id, req.id, c.id)} className="mt-2 flex items-start gap-2">
+                            <textarea
+                              name="reply"
+                              rows={1}
+                              required
+                              placeholder="Answer the client — they'll see it on their upload page and by email"
+                              className="min-h-[34px] flex-1 rounded-lg px-2.5 py-1.5 text-xs"
+                              style={{ background: "var(--card)", border: "1px solid var(--divider)", color: "var(--text)" }}
+                            />
+                            <button className="btn btn-primary px-3 py-1.5 text-xs">Reply</button>
+                          </form>
+                          <form action={resolveFlag.bind(null, id, req.id, c.id)} className="mt-1.5">
+                            <button className="text-xs underline" style={{ color: "var(--text-muted)" }}>
+                              Mark resolved — clears the flag, keeps the thread
+                            </button>
+                          </form>
                         </div>
-                      )}
+                      ))}
                       <div className="mt-2 flex flex-wrap items-center gap-1.5">
                         {req.token && <PortalLinkButton token={req.token} />}
                         {isOpen && (
@@ -228,7 +249,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
                             className="rounded-full px-2 py-0.5 text-xs font-medium transition-opacity hover:opacity-70"
                             style={{ background: "var(--divider)", color: "var(--text-muted)" }}
                           >
-                            {req.remindersEnabled ? "🔔 Chasing on" : "🔕 Chasing paused"} · schedule →
+                            {req.remindersEnabled ? "Chasing on" : "Chasing paused"} · schedule →
                           </Link>
                         )}
                         {expired && (
@@ -271,7 +292,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
                   return (
                     <div key={lineItemId} className="px-5 py-3.5 text-sm">
                       <p style={{ color: "var(--text)" }}>
-                        💬 &ldquo;{first.body}&rdquo;{" "}
+                        &ldquo;{first.body}&rdquo;{" "}
                         <span className="text-xs" style={{ color: "var(--text-muted)" }}>
                           on {lineLabels.get(lineItemId) ?? "a line item"}
                         </span>
@@ -349,7 +370,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
                       className="flex items-center justify-between rounded-lg px-3 py-2 transition-colors hover:bg-white/40"
                       style={{ border: "1px solid var(--divider)" }}
                     >
-                      <span className="truncate text-xs font-semibold" style={{ color: "var(--text)" }}>🔒 {snap.label}</span>
+                      <span className="truncate text-xs font-semibold" style={{ color: "var(--text)" }}>{snap.label}</span>
                       <span className="ml-2 shrink-0 font-data text-xs" style={{ color: "var(--text)" }}>
                         {st.total.toLocaleString("en-US", { maximumFractionDigits: 1 })} t
                       </span>

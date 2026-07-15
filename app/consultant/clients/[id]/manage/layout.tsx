@@ -8,7 +8,6 @@ import { loadCompany } from "@/lib/store";
 import { progressPercent } from "@/lib/progress";
 
 const NAV = [
-  { label: "Connections", href: "connections" },
   { label: "Scope 1", href: "scope1" },
   { label: "Scope 2", href: "scope2" },
   { label: "Scope 3", href: "scope3" },

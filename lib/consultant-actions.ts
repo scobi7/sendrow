@@ -22,7 +22,7 @@ import { getBrandForCompany } from "./branding";
 import { logEvent } from "./events";
 import { snapshotHash, restatementDiff } from "./snapshots";
 import type { SnapshotTotals } from "./snapshots";
-import { sendRestatementEmail, sendCommentEmail } from "./email";
+import { sendRestatementEmail, sendCommentEmail, sendFlagReplyEmail } from "./email";
 import { combinedTotals as computeTotals } from "./calc";
 import { desc } from "drizzle-orm";
 import { generatePortalToken, portalExpiry, buildChecklist } from "./portal";
@@ -36,6 +36,7 @@ const FIELD_SECTIONS: Record<string, string> = {
   refrigerant_type: "scope1", refrigerant_kg: "scope1", refrigerant_na: "scope1",
   equipment_fuel_type: "scope1", equipment_gal: "scope1", equipment_na: "scope1",
   scope2_reviewed: "scope2", has_recs: "scope2", rec_coverage_pct: "scope2", rec_certificate_name: "scope2",
+  scope2_market_override_tons: "scope2", scope2_market_override_reason: "scope2",
   qb_data_reviewed: "scope3", commute_avg_miles: "scope3", commute_mode: "scope3", commute_days_in_office: "scope3",
   waste_landfill_tons: "scope3", waste_recycled_tons: "scope3", waste_composted_tons: "scope3",
   social_total_employees: "social", social_new_hires: "social", social_departures: "social",
@@ -46,7 +47,7 @@ const FIELD_SECTIONS: Record<string, string> = {
 
 const NUMBER_FIELDS = new Set([
   "fleet_gasoline_gal", "fleet_diesel_gal", "fleet_propane_gal", "natgas_therms_override",
-  "refrigerant_kg", "equipment_gal", "rec_coverage_pct", "commute_avg_miles", "commute_days_in_office",
+  "refrigerant_kg", "equipment_gal", "rec_coverage_pct", "scope2_market_override_tons", "commute_avg_miles", "commute_days_in_office",
   "waste_landfill_tons", "waste_recycled_tons", "waste_composted_tons",
   "social_total_employees", "social_new_hires", "social_departures", "social_lost_time_injuries",
   "social_osha_recordables", "social_near_misses", "social_days_lost", "social_training_hours",
@@ -106,11 +107,22 @@ export async function consultantSaveFields(companyId: string, formData: FormData
   if (dest) redirect(dest);
 }
 
-export async function consultantSaveScope3Decision(companyId: string, category: string, decision: "na" | "industry_average") {
+export async function consultantSaveScope3Decision(companyId: string, category: string, decision: "na" | "industry_average" | "clear") {
   const { user, company } = await asConsultantFor(companyId);
   const map = company.inputs.scope3_other_categories ?? {};
-  await logChange({ user, companyId: company.id, section: "scope3", field: `other_category:${category}`, prev: map[category], next: decision === "na" ? "Not applicable" : "Estimated with industry average" });
-  map[category] = decision;
+  await logChange({
+    user,
+    companyId: company.id,
+    section: "scope3",
+    field: `other_category:${category}`,
+    prev: map[category],
+    next: decision === "na" ? "Not applicable" : decision === "clear" ? "Decision cleared" : "Estimated with industry average",
+  });
+  if (decision === "clear") {
+    delete map[category];
+  } else {
+    map[category] = decision;
+  }
   company.inputs.scope3_other_categories = map;
   await persist(company);
 }
@@ -258,7 +270,7 @@ async function notifyClientOfDataRequest(companyId: string, description: string,
     getBrandForCompany(companyId),
   ]);
   if (!company?.clientContactEmail) return; // no contact on file — consultant shares the link manually
-  await sendDataRequestEmail(
+  const sent = await sendDataRequestEmail(
     company.clientContactEmail,
     company.clientContactName ?? "there",
     company.name,
@@ -267,6 +279,17 @@ async function notifyClientOfDataRequest(companyId: string, description: string,
     token,
     brand
   );
+  // The timeline records whether the link actually went out — a silent send
+  // failure looks identical to a client ignoring the email otherwise.
+  logEvent({
+    companyId,
+    actor: "system",
+    actorType: "system",
+    verb: sent ? "email.sent" : "email.failed",
+    subject: sent
+      ? `Portal link emailed to ${company.clientContactEmail}`
+      : `Email to ${company.clientContactEmail} did not send — copy the portal link and share it directly`,
+  });
 }
 
 /** Re-sends the portal link email for an open request (e.g. after adding a contact email). */
@@ -281,6 +304,70 @@ export async function resendPortalEmail(requestId: string, companyId: string) {
 
 /** Issues a fresh 30-day link for an expired/stale request and emails it —
  *  the other half of the expired page's "request a new link" (U1.2). */
+/** Answers a supplier's "I'm stuck" flag (X2): the reply lands on the portal
+ *  thread and goes out by email with the portal link. The flag stays open
+ *  until the item is received or explicitly resolved. */
+export async function replyToFlag(companyId: string, requestId: string, itemId: string, formData: FormData) {
+  const user = await ownsClient(companyId);
+  if (!user) return;
+  const body = String(formData.get("reply") ?? "").trim().slice(0, 1000);
+  if (!body) return;
+  const req = await db.query.dataRequests.findFirst({ where: eq(dataRequests.id, requestId) });
+  if (!req || req.companyId !== companyId) return;
+  const item = ((req.checklist as { id: string; label: string }[] | null) ?? []).find((i) => i.id === itemId);
+
+  await db.insert(comments).values({
+    id: "cm_" + Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4),
+    companyId,
+    lineItemId: null,
+    dataRequestId: requestId,
+    checklistItemId: itemId,
+    author: user.id,
+    authorType: "consultant",
+    body,
+    createdAt: new Date().toISOString(),
+  });
+  logEvent({ companyId, actor: user.id, actorType: "consultant", verb: "flag.replied", subject: item?.label ?? "checklist item", subjectId: itemId });
+
+  const [company, brand] = await Promise.all([
+    db.query.companies.findFirst({ where: eq(companies.id, companyId) }),
+    getBrandForCompany(companyId),
+  ]);
+  if (company?.clientContactEmail && req.token) {
+    const sent = await sendFlagReplyEmail(
+      company.clientContactEmail,
+      company.clientContactName ?? "there",
+      item?.label ?? "your question",
+      body,
+      req.token,
+      brand
+    );
+    if (!sent) {
+      logEvent({
+        companyId,
+        actor: "system",
+        actorType: "system",
+        verb: "email.failed",
+        subject: `Reply email to ${company.clientContactEmail} did not send — the reply is still on their portal page`,
+      });
+    }
+  }
+  revalidatePath(`/consultant/clients/${companyId}`);
+}
+
+/** Clears a stuck flag once it's handled — the thread stays on record. */
+export async function resolveFlag(companyId: string, requestId: string, itemId: string) {
+  const user = await ownsClient(companyId);
+  if (!user) return;
+  const req = await db.query.dataRequests.findFirst({ where: eq(dataRequests.id, requestId) });
+  if (!req || req.companyId !== companyId) return;
+  const checklist = ((req.checklist as ({ id: string; stuckNote?: string | null } & Record<string, unknown>)[] | null) ?? []).map((i) =>
+    i.id === itemId ? { ...i, stuckNote: null } : i
+  );
+  await db.update(dataRequests).set({ checklist }).where(eq(dataRequests.id, requestId));
+  revalidatePath(`/consultant/clients/${companyId}`);
+}
+
 export async function renewPortalLink(requestId: string, companyId: string) {
   const user = await ownsClient(companyId);
   if (!user) return;
