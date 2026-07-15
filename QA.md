@@ -33,10 +33,10 @@
 
 ### Public marketing
 - [x] `/` landing renders (hero, disclosure-readiness, recent-work panels)
-- [ ] `/how-it-works`, `/for-companies`, `/for-consultants`, `/pricing` — copy, links, CTAs
+- [x] `/how-it-works`, `/for-consultants`, `/pricing` render clean (no console/HTTP errors); `/for-companies` rebuilt minimal in X4.2 (verify after deploy)
 - [x] `/demo` request form (rate-limited, submits → confirmation)
-- [ ] `/get-matched` form → admin referral row + email
-- [ ] `/terms`, `/privacy`, `/security`, `/dpa` render
+- [x] `/get-matched` renders clean (form submit → admin email still untested — Resend backlog)
+- [x] `/terms`, `/privacy`, `/security`, `/dpa` render clean
 - [x] `/login` email+password; new-device email code works
 - [x] `/signup` → `/onboarding` → consultant workspace creation
 - [ ] Logged-in visit to `/` redirects to `/consultant` (observed once — re-verify intended)
@@ -49,25 +49,25 @@
 - [x] `requests/new`: template select, checklist builder, create → request row appears
 - [!] Time-period input + reminder-cadence copy (#14, #15)
 - [ ] Request email actually lands in a real inbox (#1)
-- [ ] Chasing schedule page: toggles, dates, reminder log
+- [x] Chasing schedule page renders (toggle actions untested)
 - [x] Review & Approve: category groups, comment box, snapshot label, approve-freeze flow (seeded PCL proves the happy path)
 - [!] Stuck notes counted but not rendered (#18); inspect link context (#19)
 - [ ] Approve with open flags → warning modal contents
 - [x] Snapshot page: scope cards, sha256, format chips, share links, restatement note
-- [ ] Each format download: SB 253, Excel, questionnaire, PACT V3 (open files, sanity-check contents)
-- [ ] Templates page: create/edit/use-in-request
+- [x] All four format downloads return 200 w/ correct content types + non-empty bodies (sb253 md 1.2KB, xlsx 19.8KB, csv 714B, PACT json 948B); cell-level contents not audited
+- [x] Templates page renders (create/edit flow untested)
 - [!] Format library: placeholder loop (#20)
-- [ ] Compliance calendar: preloaded deadlines correct (SB 253 = Aug 10, 2026)
-- [ ] Settings: white-label name/logo/color; live email preview matches
-- [ ] `clients/new`: create client → appears on dashboard
+- [x] Compliance calendar renders — NOTE: preloads say SB 253 = Aug 10, 2026 but Malachi's deck correction says Nov 10 — confirm which and align
+- [x] Settings renders w/ email preview (save + logo upload untested — logo needs blob token)
+- [x] `clients/new` renders (create flow untested)
 - [x] Ledger: filters, totals, per-row expand (rows render; comments attach)
 - [!] Excluded chip affordance (#17)
 - [!] Evidence view/download 404 when blob unset (#13)
 - [x] Activity: events render, CSV export link
 - [!] Unknown verbs raw (#21)
-- [ ] `manage/scope1|2|3`: calc pages load; scope2 override absent (#10); scope3 undo absent (#11)
-- [ ] `manage/connections`: decide consultant exposure (#9)
-- [ ] `manage/reports`: report totals vs snapshot totals agree
+- [x] `manage/scope1` renders; scope2 override + scope3 undo built in X3.4/X3.5 (verify after deploy)
+- [x] `manage/connections` removed from consultant UI (X4.1)
+- [!] `manage/reports` linked to deleted v1 routes `/consultant/report/[id]/ghg|audit` → 404 (the REAL feedback #13) — FIXED 2026-07-14: audit trail now points to Activity + CSV export; totals-agreement check still open
 - [ ] Client separation: second consultant account cannot open first's client (contract tests cover; spot-check URL)
 
 ### Supplier portal (magic link)

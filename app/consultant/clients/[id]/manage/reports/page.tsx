@@ -93,7 +93,6 @@ export default async function ManageReports({
           </div>
           {company.reportGeneratedAt ? (
             <div className="flex flex-col items-end gap-2">
-              <Link href={`/consultant/report/${id}/ghg`} className="btn btn-secondary text-sm">View report</Link>
               <a href={`/api/report/pdf?companyId=${id}`} download className="btn btn-primary text-sm">Download PDF</a>
             </div>
           ) : (
@@ -152,7 +151,10 @@ export default async function ManageReports({
               Every data point, its source, the emission factor used, and who entered it.
             </p>
           </div>
-          <Link href={`/consultant/report/${id}/audit`} className="btn btn-secondary">View / Download</Link>
+          <span className="flex gap-2">
+            <Link href={`/consultant/clients/${id}/activity`} className="btn btn-secondary text-sm">View</Link>
+            <a href={`/api/events/export?companyId=${id}`} className="btn btn-secondary text-sm">Download CSV</a>
+          </span>
         </div>
       </div>
     </div>
