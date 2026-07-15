@@ -74,7 +74,7 @@ export default async function ConsultantDashboard({
   const activeFilter = rawFilter && FILTER_STATUS[rawFilter] ? rawFilter : null;
   const displayed = activeFilter ? clients.filter((c) => c.status === FILTER_STATUS[activeFilter]) : clients;
   const fmtDue = (d: string | null) =>
-    d ? new Date(d + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "—";
+    d ? new Date(d + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" }) : " - ";
 
   return (
     <div className="mx-auto max-w-6xl">

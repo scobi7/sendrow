@@ -184,7 +184,7 @@ export async function persistCompany(company: Company): Promise<void> {
       }),
   ]);
 
-  // Replace calcs — recalculated every persist
+  // Replace calcs - recalculated every persist
   await db.delete(calcs).where(eq(calcs.companyId, id));
   if (company.calcs.length > 0) {
     await db.insert(calcs).values(

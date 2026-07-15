@@ -9,7 +9,7 @@ export default async function Home() {
 
   return (
     <main style={{ background: "var(--bg)", minHeight: "100vh" }}>
-      {/* Header — transparent, floats on the wash */}
+      {/* Header - transparent, floats on the wash */}
       <header className="mx-auto flex h-[78px] max-w-6xl items-center justify-between px-6">
         <Logo />
         <div className="flex items-center gap-6">
@@ -42,8 +42,7 @@ export default async function Home() {
             Climate reporting, with a lighter touch.
           </h1>
           <p className="mt-5 max-w-xl text-[17px] leading-[1.72]" style={{ color: "var(--text-muted)" }}>
-            Sendrow is the one organized place where your client&rsquo;s emissions data lives —
-            collected once, kept with proof attached, and shared to any customer or regulator
+            Sendrow is the one organized place where your client&rsquo;s emissions data lives -             collected once, kept with proof attached, and shared to any customer or regulator
             in whatever format they ask for. Under your brand.
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-4">
@@ -51,7 +50,7 @@ export default async function Home() {
               See the consultant workspace →
             </Link>
             <Link href="/get-matched" className="btn btn-secondary px-6 py-3 text-sm">
-              I&rsquo;m a company — get matched
+              I&rsquo;m a company - get matched
             </Link>
           </div>
         </div>
@@ -142,7 +141,7 @@ export default async function Home() {
             Got an ESG questionnaire from a customer?
           </h2>
           <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>
-            We&rsquo;ll match you with a vetted climate consultant who handles it end to end — free,
+            We&rsquo;ll match you with a vetted climate consultant who handles it end to end - free,
             usually within two business days.
           </p>
           <span className="mt-5 inline-flex items-center gap-1 text-sm font-semibold" style={{ color: "var(--primary)" }}>
@@ -253,7 +252,7 @@ export default async function Home() {
               {
                 num: "01",
                 title: "Connect your data",
-                desc: "Link your accounts. Sendrow pulls transactions and energy data automatically — no exports, no manual entry.",
+                desc: "Link your accounts. Sendrow pulls transactions and energy data automatically - no exports, no manual entry.",
               },
               {
                 num: "02",
@@ -263,7 +262,7 @@ export default async function Home() {
               {
                 num: "03",
                 title: "Export and submit",
-                desc: "Audit-ready PDF or pre-filled questionnaire fields. CDP, EcoVadis, and Walmart — all mapped.",
+                desc: "Audit-ready PDF or pre-filled questionnaire fields. CDP, EcoVadis, and Walmart - all mapped.",
               },
             ].map(({ num, title, desc }) => (
               <div key={num}>
@@ -330,7 +329,7 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* ── Footer — the ink band ── */}
+      {/* ── Footer - the ink band ── */}
       <footer className="px-6 py-14" style={{ background: "var(--ink-band)" }}>
         <div className="mx-auto max-w-5xl">
           <p className="font-display text-2xl font-semibold leading-snug" style={{ color: "var(--ink-band-text)" }}>

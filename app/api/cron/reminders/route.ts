@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
     if (!req.token) continue; // pre-portal requests have no magic link to remind about
 
     const company = await db.query.companies.findFirst({ where: eq(companies.id, req.companyId) });
-    if (!company?.clientContactEmail) continue; // no contact on file — nothing to remind
+    if (!company?.clientContactEmail) continue; // no contact on file - nothing to remind
 
     let consultantEmail: string | null = null;
     if (reminder.ccConsultant) {

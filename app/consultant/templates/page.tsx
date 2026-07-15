@@ -46,7 +46,7 @@ export default async function TemplatesPage() {
       <div className="mb-6">
         <h1 className="text-2xl font-bold font-display" style={{ color: "var(--text)" }}>Engagement templates</h1>
         <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>
-          What to ask for — saved once, reused when starting a new request for any client.
+          What to ask for - saved once, reused when starting a new request for any client.
         </p>
       </div>
 

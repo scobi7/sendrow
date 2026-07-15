@@ -1,7 +1,7 @@
 import type { ChecklistItem } from "./portal";
 
 /** Workflow status per wireframe (#19): the one word a consultant scans for
- *  on the dashboard table. Derived — never stored. */
+ *  on the dashboard table. Derived - never stored. */
 export type WorkflowStatus = "awaiting_reply" | "ready_for_review" | "overdue" | "approved" | "none";
 
 export const STATUS_META: Record<WorkflowStatus, { label: string; tone: "warning" | "primary" | "danger" | "success" | "neutral" }> = {
@@ -14,7 +14,7 @@ export const STATUS_META: Record<WorkflowStatus, { label: string; tone: "warning
 
 export type ClientWorkflowInput = {
   openRequests: { dueDate: string | null; checklist: ChecklistItem[] | null }[];
-  /** Completed rounds — kept in the completeness tally so a new request never
+  /** Completed rounds - kept in the completeness tally so a new request never
    *  resets a finished client to 0%. */
   fulfilledRequests?: { checklist: ChecklistItem[] | null }[];
   pendingReviewCount: number;
@@ -31,13 +31,13 @@ export function workflowStatus(c: ClientWorkflowInput, now: Date = new Date()): 
   return "none";
 }
 
-/** Earliest open due date — the "Due" column. */
+/** Earliest open due date - the "Due" column. */
 export function nextDueDate(c: ClientWorkflowInput): string | null {
   const dates = c.openRequests.map((r) => r.dueDate).filter((d): d is string => Boolean(d)).sort();
   return dates[0] ?? null;
 }
 
-/** Completeness = received / requested across ALL checklists — open and
+/** Completeness = received / requested across ALL checklists - open and
  *  fulfilled (6.7). Fulfilled rounds stay in the tally so a brand-new request
  *  moves a finished client from 100% to e.g. 67%, never back to 0%.
  *  Nothing tracked but data approved before → 100. Nothing at all → 0. */

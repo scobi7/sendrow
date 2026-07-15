@@ -16,7 +16,7 @@ export default function PrivacyPage() {
 
         {process.env.NEXT_PUBLIC_DRAFT_LEGAL === "true" && (
           <div className="mt-8 rounded-xl p-6" style={{ background: "var(--warning-tint)", border: "1px solid var(--warning)" }}>
-            <p className="text-sm font-semibold" style={{ color: "var(--warning)" }}>Draft — legal review pending</p>
+            <p className="text-sm font-semibold" style={{ color: "var(--warning)" }}>Draft - legal review pending</p>
             <p className="mt-1 text-sm" style={{ color: "var(--warning)" }}>
               This page is a placeholder. A full privacy policy is being drafted and will be published before general availability.
               Contact <a href="mailto:hello@sendrow.app" style={{ color: "var(--warning)" }}>hello@sendrow.app</a> with questions.

@@ -22,7 +22,7 @@ export function scoreSession(
     score += 0.5;
     reasons.push(`known template (${dataType})`);
   } else {
-    reasons.push("custom format — no template bonus");
+    reasons.push("custom format - no template bonus");
   }
 
   // +0.30 × required fields matched at high confidence

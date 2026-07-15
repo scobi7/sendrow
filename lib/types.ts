@@ -64,7 +64,7 @@ export interface Inputs {
   has_recs?: boolean;
   rec_coverage_pct?: number | null;
   rec_certificate_name?: string;
-  /** Consultant-set market-based Scope 2 override in tCO2e (X3.4) — wins over
+  /** Consultant-set market-based Scope 2 override in tCO2e (X3.4) - wins over
    *  the derived market-based figure; reason is audit-logged with it. */
   scope2_market_override_tons?: number | null;
   scope2_market_override_reason?: string;
@@ -98,7 +98,7 @@ export interface Inputs {
 export interface CalcResult {
   id: string;
   scope: 1 | 2 | 3;
-  category: string; // e.g. "Fleet fuel — diesel"
+  category: string; // e.g. "Fleet fuel - diesel"
   co2eTons: number;
   factorId: string | null;
   formula: string; // human-readable

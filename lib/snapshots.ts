@@ -19,7 +19,7 @@ export function snapshotHash(totals: SnapshotTotals, lineItems: unknown[]): stri
 
 export type RestatementLine = { label: string; previous: number; current: number; pct: number | null };
 
-/** What changed between two snapshots' totals — the body of a restatement alert. */
+/** What changed between two snapshots' totals - the body of a restatement alert. */
 export function restatementDiff(previous: SnapshotTotals, current: SnapshotTotals): RestatementLine[] {
   const rows: [string, number, number][] = [
     ["Scope 1", previous.scope1, current.scope1],

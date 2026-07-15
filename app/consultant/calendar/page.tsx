@@ -9,10 +9,10 @@ import { BackLink } from "@/components/workflow";
  *  them), consultant deadlines pulled live from open requests. Deadlines set
  *  each request's chasing cadence (7/2/day-of/overdue). */
 const REGULATORY_DATES: { date: string; dateLabel: string; title: string; note: string }[] = [
-  // Source: docs/build-pipeline-2026-07-10.pdf — corrections in force
-  { date: "2026-08-10", dateLabel: "Aug 10, 2026", title: "SB 253 — Scope 1/2 disclosure", note: "Regulatory, preloaded · all clients" },
+  // Source: docs/build-pipeline-2026-07-10.pdf - corrections in force
+  { date: "2026-08-10", dateLabel: "Aug 10, 2026", title: "SB 253 - Scope 1/2 disclosure", note: "Regulatory, preloaded · all clients" },
   { date: "2026-09-14", dateLabel: "Sep 14, 2026", title: "CDP submission window closes", note: "Regulatory, preloaded" },
-  { date: "2027-01-01", dateLabel: "2027 cycle", title: "SB 253 — Scope 3 disclosure begins", note: "Regulatory, preloaded" },
+  { date: "2027-01-01", dateLabel: "2027 cycle", title: "SB 253 - Scope 3 disclosure begins", note: "Regulatory, preloaded" },
 ];
 
 export default async function ComplianceCalendarPage() {
@@ -40,7 +40,7 @@ export default async function ComplianceCalendarPage() {
     .map((r) => ({
       date: r.dueDate!,
       dateLabel: new Date(r.dueDate! + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
-      title: `${nameOf.get(r.companyId) ?? "Client"} — ${r.description}`,
+      title: `${nameOf.get(r.companyId) ?? "Client"} - ${r.description}`,
       note: "Set by consultant",
       companyId: r.companyId,
     }));
@@ -92,7 +92,7 @@ export default async function ComplianceCalendarPage() {
       </div>
 
       <p className="mt-4 text-xs" style={{ color: "var(--text-muted)" }}>
-        Regulatory dates are maintained centrally. Client deadlines come from open requests — set one on the{" "}
+        Regulatory dates are maintained centrally. Client deadlines come from open requests - set one on the{" "}
         <Link href="/consultant/requests/new" className="underline" style={{ color: "var(--primary)" }}>
           New request
         </Link>{" "}

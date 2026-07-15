@@ -27,8 +27,8 @@ const MIGRATION_SQL = `CREATE TABLE IF NOT EXISTS gt_emission_factors (
 const CATEGORY_LABELS: Record<string, string> = {
   mobile_combustion: "Mobile Combustion (Fleet)",
   stationary_combustion: "Stationary Combustion",
-  electricity_location: "Electricity — Location-based",
-  electricity_market: "Electricity — Market-based",
+  electricity_location: "Electricity - Location-based",
+  electricity_market: "Electricity - Market-based",
   refrigerant_gwp: "Refrigerants (GWP-100)",
   spend_based: "Spend-based Scope 3 (USEEIO)",
   commute: "Employee Commuting",

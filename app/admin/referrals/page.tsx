@@ -27,7 +27,7 @@ async function setLeadStatus(id: string, status: string, formData: FormData) {
 }
 
 /** Referral routing ops (Plan N7): every inbound company is a lead we place
- *  with a partner consultant — this board tracks placement and conversion. */
+ *  with a partner consultant - this board tracks placement and conversion. */
 export default async function AdminReferralsPage() {
   const leads = await db.select().from(referralLeads).orderBy(desc(referralLeads.createdAt));
   const converted = leads.filter((l) => l.status === "converted").length;
@@ -41,7 +41,7 @@ export default async function AdminReferralsPage() {
 
       {leads.length === 0 ? (
         <div className="card py-12 text-center" style={{ color: "var(--text-muted)" }}>
-          No leads yet — they arrive from /get-matched.
+          No leads yet - they arrive from /get-matched.
         </div>
       ) : (
         <div className="glass-panel overflow-hidden">
@@ -68,7 +68,7 @@ export default async function AdminReferralsPage() {
                       {lead.email}
                     </a>
                   </td>
-                  <td className="px-4 py-3 text-xs" style={{ color: "var(--text-muted)" }}>{lead.trigger ?? "—"}</td>
+                  <td className="px-4 py-3 text-xs" style={{ color: "var(--text-muted)" }}>{lead.trigger ?? " - "}</td>
                   <td className="px-4 py-3 text-xs" style={{ color: "var(--text-muted)" }}>
                     {new Date(lead.createdAt).toLocaleDateString()}
                   </td>

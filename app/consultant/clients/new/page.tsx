@@ -35,7 +35,7 @@ export default async function NewClientPage({
       >
         ← Back to clients
       </Link>
-      <PageHeader title="Add New Client" subtitle="Create a client profile — data requests and portal links go to the contact you set here." />
+      <PageHeader title="Add New Client" subtitle="Create a client profile - data requests and portal links go to the contact you set here." />
 
       {error && (
         <p
@@ -67,7 +67,7 @@ export default async function NewClientPage({
           <select name="naics" className="input">
             <option value="">Select sector…</option>
             {NAICS_SECTORS.map((s) => (
-              <option key={s.code} value={s.code}>{s.code} — {s.label}</option>
+              <option key={s.code} value={s.code}>{s.code} - {s.label}</option>
             ))}
           </select>
         </div>

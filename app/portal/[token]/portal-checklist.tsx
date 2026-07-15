@@ -22,8 +22,8 @@ const ENTRY_KINDS: Record<string, { label: string; activity_type: string; unit: 
   gasoline: { label: "Gasoline (gallons)", activity_type: "gasoline", unit: "gallon" },
   propane: { label: "Propane (gallons)", activity_type: "propane", unit: "gallon" },
   commute: { label: "Commuting (miles)", activity_type: "commute", unit: "mile" },
-  waste_landfill: { label: "Waste — landfilled (tons)", activity_type: "waste landfilled", unit: "ton" },
-  waste_recycled: { label: "Waste — recycled (tons)", activity_type: "waste recycled", unit: "ton" },
+  waste_landfill: { label: "Waste - landfilled (tons)", activity_type: "waste landfilled", unit: "ton" },
+  waste_recycled: { label: "Waste - recycled (tons)", activity_type: "waste recycled", unit: "ton" },
   other: { label: "Other (will be reviewed)", activity_type: "other", unit: "" },
 };
 
@@ -41,7 +41,7 @@ type PendingUpload = {
 const MAX_UPLOAD_BYTES = 4 * 1024 * 1024;
 
 /** Reads a response body as JSON without ever throwing "Unexpected end of
- *  JSON input" at the supplier — non-JSON failures (413s, crashes, timeouts)
+ *  JSON input" at the supplier - non-JSON failures (413s, crashes, timeouts)
  *  become actionable messages instead. */
 async function readJson(res: Response): Promise<{ error?: string; [k: string]: unknown }> {
   const text = await res.text();
@@ -51,7 +51,7 @@ async function readJson(res: Response): Promise<{ error?: string; [k: string]: u
     if (res.status === 413) {
       return { error: "That file is too large to send (about 4 MB max). Export a smaller date range, or type the numbers in instead." };
     }
-    return { error: "The upload didn't go through — please try again. If it keeps failing, use “Type it in” and we'll take it from there." };
+    return { error: "The upload didn't go through - please try again. If it keeps failing, use “Type it in” and we'll take it from there." };
   }
 }
 
@@ -111,8 +111,7 @@ export function PortalChecklist({
   const [pdfNotice, setPdfNotice] = useState<string | null>(null);
   const draftKey = `sendrow-draft-${token}`;
 
-  // Save & resume (U1.6): suppliers fill these out in stolen moments —
-  // losing work once means they never come back.
+  // Save & resume (U1.6): suppliers fill these out in stolen moments -   // losing work once means they never come back.
   useEffect(() => {
     try {
       const saved = localStorage.getItem(draftKey);
@@ -124,7 +123,7 @@ export function PortalChecklist({
         }
       }
     } catch {
-      /* corrupted draft — start fresh */
+      /* corrupted draft - start fresh */
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -135,7 +134,7 @@ export function PortalChecklist({
         localStorage.setItem(draftKey, JSON.stringify(rows));
       }
     } catch {
-      /* storage full/blocked — non-fatal */
+      /* storage full/blocked - non-fatal */
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rows]);
@@ -188,8 +187,8 @@ export function PortalChecklist({
       const unmapped = data.unmapped ?? 0;
       setDoneMsg(
         unmapped > 0
-          ? `Received — ${data.imported} rows. ${unmapped} need${unmapped === 1 ? "s" : ""} a closer look, and your consultant will handle that.`
-          : `Received — ${data.imported} rows. Thank you!`
+          ? `Received - ${data.imported} rows. ${unmapped} need${unmapped === 1 ? "s" : ""} a closer look, and your consultant will handle that.`
+          : `Received - ${data.imported} rows. Thank you!`
       );
       setOpenItem(null);
       setPending(null);
@@ -198,7 +197,7 @@ export function PortalChecklist({
       } catch { /* noop */ }
       router.refresh();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Something went wrong — please try again.");
+      setError(e instanceof Error ? e.message : "Something went wrong - please try again.");
     } finally {
       setBusy(false);
     }
@@ -210,7 +209,7 @@ export function PortalChecklist({
       setError("That file is over 4 MB, which is more than this page can send. Export a smaller date range, or type the numbers in instead.");
       return;
     }
-    // PDFs can't be auto-read (yet) — keep the file as proof and route the
+    // PDFs can't be auto-read (yet) - keep the file as proof and route the
     // supplier to manual entry so nothing dead-ends.
     if (file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf")) {
       setEvidenceStash({ itemId: item.id, file });
@@ -218,7 +217,7 @@ export function PortalChecklist({
       setError(null);
       setDoneMsg(null);
       setPdfNotice(
-        `We can't read numbers out of PDFs automatically yet. Your file “${file.name}” will be attached as proof — type the totals from it below and submit.`
+        `We can't read numbers out of PDFs automatically yet. Your file “${file.name}” will be attached as proof - type the totals from it below and submit.`
       );
       return;
     }
@@ -228,11 +227,11 @@ export function PortalChecklist({
       // codepage 65001 = UTF-8, so CSVs with em-dashes etc. don't mojibake
       wb = XLSX.read(buf, { codepage: 65001 });
     } catch {
-      setError("We couldn't read that file as a spreadsheet. CSV and Excel exports work best — or type the numbers in instead.");
+      setError("We couldn't read that file as a spreadsheet. CSV and Excel exports work best - or type the numbers in instead.");
       return;
     }
 
-    // Every sheet as a raw matrix — header detection and mapping happen on
+    // Every sheet as a raw matrix - header detection and mapping happen on
     // the confirm screen where the supplier can see and override everything.
     const sheets = wb.SheetNames.map((name) => {
       const matrix = XLSX.utils
@@ -243,7 +242,7 @@ export function PortalChecklist({
     }).filter((s) => s.rowCount > 0);
 
     if (sheets.length === 0) {
-      setError("That file looks empty — please check it and try again.");
+      setError("That file looks empty - please check it and try again.");
       return;
     }
     if (sheets.length > 1) {
@@ -261,7 +260,7 @@ export function PortalChecklist({
       setSheetChoice(null);
       setPending({ itemId: item.id, file, filename, matrix, headerRowIndex: parsed.headerRowIndex, suggestion });
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not read that file — please try again.");
+      setError(e instanceof Error ? e.message : "Could not read that file - please try again.");
     } finally {
       setBusy(false);
     }
@@ -280,7 +279,7 @@ export function PortalChecklist({
       setStuckOpen(null);
       setStuckMsg("");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not send — please try again.");
+      setError(e instanceof Error ? e.message : "Could not send - please try again.");
     } finally {
       setBusy(false);
     }
@@ -361,7 +360,7 @@ export function PortalChecklist({
                   /* ── Sheet picker: multi-tab workbooks ── */
                   <div>
                     <div className="mb-3 rounded-lg px-3 py-2 text-sm" style={{ background: "var(--warning-tint)", color: "var(--warning-strong)" }}>
-                      &ldquo;{itemSheets.filename}&rdquo; has {itemSheets.sheets.length} tabs — which one holds this data?
+                      &ldquo;{itemSheets.filename}&rdquo; has {itemSheets.sheets.length} tabs - which one holds this data?
                     </div>
                     <div className="space-y-2">
                       {itemSheets.sheets.map((sh) => (
@@ -370,7 +369,7 @@ export function PortalChecklist({
                           disabled={busy}
                           className="flex w-full items-center justify-between rounded-lg px-4 py-3 text-left text-sm transition-colors hover:opacity-80"
                           style={{ border: "1px solid var(--divider)", background: "var(--bg)" }}
-                          onClick={() => startMapping(item, itemSheets.file, `${itemSheets.filename} — ${sh.name}`, sh.matrix)}
+                          onClick={() => startMapping(item, itemSheets.file, `${itemSheets.filename} - ${sh.name}`, sh.matrix)}
                         >
                           <span className="font-medium" style={{ color: "var(--text)" }}>{sh.name}</span>
                           <span className="text-xs" style={{ color: "var(--text-muted)" }}>
@@ -441,7 +440,7 @@ export function PortalChecklist({
                           />
                         </label>
                         <p className="mt-2 text-xs" style={{ color: "var(--text-muted)" }}>
-                          Any spreadsheet works — you&apos;ll confirm how we read it. Want zero fuss?{" "}
+                          Any spreadsheet works - you&apos;ll confirm how we read it. Want zero fuss?{" "}
                           <button
                             className="underline"
                             style={{ color: "var(--primary)" }}
@@ -479,7 +478,7 @@ export function PortalChecklist({
                       >
                         {draftRestored && (
                           <p className="mb-2 rounded-lg px-3 py-2 text-xs" style={{ background: "var(--primary-tint)", color: "var(--primary)" }}>
-                            ✓ Picked up where you left off — your draft was saved automatically.
+                            ✓ Picked up where you left off - your draft was saved automatically.
                           </p>
                         )}
                         {pdfNotice && evidenceStash?.itemId === item.id && (
@@ -512,7 +511,7 @@ export function PortalChecklist({
                         )}
                         {prefillUsed && (
                           <p className="mb-2 rounded-lg px-3 py-2 text-xs" style={{ background: "var(--warning-tint)", color: "var(--warning-strong)" }}>
-                            From your last submission — <strong>confirm or update</strong> each number before submitting.
+                            From your last submission - <strong>confirm or update</strong> each number before submitting.
                           </p>
                         )}
                         <p className="mb-2 text-xs" style={{ color: "var(--text-muted)" }}>
@@ -581,7 +580,7 @@ export function PortalChecklist({
                     <div className="mt-4 pt-3" style={{ borderTop: "1px solid var(--divider)" }}>
                       {stuckSent === item.id ? (
                         <p className="text-xs" style={{ color: "var(--primary)" }}>
-                          ✓ Sent — your consultant will follow up.
+                          ✓ Sent - your consultant will follow up.
                         </p>
                       ) : stuckOpen === item.id ? (
                         <div>

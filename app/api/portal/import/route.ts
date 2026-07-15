@@ -21,11 +21,11 @@ export async function POST(request: NextRequest) {
   try {
     return await handleImport(request);
   } catch (e) {
-    // Whatever happens, the portal gets JSON back — never an empty 500 that
+    // Whatever happens, the portal gets JSON back - never an empty 500 that
     // surfaces as "Unexpected end of JSON input" for the supplier.
     console.error("portal/import failed:", e);
     return NextResponse.json(
-      { error: "We couldn't process that submission. Please try again — if it keeps failing, type the numbers in instead." },
+      { error: "We couldn't process that submission. Please try again - if it keeps failing, type the numbers in instead." },
       { status: 500 }
     );
   }
@@ -77,7 +77,7 @@ async function handleImport(request: NextRequest) {
 
   const [dataRequest] = await db.select().from(dataRequests).where(eq(dataRequests.token, token));
   if (!dataRequest || !portalTokenValid({ token: dataRequest.token, expiresAt: dataRequest.expiresAt, status: dataRequest.status })) {
-    return NextResponse.json({ error: "This link has expired — ask your consultant for a new one" }, { status: 401 });
+    return NextResponse.json({ error: "This link has expired - ask your consultant for a new one" }, { status: 401 });
   }
 
   const checklist = (dataRequest.checklist as ChecklistItem[] | null) ?? [];
@@ -85,7 +85,7 @@ async function handleImport(request: NextRequest) {
   if (!item) return NextResponse.json({ error: "Unknown checklist item" }, { status: 400 });
 
   // Manual entry sends canonical fields; uploads get the data type's template + fuzzy match.
-  // Clients never confirm mappings — low-confidence sessions auto-route to consultant review.
+  // Clients never confirm mappings - low-confidence sessions auto-route to consultant review.
   let columnMap: ColumnMap;
   let mappingConfirmed = false;
   if (source === "entry") {
@@ -118,7 +118,7 @@ async function handleImport(request: NextRequest) {
     uploadedBy: `portal:${dataRequest.id}`,
     rows,
     columnMap,
-    profileName: `Portal — ${item.label} (${filename})`,
+    profileName: `Portal - ${item.label} (${filename})`,
     dataType: item.dataType,
     fuelPrices: null, // dollar-based fuel from the portal is flagged for the consultant, never guessed
     filename,

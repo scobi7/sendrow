@@ -61,7 +61,7 @@ export function LedgerRow({
     <>
       <tr style={{ borderBottom: "1px solid var(--divider)", opacity: excluded ? 0.45 : 1 }}>
         <td className="px-4 py-2.5">
-          <p className="font-medium" style={{ color: "var(--text)" }}>{item.sourceRef || "—"}</p>
+          <p className="font-medium" style={{ color: "var(--text)" }}>{item.sourceRef || " - "}</p>
           {item.flagReason && item.status === "unmapped" && (
             <p className="text-xs" style={{ color: "var(--warning-strong)" }}>Flagged: {item.flagReason}</p>
           )}
@@ -75,10 +75,10 @@ export function LedgerRow({
           {fmt(Number(item.rawValue))} {item.rawUnit}
         </td>
         <td className="px-4 py-2.5 text-right font-data" style={{ color: "var(--text)" }}>
-          {item.status === "mapped" ? fmt(Number(item.co2eKg) / 1000) : "—"}
+          {item.status === "mapped" ? fmt(Number(item.co2eKg) / 1000) : " - "}
         </td>
         <td className="px-4 py-2.5 text-xs" style={{ color: "var(--text-muted)" }}>
-          {item.activityDate ?? item.period ?? "—"}
+          {item.activityDate ?? item.period ?? " - "}
         </td>
         <td className="px-4 py-2.5 text-xs">
           {uploadName ? (
@@ -105,7 +105,7 @@ export function LedgerRow({
           {item.status === "mapped" && (
             <span
               className="ml-1 rounded-full px-1.5 py-0.5 text-xs"
-              title={item.confidence === "actual" || item.confidence === "measured" ? "Actual / measured value" : "Estimated value — replace with the real number when it arrives"}
+              title={item.confidence === "actual" || item.confidence === "measured" ? "Actual / measured value" : "Estimated value - replace with the real number when it arrives"}
               style={
                 item.confidence === "actual" || item.confidence === "measured"
                   ? { background: "var(--primary-tint)", color: "var(--primary)" }
@@ -256,7 +256,7 @@ export function LedgerRow({
                 }
               >
                 <span className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>
-                  Replace estimate with the actual value ({item.rawUnit}) — leave blank to keep the number and just re-label:
+                  Replace estimate with the actual value ({item.rawUnit}) - leave blank to keep the number and just re-label:
                 </span>
                 <input name="quantity" type="number" step="any" min="0" placeholder={item.rawValue} className="input text-xs" style={{ maxWidth: "10rem" }} autoFocus />
                 <button disabled={pending} className="btn btn-secondary px-3 py-1 text-xs">

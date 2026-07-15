@@ -13,7 +13,7 @@ export type EventVerb =
   | "client.stuck" | "flag.replied"
   | "email.sent" | "email.failed";
 
-/** Append-only event log (Ground Rule 3). Fire-and-forget — logging must
+/** Append-only event log (Ground Rule 3). Fire-and-forget - logging must
  *  never break the action it describes. */
 export function logEvent(e: {
   companyId: string;

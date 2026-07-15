@@ -2,7 +2,7 @@ import { applyFactor, lookupFactor } from "./factor-engine";
 import type { EmissionFactor } from "./types";
 
 /** Pure line-item corrections for the Data Ledger (Plan T1). Every correction
- *  produces a full new calc log that records what changed and why — the audit
+ *  produces a full new calc log that records what changed and why - the audit
  *  trail survives the edit. Excluded items keep their data but leave totals. */
 
 export type LedgerItem = {
@@ -52,7 +52,7 @@ export function recomputeLineItem(
   };
 }
 
-/** Marks an item excluded — data kept, removed from all totals (no silent drops). */
+/** Marks an item excluded - data kept, removed from all totals (no silent drops). */
 export function excludeLineItem(
   item: LedgerItem,
   editedBy: string,
@@ -93,7 +93,7 @@ export function isDollarFuelRow(item: { status: string; rawUnit: string; calcLog
 export type FuelPriceInputs = { diesel?: number; gasoline?: number; propane?: number };
 
 /** Converts a $-fuel row using the consultant's price: $ ÷ $/gal → gallons ×
- *  EPA factor. The full derivation lands in the calc log — the dollar amount,
+ *  EPA factor. The full derivation lands in the calc log - the dollar amount,
  *  the price used, who set it. */
 export function convertDollarFuelItem(
   item: LedgerItem,

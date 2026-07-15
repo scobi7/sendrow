@@ -1,10 +1,10 @@
 import { EmissionFactor } from "./types";
 
 /**
- * Versioned emission factor library — seeded at first run.
+ * Versioned emission factor library - seeded at first run.
  * DEMO VALUES: representative of published EPA / eGRID / USEEIO / IPCC AR6
  * figures. Verify each against the cited source before production use.
- * Never hardcode factors in calculation logic — always look up by id here.
+ * Never hardcode factors in calculation logic - always look up by id here.
  */
 export const SEED_FACTORS: EmissionFactor[] = [
   // ── Mobile combustion (EPA GHG Emission Factors Hub) ──
@@ -83,9 +83,9 @@ export const SEED_FACTORS: EmissionFactor[] = [
   { factor_id: "commute.rail.2025", factor_name: "Commuter rail", category: "commute", value: 0.000093, unit: "tCO2e/passenger-mile", source: "EPA GHG Emission Factors Hub", source_url: "https://www.epa.gov/climateleadership/ghg-emission-factors-hub", year_effective: 2025, year_retired: null },
   { factor_id: "commute.zero.2025", factor_name: "Bike / walk / WFH", category: "commute", value: 0, unit: "tCO2e/mile", source: "n/a", source_url: "", year_effective: 2025, year_retired: null },
   // ── Waste (EPA WARM, representative) ──
-  { factor_id: "waste.landfill.2025", factor_name: "Mixed MSW — landfilled", category: "waste", value: 0.52, unit: "tCO2e/short ton", source: "EPA WARM (representative)", source_url: "https://www.epa.gov/warm", year_effective: 2025, year_retired: null },
-  { factor_id: "waste.recycled.2025", factor_name: "Mixed recyclables — recycled", category: "waste", value: 0.09, unit: "tCO2e/short ton", source: "EPA WARM (representative)", source_url: "https://www.epa.gov/warm", year_effective: 2025, year_retired: null },
-  { factor_id: "waste.composted.2025", factor_name: "Organics — composted", category: "waste", value: 0.17, unit: "tCO2e/short ton", source: "EPA WARM (representative)", source_url: "https://www.epa.gov/warm", year_effective: 2025, year_retired: null },
+  { factor_id: "waste.landfill.2025", factor_name: "Mixed MSW - landfilled", category: "waste", value: 0.52, unit: "tCO2e/short ton", source: "EPA WARM (representative)", source_url: "https://www.epa.gov/warm", year_effective: 2025, year_retired: null },
+  { factor_id: "waste.recycled.2025", factor_name: "Mixed recyclables - recycled", category: "waste", value: 0.09, unit: "tCO2e/short ton", source: "EPA WARM (representative)", source_url: "https://www.epa.gov/warm", year_effective: 2025, year_retired: null },
+  { factor_id: "waste.composted.2025", factor_name: "Organics - composted", category: "waste", value: 0.17, unit: "tCO2e/short ton", source: "EPA WARM (representative)", source_url: "https://www.epa.gov/warm", year_effective: 2025, year_retired: null },
 ];
 
 /**
@@ -161,11 +161,11 @@ export function egridLabel(factorId: string): string {
 /** QuickBooks expense category → USEEIO sector factor id.
  *  Deliberately unmapped (would double-count other scopes): "Utilities" (Scope 2),
  *  "Fuel" (Scope 1), "Waste Removal" (Scope 3 waste, measured in tons). Spend in
- *  categories absent from this map is surfaced as flagged unmapped spend — never dropped. */
+ *  categories absent from this map is surfaced as flagged unmapped spend - never dropped. */
 export const QB_CATEGORY_TO_USEEIO: Record<string, { factorId: string; bucket: "travel" | "purchased" | "freight" }> = {
-  "Travel — Airfare": { factorId: "useeio.air_travel.v2", bucket: "travel" },
-  "Travel — Lodging": { factorId: "useeio.hotels.v2", bucket: "travel" },
-  "Travel — Car Rental": { factorId: "useeio.car_rental.v2", bucket: "travel" },
+  "Travel - Airfare": { factorId: "useeio.air_travel.v2", bucket: "travel" },
+  "Travel - Lodging": { factorId: "useeio.hotels.v2", bucket: "travel" },
+  "Travel - Car Rental": { factorId: "useeio.car_rental.v2", bucket: "travel" },
   "Freight & Delivery": { factorId: "useeio.freight.v2", bucket: "freight" },
   "Shipping & Postage": { factorId: "useeio.freight.v2", bucket: "freight" },
   "Office Supplies": { factorId: "useeio.office_supplies.v2", bucket: "purchased" },

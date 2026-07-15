@@ -5,11 +5,11 @@ import { PricingCalculator } from "@/components/pricing-calculator";
 
 const COMPANY_FEATURES = [
   "Introduction to a vetted climate consultant",
-  "Full GHG inventory — Scope 1, 2, and 3",
+  "Full GHG inventory - Scope 1, 2, and 3",
   "Buyer questionnaire answered (EcoVadis, CDP, and more)",
   "Audit-ready deliverables with data quality flags",
-  "No platform to learn — a guided upload link does the work",
-  "Free for you — the consultant pays the referral fee",
+  "No platform to learn - a guided upload link does the work",
+  "Free for you - the consultant pays the referral fee",
 ];
 
 const CONSULTANT_FEATURES = [
@@ -24,7 +24,7 @@ const CONSULTANT_FEATURES = [
 
 const AGENCY_FEATURES = [
   "Everything in the consultant plan",
-  "Team access — multiple consultants",
+  "Team access - multiple consultants",
   "Shared client visibility across your team",
   "Custom onboarding",
   "Dedicated account manager",
@@ -64,7 +64,7 @@ export default function PricingPage() {
               <span className="mb-2 text-sm" style={{ color: "var(--text-muted)" }}>consultant match</span>
             </div>
             <p className="mt-3 text-sm" style={{ color: "var(--text-muted)" }}>
-              A customer or regulator asking for your emissions data? We introduce you to a vetted climate consultant who handles it end to end — powered by Sendrow. The consultant pays us, not you.
+              A customer or regulator asking for your emissions data? We introduce you to a vetted climate consultant who handles it end to end - powered by Sendrow. The consultant pays us, not you.
             </p>
             <Link href="/get-matched" className="btn btn-primary mt-8 block w-full text-center">
               Get matched
@@ -155,9 +155,9 @@ export default function PricingPage() {
           <div className="mt-10 grid gap-6 sm:grid-cols-2">
             {[
               ["What counts as an active client?", "Any client company with data in your Sendrow account. You can archive clients you're no longer working with and they won't count toward your limit."],
-              ["Can I try it before paying?", "Yes — consultants get a 14-day free trial. Company reports are pay-to-generate, but you can enter all your data and see your numbers before paying."],
+              ["Can I try it before paying?", "Yes - consultants get a 14-day free trial. Company reports are pay-to-generate, but you can enter all your data and see your numbers before paying."],
               ["What happens to my data if I cancel?", "It stays in your account for 90 days. You can export everything as CSV or PDF before your account closes."],
-              ["Do my clients need their own accounts?", "They can — or you can enter data on their behalf from your consultant dashboard. Either way works."],
+              ["Do my clients need their own accounts?", "They can - or you can enter data on their behalf from your consultant dashboard. Either way works."],
               ["What frameworks does Sendrow support?", "GHG Protocol (Scope 1, 2, 3), EcoVadis, CDP, and supply chain questionnaire mapping. More frameworks added regularly."],
               ["Is the $400 really one-time?", "Yes. You pay once to generate your report. If you come back next year, your data pre-fills and you pay $400 again for the new report."],
             ].map(([q, a]) => (

@@ -7,7 +7,7 @@ export function RequestNewLink({ token }: { token: string }) {
 
   return state === "sent" ? (
     <p className="mt-4 text-sm font-medium" style={{ color: "var(--primary)" }}>
-      ✓ Done — your consultant has been notified and will send you a fresh link.
+      ✓ Done - your consultant has been notified and will send you a fresh link.
     </p>
   ) : (
     <div className="mt-6">
@@ -32,7 +32,7 @@ export function RequestNewLink({ token }: { token: string }) {
       </button>
       {state === "error" && (
         <p className="mt-2 text-xs" style={{ color: "var(--danger)" }}>
-          Couldn&apos;t send — please contact your consultant directly.
+          Couldn&apos;t send - please contact your consultant directly.
         </p>
       )}
     </div>

@@ -18,7 +18,7 @@ export type DataTypeConfig = {
 export const DATA_TYPE_CONFIGS: Record<DataType, DataTypeConfig> = {
   utility_bills: {
     label: "Utility bills",
-    description: "Electricity (kWh), natural gas (therms), propane — from utility statements",
+    description: "Electricity (kWh), natural gas (therms), propane - from utility statements",
     columnTemplate: {
       Month: "date",
       month: "date",
@@ -32,7 +32,7 @@ export const DATA_TYPE_CONFIGS: Record<DataType, DataTypeConfig> = {
   },
   fleet_fuel_dollar: {
     label: "Fleet fuel (dollar-based)",
-    description: "Fuel card exports with total $ spend — you'll enter $/gallon to convert",
+    description: "Fuel card exports with total $ spend - you'll enter $/gallon to convert",
     columnTemplate: {
       Month: "date",
       month: "date",
@@ -46,7 +46,7 @@ export const DATA_TYPE_CONFIGS: Record<DataType, DataTypeConfig> = {
   },
   vendor_invoices: {
     label: "Vendor invoices",
-    description: "Accounts payable exports — spend-based Scope 3 (purchased goods & services)",
+    description: "Accounts payable exports - spend-based Scope 3 (purchased goods & services)",
     columnTemplate: {
       Vendor: "source_ref",
       Category: "activity_type",
@@ -57,7 +57,7 @@ export const DATA_TYPE_CONFIGS: Record<DataType, DataTypeConfig> = {
   },
   commute_survey: {
     label: "Commute survey",
-    description: "Employee commute mode and miles — partial surveys are flagged automatically",
+    description: "Employee commute mode and miles - partial surveys are flagged automatically",
     columnTemplate: {
       "Employee ID": "source_ref",
       "One-Way (miles)": "quantity",
@@ -79,7 +79,7 @@ export const DATA_TYPE_CONFIGS: Record<DataType, DataTypeConfig> = {
   },
   custom: {
     label: "Other / custom",
-    description: "Anything else — map columns manually",
+    description: "Anything else - map columns manually",
     columnTemplate: {},
   },
 };
@@ -106,8 +106,7 @@ export function applyTemplate(
 }
 
 /** Downloadable starter template (Plan T2 follow-up): canonical headers that
- *  auto-map perfectly, with example rows per data type. Always optional —
- *  any file shape still works through the confirm-mapping screen. */
+ *  auto-map perfectly, with example rows per data type. Always optional -  *  any file shape still works through the confirm-mapping screen. */
 export const TEMPLATE_HEADERS = ["Date", "Activity Type", "Quantity", "Unit", "Vendor / Reference", "Notes"] as const;
 
 const TEMPLATE_EXAMPLES: Record<DataType, string[][]> = {

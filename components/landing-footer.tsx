@@ -15,7 +15,7 @@ export function LandingFooter() {
           <div>
             <Logo />
             <p className="mt-3 max-w-xs text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>
-              The one organized place where a supplier's emissions information lives — collected once, kept with proof attached, shared in any format asked.
+              The one organized place where a supplier's emissions information lives - collected once, kept with proof attached, shared in any format asked.
             </p>
           </div>
 

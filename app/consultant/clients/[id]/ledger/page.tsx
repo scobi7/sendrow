@@ -9,7 +9,7 @@ import { LedgerRow } from "./ledger-row";
 const FILTERS = ["all", "mapped", "unmapped", "excluded"] as const;
 
 /** The Data Ledger (Plan T1): every line item, inspectable and correctable.
- *  The consultant's verbs here are confirm, fix, exclude — never re-type. */
+ *  The consultant's verbs here are confirm, fix, exclude - never re-type. */
 export default async function LedgerPage({
   params,
   searchParams,
@@ -128,7 +128,7 @@ export default async function LedgerPage({
 
       {displayed.length === 0 ? (
         <div className="card py-12 text-center" style={{ color: "var(--text-muted)" }}>
-          No rows{statusFilter && statusFilter !== "all" ? ` with status "${statusFilter}"` : " yet — data arrives via the portal or on-behalf entry"}.
+          No rows{statusFilter && statusFilter !== "all" ? ` with status "${statusFilter}"` : " yet - data arrives via the portal or on-behalf entry"}.
         </div>
       ) : (
         <div className="glass-panel overflow-x-auto">

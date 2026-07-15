@@ -16,7 +16,7 @@ export default function AgencySubmittedPage() {
           </svg>
         </div>
         <h1 className="text-3xl font-black font-display" style={{ color: "var(--text)" }}>
-          Got it — thanks
+          Got it - thanks
         </h1>
         <p className="mt-4 text-base leading-relaxed" style={{ color: "var(--text-muted)" }}>
           We received your quote request and will get back to you within one business day. In the meantime, feel free to look around.

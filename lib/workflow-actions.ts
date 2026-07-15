@@ -24,7 +24,7 @@ export async function createRequestFromPage(formData: FormData) {
   const companyId = String(formData.get("company_id") ?? "");
   if (!companyId) return;
 
-  // The wireframe collects the supplier contact inline — keep it current so
+  // The wireframe collects the supplier contact inline - keep it current so
   // the magic link actually lands somewhere.
   const contactEmail = String(formData.get("contact_email") ?? "").trim();
   if (contactEmail) {
@@ -66,7 +66,7 @@ export async function createRequestFromPage(formData: FormData) {
   redirect(`/consultant/clients/${companyId}`);
 }
 
-/** Review & Approve (#7): "Approve, freeze & go to snapshot" — one continuous
+/** Review & Approve (#7): "Approve, freeze & go to snapshot" - one continuous
  *  action, not two. Approves waiting uploads, freezes the snapshot, lands on
  *  Snapshot & Share. */
 export async function approveFreezeAndGo(companyId: string, formData: FormData) {
@@ -102,7 +102,7 @@ export async function approveFreezeAndGo(companyId: string, formData: FormData) 
   redirect(`/consultant/clients/${companyId}/snapshots/${snapshotId}`);
 }
 
-/** Review & Approve (#7): "Request changes" — sends the submission back with
+/** Review & Approve (#7): "Request changes" - sends the submission back with
  *  a note instead of approving it. */
 export async function requestChanges(companyId: string, formData: FormData) {
   const user = await currentUser();

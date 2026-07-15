@@ -6,7 +6,7 @@ import { confirmVendorMapping } from "@/lib/consultant-actions";
 import { VENDOR_CONFIRM_OPTIONS } from "@/lib/vendor-mappings";
 
 /** Flagged rows grouped by their reference column. That reference is often a
- *  vendor ("PG&E") — but sometimes a truck ID or account number, which must
+ *  vendor ("PG&E") - but sometimes a truck ID or account number, which must
  *  never enter the shared vendor memory. Hence the scope choice, defaulting
  *  to this-client-only. */
 export function VendorConfirm({ companyId, vendors }: { companyId: string; vendors: { name: string; count: number }[] }) {
@@ -31,7 +31,7 @@ export function VendorConfirm({ companyId, vendors }: { companyId: string; vendo
     <div className="rounded-2xl" style={{ background: "var(--card)", border: "1px solid var(--danger-border)" }}>
       <div className="px-5 pt-4 pb-3" style={{ borderBottom: "1px solid var(--divider)" }}>
         <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "var(--danger)" }}>
-          Flagged rows — grouped by reference ({vendors.length})
+          Flagged rows - grouped by reference ({vendors.length})
         </p>
         <p className="mt-1 text-xs" style={{ color: "var(--text-muted)" }}>
           These rows couldn&apos;t be mapped to an emission factor. If the reference is a <strong>vendor</strong>,
@@ -87,7 +87,7 @@ export function VendorConfirm({ companyId, vendors }: { companyId: string; vendo
                     checked={scopes[name] === "global"}
                     onChange={() => setScopes((s) => ({ ...s, [name]: "global" }))}
                   />
-                  All clients — it&apos;s a common vendor (PG&amp;E, UPS…)
+                  All clients - it&apos;s a common vendor (PG&amp;E, UPS…)
                 </label>
               </div>
             )}

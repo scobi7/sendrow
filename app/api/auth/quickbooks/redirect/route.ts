@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
   let companyId: string;
 
   if (forCompanyId && user?.role === "consultant") {
-    // Consultant initiating QB connect on behalf of a client — verify access
+    // Consultant initiating QB connect on behalf of a client - verify access
     const link = await db.query.consultantClients.findFirst({
       where: and(
         eq(consultantClients.consultantId, userId),

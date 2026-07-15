@@ -8,7 +8,7 @@ export type ChecklistItem = {
   label: string;
   instructions: string;
   status: "pending" | "received";
-  /** Set when the client hit "I'm stuck" — the consultant sees and clears it. */
+  /** Set when the client hit "I'm stuck" - the consultant sees and clears it. */
   stuckNote?: string;
 };
 
@@ -31,9 +31,9 @@ export function portalTokenValid(request: { token: string | null; expiresAt: str
   return true;
 }
 
-/** Client-facing instructions per data type — plain language, no jargon. */
+/** Client-facing instructions per data type - plain language, no jargon. */
 const ITEM_INSTRUCTIONS: Record<DataType, string> = {
-  utility_bills: "Upload a spreadsheet export (CSV/Excel) of your monthly usage, or type in the kWh and therms from each bill. A PDF bill is kept as proof — you'll type in its totals.",
+  utility_bills: "Upload a spreadsheet export (CSV/Excel) of your monthly usage, or type in the kWh and therms from each bill. A PDF bill is kept as proof - you'll type in its totals.",
   fleet_fuel_dollar: "Upload your fuel card statement or expense export showing total $ spent on fuel per month.",
   vendor_invoices: "Upload an accounts-payable or expense export from your accounting system (vendor, category, amount, date).",
   commute_survey: "Upload your employee commute survey results (mode of travel and one-way miles per employee).",

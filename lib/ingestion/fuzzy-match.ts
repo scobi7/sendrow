@@ -18,7 +18,7 @@ export type MatchResult = {
   confidence: "high" | "low";
 };
 
-/** Known aliases per standard field — lowercase, trimmed. */
+/** Known aliases per standard field - lowercase, trimmed. */
 const ALIASES: Record<StandardField, string[]> = {
   date: ["date", "bill date", "invoice date", "period", "month", "billing period", "service date", "activity date"],
   activity_type: ["activity type", "activity", "fuel type", "fuel", "energy type", "source", "type", "commodity"],

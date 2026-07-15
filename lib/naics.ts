@@ -1,4 +1,4 @@
-/** 2-digit NAICS sectors (#46) — the benchmarking prerequisite. */
+/** 2-digit NAICS sectors (#46) - the benchmarking prerequisite. */
 export const NAICS_SECTORS: { code: string; label: string }[] = [
   { code: "11", label: "Agriculture, Forestry, Fishing" },
   { code: "21", label: "Mining, Oil & Gas" },

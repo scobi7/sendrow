@@ -3,7 +3,7 @@ import { LandingNav } from "@/components/landing-nav";
 import { LandingFooter } from "@/components/landing-footer";
 
 /** Super-minimal by design (X4.2, Malachi 2026-07-14): companies aren't the
- *  paying customer — this page exists only to route them to a consultant.
+ *  paying customer - this page exists only to route them to a consultant.
  *  The old self-serve pitch lives in git history (and sendrow-v1). */
 export default function ForCompanies() {
   return (
@@ -21,7 +21,7 @@ export default function ForCompanies() {
           A customer asked for your emissions data?
         </h1>
         <p className="mt-5 max-w-xl text-lg leading-relaxed" style={{ color: "var(--text-muted)" }}>
-          You don&apos;t need new software — you need someone who does this every day. We&apos;ll match you with a
+          You don&apos;t need new software - you need someone who does this every day. We&apos;ll match you with a
           climate consultant who collects your data, builds an audit-ready footprint, and answers every buyer and
           regulator format on your behalf.
         </p>

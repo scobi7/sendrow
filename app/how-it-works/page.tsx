@@ -3,7 +3,7 @@ import { LandingNav } from "@/components/landing-nav";
 import { LandingFooter } from "@/components/landing-footer";
 
 export const metadata = {
-  title: "How it works — Sendrow",
+  title: "How it works - Sendrow",
   description:
     "Your emissions data, collected once, proven, and shared anywhere. One trusted record instead of seventeen email threads.",
 };
@@ -14,8 +14,8 @@ const STEPS: { n: string; title: string; body: React.ReactNode }[] = [
     title: "Your consultant asks. In plain English.",
     body: (
       <>
-        Your consultant picks exactly what&apos;s needed — &ldquo;your last 12 electricity
-        bills,&rdquo; &ldquo;gallons of diesel in 2025&rdquo; — and Sendrow turns it into a
+        Your consultant picks exactly what&apos;s needed - &ldquo;your last 12 electricity
+        bills,&rdquo; &ldquo;gallons of diesel in 2025&rdquo; - and Sendrow turns it into a
         checklist written for humans, not accountants.
       </>
     ),
@@ -26,7 +26,7 @@ const STEPS: { n: string; title: string; body: React.ReactNode }[] = [
     body: (
       <>
         One email, one link. <strong>No account, no password, no portal to learn.</strong> Upload
-        the bills, type in the numbers — it all lands in the right place.
+        the bills, type in the numbers - it all lands in the right place.
       </>
     ),
   },
@@ -36,7 +36,7 @@ const STEPS: { n: string; title: string; body: React.ReactNode }[] = [
     body: (
       <>
         Each figure is stapled to the bill, invoice, or receipt it came from. When anyone later
-        asks &ldquo;where did this number come from?&rdquo; — the answer is one click away.
+        asks &ldquo;where did this number come from?&rdquo; - the answer is one click away.
       </>
     ),
   },
@@ -46,7 +46,7 @@ const STEPS: { n: string; title: string; body: React.ReactNode }[] = [
     body: (
       <>
         Your consultant reviews, fixes, and approves. Approved data is locked into a dated
-        snapshot — nobody can quietly change shared numbers later. If something is ever
+        snapshot - nobody can quietly change shared numbers later. If something is ever
         corrected, everyone who received the old version is told exactly what changed.
       </>
     ),
@@ -56,10 +56,10 @@ const STEPS: { n: string; title: string; body: React.ReactNode }[] = [
     title: "Answer once. Share it in any format.",
     body: (
       <>
-        California SB 253, CDP, a customer&apos;s questionnaire, plain Excel — the same approved
+        California SB 253, CDP, a customer&apos;s questionnaire, plain Excel - the same approved
         snapshot, reshaped per request. When the <em>next</em> customer asks, it&apos;s done
         before lunch. And you share on your terms: this snapshot, to this company, in this
-        format — nothing more.
+        format - nothing more.
       </>
     ),
   },
@@ -120,7 +120,7 @@ export default function HowItWorksPage() {
           ))}
         </section>
 
-        {/* The three promises — ink band */}
+        {/* The three promises - ink band */}
         <section className="px-6 py-16" style={{ background: "var(--ink-band)" }}>
           <div className="mx-auto max-w-4xl">
             <h2 className="text-center text-2xl font-bold font-display" style={{ color: "var(--ink-band-text)" }}>

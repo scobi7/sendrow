@@ -1,14 +1,14 @@
 import Link from "next/link";
 import { Logo } from "@/components/ui";
 
-export const metadata = { title: "Data Processing Agreement — Sendrow" };
+export const metadata = { title: "Data Processing Agreement - Sendrow" };
 
 export default function DpaPage() {
   return (
     <main className="mx-auto max-w-2xl px-6 py-16" style={{ background: "var(--bg)" }}>
       <Link href="/"><Logo /></Link>
       <div className="mt-6 rounded-lg px-4 py-2 text-xs" style={{ background: "var(--warning-tint)", color: "var(--warning)" }}>
-        Template for review — execute a signed copy per engagement. Not legal advice.
+        Template for review - execute a signed copy per engagement. Not legal advice.
       </div>
       <h1 className="mt-6 text-3xl font-extrabold font-display" style={{ color: "var(--text)" }}>Data Processing Agreement</h1>
       <div className="mt-8 space-y-6 text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>

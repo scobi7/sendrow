@@ -5,7 +5,7 @@ import { uid } from "./store";
 import { User } from "./types";
 
 const show = (v: unknown) =>
-  v === undefined || v === null || v === "" ? "—" : typeof v === "object" ? JSON.stringify(v) : String(v);
+  v === undefined || v === null || v === "" ? " - " : typeof v === "object" ? JSON.stringify(v) : String(v);
 
 export async function logChange(opts: {
   user: User;

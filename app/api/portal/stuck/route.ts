@@ -7,7 +7,7 @@ import type { ChecklistItem } from "@/lib/portal";
 import { sendClientStuckEmail } from "@/lib/email";
 import { logEvent } from "@/lib/events";
 
-/** "I'm stuck — ask my consultant" (Plan T5.2): turns silent abandonment into
+/** "I'm stuck - ask my consultant" (Plan T5.2): turns silent abandonment into
  *  an actionable flag. Token is the auth. */
 export async function POST(request: NextRequest) {
   const body = await request.json();

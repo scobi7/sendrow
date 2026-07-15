@@ -6,7 +6,7 @@ import { approveFreezeAndGo, requestChanges } from "@/lib/workflow-actions";
 import { SubmitButton } from "@/components/submit-button";
 
 /** The wireframe's two verbs: Request changes / Approve, freeze & go to
- *  snapshot — plus the "1 item is still flagged" warning modal (popup, not a
+ *  snapshot - plus the "1 item is still flagged" warning modal (popup, not a
  *  page) when approving over open flags. */
 export function ApproveBar({
   companyId,
@@ -41,10 +41,10 @@ export function ApproveBar({
               rows={2}
               required
               className="input w-full resize-none text-sm"
-              placeholder="e.g. March electricity looks like a partial month — can you re-upload the full bill?"
+              placeholder="e.g. March electricity looks like a partial month - can you re-upload the full bill?"
             />
             <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-              The supplier is emailed and can reply from their inbox or the same magic link — no account required.
+              The supplier is emailed and can reply from their inbox or the same magic link - no account required.
             </p>
             <div className="flex justify-end gap-2">
               <button type="button" onClick={() => setShowChanges(false)} className="btn btn-secondary text-sm">
@@ -72,7 +72,7 @@ export function ApproveBar({
             </form>
             {!hasData && (
               <p className="mt-2 text-xs" style={{ color: "var(--text-muted)" }}>
-                Nothing mapped yet — approve is enabled once at least one line item carries emissions.
+                Nothing mapped yet - approve is enabled once at least one line item carries emissions.
               </p>
             )}
           </>
@@ -98,8 +98,7 @@ export function ApproveBar({
                   {openFlags} item{openFlags !== 1 ? "s are" : " is"} still flagged
                 </h2>
                 <p className="mt-2 text-sm" style={{ color: "var(--text-muted)" }}>
-                  {flagSummary}. You can still approve and freeze this snapshot with the flag{openFlags !== 1 ? "s" : ""} open —
-                  they stay visible on the record.
+                  {flagSummary}. You can still approve and freeze this snapshot with the flag{openFlags !== 1 ? "s" : ""} open -                   they stay visible on the record.
                 </p>
               </div>
             </div>

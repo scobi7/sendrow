@@ -21,7 +21,7 @@ export type MappingSuggestion = { map: Record<string, string | null>; source: "m
 
 /** Spreadsheet-view mapping (Plan T5.1): the supplier sees THEIR file as a
  *  grid and assigns meaning on the column headers. If we picked the wrong
- *  header row, they click the right one — nothing is ever silently decided. */
+ *  header row, they click the right one - nothing is ever silently decided. */
 export function MappingPanel({
   filename,
   matrix,
@@ -93,8 +93,8 @@ export function MappingPanel({
         }
       >
         {source === "memory"
-          ? "✓ Same file shape as last time — mapping remembered. Quick check and you're done."
-          : <>Here&apos;s your file. Tell us what each column is — you know &ldquo;{filename}&rdquo; best.</>}
+          ? "✓ Same file shape as last time - mapping remembered. Quick check and you're done."
+          : <>Here&apos;s your file. Tell us what each column is - you know &ldquo;{filename}&rdquo; best.</>}
       </div>
 
       <div className="overflow-x-auto rounded-lg" style={{ border: "1px solid var(--divider)" }}>
@@ -121,7 +121,7 @@ export function MappingPanel({
             </tr>
           </thead>
           <tbody>
-            {/* Junk rows above the detected header — click one to say "headers are here" */}
+            {/* Junk rows above the detected header - click one to say "headers are here" */}
             {contextRows.map((raw, i) => (
               <tr
                 key={`ctx-${i}`}
@@ -189,7 +189,7 @@ export function MappingPanel({
 
       {unnamedCount >= 2 ? (
         <p className="mt-2 rounded-lg px-3 py-2 text-xs font-medium" style={{ background: "var(--warning-tint)", color: "var(--warning-strong)" }}>
-          Most columns came through unnamed — that usually means we grabbed the wrong header row.
+          Most columns came through unnamed - that usually means we grabbed the wrong header row.
           If you can see your real column names in the grid below (like &ldquo;Month&rdquo; or &ldquo;Total&rdquo;), <strong>click that row</strong> and everything fixes itself.
         </p>
       ) : (
@@ -201,7 +201,7 @@ export function MappingPanel({
 
       {dollarHints.length > 0 && (
         <p className="mt-2 rounded-lg px-3 py-2 text-xs" style={{ background: "var(--warning-tint)", color: "var(--warning-strong)" }}>
-          &ldquo;{dollarHints.join("”, “")}&rdquo; looks like dollar amounts. That&apos;s fine — your consultant
+          &ldquo;{dollarHints.join("”, “")}&rdquo; looks like dollar amounts. That&apos;s fine - your consultant
           converts money to physical amounts; those rows will be marked for their review.
         </p>
       )}
@@ -215,7 +215,7 @@ export function MappingPanel({
           disabled={busy || refetching || !hasQuantity || rows.length === 0}
           onClick={() => onConfirm(rows, map)}
         >
-          {busy ? "Importing…" : `Looks right — import ${rows.length} rows`}
+          {busy ? "Importing…" : `Looks right - import ${rows.length} rows`}
         </button>
       </div>
       {!hasQuantity && (

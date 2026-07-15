@@ -22,7 +22,7 @@ export type FactorQuery = {
   unit?: string;
 };
 
-/** Pure lookup — takes a factors array so it works in tests without a DB call. */
+/** Pure lookup - takes a factors array so it works in tests without a DB call. */
 export function lookupFactor(
   factors: EmissionFactor[],
   query: FactorQuery
@@ -39,7 +39,7 @@ export function lookupFactor(
   return matches.sort((a, b) => b.year_effective - a.year_effective)[0];
 }
 
-/** Pure conversion — multiply raw value by factor, return CO2e in kg and a replayable log. */
+/** Pure conversion - multiply raw value by factor, return CO2e in kg and a replayable log. */
 export function applyFactor(
   rawValue: number,
   rawUnit: string,
@@ -62,7 +62,7 @@ export function applyFactor(
   return { co2e_kg, calc_log };
 }
 
-/** DB-backed loader — returns all non-retired factors from gt_emission_factors.
+/** DB-backed loader - returns all non-retired factors from gt_emission_factors.
  *  Falls back to SEED_FACTORS if the DB has no rows (useful in dev before seeding). */
 export async function getFactorsFromDb(): Promise<EmissionFactor[]> {
   const { db } = await import("./db");

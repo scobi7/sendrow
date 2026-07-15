@@ -36,14 +36,14 @@ export default async function ManageScope2({ params }: { params: Promise<{ id: s
   return (
     <div>
       <PageHeader
-        title="Scope 2 — Electricity Emissions"
+        title="Scope 2 - Electricity Emissions"
         subtitle={`Pre-filled from utility connection for ${company.name}.`}
       />
 
       {!connected && rows.every((r) => r.kwh === 0) ? (
         <div className="card text-center">
           <p style={{ color: "var(--text-muted)" }}>
-            No utility data on file yet — it arrives when the client answers a data request (utility bills item),
+            No utility data on file yet - it arrives when the client answers a data request (utility bills item),
             or you can enter it on their behalf from the client page.
           </p>
           <Link href={`/consultant/clients/${id}`} className="btn btn-primary mt-4 inline-flex">Back to client</Link>
@@ -80,7 +80,7 @@ export default async function ManageScope2({ params }: { params: Promise<{ id: s
             <h2 className="font-semibold font-display" style={{ color: "var(--text)" }}>Renewable Energy Credits</h2>
             <div className="mt-3 flex gap-4 text-sm">
               <label className="flex items-center gap-2">
-                <input type="radio" name="has_recs" value="yes" defaultChecked={inp.has_recs === true} /> Yes — on a green tariff or purchases RECs
+                <input type="radio" name="has_recs" value="yes" defaultChecked={inp.has_recs === true} /> Yes - on a green tariff or purchases RECs
               </label>
               <label className="flex items-center gap-2">
                 <input type="radio" name="has_recs" value="no" defaultChecked={inp.has_recs === false} /> No / not sure

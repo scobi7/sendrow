@@ -65,7 +65,7 @@ export async function processImport(input: ImportInput): Promise<ImportOutcome> 
   const headers = Object.keys(rows[0] ?? {});
   const matchResults = fuzzyMatchHeaders(headers);
   // A human-confirmed mapping outranks any guessing score (doctrine: AI
-  // suggests, human confirms) — flagged rows below still force review.
+  // suggests, human confirms) - flagged rows below still force review.
   const scored = pipelineLocked
     ? { score: 1, autoApproved: true, reasons: ["pipeline locked"] }
     : input.mappingConfirmed
@@ -92,7 +92,7 @@ export async function processImport(input: ImportInput): Promise<ImportOutcome> 
   ]);
   const normalized = applyProfile(rows, columnMap);
 
-  // Every row becomes a line item — unmappable rows are flagged, never dropped
+  // Every row becomes a line item - unmappable rows are flagged, never dropped
   let inserts;
   if (dataType === "fleet_fuel_dollar" && fuelPrices) {
     inserts = fleetFuelToLineItems(normalized, factors, fuelPrices, companyId, profileId);
@@ -129,10 +129,10 @@ export async function processImport(input: ImportInput): Promise<ImportOutcome> 
       .where(inArray(vendorMappingsTable.id, usedMappingIds));
   }
 
-  // Flagged rows always get human review — even on a locked pipeline
+  // Flagged rows always get human review - even on a locked pipeline
   if (unmappedCount > 0 && autoApproved) {
     autoApproved = false;
-    reasons = [...reasons, `${unmappedCount} row(s) could not be mapped — routed to review`];
+    reasons = [...reasons, `${unmappedCount} row(s) could not be mapped - routed to review`];
   }
   const sessionStatus = autoApproved ? "auto_approved" : "pending_review";
 

@@ -202,7 +202,7 @@ export default function AgencyQuotePage() {
 
           <div className="pt-2">
             <button type="submit" className="btn btn-primary w-full py-3 text-base">
-              Submit — we'll be in touch within one business day
+              Submit - we'll be in touch within one business day
             </button>
             <p className="mt-3 text-center text-xs" style={{ color: "var(--text-muted)" }}>
               No spam. No sales pressure. Just a real conversation about whether this is the right fit.

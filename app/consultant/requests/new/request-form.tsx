@@ -5,7 +5,7 @@ import Link from "next/link";
 import { createRequestFromPage } from "@/lib/workflow-actions";
 import { SubmitButton } from "@/components/submit-button";
 
-/** Common reporting windows — same pick-don't-type pattern as the due date. */
+/** Common reporting windows - same pick-don't-type pattern as the due date. */
 const PERIOD_PRESETS = [
   "Calendar year 2025",
   "Calendar year 2026 to date",
@@ -88,7 +88,7 @@ export function NewRequestForm({
         <div>
           <label className="label">Start from a template <span style={{ color: "var(--text-muted)", fontWeight: 400 }}>(skips steps below)</span></label>
           <select className="input" value={templateId} onChange={(e) => applyTemplate(e.target.value)}>
-            <option value="">None — build from scratch</option>
+            <option value="">None - build from scratch</option>
             {templates.map((t) => (
               <option key={t.id} value={t.id}>{t.name}</option>
             ))}
@@ -151,7 +151,7 @@ export function NewRequestForm({
         ))}
         {selectedTypes.length === 0 && (
           <p className="mt-1.5 text-xs" style={{ color: "var(--text-muted)" }}>
-            Nothing selected — the request goes out as one custom item described below.
+            Nothing selected - the request goes out as one custom item described below.
           </p>
         )}
       </div>
@@ -214,7 +214,7 @@ export function NewRequestForm({
       >
         <span style={{ color: "var(--text)" }}>
           Automatic reminders go out <strong>7 days before</strong>, <strong>2 days before</strong>, <strong>on the due
-          date</strong>, and <strong>when overdue</strong> — no chasing by hand.
+          date</strong>, and <strong>when overdue</strong> - no chasing by hand.
         </span>
         <span className="shrink-0" style={{ color: "var(--text-muted)" }}>Pausable per request</span>
       </div>
@@ -226,7 +226,7 @@ export function NewRequestForm({
 
       {selectedClient && (
         <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-          {selectedClient.name} will get a magic link by email — no account needed to respond.
+          {selectedClient.name} will get a magic link by email - no account needed to respond.
           {!contactEmail && " Add a contact email above (or share the link manually after sending)."}
         </p>
       )}

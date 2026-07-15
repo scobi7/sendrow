@@ -31,7 +31,7 @@ export default async function ManageScope3({ params }: { params: Promise<{ id: s
   return (
     <div>
       <PageHeader
-        title="Scope 3 — Value Chain Emissions"
+        title="Scope 3 - Value Chain Emissions"
         subtitle={`Managing on behalf of ${company.name}.`}
       />
 
@@ -95,7 +95,7 @@ export default async function ManageScope3({ params }: { params: Promise<{ id: s
 
         <div className="card">
           <h2 className="font-semibold font-display" style={{ color: "var(--text)" }}>
-            Waste Disposal <InfoTip text="Annual tons by disposal method — waste hauler invoice has this." />
+            Waste Disposal <InfoTip text="Annual tons by disposal method - waste hauler invoice has this." />
           </h2>
           <div className="mt-4 grid grid-cols-3 gap-4">
             <div>
@@ -122,7 +122,7 @@ export default async function ManageScope3({ params }: { params: Promise<{ id: s
       <div className="card mt-5">
         <h2 className="font-semibold font-display" style={{ color: "var(--text)" }}>Remaining Categories</h2>
         <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>
-          First-time reporters typically skip these with documented justification — accepted by CDP and EcoVadis.
+          First-time reporters typically skip these with documented justification - accepted by CDP and EcoVadis.
         </p>
         <div className="mt-4 space-y-2">
           {SCOPE3_OTHER_CATEGORIES.map((cat) => {
@@ -137,7 +137,7 @@ export default async function ManageScope3({ params }: { params: Promise<{ id: s
                       style={{ color: d === "na" ? "var(--text-muted)" : "var(--warning)" }}
                       title={
                         d === "industry_average"
-                          ? "Estimates from sector averages are always labeled low confidence — replacing them with the client's actual data upgrades the label automatically."
+                          ? "Estimates from sector averages are always labeled low confidence - replacing them with the client's actual data upgrades the label automatically."
                           : undefined
                       }
                     >

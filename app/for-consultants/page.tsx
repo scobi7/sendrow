@@ -9,7 +9,7 @@ const FEATURES = [
   },
   {
     title: "Client invite links",
-    desc: "Generate a unique link for each client. They connect their accounts and fill in their data directly — you review.",
+    desc: "Generate a unique link for each client. They connect their accounts and fill in their data directly - you review.",
   },
   {
     title: "Automated calculations",
@@ -85,7 +85,7 @@ export default function ForConsultants() {
             className="mx-auto mt-6 max-w-xl text-lg leading-relaxed"
             style={{ color: "var(--text-muted)" }}
           >
-            Clients connect their own accounts and fill in their data. Sendrow runs the calculations. You review, report, and deliver &mdash; without the spreadsheet overhead.
+            Clients connect their own accounts and fill in their data. Sendrow runs the calculations. You review, report, and deliver - without the spreadsheet overhead.
           </p>
 
           <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
@@ -115,7 +115,7 @@ export default function ForConsultants() {
                 <span className="h-2.5 w-2.5 rounded-full" style={{ background: "#FFBD2E" }} />
                 <span className="h-2.5 w-2.5 rounded-full" style={{ background: "#28C840" }} />
                 <span className="ml-4 text-xs font-medium" style={{ color: "var(--text-muted)" }}>
-                  Sendrow &mdash; Consultant Dashboard
+                  Sendrow - Consultant Dashboard
                 </span>
               </div>
 
@@ -255,12 +255,12 @@ export default function ForConsultants() {
                 data collection.
               </h2>
               <p className="mt-4 text-base leading-relaxed" style={{ color: "var(--text-muted)" }}>
-                Send a client an invite link. They connect their QuickBooks and utility account. Sendrow pulls the data and runs the calculations automatically &mdash; no back-and-forth, no manual data requests.
+                Send a client an invite link. They connect their QuickBooks and utility account. Sendrow pulls the data and runs the calculations automatically - no back-and-forth, no manual data requests.
               </p>
               <ul className="mt-8 space-y-4">
                 {[
                   "Generate a unique invite link per client in one click",
-                  "Clients connect their own accounts &mdash; you never need their credentials",
+                  "Clients connect their own accounts - you never need their credentials",
                   "You see their progress in real time and can step in wherever needed",
                 ].map((item) => (
                   <li key={item} className="flex items-start gap-3 text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>

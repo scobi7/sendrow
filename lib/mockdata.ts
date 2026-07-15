@@ -18,9 +18,9 @@ function seededRandom(seed: string) {
 }
 
 const VENDORS: Record<string, string[]> = {
-  "Travel — Airfare": ["United Airlines", "Southwest Airlines", "Delta Air Lines"],
-  "Travel — Lodging": ["Marriott", "Hilton Garden Inn", "Holiday Inn Express"],
-  "Travel — Car Rental": ["Enterprise Rent-A-Car", "Hertz"],
+  "Travel - Airfare": ["United Airlines", "Southwest Airlines", "Delta Air Lines"],
+  "Travel - Lodging": ["Marriott", "Hilton Garden Inn", "Holiday Inn Express"],
+  "Travel - Car Rental": ["Enterprise Rent-A-Car", "Hertz"],
   "Freight & Delivery": ["FedEx Freight", "Old Dominion", "XPO Logistics", "UPS"],
   "Office Supplies": ["Staples", "Office Depot", "Uline"],
   "Software & Subscriptions": ["Microsoft", "Salesforce", "Adobe", "Zoom"],
@@ -36,9 +36,9 @@ function spendProfile(company: Company): Record<string, number> {
   ];
   const scale = head / 100;
   const base: Record<string, number> = {
-    "Travel — Airfare": 48000,
-    "Travel — Lodging": 31000,
-    "Travel — Car Rental": 9500,
+    "Travel - Airfare": 48000,
+    "Travel - Lodging": 31000,
+    "Travel - Car Rental": 9500,
     "Freight & Delivery": 86000,
     "Office Supplies": 22000,
     "Software & Subscriptions": 64000,
@@ -57,7 +57,7 @@ function spendProfile(company: Company): Record<string, number> {
   if (ind === "Professional Services") {
     base["Materials & Equipment"] *= 0.3;
     base["Freight & Delivery"] *= 0.2;
-    base["Travel — Airfare"] *= 1.6;
+    base["Travel - Airfare"] *= 1.6;
   }
   if (ind === "Retail") base["Freight & Delivery"] *= 2;
   const out: Record<string, number> = {};

@@ -148,7 +148,7 @@ export async function consultantGenerateReport(companyId: string) {
   const s = company.sectionStatus;
   if (!(s.connections === "complete" && s.scope1 === "complete" && s.scope2 === "complete")) return;
   company.reportGeneratedAt = new Date().toISOString();
-  await logChange({ user, companyId: company.id, section: "reports", field: "ghg_inventory_report", prev: "—", next: `generated ${company.reportGeneratedAt}` });
+  await logChange({ user, companyId: company.id, section: "reports", field: "ghg_inventory_report", prev: " - ", next: `generated ${company.reportGeneratedAt}` });
   await persist(company);
   redirect(`/consultant/clients/${companyId}/manage/reports`);
 }
@@ -209,7 +209,7 @@ export async function rejectSession(sessionId: string, companyId: string) {
   await db.update(intakeSessions).set({ status: "rejected", reviewedAt: new Date().toISOString() }).where(eq(intakeSessions.id, sessionId));
   logEvent({ companyId, actor: user.id, actorType: "consultant", verb: "session.rejected", subject: session.filename, subjectId: sessionId });
 
-  // A rejected upload's rows leave all totals — excluded, never deleted (no silent drops)
+  // A rejected upload's rows leave all totals - excluded, never deleted (no silent drops)
   if (session.mappingProfileId) {
     const items = await db
       .select()
@@ -258,7 +258,7 @@ export async function createDataRequest(
   });
   logEvent({ companyId, actor: user.id, actorType: "consultant", verb: "request.created", subject: description.trim(), subjectId: requestId, meta: { dueDate, periodLabel } });
 
-  // Notify the client — fire-and-forget so email failures never block the request
+  // Notify the client - fire-and-forget so email failures never block the request
   notifyClientOfDataRequest(companyId, description.trim(), dueDate || null, token).catch(() => {});
 
   revalidatePath(`/consultant/clients/${companyId}`);
@@ -269,7 +269,7 @@ async function notifyClientOfDataRequest(companyId: string, description: string,
     db.query.companies.findFirst({ where: eq(companies.id, companyId) }),
     getBrandForCompany(companyId),
   ]);
-  if (!company?.clientContactEmail) return; // no contact on file — consultant shares the link manually
+  if (!company?.clientContactEmail) return; // no contact on file - consultant shares the link manually
   const sent = await sendDataRequestEmail(
     company.clientContactEmail,
     company.clientContactName ?? "there",
@@ -279,7 +279,7 @@ async function notifyClientOfDataRequest(companyId: string, description: string,
     token,
     brand
   );
-  // The timeline records whether the link actually went out — a silent send
+  // The timeline records whether the link actually went out - a silent send
   // failure looks identical to a client ignoring the email otherwise.
   logEvent({
     companyId,
@@ -288,7 +288,7 @@ async function notifyClientOfDataRequest(companyId: string, description: string,
     verb: sent ? "email.sent" : "email.failed",
     subject: sent
       ? `Portal link emailed to ${company.clientContactEmail}`
-      : `Email to ${company.clientContactEmail} did not send — copy the portal link and share it directly`,
+      : `Email to ${company.clientContactEmail} did not send - copy the portal link and share it directly`,
   });
 }
 
@@ -302,8 +302,7 @@ export async function resendPortalEmail(requestId: string, companyId: string) {
   revalidatePath(`/consultant/clients/${companyId}`);
 }
 
-/** Issues a fresh 30-day link for an expired/stale request and emails it —
- *  the other half of the expired page's "request a new link" (U1.2). */
+/** Issues a fresh 30-day link for an expired/stale request and emails it -  *  the other half of the expired page's "request a new link" (U1.2). */
 /** Answers a supplier's "I'm stuck" flag (X2): the reply lands on the portal
  *  thread and goes out by email with the portal link. The flag stays open
  *  until the item is received or explicitly resolved. */
@@ -348,14 +347,14 @@ export async function replyToFlag(companyId: string, requestId: string, itemId: 
         actor: "system",
         actorType: "system",
         verb: "email.failed",
-        subject: `Reply email to ${company.clientContactEmail} did not send — the reply is still on their portal page`,
+        subject: `Reply email to ${company.clientContactEmail} did not send - the reply is still on their portal page`,
       });
     }
   }
   revalidatePath(`/consultant/clients/${companyId}`);
 }
 
-/** Clears a stuck flag once it's handled — the thread stays on record. */
+/** Clears a stuck flag once it's handled - the thread stays on record. */
 export async function resolveFlag(companyId: string, requestId: string, itemId: string) {
   const user = await ownsClient(companyId);
   if (!user) return;
@@ -404,7 +403,7 @@ export async function confirmVendorMapping(companyId: string, vendorRaw: string,
 
   // Scope decides who this mapping applies to: "global" = every client (real
   // vendors like PG&E); "client" = only this company (truck IDs, account
-  // numbers — anything that must never enter the shared moat).
+  // numbers - anything that must never enter the shared moat).
   const scopeCompanyId = scopeChoice === "global" ? null : companyId;
   const existing = (await db.select().from(vendorMappings).where(eq(vendorMappings.vendorPattern, pattern)))
     .find((m) => (m.companyId ?? null) === scopeCompanyId);
@@ -460,7 +459,7 @@ export async function confirmVendorMapping(companyId: string, vendorRaw: string,
     };
     if (!matchVendor(row.source_ref, mapping) && !matchVendor(row.activity_type, mapping)) continue;
     const remapped = rowToLineItem(row, factors, companyId, item.mappingProfileId, mapping);
-    if (remapped.status !== "mapped") continue; // e.g. quantity still missing — stays flagged
+    if (remapped.status !== "mapped") continue; // e.g. quantity still missing - stays flagged
     await db
       .update(emissionLineItems)
       .set({
@@ -663,7 +662,7 @@ export async function restoreLineItem(companyId: string, itemId: string) {
   revalidatePath(`/consultant/clients/${companyId}`);
 }
 
-// ─────────── Snapshots — the trust core (Plan T3, invariant §13) ───────────
+// ─────────── Snapshots - the trust core (Plan T3, invariant §13) ───────────
 
 function snapId() {
   return "snap_" + Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
@@ -764,7 +763,7 @@ export async function createSnapshot(companyId: string, formData: FormData) {
   return id;
 }
 
-/** Shares a specific frozen snapshot — THIS snapshot, to THIS recipient. */
+/** Shares a specific frozen snapshot - THIS snapshot, to THIS recipient. */
 export async function shareSnapshot(companyId: string, snapshotId: string, formData: FormData) {
   const user = await ownsClient(companyId);
   if (!user) return;
@@ -821,7 +820,7 @@ export async function convertDollarFuel(companyId: string, formData: FormData) {
   revalidatePath(`/consultant/clients/${companyId}/ledger`);
 }
 
-// ─────────── U1.5 / U1.7 / U1.8 — comments, estimate→actual, extra evidence ───────────
+// ─────────── U1.5 / U1.7 / U1.8 - comments, estimate→actual, extra evidence ───────────
 
 /** Adds a comment pinned to a line item and emails the client contact (U1.5). */
 export async function addLineItemComment(companyId: string, itemId: string, formData: FormData) {
@@ -912,14 +911,14 @@ export async function attachEvidenceToItem(companyId: string, itemId: string, fo
   revalidatePath(`/consultant/clients/${companyId}/ledger`);
 }
 
-/** Comments for a set of line items — read side for the ledger. */
+/** Comments for a set of line items - read side for the ledger. */
 export async function getCommentsForCompany(companyId: string) {
   const user = await currentUser();
   if (!user || user.role !== "consultant") return [];
   return db.select().from(comments).where(eq(comments.companyId, companyId));
 }
 
-// ─────────── U2 — engagement templates & chasing controls ───────────
+// ─────────── U2 - engagement templates & chasing controls ───────────
 
 /** Saves the request setup as a reusable template (#23, config not code). */
 export async function saveRequestTemplate(formData: FormData) {

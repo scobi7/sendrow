@@ -45,7 +45,7 @@ export function SessionActions({ sessionId, companyId }: { sessionId: string; co
         className="btn btn-secondary text-xs px-3 py-1.5"
         onClick={() => setMode("flag")}
       >
-        Flag — needs info
+        Flag - needs info
       </button>
       <button
         className="btn btn-secondary text-xs px-3 py-1.5"

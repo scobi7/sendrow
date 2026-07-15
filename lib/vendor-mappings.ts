@@ -29,8 +29,7 @@ export function normalizeVendor(raw: string): string {
   return words.join(" ");
 }
 
-/** Exact match on the normalized vendor name. Returns null when unconfirmed —
- *  unknown vendors must keep flagging as unmapped, never guessed. */
+/** Exact match on the normalized vendor name. Returns null when unconfirmed -  *  unknown vendors must keep flagging as unmapped, never guessed. */
 export function matchVendor(raw: string | undefined, mappings: VendorMapping[]): VendorMapping | null {
   if (!raw?.trim()) return null;
   const normalized = normalizeVendor(raw);
@@ -64,7 +63,7 @@ export const VENDOR_CONFIRM_OPTIONS: { key: string; label: string; scope: number
 /** DB loader with seed-free fallback; callers pass the result into the pure
  *  ingestion functions so tests never need a database. */
 /** Mappings visible to a company: its own client-scoped ones (which win on
- *  conflict — they sort first) plus the global memory. */
+ *  conflict - they sort first) plus the global memory. */
 export async function getVendorMappingsFromDb(companyId?: string): Promise<VendorMapping[]> {
   try {
     const { db } = await import("./db");

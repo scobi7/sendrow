@@ -19,7 +19,7 @@ export function evaluateSections(company: Company): Record<SectionName, SectionS
   const connDone = conn.quickbooks.connected && conn.utility.connected;
   const connTouched = conn.quickbooks.connected || conn.utility.connected;
 
-  // Scope 1 — each of 4 subsections answered or NA
+  // Scope 1 - each of 4 subsections answered or NA
   const fleetDone = !!inp.fleet_na || [inp.fleet_gasoline_gal, inp.fleet_diesel_gal, inp.fleet_propane_gal].some(answered);
   const gasDone = !!inp.natgas_na || answered(inp.natgas_therms_override) || (conn.utility.connected && company.utilityData.some((m) => m.therms > 0));
   const refDone = !!inp.refrigerant_na || (answered(inp.refrigerant_kg) && answered(inp.refrigerant_type));
@@ -28,11 +28,11 @@ export function evaluateSections(company: Company): Record<SectionName, SectionS
   const s1Touched = [fleetDone, gasDone, refDone, eqDone].some(Boolean) ||
     [inp.fleet_gasoline_gal, inp.refrigerant_kg, inp.equipment_gal].some(answered);
 
-  // Scope 2 — utility connected and reviewed
+  // Scope 2 - utility connected and reviewed
   const s2Done = conn.utility.connected && !!inp.scope2_reviewed;
   const s2Touched = conn.utility.connected || !!inp.has_recs;
 
-  // Scope 3 — QB reviewed, commuting + waste entered, all other categories decided
+  // Scope 3 - QB reviewed, commuting + waste entered, all other categories decided
   const commuteDone = answered(inp.commute_avg_miles) && answered(inp.commute_mode) && answered(inp.commute_days_in_office);
   const wasteDone = [inp.waste_landfill_tons, inp.waste_recycled_tons, inp.waste_composted_tons].some(answered);
   const othersDone = SCOPE3_OTHER_CATEGORIES.every((c) => (inp.scope3_other_categories ?? {})[c]);
@@ -44,7 +44,7 @@ export function evaluateSections(company: Company): Record<SectionName, SectionS
     inp.social_lost_time_injuries, inp.social_osha_recordables, inp.social_training_hours].every(answered);
   const socialTouched = [inp.social_total_employees, inp.social_lost_time_injuries, inp.social_training_hours].some(answered);
 
-  // Governance — skip board-level detail for small companies per spec
+  // Governance - skip board-level detail for small companies per spec
   const policies = inp.gov_policies ?? {};
   const policiesDone = Object.values(policies).filter((v) => v !== null && v !== undefined).length >= 6;
   const privacyDone = [inp.gov_ccpa_compliant, inp.gov_public_privacy_policy, inp.gov_data_breaches].every((v) => v !== undefined && v !== null);

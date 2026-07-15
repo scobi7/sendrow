@@ -2,7 +2,7 @@ import * as XLSX from "xlsx";
 import type { SnapshotTotals } from "./snapshots";
 
 /** The reshaping engine (Plan T4): one approved snapshot in, any output
- *  format out. Formats are maintained centrally — when a regulator changes
+ *  format out. Formats are maintained centrally - when a regulator changes
  *  their form, we update it here and every export keeps working. */
 
 export type FrozenLineItem = {
@@ -45,7 +45,7 @@ function safe(name: string): string {
   return name.replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "").toLowerCase();
 }
 
-/** Line items as an Excel workbook — the "just give me the data" format. */
+/** Line items as an Excel workbook - the "just give me the data" format. */
 export function toExcel(snapshot: SnapshotForExport, company: CompanyForExport): ExportFile {
   const rows = snapshot.lineItems.map((i) => ({
     "Source / vendor": i.sourceRef,
@@ -82,17 +82,17 @@ export function toSB253(snapshot: SnapshotForExport, company: CompanyForExport):
 
 **Reporting entity:** ${company.name}
 **Industry:** ${company.industry ?? "Not stated"}
-**Snapshot:** ${snapshot.label} — frozen ${new Date(snapshot.createdAt).toLocaleDateString("en-US")}
+**Snapshot:** ${snapshot.label} - frozen ${new Date(snapshot.createdAt).toLocaleDateString("en-US")}
 **Integrity hash:** ${snapshot.sha256}
 
 ## Emissions summary (metric tons CO2e)
 
 | Scope | Emissions |
 |---|---|
-| Scope 1 — direct | ${fmt(t.scope1)} |
-| Scope 2 — location-based | ${fmt(t.scope2Location)} |
-| Scope 2 — market-based | ${fmt(t.scope2Market)} |
-| Scope 3 — value chain | ${fmt(t.scope3)} |
+| Scope 1 - direct | ${fmt(t.scope1)} |
+| Scope 2 - location-based | ${fmt(t.scope2Location)} |
+| Scope 2 - market-based | ${fmt(t.scope2Market)} |
+| Scope 3 - value chain | ${fmt(t.scope3)} |
 | **Total (Scopes 1+2 location +3)** | **${fmt(t.total)}** |
 
 ## Methodology
@@ -110,7 +110,7 @@ This disclosure was prepared from a frozen data snapshot that cannot be
 altered after approval. Any subsequent correction is issued as a new,
 separately identified version with a change notice to all recipients.
 
-*Draft for consultant review — verify against the current CARB regulation
+*Draft for consultant review - verify against the current CARB regulation
 text before filing.*
 `;
   return {
@@ -146,7 +146,7 @@ export function toQuestionnaire(snapshot: SnapshotForExport, company: CompanyFor
   };
 }
 
-/** PACT-compatible JSON draft — basic product-carbon-footprint envelope fields. */
+/** PACT-compatible JSON draft - basic product-carbon-footprint envelope fields. */
 export function toPACT(snapshot: SnapshotForExport, company: CompanyForExport): ExportFile {
   const t = snapshot.totals;
   const doc = {

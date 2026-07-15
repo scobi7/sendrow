@@ -22,7 +22,7 @@ export default async function PortalPage({ params }: { params: Promise<{ token: 
           This link has expired
         </h1>
         <p className="mt-2 text-sm" style={{ color: "var(--text-muted)" }}>
-          Data upload links are valid for 30 days — but getting a fresh one takes a single click.
+          Data upload links are valid for 30 days - but getting a fresh one takes a single click.
         </p>
         <RequestNewLink token={token} />
       </main>
@@ -118,7 +118,7 @@ export default async function PortalPage({ params }: { params: Promise<{ token: 
       ) : (
         <>
           <p className="mb-4 text-sm" style={{ color: "var(--text-muted)" }}>
-            {received} of {checklist.length} item{checklist.length !== 1 ? "s" : ""} received. No account needed — this page is your secure upload link.
+            {received} of {checklist.length} item{checklist.length !== 1 ? "s" : ""} received. No account needed - this page is your secure upload link.
           </p>
           <PortalChecklist token={token} items={checklist} prefill={prefill} threads={threads} />
         </>

@@ -1,6 +1,5 @@
 /** Header-row detection (Plan T2 follow-up): real files carry titles, blank
- *  rows, and logos above the actual header row. Deterministic heuristic —
- *  the confirm-mapping screen still shows the result for a human to verify. */
+ *  rows, and logos above the actual header row. Deterministic heuristic -  *  the confirm-mapping screen still shows the result for a human to verify. */
 
 export type ParsedSheet = { headers: string[]; rows: Record<string, string>[]; headerRowIndex: number };
 

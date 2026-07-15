@@ -11,7 +11,7 @@ export const companies = pgTable("gt_companies", {
   // Who receives portal links + reminders (v2: clients have no login)
   clientContactName: text("client_contact_name"),
   clientContactEmail: text("client_contact_email"),
-  // 2-digit NAICS sector — benchmarking prerequisite (#46)
+  // 2-digit NAICS sector - benchmarking prerequisite (#46)
   naicsCode: text("naics_code"),
   onboardingComplete: boolean("onboarding_complete").notNull().default(false),
   setupComplete: boolean("setup_complete").notNull().default(false),
@@ -101,8 +101,7 @@ export const utilityData = pgTable("gt_utility_data", {
 });
 
 /** Unified immutable event log (pipeline Ground Rule 3): every create /
- *  approve / share / convert / edit / comment, from day one. Append-only —
- *  no update or delete path exists in code. */
+ *  approve / share / convert / edit / comment, from day one. Append-only -  *  no update or delete path exists in code. */
 export const events = pgTable("gt_events", {
   id: text("id").primaryKey(),
   companyId: text("company_id").notNull().references(() => companies.id),
@@ -163,13 +162,13 @@ export const consultantProfiles = pgTable("gt_consultant_profiles", {
 });
 
 /** Read-only client results links (Plan N5): the consultant-branded "dashboard"
- *  a company sees — shared as a link, never a login. */
+ *  a company sees - shared as a link, never a login. */
 export const shareLinks = pgTable("gt_share_links", {
   token: text("token").primaryKey(),
   companyId: text("company_id").notNull().references(() => companies.id),
   // When set, the link shows this frozen snapshot (§13); null = legacy live view
   snapshotId: text("snapshot_id"),
-  // Who received it — lets restatement alerts reach them when data is corrected
+  // Who received it - lets restatement alerts reach them when data is corrected
   recipientEmail: text("recipient_email"),
   recipientLabel: text("recipient_label"),
   createdBy: text("created_by").notNull(),
@@ -178,7 +177,7 @@ export const shareLinks = pgTable("gt_share_links", {
 });
 
 /** Frozen, dated, approved versions (Plan T3 / invariant §13): the ONLY thing
- *  ever shared. Immutable by construction — corrections create a new snapshot
+ *  ever shared. Immutable by construction - corrections create a new snapshot
  *  and restatement-alert every recipient of the old one. */
 export const snapshots = pgTable("gt_snapshots", {
   id: text("id").primaryKey(),
@@ -188,7 +187,7 @@ export const snapshots = pgTable("gt_snapshots", {
   totals: jsonb("totals").notNull(),      // { scope1, scope2Location, scope2Market, scope3, total } in tons
   lineItems: jsonb("line_items").notNull(), // frozen mapped items incl. calc logs
   itemCount: integer("item_count").notNull().default(0),
-  sha256: text("sha256").notNull(),        // content hash — proves immutability
+  sha256: text("sha256").notNull(),        // content hash - proves immutability
   createdBy: text("created_by").notNull(),
   createdAt: text("created_at").notNull(),
 });
@@ -220,7 +219,7 @@ export const mappingProfiles = pgTable("gt_mapping_profiles", {
   companyId: text("company_id").notNull().references(() => companies.id),
   name: text("name").notNull(),
   columnMap: jsonb("column_map").notNull().default({}),
-  // sha256 of the normalized sorted header set — format memory (Plan T2):
+  // sha256 of the normalized sorted header set - format memory (Plan T2):
   // the same file shape maps with zero clicks next time
   headerFingerprint: text("header_fingerprint"),
   effectiveFrom: text("effective_from").notNull(),
@@ -237,11 +236,11 @@ export const emissionLineItems = pgTable("gt_emission_line_items", {
   rawUnit: text("raw_unit").notNull(),
   co2eKg: numeric("co2e_kg", { precision: 14, scale: 4 }).notNull(),
   confidence: text("confidence").notNull().default("estimated"),
-  // "mapped" = factor applied; "unmapped" = flagged for review, zero emissions — never dropped
+  // "mapped" = factor applied; "unmapped" = flagged for review, zero emissions - never dropped
   status: text("status").notNull().default("mapped"),
   // Fiscal-year label ("2026" / "FY2026") from the row date; null = untagged (pre-N4 or dateless)
   period: text("period"),
-  // The row's own date/month as supplied ("2026-01", "Jan") — provenance + monthly granularity
+  // The row's own date/month as supplied ("2026-01", "Jan") - provenance + monthly granularity
   activityDate: text("activity_date"),
   factorId: text("factor_id"),
   calcLog: jsonb("calc_log").notNull().default({}),
@@ -266,8 +265,7 @@ export const intakeSessions = pgTable("gt_intake_sessions", {
 });
 
 /** Evidence locker (Plan N3): the original source document behind an import.
- *  The hash is always recorded, even when blob storage isn't configured —
- *  provenance survives without the bytes. */
+ *  The hash is always recorded, even when blob storage isn't configured -  *  provenance survives without the bytes. */
 export const evidence = pgTable("gt_evidence", {
   id: text("id").primaryKey(),
   companyId: text("company_id").notNull().references(() => companies.id),
@@ -288,7 +286,7 @@ export const dataRequests = pgTable("gt_data_requests", {
   description: text("description").notNull(),
   status: text("status").notNull().default("open"),
   dueDate: text("due_date"),
-  // What timeframe the data should cover — "Calendar year 2025", "Q1 2026"…
+  // What timeframe the data should cover - "Calendar year 2025", "Q1 2026"…
   periodLabel: text("period_label"),
   createdAt: text("created_at").notNull(),
   fulfilledAt: text("fulfilled_at"),

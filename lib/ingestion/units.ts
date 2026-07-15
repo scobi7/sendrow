@@ -1,7 +1,7 @@
 /** Unit normalization (Plan T2): canonical units + conversions so a perfectly
  *  mapped column doesn't flag just because the utility reports in MWh.
  *  Conversions are recorded in the calc log by the caller. Unknown units pass
- *  through untouched — never guessed. */
+ *  through untouched - never guessed. */
 
 type Conversion = { unit: string; factor: number };
 

@@ -41,7 +41,7 @@ export function dueReminders(requests: ReminderRequest[], now: Date = new Date()
     if (req.dueDate) {
       const due = new Date(req.dueDate + "T12:00:00Z").getTime();
       const daysUntil = Math.floor((due - now.getTime()) / DAY);
-      // highest applicable unsent tier only — a stale request gets one email, not four
+      // highest applicable unsent tier only - a stale request gets one email, not four
       for (const [tier, daysBefore, cc] of [...DUE_TIERS].reverse()) {
         if (daysUntil <= daysBefore && !sent[tier]) {
           out.push({ id: req.id, tier, daysUntilDue: daysUntil, ccConsultant: cc });

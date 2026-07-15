@@ -57,7 +57,7 @@ export default async function ManageLayout({
               Managing as {company.name}
             </p>
             <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-              {pct}% complete — changes here are visible to the client
+              {pct}% complete - changes here are visible to the client
             </p>
           </div>
         </div>

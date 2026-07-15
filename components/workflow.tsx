@@ -22,7 +22,7 @@ export function StatusBadge({ status }: { status: WorkflowStatus }) {
   );
 }
 
-/** Completeness meter (6.7) — reused on dashboard, client detail, and digest. */
+/** Completeness meter (6.7) - reused on dashboard, client detail, and digest. */
 export function CompletenessMeter({ percent, label, compact = false }: { percent: number; label?: string; compact?: boolean }) {
   const clamped = Math.max(0, Math.min(100, percent));
   return (
@@ -43,7 +43,7 @@ export function CompletenessMeter({ percent, label, compact = false }: { percent
   );
 }
 
-/** Dashboard stat card (#19) — Overdue / Ready to review / Awaiting response. */
+/** Dashboard stat card (#19) - Overdue / Ready to review / Awaiting response. */
 export function StatCard({ label, value, href, active = false, tone = "neutral" }: {
   label: string;
   value: number;
@@ -81,7 +81,7 @@ export function BackLink({ href = "/consultant", label = "Dashboard" }: { href?:
   );
 }
 
-/** Mono usage-context line under page titles — mirrors the wireframes' annotations. */
+/** Mono usage-context line under page titles - mirrors the wireframes' annotations. */
 export function UsageNote({ children }: { children: React.ReactNode }) {
   return <p className="eyebrow mt-1" style={{ color: "var(--text-muted)" }}>{children}</p>;
 }

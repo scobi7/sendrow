@@ -19,7 +19,7 @@ export type NormalizedRow = {
   notes?: string;
 };
 
-/** Calc log for rows that could not be mapped to a factor — kept for the audit trail. */
+/** Calc log for rows that could not be mapped to a factor - kept for the audit trail. */
 export type UnmappedLog = {
   reason: string;
   raw_value: number | null;
@@ -86,14 +86,14 @@ function resolveFactorQuery(row: NormalizedRow) {
 
   // Dollar amounts must never be treated as physical quantities (e.g. fuel $
   // applied to a per-gallon factor). Without a price conversion they flag as
-  // unmapped and route to review — contracts/ "no silent reinterpretation".
+  // unmapped and route to review - contracts/ "no silent reinterpretation".
   if (u.includes("usd") || u.includes("$") || u.includes("dollar")) return null;
 
   // Spreadsheet rows carry no location, so grid electricity uses the national
-  // average — a category query would pick an arbitrary subregion.
+  // average - a category query would pick an arbitrary subregion.
   if (u.includes("kwh") || t.includes("electric")) return { factorId: "egrid.USAVG.2024" };
   if (u.includes("therm") || (t.includes("gas") && !t.includes("gasoline"))) return { category: "stationary_combustion", unit: "therm" };
-  // Fuel quantities must arrive in gallons — an activity of "gasoline" with no
+  // Fuel quantities must arrive in gallons - an activity of "gasoline" with no
   // unit is usually a $ amount, and dollars are never treated as gallons.
   if (u.includes("gallon") && t.includes("diesel")) return { category: "mobile_combustion", unit: "gallon" };
   if (u.includes("gallon")) return { category: "mobile_combustion", unit: "gallon" };
@@ -186,7 +186,7 @@ function newId(): string {
 
 /**
  * Builds a flagged zero-emission line item for a row that could not be mapped.
- * Contracts invariant: no data is ever silently dropped — every input row
+ * Contracts invariant: no data is ever silently dropped - every input row
  * becomes a line item, and unmappable ones surface in the workpaper and
  * review queue with the reason recorded.
  */
@@ -228,7 +228,7 @@ export function unmappedLineItem(
 
 /**
  * Converts a normalized row to a DB insert. Rows with a missing quantity or
- * no matching factor come back as flagged `unmapped` items — never null.
+ * no matching factor come back as flagged `unmapped` items - never null.
  * Confirmed vendor mappings (cross-client memory) take precedence over
  * heuristic activity/unit resolution.
  */

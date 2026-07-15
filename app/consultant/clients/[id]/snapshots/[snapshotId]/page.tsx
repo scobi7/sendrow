@@ -9,7 +9,7 @@ import { BackLink } from "@/components/workflow";
 import { ShareLinkButton } from "../../share-link-button";
 import type { SnapshotTotals } from "@/lib/snapshots";
 
-/** Snapshot & Share (#8 #10 #9): after approving — freeze + send data out.
+/** Snapshot & Share (#8 #10 #9): after approving - freeze + send data out.
  *  The snapshot is immutable; corrections create a new one and this stays on
  *  record. */
 export default async function SnapshotSharePage({
@@ -67,7 +67,7 @@ export default async function SnapshotSharePage({
       <div className="mb-6 flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-bold font-display" style={{ color: "var(--text)" }}>
-            Snapshot — {company.name}
+            Snapshot - {company.name}
           </h1>
           <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>
             {snap.label}
@@ -138,12 +138,12 @@ export default async function SnapshotSharePage({
           <div>
             <p className="label text-xs">Send a live link</p>
             <form action={shareSnapshot.bind(null, id, snap.id)} className="space-y-2">
-              <input name="recipient_label" placeholder="Recipient — e.g. Elena Ruiz, Northgate Retail" className="input text-xs" />
+              <input name="recipient_label" placeholder="Recipient - e.g. Elena Ruiz, Northgate Retail" className="input text-xs" />
               <input name="recipient_email" type="email" placeholder="their@email.com" className="input text-xs" />
               <button className="btn btn-primary w-full text-sm">Confirm &amp; share</button>
             </form>
             <p className="mt-2 text-xs" style={{ color: "var(--text-muted)" }}>
-              Recipients see this frozen version only — never live data.
+              Recipients see this frozen version only - never live data.
             </p>
           </div>
         </div>
@@ -179,7 +179,7 @@ export default async function SnapshotSharePage({
         <Link href={`/consultant/clients/${id}/review`} className="underline">
           Review &amp; Approve
         </Link>{" "}
-        and approve again — a new corrected snapshot is created, this one stays on record, and everyone who received it
+        and approve again - a new corrected snapshot is created, this one stays on record, and everyone who received it
         gets a restatement alert automatically.
       </div>
     </div>

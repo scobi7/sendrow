@@ -49,7 +49,7 @@ export function parsePastedRows(text: string): PastedRow[] {
       if (!date && isDateish(cell)) {
         date = toMonthValue(cell);
       } else if (isNumeric(cell)) {
-        // last numeric cell wins — spreadsheets often lead with row numbers
+        // last numeric cell wins - spreadsheets often lead with row numbers
         quantity = cell.replace(/[$,\s]/g, "");
       } else {
         textCells.push(cell);

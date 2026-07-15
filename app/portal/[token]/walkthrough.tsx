@@ -4,7 +4,7 @@ import { useState } from "react";
 import type { DataType } from "@/lib/ingestion/data-type-templates";
 
 /** Guided walkthrough (Plan T5.3): the hybrid. TrackZero-style hand-holding,
- *  but scoped to ONE request — plain questions, one activity per step, skip
+ *  but scoped to ONE request - plain questions, one activity per step, skip
  *  anything you don't have. Minutes, not an onboarding journey. */
 
 export type WalkStep = {
@@ -21,7 +21,7 @@ export const WALKTHROUGH_STEPS: Partial<Record<DataType, WalkStep[]>> = {
     {
       key: "electricity",
       question: "How much electricity did you use?",
-      help: "Grab the kWh number from each monthly bill — it's usually near the total.",
+      help: "Grab the kWh number from each monthly bill - it's usually near the total.",
       activity_type: "electricity",
       unit: "kWh",
       unitLabel: "kWh",
@@ -29,7 +29,7 @@ export const WALKTHROUGH_STEPS: Partial<Record<DataType, WalkStep[]>> = {
     {
       key: "natgas",
       question: "How much natural gas?",
-      help: "Look for 'therms' on your gas bill. If your bill shows ccf, enter that — we convert.",
+      help: "Look for 'therms' on your gas bill. If your bill shows ccf, enter that - we convert.",
       activity_type: "natural gas",
       unit: "therms",
       unitLabel: "therms",
@@ -47,7 +47,7 @@ export const WALKTHROUGH_STEPS: Partial<Record<DataType, WalkStep[]>> = {
     {
       key: "diesel",
       question: "How many gallons of diesel did your vehicles use?",
-      help: "From fuel card summaries or receipts. Only have $ amounts? Enter those in 'Type it in' — your consultant converts them.",
+      help: "From fuel card summaries or receipts. Only have $ amounts? Enter those in 'Type it in' - your consultant converts them.",
       activity_type: "diesel",
       unit: "gallon",
       unitLabel: "gallons",
@@ -55,7 +55,7 @@ export const WALKTHROUGH_STEPS: Partial<Record<DataType, WalkStep[]>> = {
     {
       key: "gasoline",
       question: "How many gallons of gasoline?",
-      help: "Same idea — gallons if you have them.",
+      help: "Same idea - gallons if you have them.",
       activity_type: "gasoline",
       unit: "gallon",
       unitLabel: "gallons",
@@ -65,7 +65,7 @@ export const WALKTHROUGH_STEPS: Partial<Record<DataType, WalkStep[]>> = {
     {
       key: "commute",
       question: "How many total miles do employees commute?",
-      help: "A monthly total across everyone is fine — estimates are okay and get labeled as such.",
+      help: "A monthly total across everyone is fine - estimates are okay and get labeled as such.",
       activity_type: "commute",
       unit: "mile",
       unitLabel: "miles",
@@ -143,7 +143,7 @@ export function Walkthrough({
     return (
       <div>
         <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>
-          Quick check — here&apos;s everything you entered:
+          Quick check - here&apos;s everything you entered:
         </p>
         {rows.length === 0 ? (
           <p className="mt-2 text-sm" style={{ color: "var(--text-muted)" }}>
@@ -219,7 +219,7 @@ export function Walkthrough({
         )}
         <div className="flex items-center gap-3">
           <button className="text-xs underline" style={{ color: "var(--text-muted)" }} onClick={next}>
-            Skip — don&apos;t have this
+            Skip - don&apos;t have this
           </button>
           <button className="btn btn-primary px-4 py-1.5 text-sm" onClick={next}>
             {stepIdx === steps.length - 1 ? "Review" : "Next"}

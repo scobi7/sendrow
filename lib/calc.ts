@@ -7,8 +7,7 @@ import type { VendorMapping } from "./vendor-mappings";
 /**
  * Server-side calculation engine. Runs after every data save; results are
  * stored on the company record. The dashboard reads stored values only.
- * Every result carries the factor id used and a human-readable formula —
- * both flow into the audit trail and methodology section.
+ * Every result carries the factor id used and a human-readable formula -  * both flow into the audit trail and methodology section.
  */
 
 const r2 = (n: number) => Math.round(n * 100) / 100;
@@ -88,7 +87,7 @@ export function recalcCompany(
     for (const [name, gal, fid] of fuels) {
       if (gal && gal > 0) {
         const f = getF(fid);
-        add(1, `Fleet fuel — ${name}`, gal * f.value, fid,
+        add(1, `Fleet fuel - ${name}`, gal * f.value, fid,
           `${fmt(gal)} gal ${name} × ${f.value} ${f.unit} = ${fmt(r2(gal * f.value))} tCO2e`);
       }
     }
@@ -108,14 +107,14 @@ export function recalcCompany(
     if (fid) {
       const f = getF(fid);
       const tons = (inp.refrigerant_kg * f.value) / 1000;
-      add(1, `Refrigerant — ${inp.refrigerant_type}`, tons, fid,
+      add(1, `Refrigerant - ${inp.refrigerant_type}`, tons, fid,
         `${fmt(inp.refrigerant_kg)} kg ${inp.refrigerant_type} × GWP ${f.value} ÷ 1000 = ${fmt(r2(tons))} tCO2e`);
     }
   }
   if (!inp.equipment_na && inp.equipment_gal && inp.equipment_gal > 0 && inp.equipment_fuel_type) {
     const fid = `equip.${inp.equipment_fuel_type.toLowerCase()}.2025`;
     const f = getF(fid);
-    add(1, `On-site equipment — ${inp.equipment_fuel_type.toLowerCase()}`, inp.equipment_gal * f.value, fid,
+    add(1, `On-site equipment - ${inp.equipment_fuel_type.toLowerCase()}`, inp.equipment_gal * f.value, fid,
       `${fmt(inp.equipment_gal)} gal × ${f.value} ${f.unit} = ${fmt(r2(inp.equipment_gal * f.value))} tCO2e`);
   }
 
@@ -129,7 +128,7 @@ export function recalcCompany(
       const f = getF(loc.egridSubregion);
       const locBased = kwh * f.value;
       const mktBased = kwh * residual.value * (1 - recPct / 100);
-      add(2, `Electricity — ${loc.city || loc.address}`, locBased, f.factor_id,
+      add(2, `Electricity - ${loc.city || loc.address}`, locBased, f.factor_id,
         `${fmt(kwh)} kWh × ${f.value} ${f.unit} (${f.factor_name}) = ${fmt(r2(locBased))} tCO2e location-based; ` +
         `market-based ${fmt(kwh)} kWh × ${residual.value} (residual mix)${recPct ? ` × ${100 - recPct}% non-REC` : ""} = ${fmt(r2(mktBased))} tCO2e`,
         "measured", mktBased);
@@ -190,7 +189,7 @@ export function recalcCompany(
     // Zero tons so totals are unaffected, but the gap is visible in the audit trail.
     if (unmapped.length > 0) {
       const totalUnmapped = unmapped.reduce((s, u) => s + u.spend, 0);
-      add(3, "Unmapped spend — needs categorization", 0, null,
+      add(3, "Unmapped spend - needs categorization", 0, null,
         `FLAGGED: $${fmt(totalUnmapped)} across ${unmapped.length} expense categor${unmapped.length === 1 ? "y" : "ies"} has no USEEIO mapping and is NOT included in totals: ${unmapped.map((u) => `${u.cat} ($${fmt(u.spend)})`).join(", ")}`,
         "estimated");
     }
@@ -217,7 +216,7 @@ export function recalcCompany(
   for (const [name, tons, fid] of wasteRows) {
     if (tons && tons > 0) {
       const f = getF(fid);
-      add(3, `Waste — ${name}`, tons * f.value, fid,
+      add(3, `Waste - ${name}`, tons * f.value, fid,
         `${fmt(tons)} short tons ${name} × ${f.value} ${f.unit} = ${fmt(r2(tons * f.value))} tCO2e`);
     }
   }
@@ -228,7 +227,7 @@ export function recalcCompany(
       const s3 = results.filter((r) => r.scope === 3).reduce((s, r) => s + r.co2eTons, 0);
       const est = r2(Math.max(s3 * 0.01, 5));
       add(3, `${cat} (industry average estimate)`, est, null,
-        `Estimated with industry average — flagged low-confidence in audit trail`, "estimated");
+        `Estimated with industry average - flagged low-confidence in audit trail`, "estimated");
     }
   }
 
@@ -244,7 +243,7 @@ export interface Totals {
 }
 
 /** Tons of CO2e from imported line items (the portal pipeline). Only mapped
- *  rows count — unmapped/excluded carry zero. Line items don't distinguish
+ *  rows count - unmapped/excluded carry zero. Line items don't distinguish
  *  market-based scope 2, so they add equally to both bases. */
 export function lineItemTotals(items: { scope: number; co2eKg: string | number; status: string }[]): Totals {
   let s1 = 0, s2 = 0, s3 = 0;
@@ -259,8 +258,7 @@ export function lineItemTotals(items: { scope: number; co2eKg: string | number; 
 }
 
 /** The company's full picture: inputs-based calcs (manage-on-behalf, connections)
- *  PLUS imported line items (portal). Duplicates are the consultant's call —
- *  the ledger's exclude exists for exactly that. */
+ *  PLUS imported line items (portal). Duplicates are the consultant's call -  *  the ledger's exclude exists for exactly that. */
 export function combinedTotals(
   company: Company,
   items: { scope: number; co2eKg: string | number; status: string }[]
@@ -280,9 +278,8 @@ export function totals(company: Company): Totals {
   const s = (n: number[]) => r2(n.reduce((a, b) => a + b, 0));
   const scope1 = s(company.calcs.filter((c) => c.scope === 1).map((c) => c.co2eTons));
   const scope2Location = s(company.calcs.filter((c) => c.scope === 2).map((c) => c.co2eTons));
-  // Consultant override (X3.4) wins over the derived market-based figure —
-  // set on the Scope 2 page, audit-logged via logChange.
-  const override = company.inputs.scope2_market_override_tons;
+  // Consultant override (X3.4) wins over the derived market-based figure -   // set on the Scope 2 page, audit-logged via logChange.
+  const override = company.inputs?.scope2_market_override_tons;
   const scope2Market =
     override !== null && override !== undefined
       ? r2(override)

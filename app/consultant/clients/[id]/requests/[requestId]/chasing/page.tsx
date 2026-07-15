@@ -46,16 +46,16 @@ export default async function ChasingSchedulePage({
       return d;
     };
     schedule = [
-      { key: "due-7", label: "7 days before due", detail: `Scheduled — ${fmtDate(offset(7))}` },
-      { key: "due-2", label: "2 days before due", detail: `Scheduled — ${fmtDate(offset(2))}` },
-      { key: "due-0", label: "Day of deadline", detail: `Scheduled — ${fmtDate(due)}` },
-      { key: "overdue", label: "If overdue", detail: "3 days after due — you're CC'd" },
+      { key: "due-7", label: "7 days before due", detail: `Scheduled - ${fmtDate(offset(7))}` },
+      { key: "due-2", label: "2 days before due", detail: `Scheduled - ${fmtDate(offset(2))}` },
+      { key: "due-0", label: "Day of deadline", detail: `Scheduled - ${fmtDate(due)}` },
+      { key: "overdue", label: "If overdue", detail: "3 days after due - you're CC'd" },
     ];
   } else {
     schedule = [
-      { key: "3", label: "3 days after sending", detail: "No due date — age-based fallback" },
+      { key: "3", label: "3 days after sending", detail: "No due date - age-based fallback" },
       { key: "7", label: "7 days after sending", detail: "Age-based fallback" },
-      { key: "14", label: "14 days after sending", detail: "Age-based fallback — you're CC'd" },
+      { key: "14", label: "14 days after sending", detail: "Age-based fallback - you're CC'd" },
     ];
   }
 
@@ -68,7 +68,7 @@ export default async function ChasingSchedulePage({
       <div className="mb-6 flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-bold font-display" style={{ color: "var(--text)" }}>
-            Reminder schedule — {company.name}
+            Reminder schedule - {company.name}
           </h1>
           <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>
             {req.description}
@@ -85,7 +85,7 @@ export default async function ChasingSchedulePage({
                   : { background: "var(--warning-tint)", color: "var(--warning-strong)", border: "1px solid var(--warning-border)" }
               }
             >
-              {req.remindersEnabled ? "Chasing on — pause" : "Paused — resume"}
+              {req.remindersEnabled ? "Chasing on - pause" : "Paused - resume"}
             </button>
           </form>
         )}
@@ -93,7 +93,7 @@ export default async function ChasingSchedulePage({
 
       {closed && (
         <div className="mb-4 rounded-xl px-4 py-3 text-xs" style={{ background: "var(--success-bg)", border: "1px solid var(--success-border)", color: "var(--success-text)" }}>
-          This request is {req.status} — submission stops all reminders instantly.
+          This request is {req.status} - submission stops all reminders instantly.
         </div>
       )}
 
@@ -107,7 +107,7 @@ export default async function ChasingSchedulePage({
                 <div>
                   <p className="text-sm font-medium" style={{ color: "var(--text)" }}>{t.label}</p>
                   <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-                    {sentAt ? `Sent — ${fmtFull(sentAt)}` : t.detail}
+                    {sentAt ? `Sent - ${fmtFull(sentAt)}` : t.detail}
                   </p>
                 </div>
                 <span
@@ -134,7 +134,7 @@ export default async function ChasingSchedulePage({
           <div className="space-y-2">
             {log.map(([tier, ts]) => (
               <p key={tier} className="text-sm" style={{ color: "var(--text)" }}>
-                <span className="font-data text-xs" style={{ color: "var(--text-muted)" }}>{fmtFull(ts)}</span> — reminder
+                <span className="font-data text-xs" style={{ color: "var(--text-muted)" }}>{fmtFull(ts)}</span> - reminder
                 sent ({tierLabel(tier)}) · polite tone, includes the direct magic link
               </p>
             ))}
