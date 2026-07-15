@@ -12,3 +12,4 @@ build
 /.clerk/
 .vercel
 .env*
+*.swp
