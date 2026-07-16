@@ -22,6 +22,33 @@
 - [x] **W2.4** — Snapshot & Share page: 🔒 header, scope cards, format chips, share + receipts, correction note
 - [ ] **W2.5** — Click-through verification with demo data (needs local Clerk login — Malachi)
 
+### D — Azoulay demo prep (meeting next Thu ~2026-07-23; PLANNED 2026-07-16, no code started)
+> Danielle Azoulay = founder, The CSO Shop (fractional sustainability consultancy; ex-L'Oreal USA CSR head, Columbia Climate School adjunct). She IS the ICP: a consultant running CPG/apparel client books. She will know SB 253 + GHG Protocol cold. Goal of meeting: design-partner interest, not just applause.
+
+**D1 — Correctness she would catch (do first)**
+- [ ] **D1.1** — Resolve SB 253 date once and for all (calendar says Aug 10, deck says Nov 10; she teaches this stuff) — confirm w/ Masao, align calendar + deck + any copy
+- [ ] **D1.2** — Real eGRID 2024 / USEEIO factor values via /admin/factors, or clearly label current factors as illustrative — she may check the math on screen (needs ADMIN_CLERK_ID env first)
+- [ ] **D1.3** — Sanity-pass GHG terminology on visible screens (market- vs location-based, Scope 2 dual reporting, assurance = ISSA 5000)
+- [ ] **D1.4** — SB 253 export chip: current output is a draft markdown — improve or label "draft pending CARB template" so it reads honest, not broken
+
+**D2 — Ship + verify (the app she sees must be the fixed one)**
+- [ ] **D2.1** — Deploy sendrow-v2 → main (Malachi decision; brings Plan X + emoji/em-dash sweep live; drizzle push adds nullable comment columns)
+- [ ] **D2.2** — Vercel env: BLOB_READ_WRITE_TOKEN (evidence view/download must work in demo), CRON_SECRET, ADMIN_CLERK_ID (Malachi)
+- [ ] **D2.3** — Resend: verify sending domain so request/reply emails actually deliver (Malachi) — the "client gets a link" beat depends on it
+- [ ] **D2.4** — Post-deploy QA: re-verify every [!] item in QA.md on production + full happy-path click-through (request → portal submit → flag/reply → review → approve → snapshot → share)
+
+**D3 — Make the demo hers**
+- [ ] **D3.1** — Add a demo client from her world to reset-demo.ts: a personal-care/apparel supplier (packaging or contract manufacturer) mid-flow — she should see her own client book, not logistics companies
+- [ ] **D3.2** — White-label the demo workspace as a plausible consultancy (settings: name/accent) so portal + share pages show the consultant-brand story
+- [ ] **D3.3** — Reseed + verify demo account morning-of (`npx tsx scripts/reset-demo.ts user_3GVr5Css8qERqxyWiySrhNeX3WF`)
+
+**D4 — The meeting itself**
+- [ ] **D4.1** — 5-click demo script anchored on her POV (dashboard → stuck client + reply → review w/ receipts → freeze → buyer view), rehearsed twice
+- [ ] **D4.2** — Backup: 3-min screen recording of the same path in case wifi/login fails
+- [ ] **D4.3** — Deck: date line current; consider a CPG-flavored example; PPTX is editable for tweaks
+- [ ] **D4.4** — One-pager on her (CSO Shop services, sectors, her CSO-role thesis) + 5 questions to ask HER (where collection fails for her clients, which formats she answers most, would she pilot w/ 1–2 clients, pricing sanity, who else should see this)
+- [ ] **D4.5** — The ask, decided in advance: design-partner pilot with 1–2 of her clients (free), feedback loop, intros to 3 consultants if it goes well
+
 ### X — Demo-feedback fixes (APPROVED 2026-07-14, QA.md Part 1 = triage)
 - [x] **X1.1** — Portal import never crashes: `readJson` helper, 4MB client guard, try/catch wrapper in `/api/portal/import` (#4)
 - [x] **X1.2** — PDF uploads → stashed as evidence + routed to manual entry w/ notice; checklist copy fixed (#3)
