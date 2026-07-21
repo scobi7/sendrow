@@ -4,7 +4,8 @@ import { and, desc, eq, inArray, isNull } from "drizzle-orm";
 import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { companies, comments, consultantClients, dataRequests, emissionLineItems, evidence, events, intakeSessions, snapshots } from "@/lib/db/schema";
-import { archiveClient, updateClientContact } from "@/lib/actions";
+import { archiveClient, deleteClient, updateClientContact } from "@/lib/actions";
+import { DeleteClientButton } from "../../delete-client-button";
 import { resendPortalEmail, renewPortalLink, replyToFlag, resolveFlag } from "@/lib/consultant-actions";
 import { BackLink, StatusBadge, CompletenessMeter } from "@/components/workflow";
 import { workflowStatus, nextDueDate, completenessPercent, STATUS_META } from "@/lib/client-status";
@@ -119,6 +120,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
               Archive
             </button>
           </form>
+          <DeleteClientButton action={deleteClient.bind(null, id)} companyName={companyRow.name} />
         </div>
       </div>
 

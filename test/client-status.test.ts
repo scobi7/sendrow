@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { workflowStatus, nextDueDate, completenessPercent } from "../lib/client-status";
+import { workflowStatus, nextDueDate, completenessPercent, pipelineStage, isOverdue } from "../lib/client-status";
 import type { ChecklistItem } from "../lib/portal";
 
 const item = (status: "pending" | "received", stuckNote?: string): ChecklistItem => ({
@@ -123,5 +123,47 @@ describe("completenessPercent (6.7 meter)", () => {
         hasFulfilledRequest: true,
       })
     ).toBe(67);
+  });
+});
+
+describe("pipelineStage (Y1 CRM board column)", () => {
+  const base = { pendingReviewCount: 0, hasSnapshot: false, hasFulfilledRequest: false };
+
+  it("no requests and no history -> new", () => {
+    expect(pipelineStage({ openRequests: [], ...base })).toBe("new");
+  });
+
+  it("open request, nothing received -> requested", () => {
+    expect(
+      pipelineStage({ openRequests: [{ dueDate: "2026-08-01", checklist: [item("pending"), item("pending")] }], ...base })
+    ).toBe("requested");
+  });
+
+  it("open request, some received -> responding", () => {
+    expect(
+      pipelineStage({ openRequests: [{ dueDate: "2026-08-01", checklist: [item("received"), item("pending")] }], ...base })
+    ).toBe("responding");
+  });
+
+  it("open request fully received, nothing pending -> review", () => {
+    expect(
+      pipelineStage({ openRequests: [{ dueDate: "2026-08-01", checklist: [item("received"), item("received")] }], ...base })
+    ).toBe("review");
+  });
+
+  it("pending upload sessions win -> review", () => {
+    expect(
+      pipelineStage({ openRequests: [{ dueDate: "2026-08-01", checklist: [item("pending")] }], ...base, pendingReviewCount: 1 })
+    ).toBe("review");
+  });
+
+  it("snapshot exists, no open request -> approved", () => {
+    expect(pipelineStage({ openRequests: [], ...base, hasSnapshot: true })).toBe("approved");
+  });
+
+  it("overdue is a flag, not a stage - an overdue requested client is still 'requested'", () => {
+    const c = { openRequests: [{ dueDate: "2026-07-10", checklist: [item("pending")] }], ...base };
+    expect(pipelineStage(c)).toBe("requested");
+    expect(isOverdue(c, new Date("2026-07-21T12:00:00Z"))).toBe(true);
   });
 });

@@ -40,6 +40,28 @@ Malachi's calls (2026-07-14): remove QuickBooks + UtilityAPI from consultant UI 
 - **Needs repro from testers:** "preflight checklist" (#12) and ledger "guided walkthrough link" (#16) — neither exists under that name in the code.
 - **Env (only Malachi, blocks QA of email/evidence):** BLOB_READ_WRITE_TOKEN · CRON_SECRET · ADMIN_CLERK_ID · Resend domain verification.
 
+## Y — MVP for pilots + CRM reshape (ACTIVE on branch `sendrow-v3`, from 2026-07-21 team meeting)
+> Phase goal (GOALS.md): get real consultants using it as a tool, get feedback. Meeting calls: consultants-only confirmed · supplier persona UNCONFIRMED (validate via discovery) · pricing/vertical/data-asset deferred · "we're essentially building a CRM" → reshape IA around a familiar CRM model · conversion is existential ("if we can't extract data we're cooked").
+> Branch split: `sendrow-v2` keeps Plan D (Azoulay Thu demo prep, current IA). `sendrow-v3` = this CRM reshape. Malachi wants CRM-flavored work visible Thursday, so Y1 (the pipeline board) is built demo-solid first; deeper reshape continues after.
+
+**Y1 — Pipedrive-style pipeline board = new consultant home (full IA reshape, starts here).**
+Client book as a kanban: columns New → Requested → Responding → In review → Approved. Stage is DERIVED from workflow data (never a manual field) — no drag-to-advance, because "Approved" requires a real frozen snapshot (audit invariant); dragging would fake it or bypass the review gate. Cards: name, contact, completeness bar, due (red if overdue), open-flag count, next-action, "shared → X" badge on Approved. Cards click to the client's next action. Column headers show counts. `pipelineStage()` + `STAGE_META` as pure/tested functions in `lib/client-status.ts`. Replaces the dashboard table at `/consultant`.
+
+**Y1.1 (after Thu) — Deeper reshape:** client detail as a CRM record (contact block, activity timeline as primary, tasks/next-actions, pinned threads). Reuse existing pages as the detail layer until then.
+
+**Y2 — Discovery (Malachi-led, not code): confirm the supplier persona** ("who at the supplier does the data work?") + validate consultant need before pricing. Berkeley network + Azoulay intros → target consultants. Every conversation asks: who provides the data, which formats they answer most, would they pilot. Findings feed GOALS.md persona + vertical calls.
+
+**Y3 — Data-provisioning conversion (existential; research in `docs/research-supplier-conversion.md`).** P0, all small, build for the demo:
+- Y3.1 Early-engagement reminder 48–72h after send (biggest single lift, +14%), total touches ≤4 — fixes the due-date-anchored cadence's silent gap.
+- Y3.2 Show checklist items + est. time inside the request email (client sees the ask is small before clicking).
+- Y3.3 Per-item time estimates + overall progress on the portal ("2 of 3 done, ~4 min left").
+- Y3.4 Named-buyer "why" framing in the request ("Whole Foods needs this for SB 253 by [date]").
+P1 (bigger, after pilots): SMS channel + missing-item nudges · mobile photo upload (pairs with X1 PDF path) · supplier gets a mini-footprint back on completion (reciprocity + seeds answer-once) · prefill callout in email.
+
+**Y4 — House style enforcement:** no emojis / no em dashes in any product UI or copy (GOALS.md standing constraint) — grep-verify before v3 is called demo-ready.
+
+**Y5 — Data asset (research thread only, NOT scoped):** what a cleaned cross-supplier dataset is worth (missing-data estimation, anomaly flags at review, sector benchmarking) — respects workspace-scoped privacy line. Explore, don't build.
+
 ## W3 — Format engine UI (= U3, the moat)
 - **W3.1 (U3.1) Config-driven reshaping (#9):** refactor `lib/formats.ts` → versioned template registry (DB): mappings + layout as data, conditional/branching (CDP). Ship configs: SB 253 (**CARB draft — Masao**), generic Excel, one real buyer questionnaire (**Kerri**).
 - **W3.2 (U3.2) Format Library + Mapping Builder (#35):** library list (built-ins + consultant-added, private-until-buyer-confirmed) · builder: upload → connect questions to fields → save as template → appears as format option.

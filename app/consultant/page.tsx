@@ -1,28 +1,23 @@
 import Link from "next/link";
 import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { companies, consultantClients, dataRequests, intakeSessions, snapshots } from "@/lib/db/schema";
+import { companies, consultantClients, dataRequests, emissionLineItems, intakeSessions, shareLinks, snapshots } from "@/lib/db/schema";
 import { and, desc, eq, inArray, isNull } from "drizzle-orm";
-import { StatCard, StatusBadge, CompletenessMeter } from "@/components/workflow";
-import { archiveClient, deleteClient } from "@/lib/actions";
-import { DeleteClientButton } from "./delete-client-button";
-import { workflowStatus, nextDueDate, completenessPercent, type WorkflowStatus } from "@/lib/client-status";
+import { PipelineBoard, type BoardCard } from "@/components/pipeline-board";
+import {
+  pipelineStage,
+  isOverdue,
+  nextDueDate,
+  completenessPercent,
+  type PipelineStage,
+} from "@/lib/client-status";
 import type { ChecklistItem } from "@/lib/portal";
 
-const FILTER_STATUS: Record<string, WorkflowStatus> = {
-  overdue: "overdue",
-  ready: "ready_for_review",
-  awaiting: "awaiting_reply",
-};
-
-/** Consultant Dashboard (#19): home screen, logs in here first. */
-export default async function ConsultantDashboard({
-  searchParams,
-}: {
-  searchParams: Promise<{ filter?: string }>;
-}) {
-  const [{ filter: rawFilter }, rawUser] = await Promise.all([searchParams, currentUser()]);
-  const user = rawUser!;
+/** Consultant home (Plan Y1): the client book as a Pipedrive-style pipeline
+ *  board. Stage is derived from workflow data, so a client advances by real
+ *  actions (respond, review, approve, share) - never by dragging. */
+export default async function ConsultantDashboard() {
+  const user = (await currentUser())!;
 
   const links = await db
     .select()
@@ -30,7 +25,7 @@ export default async function ConsultantDashboard({
     .where(and(eq(consultantClients.consultantId, user.id), isNull(consultantClients.archivedAt)));
   const ids = links.map((l) => l.companyId);
 
-  const [rows, requests, sessions, snapshotRows] = ids.length
+  const [rows, requests, sessions, snapshotRows, shares, unmappedRows] = ids.length
     ? await Promise.all([
         db.select().from(companies).where(inArray(companies.id, ids)),
         db.select().from(dataRequests).where(inArray(dataRequests.companyId, ids)).orderBy(desc(dataRequests.createdAt)),
@@ -39,15 +34,22 @@ export default async function ConsultantDashboard({
           .from(intakeSessions)
           .where(inArray(intakeSessions.companyId, ids)),
         db.select({ companyId: snapshots.companyId }).from(snapshots).where(inArray(snapshots.companyId, ids)),
+        db
+          .select({ companyId: shareLinks.companyId, recipientLabel: shareLinks.recipientLabel, createdAt: shareLinks.createdAt })
+          .from(shareLinks)
+          .where(and(inArray(shareLinks.companyId, ids), isNull(shareLinks.revokedAt))),
+        db
+          .select({ companyId: emissionLineItems.companyId })
+          .from(emissionLineItems)
+          .where(and(inArray(emissionLineItems.companyId, ids), eq(emissionLineItems.status, "unmapped"))),
       ])
-    : [[], [], [], []];
+    : [[], [], [], [], [], []];
 
-  const clients = rows.map((row) => {
+  const cards: BoardCard[] = rows.map((row) => {
     const reqs = requests.filter((r) => r.companyId === row.id);
+    const openReqs = reqs.filter((r) => r.status === "open");
     const input = {
-      openRequests: reqs
-        .filter((r) => r.status === "open")
-        .map((r) => ({ dueDate: r.dueDate, checklist: r.checklist as ChecklistItem[] | null })),
+      openRequests: openReqs.map((r) => ({ dueDate: r.dueDate, checklist: r.checklist as ChecklistItem[] | null })),
       fulfilledRequests: reqs
         .filter((r) => r.status === "fulfilled")
         .map((r) => ({ checklist: r.checklist as ChecklistItem[] | null })),
@@ -57,34 +59,45 @@ export default async function ConsultantDashboard({
       hasSnapshot: snapshotRows.some((s) => s.companyId === row.id),
       hasFulfilledRequest: reqs.some((r) => r.status === "fulfilled"),
     };
+
+    const stage = pipelineStage(input);
+    // Flags = unmapped rows + open stuck notes on open requests.
+    const stuck = openReqs.flatMap((r) => (r.checklist as ChecklistItem[] | null) ?? []).filter((c) => c.stuckNote && c.status !== "received").length;
+    const flags = unmappedRows.filter((u) => u.companyId === row.id).length + stuck;
+
+    // Most recent share recipient, for the "shared to X" badge on approved cards.
+    const share = shares
+      .filter((s) => s.companyId === row.id)
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0];
+
     return {
-      row,
-      status: workflowStatus(input),
-      due: nextDueDate(input),
+      id: row.id,
+      name: row.name,
+      contact: row.clientContactEmail ?? null,
       completeness: completenessPercent(input),
+      due: nextDueDate(input),
+      overdue: isOverdue(input),
+      flags,
+      stage,
+      sharedWith: stage === "approved" ? share?.recipientLabel ?? null : null,
+      next: nextAction(stage, row.id),
     };
   });
 
-  const counts = {
-    overdue: clients.filter((c) => c.status === "overdue").length,
-    ready: clients.filter((c) => c.status === "ready_for_review").length,
-    awaiting: clients.filter((c) => c.status === "awaiting_reply").length,
-  };
-
-  const activeFilter = rawFilter && FILTER_STATUS[rawFilter] ? rawFilter : null;
-  const displayed = activeFilter ? clients.filter((c) => c.status === FILTER_STATUS[activeFilter]) : clients;
-  const fmtDue = (d: string | null) =>
-    d ? new Date(d + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" }) : " - ";
+  const needReview = cards.filter((c) => c.stage === "review").length;
+  const overdue = cards.filter((c) => c.overdue).length;
 
   return (
-    <div className="mx-auto max-w-6xl">
+    <div className="mx-auto max-w-[1600px]">
       <div className="mb-6 flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-bold font-display" style={{ color: "var(--text)" }}>
             Welcome back, {user.name.split(" ")[0]}
           </h1>
           <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>
-            {clients.length} active client{clients.length !== 1 ? "s" : ""}
+            {cards.length} active client{cards.length !== 1 ? "s" : ""}
+            {needReview > 0 && <> &middot; <span style={{ color: "var(--primary)" }}>{needReview} need your review</span></>}
+            {overdue > 0 && <> &middot; <span style={{ color: "var(--danger)" }}>{overdue} overdue</span></>}
           </p>
         </div>
         <Link href="/consultant/requests/new" className="btn btn-primary">
@@ -92,94 +105,34 @@ export default async function ConsultantDashboard({
         </Link>
       </div>
 
-      <div className="mb-6 grid grid-cols-3 gap-4">
-        <StatCard label="Overdue" value={counts.overdue} tone="danger" active={activeFilter === "overdue"}
-          href={activeFilter === "overdue" ? "/consultant" : "/consultant?filter=overdue"} />
-        <StatCard label="Ready to review" value={counts.ready} tone="primary" active={activeFilter === "ready"}
-          href={activeFilter === "ready" ? "/consultant" : "/consultant?filter=ready"} />
-        <StatCard label="Awaiting response" value={counts.awaiting} tone="warning" active={activeFilter === "awaiting"}
-          href={activeFilter === "awaiting" ? "/consultant" : "/consultant?filter=awaiting"} />
-      </div>
-
-      <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-sm font-bold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
-          Your clients
-        </h2>
-        {activeFilter && (
-          <Link href="/consultant" className="text-xs transition-opacity hover:opacity-70" style={{ color: "var(--text-muted)" }}>
-            Show all
-          </Link>
-        )}
-      </div>
-
-      {displayed.length === 0 ? (
+      {cards.length === 0 ? (
         <div className="card py-12 text-center" style={{ color: "var(--text-muted)" }}>
-          {activeFilter ? (
-            "No clients in this state right now."
-          ) : (
-            <>
-              No clients yet.{" "}
-              <Link href="/consultant/clients/new" className="underline" style={{ color: "var(--primary)" }}>
-                Add your first client
-              </Link>{" "}
-              to get started.
-            </>
-          )}
+          No clients yet.{" "}
+          <Link href="/consultant/clients/new" className="underline" style={{ color: "var(--primary)" }}>
+            Add your first client
+          </Link>{" "}
+          to get started.
         </div>
       ) : (
-        <div className="glass-panel overflow-hidden">
-          <table className="w-full text-sm">
-            <thead>
-              <tr
-                className="text-left text-xs font-semibold uppercase tracking-wide"
-                style={{ borderBottom: "1px solid var(--divider)", color: "var(--text-muted)" }}
-              >
-                <th className="px-4 py-3">Client</th>
-                <th className="px-4 py-3">Status</th>
-                <th className="px-4 py-3">Due</th>
-                <th className="px-4 py-3">Completeness</th>
-                <th className="px-4 py-3" />
-              </tr>
-            </thead>
-            <tbody>
-              {displayed.map(({ row, status, due, completeness }) => (
-                <tr key={row.id} style={{ borderBottom: "1px solid var(--divider)" }}>
-                  <td className="px-4 py-3.5">
-                    <Link href={`/consultant/clients/${row.id}`} className="block transition-opacity hover:opacity-70">
-                      <p className="font-medium" style={{ color: "var(--text)" }}>{row.name}</p>
-                      <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-                        {row.clientContactEmail ?? "no contact set"}
-                      </p>
-                    </Link>
-                  </td>
-                  <td className="px-4 py-3.5">
-                    <StatusBadge status={status} />
-                  </td>
-                  <td className="px-4 py-3.5 font-data text-xs" style={{ color: due && new Date(due + "T23:59:59") < new Date() ? "var(--danger)" : "var(--text)" }}>
-                    {fmtDue(due)}
-                  </td>
-                  <td className="px-4 py-3.5">
-                    <CompletenessMeter percent={completeness} compact />
-                  </td>
-                  <td className="px-4 py-3.5 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <Link href={`/consultant/clients/${row.id}`} className="btn btn-secondary px-3 py-1 text-xs">
-                        Open
-                      </Link>
-                      <form action={archiveClient.bind(null, row.id)}>
-                        <button className="px-2 py-1 text-xs transition-opacity hover:opacity-70" style={{ color: "var(--text-muted)" }} title="Archive">
-                          Archive
-                        </button>
-                      </form>
-                      <DeleteClientButton action={deleteClient.bind(null, row.id)} companyName={row.name} />
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <PipelineBoard cards={cards} />
       )}
     </div>
   );
+}
+
+/** The single most useful destination per stage - the card links straight to it. */
+function nextAction(stage: PipelineStage, id: string): { label: string; href: string } {
+  const client = `/consultant/clients/${id}`;
+  switch (stage) {
+    case "new":
+      return { label: "Send request", href: `/consultant/requests/new?client=${id}` };
+    case "requested":
+      return { label: "Open", href: client };
+    case "responding":
+      return { label: "Open", href: client };
+    case "review":
+      return { label: "Review", href: `${client}/review` };
+    case "approved":
+      return { label: "View", href: client };
+  }
 }

@@ -22,6 +22,25 @@
 - [x] **W2.4** — Snapshot & Share page: 🔒 header, scope cards, format chips, share + receipts, correction note
 - [ ] **W2.5** — Click-through verification with demo data (needs local Clerk login — Malachi)
 
+### Y — MVP for pilots + CRM reshape (branch `sendrow-v3`; from 2026-07-21 meeting, PLANS.md Plan Y)
+**Y1 — Pipeline board home (Pipedrive-style; demo-solid for Thu)**
+- [ ] **Y1.1** — `pipelineStage()` + `STAGE_META` in `lib/client-status.ts` (derived 5-stage: new/requested/responding/review/approved; overdue = flag not column) + unit tests
+- [ ] **Y1.2** — Board component: columns w/ count headers, client cards (name, contact, completeness, due/overdue, flag count, next-action, shared→X badge), clickable to next action; no drag (stage is derived)
+- [ ] **Y1.3** — Replace dashboard table at `/consultant` with the board; keep archive/delete reachable (move to client detail if needed)
+- [ ] **Y1.4** — Verify board renders live w/ seeded 3 clients landing in 3 different columns (Golden Gate=requested, Bayshore=responding, Pacific Coast=approved/shared)
+- [ ] **Y1.5 (after Thu)** — Deeper reshape: client detail as CRM record (timeline-primary, tasks, contact block)
+
+**Y3 — Conversion P0 (build for the demo)**
+- [ ] **Y3.1** — Early-engagement reminder 48–72h after send (≤4 total touches)
+- [ ] **Y3.2** — Checklist items + est. time inside the request email
+- [ ] **Y3.3** — Per-item time estimates + overall progress on portal
+- [ ] **Y3.4** — Named-buyer "why" framing in the request
+
+**Y-discovery / research (Malachi-led or non-code)**
+- [ ] **Y2** — Confirm supplier persona + consultant need via discovery (Berkeley net + Azoulay intros)
+- [ ] **Y4** — Grep-verify no emojis / em dashes before v3 demo-ready
+- [ ] **Y5** — Data-asset research thread (not scoped)
+
 ### D — Azoulay demo prep (meeting next Thu ~2026-07-23; PLANNED 2026-07-16, no code started)
 > Danielle Azoulay = founder, The CSO Shop (fractional sustainability consultancy; ex-L'Oreal USA CSR head, Columbia Climate School adjunct). She IS the ICP: a consultant running CPG/apparel client books. She will know SB 253 + GHG Protocol cold. Goal of meeting: design-partner interest, not just applause.
 
