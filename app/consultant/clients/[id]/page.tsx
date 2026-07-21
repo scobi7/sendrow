@@ -78,12 +78,23 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
     ).map((i) => [i.id, i.sourceRef?.trim() || i.category.replace(/_/g, " ")])
   );
   const threads = new Map<string, typeof commentRows>();
+  // Flag replies (BUG-8): checklist-item comments keyed by checklistItemId so the
+  // flag card can show what the consultant already replied - it was write-only before.
+  const flagThreads = new Map<string, typeof commentRows>();
   for (const c of commentRows) {
-    if (!c.lineItemId) continue; // checklist-item threads render on the flag cards, not here
+    if (!c.lineItemId) {
+      if (c.checklistItemId) {
+        const t = flagThreads.get(c.checklistItemId) ?? [];
+        t.push(c);
+        flagThreads.set(c.checklistItemId, t);
+      }
+      continue;
+    }
     const t = threads.get(c.lineItemId) ?? [];
     t.push(c);
     threads.set(c.lineItemId, t);
   }
+  for (const t of flagThreads.values()) t.sort((a, b) => a.createdAt.localeCompare(b.createdAt));
   const threadList = [...threads.entries()].slice(0, 4);
 
   const fmtDate = (iso: string) =>
@@ -224,6 +235,14 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
                           <p className="text-xs" style={{ color: "var(--danger)" }}>
                             <strong>Flag - {c.label}:</strong> &ldquo;{c.stuckNote}&rdquo;
                           </p>
+                          {/* Reply history (BUG-8) so the consultant sees what they already sent */}
+                          {(flagThreads.get(c.id)?.filter((m) => m.authorType === "consultant") ?? []).map((m) => (
+                            <p key={m.id} className="mt-1.5 text-xs" style={{ color: "var(--text)" }}>
+                              <span className="font-semibold" style={{ color: "var(--primary)" }}>You replied:</span>{" "}
+                              {m.body}
+                              <span className="ml-1" style={{ color: "var(--text-muted)" }}>· {fmtDate(m.createdAt)}</span>
+                            </p>
+                          ))}
                           {/* Reply lands on the portal thread + goes out by email (X2) */}
                           <form action={replyToFlag.bind(null, id, req.id, c.id)} className="mt-2 flex items-start gap-2">
                             <textarea
