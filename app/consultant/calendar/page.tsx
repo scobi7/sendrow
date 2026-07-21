@@ -10,7 +10,7 @@ import { BackLink } from "@/components/workflow";
  *  each request's chasing cadence (7/2/day-of/overdue). */
 const REGULATORY_DATES: { date: string; dateLabel: string; title: string; note: string }[] = [
   // Source: docs/build-pipeline-2026-07-10.pdf - corrections in force
-  { date: "2026-08-10", dateLabel: "Aug 10, 2026", title: "SB 253 - Scope 1/2 disclosure", note: "Regulatory, preloaded · all clients" },
+  { date: "2026-11-10", dateLabel: "Nov 10, 2026", title: "SB 253 - Scope 1/2 disclosure", note: "Regulatory, preloaded · all clients" },
   { date: "2026-09-14", dateLabel: "Sep 14, 2026", title: "CDP submission window closes", note: "Regulatory, preloaded" },
   { date: "2027-01-01", dateLabel: "2027 cycle", title: "SB 253 - Scope 3 disclosure begins", note: "Regulatory, preloaded" },
 ];

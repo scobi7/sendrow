@@ -1,28 +1,30 @@
 # NEXT.md
 > Current state + what only the user can do. History lives in git; build order in PLANS.md; UI spec: `docs/wireframes-2026-07-13.md`.
-> Last updated: 2026-07-14
+> Last updated: 2026-07-21
 
 ## 🟢 Where the product stands
-- **Plan X shipped on `sendrow-v2` (2026-07-14, 08b2385) — NOT yet in production.** First feedback round triaged (QA.md) and fixed: portal upload crash-proofing + PDF path, completeness math, supplier↔consultant flag/reply loop, review-page flags, clarity pass (period presets, reminder copy, ledger chips, format intake, scope 2 override, scope 3 undo), QuickBooks/connections gone from consultant UI, /for-companies = minimal get-matched funnel, emojis stripped. Deploying runs drizzle push (adds nullable comment columns — additive, safe). **Deploy to main = your call.**
-- **Demo kit:** demo consultant `contact@sendrow.app` (Clerk `user_3GVr5Css8qERqxyWiySrhNeX3WF`), reseed w/ `npx tsx scripts/reset-demo.ts user_3GVr5Css8qERqxyWiySrhNeX3WF` before each demo · 12-slide pitch deck w/ prod screenshots: https://claude.ai/code/artifact/8cfbdcd9-aa65-4226-a901-92d46bc1b2e7
-- **Branch `sendrow-v2`** = active. `main` = deployed to production 2026-07-14 (742405c, pre-Plan-X) — sendrow.app runs the wireframe workflow.
-- **W1+W2 built (2026-07-13):** consultant app restructured to your Figma wireframes — sidebar (Dashboard / New request / Templates / Format library / Calendar / Settings), dashboard stat cards + client table w/ status·due·completeness, client detail hub (stats row, requests → review or snapshot, timeline, threads), standalone New Data Request page, Review & Approve w/ open-flag warning modal → **Approve, freeze & go to snapshot** → Snapshot & Share page (format chips + recipient shares), chasing schedule page, compliance calendar, engagement templates page, format library, white-label settings w/ live email preview.
-- Backend flow unchanged underneath: request → magic-link portal → evidence + events → ledger → immutable snapshots → restatements → exports. Old power tools still reachable (full ledger, enter-on-behalf, activity CSV).
-- **Theme:** Aurora Green throughout.
-- **Demo:** `npx tsx scripts/reset-demo.ts` seeds 3 clients at 3 stages; run before every demo.
-- Tests: 210/210 · tsc + `next build` clean.
+- **Active branch = `sendrow-v3` (CRM reshape, Plan Y).** `sendrow-v2` holds Plan X (demo-feedback fixes) + Plan D (Azoulay prep). `main` = production (742405c), still **pre-Plan-X**. Deploying v2 or v3 to main runs a drizzle push (adds nullable comment columns — additive, safe). **Deploy = your call.**
+- **Y1 built (2026-07-21):** consultant home reshaped to a **Pipedrive-style pipeline board** — client book as a kanban (New / Requested / Responding / In review / Approved), cards w/ completeness, overdue, flags, "shared to X", next-action; stage is derived (no drag). Verified live against demo data: the 3 seed clients land in 3 columns. `pipelineStage()` in `lib/client-status.ts`.
+- **Plan X (on v2, not yet deployed):** portal crash-proofing + PDF path, completeness fix, supplier↔consultant flag/reply loop, review-page flags, clarity pass, QuickBooks/connections removed, minimal /for-companies, emoji + em-dash sweep.
+- **Bugs cataloged 2026-07-21** (full page-by-page sweep) → TASKS.md "BUGS" section. Headline: no page 500s or broken core links; real issues are missing `loading.tsx` (blank during 2-7s loads, looks like a hang), orphaned `/consultant/review` routes, `/admin/factors` hydration hang, slow authed loads. Email + evidence untested (blocked on env).
+- **Demo kit:** demo consultant `contact@sendrow.app` (Clerk `user_3GVr5Css8qERqxyWiySrhNeX3WF`), reseed w/ `npx tsx scripts/reset-demo.ts user_3GVr5Css8qERqxyWiySrhNeX3WF` before each demo · pitch deck (12 slides, editable PPTX in ~/Downloads): https://claude.ai/code/artifact/8cfbdcd9-aa65-4226-a901-92d46bc1b2e7
+- **Theme:** Aurora Green. Tests: **218/218** · tsc + `next build` clean.
 
 ## 🔴 Only you can do these
 | # | What | Where |
 |---|------|-------|
-| 1 | **Click through W1/W2 with demo data** (`npm run dev` → login → dashboard → client → review → approve → snapshot). I can't drive the Clerk login | local |
-| 2 | Vercel env: `BLOB_READ_WRITE_TOKEN` (evidence/logos), `CRON_SECRET` (reminders), `ADMIN_CLERK_ID` (/admin) | Vercel → env vars |
-| 3 | Get from Masao: CARB SB 253 draft template + Kerri's buyer questionnaire (unblocks W3), scoring rubrics (W7) | Masao |
-| 4 | Real EPA eGRID 2024 / USEEIO v2 factor values → /admin/factors — **pre-deliverable blocker** | datasets |
-| 5 | Verify the prod deploy on sendrow.app (Vercel dashboard → latest deployment); Clerk prod Google OAuth; Calendly links; attorney ToS | various |
+| 1 | **Azoulay demo (Thu ~07-23) hosting decision:** deploy `v3` to a Vercel preview, or run local + screenshare. The board is v3-only. Tell me which and I'll set it up | decision |
+| 2 | **Deploy decision:** ship `v2` (Plan X) and/or `v3` (board) to `main`? Pre-deploy QA of Plan X fixes waits on this | decision |
+| 3 | Vercel env: `BLOB_READ_WRITE_TOKEN` (evidence/logos), `CRON_SECRET` (reminders), `ADMIN_CLERK_ID` (/admin) — unblocks BUG-B1/B2 | Vercel → env vars |
+| 4 | Resend: verify sending domain so request/reminder/reply emails deliver — the "client gets a link" beat depends on it | Resend |
+| 5 | Get from Masao: CARB SB 253 draft template + Kerri's buyer questionnaire (unblocks W3 format engine) | Masao |
+| 6 | Real EPA eGRID 2024 / USEEIO v2 factor values → /admin/factors (BUG-1 gates this) | datasets |
+| 7 | Discovery (Plan Y2): confirm who at the supplier does the data work; validate consultant need before pricing | consultant convos |
 
-## 🟡 Next build: W3 — format engine as config (= U3, the moat)
-Versioned template registry (formats as data, not code), Format Mapping Builder to replace the library's placeholder card, template versioning, answer-once/share-many. W3.1/2/3 can start without the blocked inputs. Then W4 (supplier journey: review & submit + attestation, claim account, trust page, delegation/extension modals).
+## 🟡 Next build (Plan Y): pipeline board is live — choose next
+- **Y3 conversion P0** (highest leverage; "if we can't extract data we're cooked"): early-engagement reminder 48-72h after send, checklist+time in the request email, per-item progress on portal, named-buyer "why" framing.
+- **Y1.1 deeper CRM reshape:** client detail as a record (timeline-primary, tasks, contact block).
+- Then W3 format engine (blocked on Masao's templates).
 
 ## Key corrections in force (from the pipeline doc)
-SB 253 first Scope 1/2 deadline = **Aug 10, 2026** · assurance term = **ISSA 5000** · **PACT V3 only** · vendor memory **workspace-scoped** (global/cross-platform = LATER) · referral routing stays Masao's spreadsheet.
+SB 253 first Scope 1/2 deadline = **Nov 10, 2026** (confirmed 2026-07-21) · assurance term = **ISSA 5000** · **PACT V3 only** · vendor memory **workspace-scoped** (global/cross-platform = LATER) · referral routing stays Masao's spreadsheet.

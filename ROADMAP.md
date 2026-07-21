@@ -20,4 +20,4 @@ AI suggestions · buyer features (2027) · QuickBooks/utility integrations · pe
 Vercel env (`BLOB_READ_WRITE_TOKEN`, `CRON_SECRET`, `ADMIN_CLERK_ID`) · real eGRID/USEEIO factor data · Clerk prod Google OAuth · attorney ToS (tool-not-advice) · Calendly links · production deploy of v2.
 
 ## Key facts in force
-SB 253 first Scope 1/2 deadline **Aug 10, 2026** · 2027 = Scope 3 + limited assurance (**ISSA 5000**) · **PACT V3 only** · vendor memory workspace-scoped.
+SB 253 first Scope 1/2 deadline **Nov 10, 2026** (confirmed 2026-07-21) · 2027 = Scope 3 + limited assurance (**ISSA 5000**) · **PACT V3 only** · vendor memory workspace-scoped.

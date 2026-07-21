@@ -56,7 +56,7 @@
 | Screen | Pipeline # | Key elements |
 |---|---|---|
 | **Monthly Client Digest** | #45 #43 | Auto-generated monthly, **forwarded as-is to justify retainer**: stats (data received, completeness, flags raised/resolved) · activity timeline · consultant's note · Forward to client |
-| **Compliance Calendar** | #44 | Regulatory dates preloaded (SB 253 Scope 1/2 — Aug 10 2026 · CDP window closes Sep 14 · SB 253 Scope 3 2027 cycle) + custom per-client deadlines · **deadlines auto-set each request's chasing cadence** · Masao maintains dates, Malachi builds plumbing |
+| **Compliance Calendar** | #44 | Regulatory dates preloaded (SB 253 Scope 1/2 — Nov 10 2026 · CDP window closes Sep 14 · SB 253 Scope 3 2027 cycle) + custom per-client deadlines · **deadlines auto-set each request's chasing cadence** · Masao maintains dates, Malachi builds plumbing |
 | **Hotspot Report** | #40 | Auto-generated the moment a footprint is approved: top 5 emission sources w/ % bars (electricity 42%, fleet fuel 21%…) · standard reduction suggestions · **Turn into client pitch** |
 | **Score-Gap Flags** | #42 | "Current B → Achievable A" · gap list w/ impact badges (missing verification statement = High, no water disclosure = Low) · **Propose score-improvement work** · checked against CDP/EcoVadis rubrics (blocked on Masao) |
 | **Components** | #43 #6.7 | **Completeness meter** (data received / reviewed / evidence attached %) — reused on dashboard, client detail, digest · **Consultant commentary block** (attributed analysis) — appears in every export |

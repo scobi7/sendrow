@@ -1,5 +1,28 @@
 # TASKS.md — Open Work
-> Generated from Plan W (PLANS.md). UI spec: `docs/wireframes-2026-07-13.md`. Completed plans: A–N, T, U1–U2 — history in git.
+> Active branch `sendrow-v3` (CRM reshape). Plans in flight: Y (CRM/MVP-for-pilots), D (Azoulay demo prep), X (demo-feedback fixes — built). UI spec: `docs/wireframes-2026-07-13.md`. Completed: A–N, T, U1–U2, W1–W2 — history in git. Bugs section above is the live "what's broken" list.
+
+## BUGS — everything that doesn't work (audited 2026-07-21 on branch `sendrow-v3`)
+> Method: static route/link audit + live page-by-page sweep of all 34 routes driven against real demo data (temporary dev-only auth bypass, reverted). Every page returned HTTP 200 with no JS errors EXCEPT where noted. Severity: P0 blocks a demo, P1 real bug, P2 polish/cleanup, BLOCKED needs env/user to even test.
+
+**Confirmed broken / degraded**
+- [ ] **BUG-1 (P1)** — `/admin/factors` hangs ~15s and throws a React hydration error ("server HTML didn't match client") before redirecting a non-admin to `/login`. Blocks real emission-factor entry (see N7.2). Partly a keyless-dev artifact (the `/login` Clerk component stalls locally), but the hydration mismatch is real — investigate the factors page's server/client render. Verify severity once ADMIN_CLERK_ID + prod Clerk are set.
+- [ ] **BUG-2 (P2)** — Orphaned routes from the pre-wireframe restructure: `/consultant/review` renders a stale standalone page that NOTHING links to; `/consultant/review/[companyId]` just redirects to the client detail. Dead code → delete both `app/consultant/review/` dirs (review now lives at `/consultant/clients/[id]/review`).
+- [ ] **BUG-3 (P1, demo-relevant)** — No `loading.tsx` anywhere in the app (only one app-level `error.tsx`). Every server-rendered page shows a BLANK screen during its data fetch — 2-7s in dev, and worse on a cold Neon connection. On the demo this reads as a hang/freeze. Add loading skeletons at least for `/consultant` and `/consultant/clients/[id]*`.
+- [ ] **BUG-4 (P2)** — Slow authenticated page loads (dev, cold): client detail 4.3s, review 4.7s, manage 6.7s, snapshot 4.6s, reports 4.6s. Inflated by dev mode + Neon latency + sequential queries, but combined with BUG-3 feels broken. Perf pass: parallelize queries, consider caching. Re-measure on prod.
+- [ ] **BUG-5 (P2)** — Pipeline board: the rightmost "Approved" column card clips at the viewport edge on narrower screens (it's inside the horizontal-scroll container, so reachable, but the "shared to..." label + "View" get cut). Consider right padding / snap so the last column isn't visually truncated.
+
+**Dead / disabled surfaces (harmless but confusing if a demo wanders in)**
+- [ ] **BUG-6 (P2)** — QuickBooks API routes (`/api/auth/quickbooks/redirect|callback`) still exist though the UI was removed in Plan X4. Dead endpoints — remove or leave dormant (documented).
+- [ ] **BUG-7 (P2)** — Payment gate is disabled (middleware comment), so `/checkout`, `/pricing`, `/pricing/agency` are reachable but non-functional. By design during dev, but pricing is deferred (GOALS.md) — make sure no demo path links into checkout.
+
+**Could NOT verify — BLOCKED on env or would mutate prod data (not confirmed broken, just untested)**
+- [ ] **BUG-B1 (BLOCKED)** — Email delivery (request link, reminders, flag reply, submission notice): Resend sending domain unverified, so all email is untested end-to-end. The "client gets a link" beat depends on it. Needs Malachi (Resend) — see D2.3.
+- [ ] **BUG-B2 (BLOCKED)** — Evidence view/download: `BLOB_READ_WRITE_TOKEN` unset, so uploads are hash-only and the download route serves the "file not stored" page (Plan X made that honest, but real storage is untested). Needs Malachi (Vercel env) — see D2.2.
+- [ ] **BUG-B3 (untested)** — Portal submission end-to-end (upload → mapping → import → appears in review) not driven this pass (needs a live token + writes to prod DB). Highest-value flow to verify before a pilot — do on a scratch client, not a demo one.
+- [ ] **BUG-B4 (untested)** — Form mutations across the app (create client, create request, approve/freeze, share, comment, reply-to-flag, scope overrides) load fine but submits weren't exercised (would mutate prod demo data). Verify on a throwaway client.
+
+**Not bugs, but demo-prep gotchas**
+- Seed dates are relative (`daysAgo` in reset-demo.ts): the board currently shows "due Jul 26 / overdue Jul 19" from the last seed run. Reseed the morning of any demo so dates read sensibly (D3.3).
 
 ## Plan W — Wireframe Workflow Alignment
 
@@ -45,7 +68,7 @@
 > Danielle Azoulay = founder, The CSO Shop (fractional sustainability consultancy; ex-L'Oreal USA CSR head, Columbia Climate School adjunct). She IS the ICP: a consultant running CPG/apparel client books. She will know SB 253 + GHG Protocol cold. Goal of meeting: design-partner interest, not just applause.
 
 **D1 — Correctness she would catch (do first)**
-- [ ] **D1.1** — Resolve SB 253 date once and for all (calendar says Aug 10, deck says Nov 10; she teaches this stuff) — confirm w/ Masao, align calendar + deck + any copy
+- [x] **D1.1** — SB 253 date RESOLVED = **Nov 10, 2026** (Malachi confirmed 2026-07-21). Aligned: calendar page, GOALS/ROADMAP/NEXT/wireframes docs, deck already says Nov 10. (period.test.ts Aug-10 is unrelated fiscal-year test, left as-is.)
 - [ ] **D1.2** — Real eGRID 2024 / USEEIO factor values via /admin/factors, or clearly label current factors as illustrative — she may check the math on screen (needs ADMIN_CLERK_ID env first)
 - [ ] **D1.3** — Sanity-pass GHG terminology on visible screens (market- vs location-based, Scope 2 dual reporting, assurance = ISSA 5000)
 - [ ] **D1.4** — SB 253 export chip: current output is a draft markdown — improve or label "draft pending CARB template" so it reads honest, not broken

@@ -1,4 +1,5 @@
 # QA.md — Full product QA
+> **Newer sweep (2026-07-21, branch v3):** a fresh page-by-page audit of all 34 routes lives in **TASKS.md → "BUGS"** section. This file is the Plan-X-era triage; the Bugs section is the current live "what's broken" list. Both are valid — read Bugs first for current state.
 > Method: code audit + live drive of production (sendrow.app) as demo consultant (`contact@sendrow.app`) + public portal/shared links. Seeded via `scripts/reset-demo.ts`.
 > Legend: `[x]` verified working · `[!]` verified broken/confusing (see Findings) · `[ ]` not yet exercised
 > Last updated: 2026-07-14 (evening) — **Plan X built on `sendrow-v2`**: items #3–#5, #7–#11, #13–#15, #17–#21 fixed in code (see TASKS.md X section). Production still runs the pre-X build until main is updated, so prod re-verification of the `[!]` items happens after deploy. #1 (Resend) + env vars remain backlog.
@@ -57,7 +58,7 @@
 - [x] All four format downloads return 200 w/ correct content types + non-empty bodies (sb253 md 1.2KB, xlsx 19.8KB, csv 714B, PACT json 948B); cell-level contents not audited
 - [x] Templates page renders (create/edit flow untested)
 - [!] Format library: placeholder loop (#20)
-- [x] Compliance calendar renders — NOTE: preloads say SB 253 = Aug 10, 2026 but Malachi's deck correction says Nov 10 — confirm which and align
+- [x] Compliance calendar renders — SB 253 date RESOLVED = Nov 10, 2026 (calendar + all docs aligned 2026-07-21)
 - [x] Settings renders w/ email preview (save + logo upload untested — logo needs blob token)
 - [x] `clients/new` renders (create flow untested)
 - [x] Ledger: filters, totals, per-row expand (rows render; comments attach)

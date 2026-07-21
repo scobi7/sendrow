@@ -51,7 +51,7 @@ Rough early math: 15 consultant workspaces ≈ $300k+/yr before a single buyer c
 **Pricing is explicitly deferred (2026-07-21 team call):** wait until discovery tells us whether consultants actually need this before pricing it — "see if we even are needed" first. The numbers above are a model, not a live decision.
 
 ## The Timing Thesis (verified July 2026)
-- **SB 253's first Scope 1/2 deadline: August 10, 2026** (corrected per Masao's 2026-07-10 pipeline doc — not November); first year is leniency. Don't sell deadline panic.
+- **SB 253's first Scope 1/2 deadline: November 10, 2026** (confirmed w/ Malachi 2026-07-21; supersedes the earlier Aug-10 reading); first year is leniency. Don't sell deadline panic.
 - The real wave is **2027**: Scope 3 reporting starts, limited assurance begins, $1B+ filers chase supplier data — surveys cascade onto exactly our ICP. Spreadsheets die at limited assurance.
 - Own one beach: **California + SB 253 + consultant-operated.** Assurance language: reference **ISSA 5000** (ISAE 3410 is withdrawn as of Dec 15, 2026). A knowable list of affected companies (CARB publishes it), a consultant community we're already inside (Kerri, ISOS), a geography we live in. Giants can't focus this small; TrackZero (UK proof the consultant-first model works) would have to cross an ocean. We don't need to win "supplier data exchange" — we need to win California, 2026–2028.
 
