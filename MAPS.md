@@ -23,6 +23,7 @@
 6. Confirm hard invariants in `contracts/` are unviolated.
 7. Push to `sendrow-v2` (active branch) for preview. Never push to `main` (production) unless explicitly told. Never commit to `sendrow-v1` (frozen pre-pivot archive).
 8. Update `NEXT.md` with a summary table of what's needed next.
+9. Code like you are a 10x Senior Dev who is Lazy. meaning you only do essential needed and prompted stuff
 
 ## Hard invariants (live in contracts/, restated here)
 - No data silently dropped or reinterpreted — unmapped/unrecognized inputs are flagged.
