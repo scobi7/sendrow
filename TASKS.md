@@ -4,12 +4,15 @@
 ## BUGS — everything that doesn't work (audited 2026-07-21 on branch `sendrow-v3`)
 > Method: static route/link audit + live page-by-page sweep of all 34 routes driven against real demo data (temporary dev-only auth bypass, reverted). Every page returned HTTP 200 with no JS errors EXCEPT where noted. Severity: P0 blocks a demo, P1 real bug, P2 polish/cleanup, BLOCKED needs env/user to even test.
 
-**Confirmed broken / degraded**
-- [ ] **BUG-1 (P1)** — `/admin/factors` hangs ~15s and throws a React hydration error ("server HTML didn't match client") before redirecting a non-admin to `/login`. Blocks real emission-factor entry (see N7.2). Partly a keyless-dev artifact (the `/login` Clerk component stalls locally), but the hydration mismatch is real — investigate the factors page's server/client render. Verify severity once ADMIN_CLERK_ID + prod Clerk are set.
-- [ ] **BUG-2 (P2)** — Orphaned routes from the pre-wireframe restructure: `/consultant/review` renders a stale standalone page that NOTHING links to; `/consultant/review/[companyId]` just redirects to the client detail. Dead code → delete both `app/consultant/review/` dirs (review now lives at `/consultant/clients/[id]/review`).
-- [ ] **BUG-3 (P1, demo-relevant)** — No `loading.tsx` anywhere in the app (only one app-level `error.tsx`). Every server-rendered page shows a BLANK screen during its data fetch — 2-7s in dev, and worse on a cold Neon connection. On the demo this reads as a hang/freeze. Add loading skeletons at least for `/consultant` and `/consultant/clients/[id]*`.
-- [ ] **BUG-4 (P2)** — Slow authenticated page loads (dev, cold): client detail 4.3s, review 4.7s, manage 6.7s, snapshot 4.6s, reports 4.6s. Inflated by dev mode + Neon latency + sequential queries, but combined with BUG-3 feels broken. Perf pass: parallelize queries, consider caching. Re-measure on prod.
-- [ ] **BUG-5 (P2)** — Pipeline board: the rightmost "Approved" column card clips at the viewport edge on narrower screens (it's inside the horizontal-scroll container, so reachable, but the "shared to..." label + "View" get cut). Consider right padding / snap so the last column isn't visually truncated.
+**Fixed 2026-07-21 (branch v3)**
+- [x] **BUG-2 (FIXED)** — `/consultant/review` was orphaned BUT two notification emails linked to it (stuck-help, upload-review) → consultants landed on a stale page. Repointed `sendClientStuckEmail` → client detail (reply box, passes companyId), `sendUploadNeedsReviewEmail` (dead fn) → dashboard; deleted `app/consultant/review/`.
+- [x] **BUG-3 (FIXED)** — Added `app/consultant/loading.tsx` + `clients/[id]/loading.tsx` skeletons (cover all consultant pages via segment nesting). No more blank-screen gap; verified the skeleton renders on cold load.
+- [x] **BUG-5 (FIXED)** — Trailing scroll spacer so the last board column isn't flush to the edge.
+- [x] **BUG-8 (FIXED — found by mutation testing)** — Flag replies were write-only on the consultant side: after replying to a stuck flag, the consultant saw only the original note + a reply box, no record of their own reply (it went to the portal thread only). Flag card now echoes "You replied: ..." with timestamps. Verified live.
+
+**Still open**
+- [ ] **BUG-1 (P1)** — `/admin/factors` hangs ~15s and throws a React hydration error before redirecting a non-admin to `/login`. Blocks real emission-factor entry (N7.2). Partly a keyless-dev artifact (the `/login` Clerk component stalls locally), but the hydration mismatch is real. Investigate once ADMIN_CLERK_ID + prod Clerk are set.
+- [ ] **BUG-4 (P2)** — Slow authenticated loads (dev, cold): client detail 4.3s, review 4.7s, manage 6.7s, snapshot 4.6s. Inflated by dev + Neon latency + sequential queries; BUG-3 loading states now mask it, but a perf pass (parallelize queries) is still worth it. Re-measure on prod.
 
 **Dead / disabled surfaces (harmless but confusing if a demo wanders in)**
 - [ ] **BUG-6 (P2)** — QuickBooks API routes (`/api/auth/quickbooks/redirect|callback`) still exist though the UI was removed in Plan X4. Dead endpoints — remove or leave dormant (documented).
@@ -19,10 +22,10 @@
 - [ ] **BUG-B1 (BLOCKED)** — Email delivery (request link, reminders, flag reply, submission notice): Resend sending domain unverified, so all email is untested end-to-end. The "client gets a link" beat depends on it. Needs Malachi (Resend) — see D2.3.
 - [ ] **BUG-B2 (BLOCKED)** — Evidence view/download: `BLOB_READ_WRITE_TOKEN` unset, so uploads are hash-only and the download route serves the "file not stored" page (Plan X made that honest, but real storage is untested). Needs Malachi (Vercel env) — see D2.2.
 - [ ] **BUG-B3 (untested)** — Portal submission end-to-end (upload → mapping → import → appears in review) not driven this pass (needs a live token + writes to prod DB). Highest-value flow to verify before a pilot — do on a scratch client, not a demo one.
-- [ ] **BUG-B4 (untested)** — Form mutations across the app (create client, create request, approve/freeze, share, comment, reply-to-flag, scope overrides) load fine but submits weren't exercised (would mutate prod demo data). Verify on a throwaway client.
+- [~] **BUG-B4 (mostly verified 2026-07-21)** — Mutation pass driven live against demo data: **create request ✓, reply-to-flag ✓, approve-and-freeze ✓ (creates snapshot + redirects), share snapshot ✓ (recipient persists).** Still untested: create client, scope-2 override save, comment on line item, portal submission end-to-end (BUG-B3). QA mutations were cleaned via `reset-demo.ts` afterward (all on demo_ companies, so fully wiped) — demo data is clean.
 
 **Not bugs, but demo-prep gotchas**
-- Seed dates are relative (`daysAgo` in reset-demo.ts): the board currently shows "due Jul 26 / overdue Jul 19" from the last seed run. Reseed the morning of any demo so dates read sensibly (D3.3).
+- Seed dates are relative (`daysAgo` in reset-demo.ts): the board shows dates from the last seed run (reseeded clean 2026-07-21). Reseed the morning of any demo so dates read sensibly (D3.3).
 
 ## Plan W — Wireframe Workflow Alignment
 
