@@ -213,7 +213,7 @@ export async function sendUploadNeedsReviewEmail(
     `<p>Hi ${firstName},</p>
 <p><strong>${companyName}</strong> uploaded <strong>${filename}</strong> and it was routed to your review queue.</p>
 ${unmappedCount > 0 ? `<p><strong>${unmappedCount}</strong> row${unmappedCount === 1 ? "" : "s"} could not be mapped to an emission factor and ${unmappedCount === 1 ? "is" : "are"} flagged for categorization.</p>` : ""}
-<p><a href="${APP_URL}/consultant/review">Review the upload →</a></p>
+<p><a href="${APP_URL}/consultant">Open your dashboard →</a></p>
 <p> - The Sendrow team</p>`
   );
 }
@@ -251,7 +251,8 @@ export async function sendClientStuckEmail(
   consultantName: string,
   companyName: string,
   itemLabel: string,
-  message: string
+  message: string,
+  companyId: string
 ) {
   const firstName = consultantName.split(" ")[0];
   await send(
@@ -261,7 +262,7 @@ export async function sendClientStuckEmail(
 <p><strong>${companyName}</strong> hit a wall on the portal item <strong>&ldquo;${itemLabel}&rdquo;</strong> and asked for your help:</p>
 <blockquote><p>${message}</p></blockquote>
 <p>A quick reply usually keeps the response moving - stuck items are where portals lose people.</p>
-<p><a href="${APP_URL}/consultant/review">Open your review queue →</a></p>
+<p><a href="${APP_URL}/consultant/clients/${companyId}">Reply from the client page →</a></p>
 <p> - The Sendrow team</p>`
   );
 }

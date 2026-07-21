@@ -112,6 +112,8 @@ export function PipelineBoard({ cards }: { cards: BoardCard[] }) {
           </div>
         );
       })}
+      {/* trailing spacer so the last column isn't flush to the scroll edge */}
+      <div className="w-1 shrink-0" aria-hidden="true" />
     </div>
   );
 }

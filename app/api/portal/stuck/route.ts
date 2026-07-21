@@ -59,7 +59,8 @@ export async function POST(request: NextRequest) {
         consultant.name ?? "there",
         company?.name ?? "A client",
         item.label,
-        message
+        message,
+        dataRequest.companyId
       ).catch(() => {});
     }
   }
