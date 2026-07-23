@@ -1,18 +1,21 @@
 # TASKS.md — Open Work
 > Active branch `sendrow-v3` (CRM reshape). Plans in flight: Y (CRM/MVP-for-pilots), D (Azoulay demo prep), X (demo-feedback fixes — built). UI spec: `docs/wireframes-2026-07-13.md`. Completed: A–N, T, U1–U2, W1–W2 — history in git. Bugs section above is the live "what's broken" list.
 
-## BUGS — everything that doesn't work (audited 2026-07-21 on branch `sendrow-v3`)
-> Method: static route/link audit + live page-by-page sweep of all 34 routes driven against real demo data (temporary dev-only auth bypass, reverted). Every page returned HTTP 200 with no JS errors EXCEPT where noted. Severity: P0 blocks a demo, P1 real bug, P2 polish/cleanup, BLOCKED needs env/user to even test.
+## BUGS — everything that doesn't work (audited 2026-07-21, updated 2026-07-23, branch `sendrow-v3`)
+> Method: static route/link audit + live page-by-page sweep of all 34 routes + mutation pass, all driven against real demo data (temporary dev-only auth bypass, reverted each time). Every page returns HTTP 200 with no JS errors EXCEPT where noted. Severity: P0 blocks a demo, P1 real bug, P2 polish/cleanup, BLOCKED needs env/user to even test.
 
-**Fixed 2026-07-21 (branch v3)**
-- [x] **BUG-2 (FIXED)** — `/consultant/review` was orphaned BUT two notification emails linked to it (stuck-help, upload-review) → consultants landed on a stale page. Repointed `sendClientStuckEmail` → client detail (reply box, passes companyId), `sendUploadNeedsReviewEmail` (dead fn) → dashboard; deleted `app/consultant/review/`.
-- [x] **BUG-3 (FIXED)** — Added `app/consultant/loading.tsx` + `clients/[id]/loading.tsx` skeletons (cover all consultant pages via segment nesting). No more blank-screen gap; verified the skeleton renders on cold load.
-- [x] **BUG-5 (FIXED)** — Trailing scroll spacer so the last board column isn't flush to the edge.
-- [x] **BUG-8 (FIXED — found by mutation testing)** — Flag replies were write-only on the consultant side: after replying to a stuck flag, the consultant saw only the original note + a reply box, no record of their own reply (it went to the portal thread only). Flag card now echoes "You replied: ..." with timestamps. Verified live.
+**Fixed on v3 (2026-07-21 → 07-23)**
+- [x] **BUG-2 (FIXED)** — `/consultant/review` was orphaned BUT two notification emails linked to it → consultants landed on a stale page. Repointed `sendClientStuckEmail` → client detail (reply box, passes companyId), `sendUploadNeedsReviewEmail` (dead fn) → dashboard; deleted `app/consultant/review/`.
+- [x] **BUG-3 (FIXED)** — Added `app/consultant/loading.tsx` + `clients/[id]/loading.tsx` skeletons (cover all consultant pages). No more blank-screen gap; verified live.
+- [x] **BUG-5 (FIXED)** — Trailing scroll spacer on the (now-reverted) board.
+- [x] **BUG-8 (FIXED — found by mutation testing)** — Flag replies were write-only on the consultant side; the flag card now echoes "You replied: ..." with timestamps. Verified live.
+- [x] **BUG-10 (FIXED — found by staging E2E)** — `/api/portal/import` used `file instanceof File`, but `File` is not a global on Node <20 → ReferenceError silently killed EVERY file upload on older runtimes (incl. local dev). Now duck-types the Blob (`typeof file !== "string"`). Prod (Node 20+) was unaffected but it was fragile.
 
 **Still open**
-- [ ] **BUG-1 (P1)** — `/admin/factors` hangs ~15s and throws a React hydration error before redirecting a non-admin to `/login`. Blocks real emission-factor entry (N7.2). Partly a keyless-dev artifact (the `/login` Clerk component stalls locally), but the hydration mismatch is real. Investigate once ADMIN_CLERK_ID + prod Clerk are set.
-- [ ] **BUG-4 (P2)** — Slow authenticated loads (dev, cold): client detail 4.3s, review 4.7s, manage 6.7s, snapshot 4.6s. Inflated by dev + Neon latency + sequential queries; BUG-3 loading states now mask it, but a perf pass (parallelize queries) is still worth it. Re-measure on prod.
+- [ ] **BUG-9 (P1, correctness — found in QA) — diesel & propane are calculated with the GASOLINE factor.** `resolveFactorQuery` returns the same generic `{mobile_combustion, gallon}` query for any fuel, and `lookupFactor` returns the first match (gasoline 0.008887) regardless of diesel/propane. E.g. 400 gal diesel → app says 3554.80 kg, correct is 4084.00 kg (~13% understated). Fix: pass the specific fuel type through to the factor lookup. Small change, high value.
+- [ ] **BUG-1 (P1)** — `/admin/factors` hangs ~15s + React hydration error before redirecting a non-admin to `/login`. Blocks real emission-factor entry (N7.2). Partly a keyless-dev artifact; investigate once ADMIN_CLERK_ID + prod Clerk are set.
+- [ ] **BUG-4 (P2)** — Slow authenticated loads (dev, cold): client detail 4.3s, review 4.7s, manage 6.7s. Inflated by dev + Neon latency + sequential queries; BUG-3 loading states mask it, but a perf pass (parallelize queries) is still worth it. Re-measure on prod.
+- [ ] **BUG-11 (P2, found in QA) — Excel serial dates.** Files opened/re-saved in Excel or Numbers convert dates like `2025-04` into serial numbers (`45657.66…`). Calcs are unaffected (quantity × factor), but date/period tagging is garbage. Fix: detect + convert Excel serials in the parser, or note "upload the raw CSV."
 
 **Dead / disabled surfaces (harmless but confusing if a demo wanders in)**
 - [ ] **BUG-6 (P2)** — QuickBooks API routes (`/api/auth/quickbooks/redirect|callback`) still exist though the UI was removed in Plan X4. Dead endpoints — remove or leave dormant (documented).
@@ -21,11 +24,12 @@
 **Could NOT verify — BLOCKED on env or would mutate prod data (not confirmed broken, just untested)**
 - [ ] **BUG-B1 (BLOCKED)** — Email delivery (request link, reminders, flag reply, submission notice): Resend sending domain unverified, so all email is untested end-to-end. The "client gets a link" beat depends on it. Needs Malachi (Resend) — see D2.3.
 - [ ] **BUG-B2 (BLOCKED)** — Evidence view/download: `BLOB_READ_WRITE_TOKEN` unset, so uploads are hash-only and the download route serves the "file not stored" page (Plan X made that honest, but real storage is untested). Needs Malachi (Vercel env) — see D2.2.
-- [ ] **BUG-B3 (untested)** — Portal submission end-to-end (upload → mapping → import → appears in review) not driven this pass (needs a live token + writes to prod DB). Highest-value flow to verify before a pilot — do on a scratch client, not a demo one.
-- [~] **BUG-B4 (mostly verified 2026-07-21)** — Mutation pass driven live against demo data: **create request ✓, reply-to-flag ✓, approve-and-freeze ✓ (creates snapshot + redirects), share snapshot ✓ (recipient persists).** Still untested: create client, scope-2 override save, comment on line item, portal submission end-to-end (BUG-B3). QA mutations were cleaned via `reset-demo.ts` afterward (all on demo_ companies, so fully wiped) — demo data is clean.
+- [x] **BUG-B3 (VERIFIED 2026-07-23)** — Portal submission end-to-end driven live: upload file → mapping preview → confirm → stage → Submit all → line items land in the ledger (11 rows). Also confirmed the staging guarantee (ledger stayed empty while staged). Works.
+- [~] **BUG-B4 (mostly verified)** — Mutation pass: **create request ✓, reply-to-flag ✓, approve-and-freeze ✓, share snapshot ✓, portal staged-submit ✓.** Still untested: create client, scope-2 override save, comment on line item. QA mutations cleaned via `reset-demo.ts` after each pass.
 
 **Not bugs, but demo-prep gotchas**
-- Seed dates are relative (`daysAgo` in reset-demo.ts): the board shows dates from the last seed run (reseeded clean 2026-07-21). Reseed the morning of any demo so dates read sensibly (D3.3).
+- Seed dates are relative (`daysAgo` in reset-demo.ts): reseed the morning of any demo so dates read sensibly (D3.3). Last reseeded clean 2026-07-23.
+- **QA test kit** in `~/Downloads/qa-A…D-*.csv` + `qa-combined.csv` — sample sheets with ground-truth CO2e (electricity/gas/fuel + edge cases). Upload `qa-combined.csv` to exercise everything in one item; diesel rows reveal BUG-9.
 
 ## Plan W — Wireframe Workflow Alignment
 
@@ -49,14 +53,18 @@
 - [ ] **W2.5** — Click-through verification with demo data (needs local Clerk login — Malachi)
 
 ### Y — MVP for pilots + CRM reshape (branch `sendrow-v3`; from 2026-07-21 meeting, PLANS.md Plan Y)
-**Y1 — Pipeline board home (Pipedrive-style; demo-solid for Thu)**
-- [ ] **Y1.1** — `pipelineStage()` + `STAGE_META` in `lib/client-status.ts` (derived 5-stage: new/requested/responding/review/approved; overdue = flag not column) + unit tests
-- [ ] **Y1.2** — Board component: columns w/ count headers, client cards (name, contact, completeness, due/overdue, flag count, next-action, shared→X badge), clickable to next action; no drag (stage is derived)
-- [ ] **Y1.3** — Replace dashboard table at `/consultant` with the board; keep archive/delete reachable (move to client detail if needed)
-- [ ] **Y1.4** — Verify board renders live w/ seeded 3 clients landing in 3 different columns (Golden Gate=requested, Bayshore=responding, Pacific Coast=approved/shared)
-- [ ] **Y1.5 (after Thu)** — Deeper reshape: client detail as CRM record (timeline-primary, tasks, contact block)
+**Y1 — Pipeline board home — BUILT then REVERTED 2026-07-23**
+- [x] **Y1.1** — `pipelineStage()` + `STAGE_META` + `isOverdue()` in `lib/client-status.ts` (5-stage derived; overdue = flag) + 7 unit tests. **Kept (unused after revert).**
+- [x] **Y1.2** — `components/pipeline-board.tsx` (kanban columns + cards). **Kept (unused after revert).**
+- [~] **Y1.3** — Board was live at `/consultant`, then **REVERTED to the old stat-cards + table** (Malachi preferred the old style, 2026-07-23). Delete added to client detail. Board code stays for an easy toggle-back.
+- [x] **Y1.4** — Verified live: 3 seed clients landed in 3 columns (before revert).
+- [ ] **Y1.5** — Deeper CRM client-detail reshape — NOT built (board reverted; revisit only if the board comes back).
 
-**Y3 — Conversion P0 (build for the demo)**
+**Y6 — Portal multi-file + batch-submit — BUILT 2026-07-23**
+- [x] **Y6.1** — Multiple files per checklist item (up to `MAX_FILES_PER_CHECKLIST_ITEM = 12`): `fileCount` on ChecklistItem, cap enforced server + client, "+ Add another file (N of 12)" button. Verified live.
+- [x] **Y6.2** — Batch-submit / true staging: confirmed files held client-side, sticky "Submit all N" bar with per-file remove, nothing reaches server/consultant until Submit. Verified live E2E (ledger empty while staged → data lands on submit). Tradeoff accepted: tab-close loses staged uploads.
+
+**Y3 — Conversion P0 (highest leverage; not started)**
 - [ ] **Y3.1** — Early-engagement reminder 48–72h after send (≤4 total touches)
 - [ ] **Y3.2** — Checklist items + est. time inside the request email
 - [ ] **Y3.3** — Per-item time estimates + overall progress on portal
@@ -64,7 +72,7 @@
 
 **Y-discovery / research (Malachi-led or non-code)**
 - [ ] **Y2** — Confirm supplier persona + consultant need via discovery (Berkeley net + Azoulay intros)
-- [ ] **Y4** — Grep-verify no emojis / em dashes before v3 demo-ready
+- [x] **Y4** — No emojis / em dashes verified across product UI (grep-clean)
 - [ ] **Y5** — Data-asset research thread (not scoped)
 
 ### D — Azoulay demo prep (meeting next Thu ~2026-07-23; PLANNED 2026-07-16, no code started)

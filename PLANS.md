@@ -15,6 +15,10 @@
 | U1–U2 | Core loop hardened + demo-ready (see below) | 2026-07-10 |
 | — | Aurora Green retheme + landing rebuilt to Malachi's mockup | 2026-07-10, 217cb94 |
 | W1–W2 | Consultant app restructured to Figma wireframes: dashboard/client hub/new request + Review & Approve → Snapshot & Share | 2026-07-13, a7d8734 |
+| X | Demo-feedback fixes: portal crash-proofing + PDF path, completeness fix, flag/reply loop, clarity pass, QuickBooks/connections removed, minimal /for-companies, emoji sweep | 2026-07-14, `sendrow-v2` (not yet on main) |
+| BUGS | BUG-2/3/5/8/10 fixes (review-email repoint + orphan delete, loading skeletons, flag-reply visibility, Node<20 File upload fix); SB 253 date → Nov 10 | 2026-07-21→23, `sendrow-v3` |
+| Y6 | Portal: multiple files per checklist item (≤12) + batch-submit staging (files held private until one Submit) | 2026-07-23, `sendrow-v3` |
+| — | Pipeline board (Y1) built then reverted to the table dashboard (Malachi's call) | 2026-07-23, `sendrow-v3` |
 
 ---
 
@@ -42,12 +46,14 @@ Malachi's calls (2026-07-14): remove QuickBooks + UtilityAPI from consultant UI 
 
 ## Y — MVP for pilots + CRM reshape (ACTIVE on branch `sendrow-v3`, from 2026-07-21 team meeting)
 > Phase goal (GOALS.md): get real consultants using it as a tool, get feedback. Meeting calls: consultants-only confirmed · supplier persona UNCONFIRMED (validate via discovery) · pricing/vertical/data-asset deferred · "we're essentially building a CRM" → reshape IA around a familiar CRM model · conversion is existential ("if we can't extract data we're cooked").
-> Branch split: `sendrow-v2` keeps Plan D (Azoulay Thu demo prep, current IA). `sendrow-v3` = this CRM reshape. Malachi wants CRM-flavored work visible Thursday, so Y1 (the pipeline board) is built demo-solid first; deeper reshape continues after.
+> Branch split: `sendrow-v2` keeps Plan D (Azoulay demo prep). `sendrow-v3` = active build branch (everything below).
 
-**Y1 — Pipedrive-style pipeline board = new consultant home (full IA reshape, starts here).**
-Client book as a kanban: columns New → Requested → Responding → In review → Approved. Stage is DERIVED from workflow data (never a manual field) — no drag-to-advance, because "Approved" requires a real frozen snapshot (audit invariant); dragging would fake it or bypass the review gate. Cards: name, contact, completeness bar, due (red if overdue), open-flag count, next-action, "shared → X" badge on Approved. Cards click to the client's next action. Column headers show counts. `pipelineStage()` + `STAGE_META` as pure/tested functions in `lib/client-status.ts`. Replaces the dashboard table at `/consultant`.
+**Y1 — Pipedrive-style pipeline board — BUILT then REVERTED (2026-07-23).**
+Built the kanban home (New → Requested → Responding → In review → Approved, derived stage, no drag) and it worked live. **Malachi reviewed it and reverted to the old stat-cards + table dashboard** — preferred the old style. `pipelineStage()`/`STAGE_META`/`isOverdue()` in `lib/client-status.ts` + `components/pipeline-board.tsx` are KEPT but unused, so the board can be toggled back cheaply. Delete moved to client detail. Deeper CRM client-detail reshape (Y1.1) not built — revisit only if the board returns.
 
-**Y1.1 (after Thu) — Deeper reshape:** client detail as a CRM record (contact block, activity timeline as primary, tasks/next-actions, pinned threads). Reuse existing pages as the detail layer until then.
+**Y6 — Portal multi-file + batch-submit — BUILT (2026-07-23).**
+- Multiple files per checklist item (up to 12): a supplier uploads separate electricity + gas sheets, or monthly bills, to one item; "+ Add another file" button; cap enforced server + client.
+- **Batch-submit / true staging:** confirmed files are held client-side and never hit the server until one "Submit all N files" button — the consultant sees nothing until Submit (verified live: ledger empty while staged → data lands on submit). Tradeoff Malachi accepted: closing the tab before Submit loses staged uploads (manual-entry rows still draft-save). Also fixed a latent `File is not defined` (Node <20) bug that killed all file uploads.
 
 **Y2 — Discovery (Malachi-led, not code): confirm the supplier persona** ("who at the supplier does the data work?") + validate consultant need before pricing. Berkeley network + Azoulay intros → target consultants. Every conversation asks: who provides the data, which formats they answer most, would they pilot. Findings feed GOALS.md persona + vertical calls.
 
