@@ -215,7 +215,7 @@ export function MappingPanel({
           disabled={busy || refetching || !hasQuantity || rows.length === 0}
           onClick={() => onConfirm(rows, map)}
         >
-          {busy ? "Importing…" : `Looks right - import ${rows.length} rows`}
+          {busy ? "Adding…" : `Looks right - add ${rows.length} rows`}
         </button>
       </div>
       {!hasQuantity && (

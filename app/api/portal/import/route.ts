@@ -50,10 +50,14 @@ async function handleImport(request: NextRequest) {
     } catch {
       rows = [];
     }
+    // Duck-type the Blob rather than `instanceof File`: the `File` global only
+    // exists on Node 20+, so the instanceof check throws a ReferenceError on
+    // older runtimes and silently kills every file upload.
     const file = form.get("file");
-    if (file instanceof File) {
-      filename = file.name || filename;
-      fileBytes = Buffer.from(await file.arrayBuffer());
+    if (file && typeof file !== "string") {
+      const blob = file as Blob & { name?: string };
+      filename = blob.name || filename;
+      fileBytes = Buffer.from(await blob.arrayBuffer());
     }
     const rawMap = form.get("columnMap");
     if (typeof rawMap === "string" && rawMap) {

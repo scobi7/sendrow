@@ -63,6 +63,20 @@ type SheetChoice = {
   sheets: { name: string; matrix: string[][]; rowCount: number; preview: string[] }[];
 };
 
+/** A confirmed file/entry held client-side until the supplier hits "Submit all".
+ *  Nothing reaches the server (or the consultant) until then - true staging. */
+type StagedEntry = {
+  stageId: string;
+  itemId: string;
+  itemLabel: string;
+  filename: string;
+  source: "upload" | "entry";
+  rows: Record<string, string>[];
+  file?: File;
+  columnMap?: Record<string, string | null>;
+  rowCount: number;
+};
+
 /** Fuzzy-picks a manual-entry kind from pasted text ("PG&E electric" → electricity). */
 function guessKind(text: string): string {
   const t = text.toLowerCase();
@@ -110,6 +124,11 @@ export function PortalChecklist({
   // evidence when their manual entry for that item is submitted.
   const [evidenceStash, setEvidenceStash] = useState<{ itemId: string; file: File } | null>(null);
   const [pdfNotice, setPdfNotice] = useState<string | null>(null);
+  // Staging (true batch submit): confirmed files/entries wait here until the
+  // supplier clicks "Submit all" - nothing hits the server before that.
+  const [staged, setStaged] = useState<StagedEntry[]>([]);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
   const draftKey = `sendrow-draft-${token}`;
 
   // Save & resume (U1.6): suppliers fill these out in stolen moments -   // losing work once means they never come back.
@@ -151,7 +170,9 @@ export function PortalChecklist({
     return { map: data.map as MappingSuggestion["map"], source: data.source as MappingSuggestion["source"] };
   }
 
-  async function submit(
+  /** Adds a confirmed file/entry to the staging list. Nothing is sent yet -
+   *  the supplier keeps adding, then submits everything at once. */
+  function stage(
     item: ChecklistItem,
     payload: {
       rows: Record<string, string>[];
@@ -161,46 +182,78 @@ export function PortalChecklist({
       columnMap?: Record<string, string | null>;
     }
   ) {
-    setBusy(true);
+    setStaged((s) => [
+      ...s,
+      {
+        stageId: `st_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+        itemId: item.id,
+        itemLabel: item.label,
+        filename: payload.filename,
+        source: payload.source,
+        rows: payload.rows,
+        file: payload.file,
+        columnMap: payload.columnMap,
+        rowCount: payload.rows.length,
+      },
+    ]);
+    setDoneMsg(`Added "${payload.filename}" (${payload.rows.length} row${payload.rows.length === 1 ? "" : "s"}) - staged, not sent yet.`);
+    setOpenItem(null);
+    setPending(null);
+    setSheetChoice(null);
+    setMode("upload");
+    setRows([{ date: "", kind: "electricity", quantity: "" }]);
     setError(null);
     try {
-      // Uploads go multipart so the original file is kept as evidence;
-      // manual entry has no source document and stays JSON.
-      let res: Response;
-      if (payload.file) {
-        const form = new FormData();
-        form.set("token", token);
-        form.set("itemId", item.id);
-        form.set("source", payload.source);
-        form.set("rows", JSON.stringify(payload.rows));
-        form.set("file", payload.file, payload.filename);
-        if (payload.columnMap) form.set("columnMap", JSON.stringify(payload.columnMap));
-        res = await fetch("/api/portal/import", { method: "POST", body: form });
-      } else {
-        res = await fetch("/api/portal/import", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ token, itemId: item.id, rows: payload.rows, filename: payload.filename, source: payload.source }),
-        });
+      localStorage.removeItem(draftKey);
+    } catch { /* noop */ }
+  }
+
+  function removeStaged(stageId: string) {
+    setStaged((s) => s.filter((e) => e.stageId !== stageId));
+  }
+
+  /** POST one staged entry through the real import pipeline (multipart for
+   *  uploads to keep the source file, JSON for manual entry). */
+  async function postOne(entry: StagedEntry): Promise<void> {
+    let res: Response;
+    if (entry.file) {
+      const form = new FormData();
+      form.set("token", token);
+      form.set("itemId", entry.itemId);
+      form.set("source", entry.source);
+      form.set("rows", JSON.stringify(entry.rows));
+      form.set("file", entry.file, entry.filename);
+      if (entry.columnMap) form.set("columnMap", JSON.stringify(entry.columnMap));
+      res = await fetch("/api/portal/import", { method: "POST", body: form });
+    } else {
+      res = await fetch("/api/portal/import", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token, itemId: entry.itemId, rows: entry.rows, filename: entry.filename, source: entry.source }),
+      });
+    }
+    const data = (await readJson(res)) as { error?: string };
+    if (!res.ok) throw new Error(data.error ?? "Something went wrong");
+  }
+
+  /** The one and only "send": posts every staged entry, then confirms. Removes
+   *  each as it succeeds so a mid-way failure leaves only un-sent ones staged. */
+  async function submitAll() {
+    if (staged.length === 0) return;
+    setSubmitting(true);
+    setError(null);
+    setDoneMsg(null);
+    try {
+      for (const entry of [...staged]) {
+        await postOne(entry);
+        setStaged((s) => s.filter((e) => e.stageId !== entry.stageId));
       }
-      const data = (await readJson(res)) as { error?: string; imported?: number; unmapped?: number };
-      if (!res.ok) throw new Error(data.error ?? "Something went wrong");
-      const unmapped = data.unmapped ?? 0;
-      setDoneMsg(
-        unmapped > 0
-          ? `Received - ${data.imported} rows. ${unmapped} need${unmapped === 1 ? "s" : ""} a closer look, and your consultant will handle that.`
-          : `Received - ${data.imported} rows. Thank you!`
-      );
-      setOpenItem(null);
-      setPending(null);
-      try {
-        localStorage.removeItem(draftKey);
-      } catch { /* noop */ }
+      setSubmitted(true);
       router.refresh();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Something went wrong - please try again.");
+      setError(e instanceof Error ? e.message : "Could not submit - please try again. The files that went through are removed from the list.");
     } finally {
-      setBusy(false);
+      setSubmitting(false);
     }
   }
 
@@ -315,11 +368,18 @@ export function PortalChecklist({
       )}
       {items.map((item) => {
         const isOpen = openItem === item.id;
-        const received = item.status === "received";
-        const fileCount = itemFileCount(item);
+        const serverReceived = itemFileCount(item); // already sent in a prior submit
+        const stagedForItem = staged.filter((s) => s.itemId === item.id).length;
+        const fileCount = serverReceived + stagedForItem;
+        const hasAny = fileCount > 0;
         const atCap = fileCount >= MAX_FILES_PER_CHECKLIST_ITEM;
         const itemPending = pending?.itemId === item.id ? pending : null;
         const itemSheets = sheetChoice?.itemId === item.id ? sheetChoice : null;
+        const badgeText = !hasAny
+          ? "Needed"
+          : [serverReceived ? `✓ ${serverReceived} sent` : null, stagedForItem ? `${stagedForItem} staged` : null]
+              .filter(Boolean)
+              .join(" · ") + (atCap ? " (max)" : "");
         return (
           <div key={item.id} className="rounded-2xl" style={{ background: "var(--card)", border: isOpen ? "1px solid var(--primary)" : "1px solid var(--divider)" }}>
             <button
@@ -333,17 +393,17 @@ export function PortalChecklist({
               <span
                 className="ml-4 shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold"
                 style={
-                  received
-                    ? { background: "var(--primary-tint)", color: "var(--primary)" }
+                  hasAny
+                    ? { background: stagedForItem && !serverReceived ? "var(--warning-tint)" : "var(--primary-tint)", color: stagedForItem && !serverReceived ? "var(--warning-strong)" : "var(--primary)" }
                     : { background: "var(--divider)", color: "var(--text-muted)" }
                 }
               >
-                {received ? `✓ ${fileCount} received${atCap ? " (max)" : ""}` : "Needed"}
+                {badgeText}
               </span>
             </button>
 
-            {/* Explicit "add another file" affordance once at least one is in (multi-upload) */}
-            {received && !atCap && !isOpen && (
+            {/* Explicit "add another file" affordance once at least one is staged/sent */}
+            {hasAny && !atCap && !isOpen && (
               <div className="px-5 pb-4">
                 <button
                   onClick={() => setOpenItem(item.id)}
@@ -375,9 +435,9 @@ export function PortalChecklist({
 
             {isOpen && !atCap && (
               <div className="px-5 pb-5">
-                {received && (
+                {hasAny && (
                   <p className="mb-3 rounded-lg px-3 py-2 text-xs" style={{ background: "var(--primary-tint)", color: "var(--primary)" }}>
-                    {fileCount} file{fileCount === 1 ? "" : "s"} received so far. Add another below - up to {MAX_FILES_PER_CHECKLIST_ITEM} total (e.g. separate electricity and gas sheets, or one per month).
+                    {fileCount} file{fileCount === 1 ? "" : "s"} added so far. Add another below - up to {MAX_FILES_PER_CHECKLIST_ITEM} total (e.g. separate electricity and gas sheets, or one per month).
                   </p>
                 )}
                 {itemSheets ? (
@@ -417,7 +477,7 @@ export function PortalChecklist({
                     fetchSuggestion={(headers) => fetchSuggestion(item, headers)}
                     onCancel={() => setPending(null)}
                     onConfirm={(mappedRows, map) =>
-                      submit(item, {
+                      stage(item, {
                         rows: mappedRows,
                         filename: itemPending.filename,
                         source: "upload",
@@ -488,7 +548,7 @@ export function PortalChecklist({
                         dataType={item.dataType as DataType}
                         busy={busy}
                         onSubmit={(walkedRows) =>
-                          submit(item, { rows: walkedRows, filename: "guided walkthrough", source: "entry" })
+                          stage(item, { rows: walkedRows, filename: "guided walkthrough", source: "entry" })
                         }
                       />
                     ) : (
@@ -582,7 +642,7 @@ export function PortalChecklist({
                             disabled={busy || entryToRows().length === 0}
                             onClick={() => {
                               const stash = evidenceStash?.itemId === item.id ? evidenceStash : null;
-                              submit(item, {
+                              stage(item, {
                                 rows: entryToRows(),
                                 filename: stash ? stash.file.name : "manual entry",
                                 source: "entry",
@@ -594,7 +654,7 @@ export function PortalChecklist({
                               }
                             }}
                           >
-                            {busy ? "Sending…" : "Submit"}
+                            Add to submission
                           </button>
                         </div>
                       </div>
@@ -642,6 +702,49 @@ export function PortalChecklist({
           </div>
         );
       })}
+
+      {/* Submitted confirmation - the one and only send has happened */}
+      {submitted && (
+        <div className="rounded-2xl p-6 text-center" style={{ background: "var(--primary-tint)" }}>
+          <p className="text-lg font-bold" style={{ color: "var(--primary)" }}>✓ Submitted</p>
+          <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>
+            Your consultant has been notified and will review your data. Thank you.
+          </p>
+        </div>
+      )}
+
+      {/* Sticky "Submit all" bar - nothing above reached the server until this */}
+      {!submitted && staged.length > 0 && (
+        <div
+          className="sticky bottom-4 z-10 rounded-2xl p-4 shadow-lg"
+          style={{ background: "var(--card)", border: "1px solid var(--primary)" }}
+        >
+          <p className="mb-2 text-sm font-semibold" style={{ color: "var(--text)" }}>
+            {staged.length} file{staged.length === 1 ? "" : "s"} ready - your consultant sees nothing until you submit
+          </p>
+          <div className="mb-3 space-y-1">
+            {staged.map((s) => (
+              <div key={s.stageId} className="flex items-center justify-between gap-2 text-xs">
+                <span className="truncate" style={{ color: "var(--text-muted)" }}>
+                  {s.itemLabel}: {s.filename} ({s.rowCount} row{s.rowCount === 1 ? "" : "s"})
+                </span>
+                <button
+                  className="shrink-0 underline"
+                  style={{ color: "var(--text-muted)" }}
+                  onClick={() => removeStaged(s.stageId)}
+                  disabled={submitting}
+                >
+                  remove
+                </button>
+              </div>
+            ))}
+          </div>
+          <button className="btn btn-primary w-full" onClick={submitAll} disabled={submitting}>
+            {submitting ? "Submitting…" : `Submit all ${staged.length} file${staged.length === 1 ? "" : "s"} to your consultant`}
+          </button>
+          {error && <p className="mt-2 text-sm" style={{ color: "var(--danger)" }}>{error}</p>}
+        </div>
+      )}
     </div>
   );
 }
