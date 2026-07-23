@@ -328,12 +328,7 @@ export function PortalChecklist({
             >
               <div>
                 <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>{item.label}</p>
-                <p className="mt-0.5 text-xs" style={{ color: "var(--text-muted)" }}>
-                  {item.instructions}
-                  {received && !atCap && !isOpen && (
-                    <span className="font-medium" style={{ color: "var(--primary)" }}> · you can add more files</span>
-                  )}
-                </p>
+                <p className="mt-0.5 text-xs" style={{ color: "var(--text-muted)" }}>{item.instructions}</p>
               </div>
               <span
                 className="ml-4 shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold"
@@ -346,6 +341,22 @@ export function PortalChecklist({
                 {received ? `✓ ${fileCount} received${atCap ? " (max)" : ""}` : "Needed"}
               </span>
             </button>
+
+            {/* Explicit "add another file" affordance once at least one is in (multi-upload) */}
+            {received && !atCap && !isOpen && (
+              <div className="px-5 pb-4">
+                <button
+                  onClick={() => setOpenItem(item.id)}
+                  className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold transition-colors"
+                  style={{ background: "var(--primary-tint)", color: "var(--primary)", border: "1px solid var(--chip-border)" }}
+                >
+                  + Add another file
+                  <span className="font-normal" style={{ color: "var(--text-muted)" }}>
+                    ({fileCount} of {MAX_FILES_PER_CHECKLIST_ITEM} added)
+                  </span>
+                </button>
+              </div>
+            )}
 
             {/* Conversation on this item (X2): what you sent, what they answered */}
             {(threads[item.id]?.length ?? 0) > 0 && (
