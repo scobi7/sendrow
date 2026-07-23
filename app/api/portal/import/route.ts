@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { dataRequests } from "@/lib/db/schema";
-import { portalTokenValid } from "@/lib/portal";
+import { portalTokenValid, itemFileCount, MAX_FILES_PER_CHECKLIST_ITEM } from "@/lib/portal";
 import type { ChecklistItem } from "@/lib/portal";
 import { processImport } from "@/lib/ingestion/import-core";
 import { storeEvidence } from "@/lib/evidence";
@@ -83,6 +83,12 @@ async function handleImport(request: NextRequest) {
   const checklist = (dataRequest.checklist as ChecklistItem[] | null) ?? [];
   const item = checklist.find((i) => i.id === itemId);
   if (!item) return NextResponse.json({ error: "Unknown checklist item" }, { status: 400 });
+  if (itemFileCount(item) >= MAX_FILES_PER_CHECKLIST_ITEM) {
+    return NextResponse.json(
+      { error: `This item already has ${MAX_FILES_PER_CHECKLIST_ITEM} files - that's the max. Ask your consultant if you need to add more.` },
+      { status: 400 }
+    );
+  }
 
   // Manual entry sends canonical fields; uploads get the data type's template + fuzzy match.
   // Clients never confirm mappings - low-confidence sessions auto-route to consultant review.

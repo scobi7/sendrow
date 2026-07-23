@@ -10,9 +10,21 @@ export type ChecklistItem = {
   status: "pending" | "received";
   /** Set when the client hit "I'm stuck" - the consultant sees and clears it. */
   stuckNote?: string;
+  /** How many files/entries have been submitted for this item (multi-upload).
+   *  Undefined on legacy items - treated as 1 when status is "received". */
+  fileCount?: number;
 };
 
 export const PORTAL_TOKEN_TTL_DAYS = 30;
+
+/** A supplier can submit up to this many separate files/entries per checklist
+ *  item (e.g. 12 monthly bills, or electricity + gas as separate sheets). */
+export const MAX_FILES_PER_CHECKLIST_ITEM = 12;
+
+/** Files already submitted for an item, tolerating legacy items with no count. */
+export function itemFileCount(item: { fileCount?: number; status: "pending" | "received" }): number {
+  return item.fileCount ?? (item.status === "received" ? 1 : 0);
+}
 
 export function generatePortalToken(): string {
   return crypto.randomBytes(24).toString("base64url");

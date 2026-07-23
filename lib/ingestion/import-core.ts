@@ -200,7 +200,15 @@ async function markChecklistItemReceived(dataRequestId: string, checklistItemId:
 
   const checklist = (request.checklist as ChecklistItem[] | null) ?? [];
   const updated = checklist.map((item) =>
-    checklistItemId === null || item.id === checklistItemId ? { ...item, status: "received" as const } : item
+    checklistItemId === null || item.id === checklistItemId
+      ? {
+          ...item,
+          status: "received" as const,
+          // Multi-upload: count each submission so the portal can show "3 received"
+          // and enforce the per-item cap (legacy received items count as 1).
+          fileCount: (item.fileCount ?? (item.status === "received" ? 1 : 0)) + 1,
+        }
+      : item
   );
   const fulfilled = checklistComplete(updated);
 

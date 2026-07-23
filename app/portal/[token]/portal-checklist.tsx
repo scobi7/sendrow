@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import * as XLSX from "xlsx";
 import type { ChecklistItem } from "@/lib/portal";
+import { itemFileCount, MAX_FILES_PER_CHECKLIST_ITEM } from "@/lib/portal";
 import { parsePastedRows } from "@/lib/portal-paste";
 import { parseSheetMatrix } from "@/lib/ingestion/sheet-parse";
 import { templateCsv } from "@/lib/ingestion/data-type-templates";
@@ -315,17 +316,24 @@ export function PortalChecklist({
       {items.map((item) => {
         const isOpen = openItem === item.id;
         const received = item.status === "received";
+        const fileCount = itemFileCount(item);
+        const atCap = fileCount >= MAX_FILES_PER_CHECKLIST_ITEM;
         const itemPending = pending?.itemId === item.id ? pending : null;
         const itemSheets = sheetChoice?.itemId === item.id ? sheetChoice : null;
         return (
           <div key={item.id} className="rounded-2xl" style={{ background: "var(--card)", border: isOpen ? "1px solid var(--primary)" : "1px solid var(--divider)" }}>
             <button
               className="flex w-full items-center justify-between px-5 py-4 text-left"
-              onClick={() => !received && setOpenItem(isOpen ? null : item.id)}
+              onClick={() => !atCap && setOpenItem(isOpen ? null : item.id)}
             >
               <div>
                 <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>{item.label}</p>
-                <p className="mt-0.5 text-xs" style={{ color: "var(--text-muted)" }}>{item.instructions}</p>
+                <p className="mt-0.5 text-xs" style={{ color: "var(--text-muted)" }}>
+                  {item.instructions}
+                  {received && !atCap && !isOpen && (
+                    <span className="font-medium" style={{ color: "var(--primary)" }}> · you can add more files</span>
+                  )}
+                </p>
               </div>
               <span
                 className="ml-4 shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold"
@@ -335,7 +343,7 @@ export function PortalChecklist({
                     : { background: "var(--divider)", color: "var(--text-muted)" }
                 }
               >
-                {received ? "✓ Received" : "Needed"}
+                {received ? `✓ ${fileCount} received${atCap ? " (max)" : ""}` : "Needed"}
               </span>
             </button>
 
@@ -354,8 +362,13 @@ export function PortalChecklist({
               </div>
             )}
 
-            {isOpen && !received && (
+            {isOpen && !atCap && (
               <div className="px-5 pb-5">
+                {received && (
+                  <p className="mb-3 rounded-lg px-3 py-2 text-xs" style={{ background: "var(--primary-tint)", color: "var(--primary)" }}>
+                    {fileCount} file{fileCount === 1 ? "" : "s"} received so far. Add another below - up to {MAX_FILES_PER_CHECKLIST_ITEM} total (e.g. separate electricity and gas sheets, or one per month).
+                  </p>
+                )}
                 {itemSheets ? (
                   /* ── Sheet picker: multi-tab workbooks ── */
                   <div>
