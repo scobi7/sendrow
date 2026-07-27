@@ -26,6 +26,7 @@
 - [ ] **BUG-B2 (BLOCKED)** — Evidence view/download: `BLOB_READ_WRITE_TOKEN` unset, so uploads are hash-only and the download route serves the "file not stored" page (Plan X made that honest, but real storage is untested). Needs Malachi (Vercel env) — see D2.2.
 - [x] **BUG-B3 (VERIFIED 2026-07-23)** — Portal submission end-to-end driven live: upload file → mapping preview → confirm → stage → Submit all → line items land in the ledger (11 rows). Also confirmed the staging guarantee (ledger stayed empty while staged). Works.
 - [~] **BUG-B4 (mostly verified)** — Mutation pass: **create request ✓, reply-to-flag ✓, approve-and-freeze ✓, share snapshot ✓, portal staged-submit ✓.** Still untested: create client, scope-2 override save, comment on line item. QA mutations cleaned via `reset-demo.ts` after each pass.
+- [ ] **QA-1 — walk through manually uploading data.** Drive the portal "Type it in" (manual entry) path end-to-end: add rows (date/kind/quantity), stage, submit; confirm the entries convert + calculate + land in the ledger like the file-upload path. (File-upload/staging is verified in BUG-B3; manual entry not yet walked through.)
 
 **Not bugs, but demo-prep gotchas**
 - Seed dates are relative (`daysAgo` in reset-demo.ts): reseed the morning of any demo so dates read sensibly (D3.3). Last reseeded clean 2026-07-23.
