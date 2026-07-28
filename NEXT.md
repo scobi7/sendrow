@@ -1,9 +1,10 @@
 # NEXT.md
 > Current state + what only the user can do. History lives in git; build order in PLANS.md; UI spec: `docs/wireframes-2026-07-13.md`.
-> Last updated: 2026-07-23
+> Last updated: 2026-07-28
 
 ## 🟢 Where the product stands
-- **Active branch = `sendrow-v3`.** `sendrow-v2` holds Plan X (demo-feedback fixes) + Plan D (Azoulay prep). `main` = production (742405c), still **pre-Plan-X**. Deploying v2 or v3 to main runs a drizzle push (adds nullable comment columns — additive, safe). **Deploy = your call.**
+- **DEPLOYED TO PRODUCTION 2026-07-28** (`main` = `ef96739`, fast-forwarded from `sendrow-v3`; Vercel build green). Everything below is live on sendrow.app: Plan X, the dashboard-table revert, Z1.1 (diesel fix), Z2 (comments gap), portal multi-file + batch-submit. **Resend sending domain verified** → email now delivers. `CRON_SECRET` set. `sendrow-v3` remains the active dev branch (now == main).
+- **Full page-by-page sweep 2026-07-28 (all 30+ routes, clean):** every public/consultant/client/portal/shared page loads with no JS errors, no hangs, no broken requests. Only flag = BUG-1 (`/admin/factors` hydration hang) — a local-keyless-dev artifact; won't affect prod for the real admin.
 - **Dashboard: pipeline board was built (Y1) then REVERTED to the old stat-cards + table view** (2026-07-23, Malachi preferred the old style). `pipelineStage()` in `lib/client-status.ts` + `components/pipeline-board.tsx` are kept but UNUSED — easy to toggle the board back later.
 - **Portal upgrades (2026-07-23, big):**
   - **Multiple files per checklist item (up to 12)** — a supplier can upload separate electricity + gas sheets, or 12 monthly bills, to one item. Explicit "+ Add another file (N of 12 added)" button.
@@ -17,12 +18,12 @@
 ## 🔴 Only you can do these
 | # | What | Where |
 |---|------|-------|
-| 1 | **Deploy decision:** ship `v3` (all the portal/bug work) and/or `v2` (Plan X) to `main`? Everything since v2 prod is on v3 | decision |
-| 2 | Vercel env: `BLOB_READ_WRITE_TOKEN` (evidence/logos), `CRON_SECRET` (reminders), `ADMIN_CLERK_ID` (/admin) — unblocks BUG-B1/B2 | Vercel → env vars |
-| 3 | Resend: verify sending domain so request/reminder/reply emails deliver — the "client gets a link" beat depends on it | Resend |
-| 4 | Get from Masao: CARB SB 253 draft template + Kerri's buyer questionnaire (unblocks W3 format engine) | Masao |
-| 5 | Real EPA eGRID 2024 / USEEIO v2 factor values → /admin/factors (BUG-1 gates this) | datasets |
-| 6 | Discovery (Plan Y2): confirm who at the supplier does the data work; validate consultant need before pricing | consultant convos |
+| 1 | **Smoke-test prod email:** on sendrow.app, create a real data request to your own email → confirm it delivers (Resend is verified; this proves the "client gets a link" beat live) | sendrow.app |
+| 2 | **Design testing:** put the live app in front of Jasmin / consultants, walk the flow, collect UX feedback | consultant convos |
+| 3 | `BLOB_READ_WRITE_TOKEN` (Vercel Storage → Blob) — needed to actually store uploaded source files as evidence; optional until you pilot with real data | Vercel |
+| 4 | Real EPA eGRID 2024 / USEEIO v2 factor values → /admin/factors — needed for real client work, not for design testing (seed factors are real but limited) | datasets |
+| 5 | Get from Masao: CARB SB 253 draft template + Kerri's buyer questionnaire (unblocks W3 format engine) | Masao |
+| 6 | Discovery (Plan Y2): confirm who at the supplier does the data work | consultant convos |
 
 ## 🟡 Next build — choose next
 - **BUG-9 (quick, high-value): fix diesel/propane factor** so fuel isn't calculated with the gasoline factor. Small change to `resolveFactorQuery` + `lookupFactor` to pass the specific fuel type.
