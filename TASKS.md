@@ -76,6 +76,27 @@
 - [x] **Y4** — No emojis / em dashes verified across product UI (grep-clean)
 - [ ] **Y5** — Data-asset research thread (not scoped)
 
+### Z — MVP reporting hardening (APPROVED 2026-07-28; PLANS.md Plan Z). Sequence: Z1.1 → Z2 → Z4 → Z3.
+**Z1 — Correctness**
+- [x] **Z1.1** — BUG-9 FIXED: `FactorQuery.keyword` disambiguates fuel; `resolveFactorQuery` + `fleetFuelToLineItems` pass the fuel type. diesel→fuel.diesel (400gal = 4084kg ✓), propane→equip/fuel.propane. +2 tests (220 total).
+- [ ] **Z1.2** — BUG-11: Excel serial dates (`45657.66`) → detect + convert to ISO in the parser
+**Z2 — Comments gap (supplier can't see/answer line-item questions without an account)**
+- [ ] **Z2.1** — Surface line-item comments on the portal ("Questions from your consultant" section)
+- [ ] **Z2.2** — `sendCommentEmail` links to the portal, not "reply to this email"
+**Z3 — Polish / cleanup**
+- [ ] **Z3.1** — BUG-4: parallelize slow queries (client detail/review/manage/snapshot)
+- [ ] **Z3.2** — BUG-6: remove dead QuickBooks API routes
+- [ ] **Z3.3** — BUG-7: ensure nothing links into disabled `/checkout`
+- [ ] **Z3.4** — BUG-1: `/admin/factors` hydration hang (partly blocked on prod Clerk + ADMIN_CLERK_ID)
+**Z4 — Conversion P0 (existential)**
+- [ ] **Z4.1** — Early-engagement reminder 48–72h after send (≤4 total touches)
+- [ ] **Z4.2** — Checklist items + est. time inside the request email
+- [ ] **Z4.3** — Per-item progress on the portal ("2 of 3, ~4 min left")
+- [ ] **Z4.4** — Named-buyer "why" framing in the request
+**Z5 — Optional**
+- [ ] **Z5.1** — Draft-persistence for staged uploads (survive tab close)
+- [ ] **Z5.2** — QA untested flows: manual entry (QA-1), create-client, scope-2 override, line-item comment
+
 ### D — Azoulay demo prep (meeting next Thu ~2026-07-23; PLANNED 2026-07-16, no code started)
 > Danielle Azoulay = founder, The CSO Shop (fractional sustainability consultancy; ex-L'Oreal USA CSR head, Columbia Climate School adjunct). She IS the ICP: a consultant running CPG/apparel client books. She will know SB 253 + GHG Protocol cold. Goal of meeting: design-partner interest, not just applause.
 

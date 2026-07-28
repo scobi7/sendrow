@@ -82,6 +82,12 @@ describe("rowToLineItem", () => {
     expect(Number(item!.co2eKg)).toBeGreaterThan(0);
   });
 
+  it("diesel uses the DIESEL factor, not gasoline (Z1.1/BUG-9)", () => {
+    const item = rowToLineItem({ quantity: 400, unit: "gallon", activity_type: "diesel" }, SEED_FACTORS, "co_test");
+    expect(item!.factorId).toBe("fuel.diesel.2025");
+    expect(Number(item!.co2eKg)).toBeCloseTo(4084, 0); // 400 × 0.010210 × 1000, NOT gasoline's 3554.8
+  });
+
   it("flags a row with missing quantity as unmapped — never drops it", () => {
     const row = { unit: "gallon", activity_type: "diesel" };
     const item = rowToLineItem(row, SEED_FACTORS, "co_test");

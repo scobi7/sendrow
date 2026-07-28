@@ -93,10 +93,13 @@ function resolveFactorQuery(row: NormalizedRow) {
   // average - a category query would pick an arbitrary subregion.
   if (u.includes("kwh") || t.includes("electric")) return { factorId: "egrid.USAVG.2024" };
   if (u.includes("therm") || (t.includes("gas") && !t.includes("gasoline"))) return { category: "stationary_combustion", unit: "therm" };
-  // Fuel quantities must arrive in gallons - an activity of "gasoline" with no
-  // unit is usually a $ amount, and dollars are never treated as gallons.
-  if (u.includes("gallon") && t.includes("diesel")) return { category: "mobile_combustion", unit: "gallon" };
-  if (u.includes("gallon")) return { category: "mobile_combustion", unit: "gallon" };
+  // Fuel in gallons: the fuel TYPE must reach the lookup, or every fuel resolves
+  // to gasoline (diesel and propane have their own factors). Default gasoline
+  // when unspecified - it's the most common and the safest floor.
+  if (u.includes("gallon")) {
+    const fuel = t.includes("diesel") ? "diesel" : t.includes("propane") ? "propane" : "gasoline";
+    return { category: "mobile_combustion", unit: "gallon", keyword: fuel };
+  }
   if (u.includes("mile")) return { category: "commute", unit: "mile" };
   if (u.includes("ton") || t.includes("waste")) return { category: "waste", unit: "ton" };
   return null;
@@ -123,17 +126,17 @@ export function fleetFuelToLineItems(
     }
     const fuelType = (row.activity_type ?? "").toLowerCase();
     let pricePerGal: number;
-    let factorQuery: { category: string; unit: string };
+    let factorQuery: { category: string; unit: string; keyword: string };
 
     if (fuelType.includes("diesel")) {
       pricePerGal = prices.diesel;
-      factorQuery = { category: "mobile_combustion", unit: "gallon" };
+      factorQuery = { category: "mobile_combustion", unit: "gallon", keyword: "diesel" };
     } else if (fuelType.includes("gasoline") || fuelType.includes("gas")) {
       pricePerGal = prices.gasoline;
-      factorQuery = { category: "mobile_combustion", unit: "gallon" };
+      factorQuery = { category: "mobile_combustion", unit: "gallon", keyword: "gasoline" };
     } else if (fuelType.includes("propane")) {
       pricePerGal = prices.propane ?? prices.gasoline;
-      factorQuery = { category: "stationary_combustion", unit: "gallon" };
+      factorQuery = { category: "stationary_combustion", unit: "gallon", keyword: "propane" };
     } else {
       results.push(unmappedLineItem(row, `Unrecognized fuel type "${row.activity_type ?? ""}"`, companyId, mappingProfileId));
       continue;

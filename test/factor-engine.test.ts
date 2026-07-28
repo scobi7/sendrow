@@ -20,6 +20,15 @@ describe("lookupFactor", () => {
     expect(f!.category).toBe("mobile_combustion");
   });
 
+  it("disambiguates fuel by keyword - diesel/propane don't fall back to gasoline (Z1.1/BUG-9)", () => {
+    const diesel = lookupFactor(SEED_FACTORS, { category: "mobile_combustion", unit: "gallon", keyword: "diesel" });
+    expect(diesel!.factor_id).toBe("fuel.diesel.2025");
+    const gasoline = lookupFactor(SEED_FACTORS, { category: "mobile_combustion", unit: "gallon", keyword: "gasoline" });
+    expect(gasoline!.factor_id).toBe("fuel.gasoline.2025");
+    const propane = lookupFactor(SEED_FACTORS, { category: "stationary_combustion", unit: "gallon", keyword: "propane" });
+    expect(propane!.factor_id).toBe("equip.propane.2025");
+  });
+
   it("returns the most recent vintage when multiple match", () => {
     const factors = [
       { ...SEED_FACTORS[0], factor_id: "fuel.gasoline.2023", year_effective: 2023 },

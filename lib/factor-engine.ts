@@ -20,6 +20,11 @@ export type FactorQuery = {
   factorId?: string;
   category?: string;
   unit?: string;
+  /** Disambiguates same-category/unit factors (e.g. diesel vs gasoline vs propane,
+   *  all mobile_combustion + gallon). Matched against factor_name and factor_id.
+   *  Without it, a plain category+unit query returns the first match (a bug: every
+   *  gallon of fuel resolved to gasoline). */
+  keyword?: string;
 };
 
 /** Pure lookup - takes a factors array so it works in tests without a DB call. */
@@ -30,10 +35,12 @@ export function lookupFactor(
   if (query.factorId) {
     return factors.find((f) => f.factor_id === query.factorId) ?? null;
   }
+  const kw = query.keyword?.toLowerCase();
   const matches = factors.filter((f) => {
     const categoryMatch = !query.category || f.category === query.category;
     const unitMatch = !query.unit || f.unit.toLowerCase().includes(query.unit.toLowerCase());
-    return categoryMatch && unitMatch && !f.year_retired;
+    const keywordMatch = !kw || f.factor_name.toLowerCase().includes(kw) || f.factor_id.toLowerCase().includes(kw);
+    return categoryMatch && unitMatch && keywordMatch && !f.year_retired;
   });
   if (matches.length === 0) return null;
   return matches.sort((a, b) => b.year_effective - a.year_effective)[0];
