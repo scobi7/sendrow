@@ -68,6 +68,46 @@ P1 (bigger, after pilots): SMS channel + missing-item nudges · mobile photo upl
 
 **Y5 — Data asset (research thread only, NOT scoped):** what a cleaned cross-supplier dataset is worth (missing-data estimation, anomaly flags at review, sector benchmarking) — respects workspace-scoped privacy line. Explore, don't build.
 
+## Z — MVP reporting hardening (PROPOSED 2026-07-28; awaiting approval before TASKS.md + code)
+> Strategy frame (from Jasmin/SELE interview + team calls): **Sendrow is the data layer. MVP = REPORT (compliance + automation savings, sold to the consultant per-client). Future = CONSULT/reduce (arms the consultant, never replaces them).** This plan is all MVP-reporting: make the reporting tool correct, close the real gaps, and get the data in. The consulting layer is the Roadmap section below — captured so it isn't re-litigated, NOT built now.
+> Pricing model (to fold into GOALS.md): one flexible tool, priced per active client; the client-company's budget funds it *through* the consultant; do NOT tier report-vs-consult now (per-client count is the expansion axis; nothing to tier until the consult features exist).
+
+**Z1 — Correctness fixes (Jasmin-grade; do first)**
+- Z1.1 **BUG-9: diesel & propane are calculated with the GASOLINE factor.** `resolveFactorQuery` returns a generic `{mobile_combustion, gallon}` for any fuel and `lookupFactor` grabs the first match (gasoline). Pass the specific fuel type through so diesel→`fuel.diesel.2025`, propane→`fuel.propane.2025`. Add tests (diesel 400 gal → 4084 kg, not 3554.80). Small, high-value.
+- Z1.2 **BUG-11: Excel serial dates.** Files opened/re-saved in Excel turn `2025-04` into `45657.66…`; calcs fine but period/date tagging breaks. Detect + convert Excel serials in `sheet-parse`/`units` (serial → ISO date), or at minimum flag them.
+
+**Z2 — Close the comments gap (supplier can't see/answer line-item questions without an account)**
+- Z2.1 Line-item comments ("Ask [client] about this figure" on Review) currently email-only, dead-end reply, and email is unconfigured — the supplier effectively can't see or respond. Surface them on the portal in a **"Questions from your consultant"** section (map line item → its checklist item, or a per-request messages block), matching how flag threads already work.
+- Z2.2 Change `sendCommentEmail` to link to the portal (not "reply to this email"), like `sendFlagReplyEmail`. (Full reply-by-email stays W4.5, needs an inbound provider.)
+
+**Z3 — Polish / cleanup bugs**
+- Z3.1 **BUG-4: perf.** Parallelize the sequential queries on client detail / review / manage / snapshot (4–7s cold in dev). Loading skeletons already mask it (BUG-3); this is the real fix. Re-measure on prod.
+- Z3.2 **BUG-6:** remove the dead QuickBooks API routes (`/api/auth/quickbooks/*`) — UI gone since X4.
+- Z3.3 **BUG-7:** ensure no consultant/demo path links into the disabled `/checkout` · leave the routes dormant, just unlinked.
+- Z3.4 **BUG-1:** `/admin/factors` hydration hang — investigate; partly needs prod Clerk + ADMIN_CLERK_ID (Malachi), so may be blocked.
+
+**Z4 — Conversion P0 (existential; = the old Y3, pulled into this cycle)**
+- Z4.1 Early-engagement reminder 48–72h after send (biggest single lift; total touches ≤4).
+- Z4.2 Checklist items + est. time inside the request email (client sees the ask is small before clicking).
+- Z4.3 Per-item time estimates + overall progress on the portal.
+- Z4.4 Named-buyer "why" framing in the request.
+
+**Z5 — Optional hardening**
+- Z5.1 Draft-persistence for staged uploads (survive tab close) — the accepted downside of the batch-submit model; add if pilots hit it.
+- Z5.2 QA-1: walk the manual-entry ("Type it in") path end-to-end; QA-2..: create-client, scope-2 override, line-item comment (untested mutations).
+
+**Blocked on Malachi / env (can't fully build or test until):** Resend sending domain (email delivery, BUG-B1) · `BLOB_READ_WRITE_TOKEN` (evidence, BUG-B2) · real eGRID/USEEIO factor values (N7.2) · deploy v3 → main.
+
+## Roadmap — Future CONSULT/reduce layer (NOT this cycle; captured, do not build yet)
+> These make the consultant's *own* offering more valuable (upsell reduction advice), justifying a higher per-client price later. All ride on the existing data layer + config-driven format engine.
+- **Data protection / access control** — buyer sees only the aggregate snapshot, never raw proprietary inputs (a supplier won't hand over a chemical formula). Mechanism = data minimization + role-based visibility (NOT hashing — one-way, can't calc from it). Partly built (snapshots-only sharing, §13); tighten buyer-vs-consultant visibility. *Near-future, MVP-adjacent.*
+- **Assurer / third-party sign-off role** — auditor approves a frozen snapshot; fits the 2027 assurance wave (ISSA 5000) + audit-trail moat.
+- **Reduction insights (hotspots)** — "your biggest emissions are X; switching saves $Y." Sendrow supplies the data; the consultant gives the advice.
+- **Anonymized sector benchmarking** — "you're above your industry average." Percentile benchmarks (NOT ML early); respects the hard privacy line (aggregate only).
+- **ESG expansion (Social + Governance; ESRS/CSRD, IFRS S1/S2, double materiality)** — the format engine makes S/G "just another config." Latent S/G fields already in schema. Keeps climate focus for MVP; expand only after California is won.
+- **GRI community listing** — cheap distribution experiment; can run independently.
+- **Explicitly NOT doing:** blockchain traceability (our hash-stamped immutable ledger already gives tamper-evidence, without the complexity) · international expansion (contradicts "win California first") · ML on the dataset (premature — percentiles first).
+
 ## W3 — Format engine UI (= U3, the moat)
 - **W3.1 (U3.1) Config-driven reshaping (#9):** refactor `lib/formats.ts` → versioned template registry (DB): mappings + layout as data, conditional/branching (CDP). Ship configs: SB 253 (**CARB draft — Masao**), generic Excel, one real buyer questionnaire (**Kerri**).
 - **W3.2 (U3.2) Format Library + Mapping Builder (#35):** library list (built-ins + consultant-added, private-until-buyer-confirmed) · builder: upload → connect questions to fields → save as template → appears as format option.
