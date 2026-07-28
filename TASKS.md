@@ -80,9 +80,9 @@
 **Z1 — Correctness**
 - [x] **Z1.1** — BUG-9 FIXED: `FactorQuery.keyword` disambiguates fuel; `resolveFactorQuery` + `fleetFuelToLineItems` pass the fuel type. diesel→fuel.diesel (400gal = 4084kg ✓), propane→equip/fuel.propane. +2 tests (220 total).
 - [ ] **Z1.2** — BUG-11: Excel serial dates (`45657.66`) → detect + convert to ISO in the parser
-**Z2 — Comments gap (supplier can't see/answer line-item questions without an account)**
-- [ ] **Z2.1** — Surface line-item comments on the portal ("Questions from your consultant" section)
-- [ ] **Z2.2** — `sendCommentEmail` links to the portal, not "reply to this email"
+**Z2 — Comments gap (supplier can't see/answer line-item questions without an account) — DONE 2026-07-28**
+- [x] **Z2.1** — "Questions from your consultant" section on the portal shows consultant line-item comments (figure-labeled) + a Reply box (two-way, via new `/api/portal/line-comment`). Verified live on demo_bayb (July-spike question shows; reply posts).
+- [x] **Z2.2** — `sendCommentEmail` now links to the portal ("Open your secure page to answer") instead of the dead-end "reply to this email"; caller passes the open request's token.
 **Z3 — Polish / cleanup**
 - [ ] **Z3.1** — BUG-4: parallelize slow queries (client detail/review/manage/snapshot)
 - [ ] **Z3.2** — BUG-6: remove dead QuickBooks API routes

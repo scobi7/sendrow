@@ -313,15 +313,19 @@ export async function sendCommentEmail(
   companyName: string,
   lineLabel: string,
   body: string,
+  portalToken: string | null,
   brand?: { brandName: string; replyTo: string | null } | null
-) {
-  await send(
+): Promise<boolean> {
+  // Link to the portal (Z2) so the supplier can answer without an account -
+  // "reply to this email" was a dead end (no inbound email handling).
+  const link = portalToken ? `${APP_URL}/portal/${portalToken}` : null;
+  return send(
     clientEmail,
     `Question about your ${companyName} data`,
     `<p>Hi ${clientName.split(" ")[0]},</p>
-<p>Your reviewer left a note on <strong>${lineLabel}</strong>:</p>
+<p>Your reviewer has a question about <strong>${lineLabel}</strong>:</p>
 <blockquote><p>${body}</p></blockquote>
-<p>You can reply to this email directly.</p>
+${link ? `<p><a href="${link}">Open your secure page to answer →</a></p>` : "<p>Your consultant will follow up.</p>"}
 ${brand ? `<p> - ${brand.brandName}</p>` : ""}`,
     brand ? { fromName: brand.brandName, replyTo: brand.replyTo } : undefined
   );

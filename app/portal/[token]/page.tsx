@@ -1,10 +1,11 @@
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { comments, dataRequests, companies, emissionLineItems } from "@/lib/db/schema";
-import { desc, and } from "drizzle-orm";
+import { desc, and, isNotNull } from "drizzle-orm";
 import { portalTokenValid } from "@/lib/portal";
 import type { ChecklistItem } from "@/lib/portal";
 import { PortalChecklist } from "./portal-checklist";
+import { ConsultantQuestions, type QuestionThread } from "./consultant-questions";
 import { getBrandForCompany } from "@/lib/branding";
 import { RequestNewLink } from "./request-new-link";
 
@@ -29,7 +30,7 @@ export default async function PortalPage({ params }: { params: Promise<{ token: 
     );
   }
 
-  const [[company], brand, threadRows, priorRows] = await Promise.all([
+  const [[company], brand, threadRows, priorRows, lineComments, lineLabels] = await Promise.all([
     db.select({ name: companies.name }).from(companies).where(eq(companies.id, request.companyId)),
     getBrandForCompany(request.companyId),
     // Per-item conversation (X2): the supplier's stuck messages + consultant replies
@@ -55,6 +56,16 @@ export default async function PortalPage({ params }: { params: Promise<{ token: 
       .where(and(eq(emissionLineItems.companyId, request.companyId), eq(emissionLineItems.status, "mapped")))
       .orderBy(desc(emissionLineItems.createdAt))
       .limit(24),
+    // Consultant questions on specific figures (Z2): comments tied to a line item
+    db
+      .select({ lineItemId: comments.lineItemId, authorType: comments.authorType, body: comments.body, createdAt: comments.createdAt })
+      .from(comments)
+      .where(and(eq(comments.companyId, request.companyId), isNotNull(comments.lineItemId))),
+    // Line-item labels so each question shows which figure it's about
+    db
+      .select({ id: emissionLineItems.id, sourceRef: emissionLineItems.sourceRef, category: emissionLineItems.category, rawValue: emissionLineItems.rawValue, rawUnit: emissionLineItems.rawUnit, activityDate: emissionLineItems.activityDate })
+      .from(emissionLineItems)
+      .where(eq(emissionLineItems.companyId, request.companyId)),
   ]);
   const prefill = priorRows.map((r) => ({
     date: r.activityDate ?? "",
@@ -70,6 +81,24 @@ export default async function PortalPage({ params }: { params: Promise<{ token: 
     if (!t.checklistItemId) continue;
     (threads[t.checklistItemId] ??= []).push({ authorType: t.authorType, body: t.body, createdAt: t.createdAt });
   }
+
+  // Group line-item comments into per-figure threads; only show ones the
+  // consultant actually asked about (a question the supplier should answer).
+  const labelById = new Map(lineLabels.map((l) => [l.id, l]));
+  const byLine: Record<string, { authorType: string; body: string; createdAt: string }[]> = {};
+  for (const c of lineComments.sort((a, b) => a.createdAt.localeCompare(b.createdAt))) {
+    if (!c.lineItemId) continue;
+    (byLine[c.lineItemId] ??= []).push({ authorType: c.authorType, body: c.body, createdAt: c.createdAt });
+  }
+  const questionThreads: QuestionThread[] = Object.entries(byLine)
+    .filter(([, msgs]) => msgs.some((m) => m.authorType === "consultant"))
+    .map(([lineItemId, messages]) => {
+      const l = labelById.get(lineItemId);
+      const parts = l
+        ? [l.sourceRef?.trim() || l.category.replace(/_/g, " "), l.rawValue && l.rawUnit ? `${Number(l.rawValue).toLocaleString()} ${l.rawUnit}` : "", l.activityDate ? `(${l.activityDate})` : ""].filter(Boolean)
+        : ["a figure you sent"];
+      return { lineItemId, figure: parts.join(" - "), messages };
+    });
 
   return (
     <main
@@ -107,6 +136,9 @@ export default async function PortalPage({ params }: { params: Promise<{ token: 
           <p className="mt-1 text-sm font-medium" style={{ color: "var(--warning)" }}>Due {request.dueDate}</p>
         )}
       </div>
+
+      {/* Consultant questions on specific figures - visible even once fulfilled (Z2) */}
+      <ConsultantQuestions token={token} threads={questionThreads} />
 
       {request.status === "fulfilled" ? (
         <div className="rounded-2xl p-8 text-center" style={{ background: "var(--card)" }}>

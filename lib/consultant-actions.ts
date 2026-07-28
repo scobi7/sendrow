@@ -840,9 +840,11 @@ export async function addLineItemComment(companyId: string, itemId: string, form
   });
   logEvent({ companyId, actor: ctx.user.id, actorType: "consultant", verb: "comment.added", subject: ctx.item.sourceRef || itemId, subjectId: itemId, meta: { body: body.slice(0, 140) } });
 
-  const [company, brand] = await Promise.all([
+  const [company, brand, openReq] = await Promise.all([
     db.query.companies.findFirst({ where: eq(companies.id, companyId) }),
     getBrandForCompany(companyId),
+    // The supplier answers on the portal, so link them to a live request's token.
+    db.query.dataRequests.findFirst({ where: and(eq(dataRequests.companyId, companyId), eq(dataRequests.status, "open")), orderBy: desc(dataRequests.createdAt) }),
   ]);
   if (company?.clientContactEmail) {
     sendCommentEmail(
@@ -851,6 +853,7 @@ export async function addLineItemComment(companyId: string, itemId: string, form
       company.name,
       ctx.item.sourceRef || "a data line",
       body,
+      openReq?.token ?? null,
       brand
     ).catch(() => {});
   }
