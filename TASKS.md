@@ -1,5 +1,5 @@
 # TASKS.md — Open Work
-> Active branch `sendrow-v3` (CRM reshape). Plans in flight: Y (CRM/MVP-for-pilots), D (Azoulay demo prep), X (demo-feedback fixes — built). UI spec: `docs/wireframes-2026-07-13.md`. Completed: A–N, T, U1–U2, W1–W2 — history in git. Bugs section above is the live "what's broken" list.
+> **DEPLOYED TO PRODUCTION 2026-07-28** (main = ef96739 = sendrow-v3; Resend verified, email live). Active dev branch = `sendrow-v3` (== main). Plan Z in flight (Z1.1 + Z2 done; Z3/Z4/Z5 open). Under consideration: multi-office/CFO layer (NEXT.md). Completed: A–N, T, U1–U2, W1–W2, X, Y (board reverted), Z1.1, Z2 — history in git. BUGS section above = live "what's broken".
 
 ## BUGS — everything that doesn't work (audited 2026-07-21, updated 2026-07-23, branch `sendrow-v3`)
 > Method: static route/link audit + live page-by-page sweep of all 34 routes + mutation pass, all driven against real demo data (temporary dev-only auth bypass, reverted each time). Every page returns HTTP 200 with no JS errors EXCEPT where noted. Severity: P0 blocks a demo, P1 real bug, P2 polish/cleanup, BLOCKED needs env/user to even test.
@@ -22,7 +22,7 @@
 - [ ] **BUG-7 (P2)** — Payment gate is disabled (middleware comment), so `/checkout`, `/pricing`, `/pricing/agency` are reachable but non-functional. By design during dev, but pricing is deferred (GOALS.md) — make sure no demo path links into checkout.
 
 **Could NOT verify — BLOCKED on env or would mutate prod data (not confirmed broken, just untested)**
-- [ ] **BUG-B1 (BLOCKED)** — Email delivery (request link, reminders, flag reply, submission notice): Resend sending domain unverified, so all email is untested end-to-end. The "client gets a link" beat depends on it. Needs Malachi (Resend) — see D2.3.
+- [~] **BUG-B1 (UNBLOCKED 2026-07-28)** — Resend sending domain now verified, so email delivers in prod. Still needs a live smoke-test (Malachi: create a real request to your own email on sendrow.app → confirm it lands). The bypass can't test prod email (prod uses real Clerk).
 - [ ] **BUG-B2 (BLOCKED)** — Evidence view/download: `BLOB_READ_WRITE_TOKEN` unset, so uploads are hash-only and the download route serves the "file not stored" page (Plan X made that honest, but real storage is untested). Needs Malachi (Vercel env) — see D2.2.
 - [x] **BUG-B3 (VERIFIED 2026-07-23)** — Portal submission end-to-end driven live: upload file → mapping preview → confirm → stage → Submit all → line items land in the ledger (11 rows). Also confirmed the staging guarantee (ledger stayed empty while staged). Works.
 - [~] **BUG-B4 (mostly verified)** — Mutation pass: **create request ✓, reply-to-flag ✓, approve-and-freeze ✓, share snapshot ✓, portal staged-submit ✓.** Still untested: create client, scope-2 override save, comment on line item. QA mutations cleaned via `reset-demo.ts` after each pass.

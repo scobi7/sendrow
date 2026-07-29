@@ -1,6 +1,15 @@
 # NEXT.md
 > Current state + what only the user can do. History lives in git; build order in PLANS.md; UI spec: `docs/wireframes-2026-07-13.md`.
-> Last updated: 2026-07-28
+> Last updated: 2026-07-29
+
+## 🔵 Under consideration — multi-office / CFO data-collection (feedback 2026-07-29, NOT decided)
+Consultant feedback: the person they talk to (often the **CFO**) struggles to get emissions data, *especially across multiple offices/plants* — the data is scattered inside the client's own org. This is the #1 data-collection bottleneck (existential). Malachi's idea: a client/CFO dashboard to collect + download data, check their dashboard, and receive the consultation report.
+**Claude's recommendation — split problem from solution:**
+- **DO (Version A, on-strategy): a multi-office coordination layer.** Treat the CFO as a data-provider who must collect from their own sites first. Add portal **delegation** (send a sub-request to each office/plant), **rollup**, and a cross-site **progress view** → flows to the consultant as one package. Consultant-initiated, low-friction, sharpens the multi-site-SMB wedge (Jasmin's world). Delegation was already sketched in W4.
+- **DO: extend the white-label `/shared` surface** so the consultant can hand the client a live branded dashboard + report. The consultant delivers it; we never go around them.
+- **DON'T (Version B): a standalone client-logs-in-independently product.** That re-opens the direct-to-company model deleted in v2 (Plan M) and breaks "never replace the consultant" + "consultant is the only paying customer." Client-facing surfaces must stay white-labeled + consultant-controlled.
+- Caveat: software eases *coordination*; it can't conjure data that doesn't exist centrally (partly a client people/process problem).
+→ If approved, this becomes a Plan (delegation + rollup + `/shared` dashboard extension), not a client SaaS.
 
 ## 🟢 Where the product stands
 - **DEPLOYED TO PRODUCTION 2026-07-28** (`main` = `ef96739`, fast-forwarded from `sendrow-v3`; Vercel build green). Everything below is live on sendrow.app: Plan X, the dashboard-table revert, Z1.1 (diesel fix), Z2 (comments gap), portal multi-file + batch-submit. **Resend sending domain verified** → email now delivers. `CRON_SECRET` set. `sendrow-v3` remains the active dev branch (now == main).
