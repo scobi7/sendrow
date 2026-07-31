@@ -11,6 +11,7 @@ export type EventVerb =
   | "snapshot.created" | "snapshot.shared" | "snapshot.approved_with_flags" | "share.revoked"
   | "review.changes_requested"
   | "client.stuck" | "flag.replied"
+  | "location.added" | "location.removed"
   | "email.sent" | "email.failed";
 
 /** Append-only event log (Ground Rule 3). Fire-and-forget - logging must

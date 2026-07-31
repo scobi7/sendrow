@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import { and, desc, eq, isNull } from "drizzle-orm";
 import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { companies, comments, consultantClients, emissionLineItems, intakeSessions } from "@/lib/db/schema";
+import { companies, comments, consultantClients, emissionLineItems, intakeSessions, locations } from "@/lib/db/schema";
+import { siteLabel } from "@/lib/site-requests";
 import { LedgerRow } from "./ledger-row";
 
 const FILTERS = ["all", "mapped", "unmapped", "excluded"] as const;
@@ -32,7 +33,7 @@ export default async function LedgerPage({
   });
   if (!link) notFound();
 
-  const [company, items, sessions, allComments] = await Promise.all([
+  const [company, items, sessions, allComments, sites] = await Promise.all([
     db.query.companies.findFirst({ where: eq(companies.id, id) }),
     db
       .select()
@@ -45,10 +46,12 @@ export default async function LedgerPage({
       .where(eq(intakeSessions.companyId, id))
       .orderBy(desc(intakeSessions.createdAt)),
     db.select().from(comments).where(eq(comments.companyId, id)),
+    db.select().from(locations).where(eq(locations.companyId, id)),
   ]);
   if (!company) notFound();
 
   const sessionByProfile = new Map(sessions.filter((s) => s.mappingProfileId).map((s) => [s.mappingProfileId!, s]));
+  const siteNameById = new Map(sites.map((s) => [s.id, siteLabel(s)]));
 
   let displayed = items;
   if (statusFilter && statusFilter !== "all") displayed = displayed.filter((i) => i.status === statusFilter);
@@ -173,6 +176,7 @@ export default async function LedgerPage({
                       period: item.period,
                       confidence: item.confidence,
                       flagReason: log?.reason ?? null,
+                      locationName: item.locationId ? siteNameById.get(item.locationId) ?? null : null,
                     }}
                     comments={itemComments}
                     extraEvidence={log?.extra_evidence ?? []}

@@ -137,6 +137,9 @@ async function handleImport(request: NextRequest) {
     evidenceId,
     headerFingerprint: fingerprint,
     mappingConfirmed,
+    // Site-scoped links (Plan MO): rows are tagged with the site and
+    // electricity uses the site's own eGRID subregion factor
+    locationId: dataRequest.locationId,
   });
 
   // Response notification (U2.7): the consultant hears the moment data lands

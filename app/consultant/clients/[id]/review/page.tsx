@@ -3,7 +3,9 @@ import { notFound } from "next/navigation";
 import { and, desc, eq, isNull } from "drizzle-orm";
 import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { companies, comments, consultantClients, dataRequests, emissionLineItems, intakeSessions } from "@/lib/db/schema";
+import { companies, comments, consultantClients, dataRequests, emissionLineItems, intakeSessions, locations } from "@/lib/db/schema";
+import { siteLabel } from "@/lib/site-requests";
+import { egridLabel } from "@/lib/factors";
 import { convertDollarFuel, addLineItemComment } from "@/lib/consultant-actions";
 import { isDollarFuelRow, fuelKindOf } from "@/lib/ledger";
 import { BackLink } from "@/components/workflow";
@@ -27,12 +29,13 @@ export default async function ReviewApprovePage({ params }: { params: Promise<{ 
   });
   if (!link) notFound();
 
-  const [company, items, sessions, allComments, requests] = await Promise.all([
+  const [company, items, sessions, allComments, requests, sites] = await Promise.all([
     db.query.companies.findFirst({ where: eq(companies.id, id) }),
     db.select().from(emissionLineItems).where(eq(emissionLineItems.companyId, id)).orderBy(desc(emissionLineItems.createdAt)),
     db.select().from(intakeSessions).where(eq(intakeSessions.companyId, id)).orderBy(desc(intakeSessions.createdAt)),
     db.select().from(comments).where(eq(comments.companyId, id)),
     db.select().from(dataRequests).where(eq(dataRequests.companyId, id)).orderBy(desc(dataRequests.createdAt)),
+    db.select().from(locations).where(eq(locations.companyId, id)),
   ]);
   if (!company) notFound();
 
@@ -61,6 +64,25 @@ export default async function ReviewApprovePage({ params }: { params: Promise<{ 
   }
   const unmappedVendors = Object.entries(vendorCounts).map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count);
   const fuelKinds = [...new Set(dollarFuel.map((i) => fuelKindOf({ calcLog: (i.calcLog as Record<string, unknown>) ?? {} })).filter(Boolean))] as string[];
+
+  // Per-location breakdown (Plan MO4): each site's own grid factor, then sum.
+  // Only shown once site-tagged data exists; untagged rows = company-wide.
+  const mapped = active.filter((i) => i.status === "mapped");
+  const siteById = new Map(sites.map((s) => [s.id, s]));
+  const byLocation = [...new Set(mapped.map((i) => i.locationId))]
+    .map((locId) => {
+      const rows = mapped.filter((i) => i.locationId === locId);
+      const site = locId ? siteById.get(locId) : null;
+      return {
+        key: locId ?? "company",
+        label: site ? siteLabel(site) : "Company-wide",
+        region: site ? egridLabel(site.egridSubregion) : null,
+        rows: rows.length,
+        co2eT: rows.reduce((s, i) => s + Number(i.co2eKg), 0) / 1000,
+      };
+    })
+    .sort((a, b) => b.co2eT - a.co2eT);
+  const hasSiteData = byLocation.some((b) => b.key !== "company");
 
   // Category groups: the wireframe's line-item cards
   const groups = new Map<string, typeof active>();
@@ -145,6 +167,37 @@ export default async function ReviewApprovePage({ params }: { params: Promise<{ 
                 <SessionActions sessionId={s.id} companyId={id} />
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* By location (Plan MO4): per-site factor, then sum - never an average */}
+      {hasSiteData && (
+        <div className="glass-panel mb-6">
+          <div className="px-5 pt-4 pb-3" style={{ borderBottom: "1px solid var(--divider)" }}>
+            <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>By location</p>
+            <p className="mt-1 text-xs" style={{ color: "var(--text-muted)" }}>
+              Each site calculated with its own eGRID subregion factor; the company total is the sum of sites.
+            </p>
+          </div>
+          <div className="divide-y" style={{ borderColor: "var(--divider)" }}>
+            {byLocation.map((b) => (
+              <div key={b.key} className="flex items-center justify-between px-5 py-2.5 text-sm">
+                <p style={{ color: "var(--text)" }}>
+                  {b.label}
+                  <span className="ml-2 text-xs" style={{ color: "var(--text-muted)" }}>
+                    {b.region ? `${b.region} grid · ` : ""}{b.rows} row{b.rows !== 1 ? "s" : ""}
+                  </span>
+                </p>
+                <p className="font-data font-semibold" style={{ color: "var(--text)" }}>{fmt(b.co2eT)} tCO2e</p>
+              </div>
+            ))}
+            <div className="flex items-center justify-between px-5 py-2.5 text-sm">
+              <p className="font-semibold" style={{ color: "var(--text)" }}>Total</p>
+              <p className="font-data font-bold" style={{ color: "var(--text)" }}>
+                {fmt(byLocation.reduce((s, b) => s + b.co2eT, 0))} tCO2e
+              </p>
+            </div>
           </div>
         </div>
       )}

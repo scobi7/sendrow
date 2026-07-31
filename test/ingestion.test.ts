@@ -157,4 +157,18 @@ describe("no silent drops (contracts/ invariant)", () => {
     const item = rowToLineItem(row, SEED_FACTORS, "co_test");
     expect(item.factorId).toBe("egrid.USAVG.2024");
   });
+
+  it("site-scoped electricity uses the site's own eGRID subregion factor (Plan MO)", () => {
+    const row = { quantity: 1000, unit: "kWh", activity_type: "electricity" };
+    const item = rowToLineItem(row, SEED_FACTORS, "co_test", null, [], "egrid.CAMX.2024");
+    expect(item.factorId).toBe("egrid.CAMX.2024");
+    // CAMX 0.000209 t/kWh: 1000 kWh = 209 kg, vs 369 kg on the national average
+    expect(Number(item.co2eKg)).toBeCloseTo(209, 3);
+  });
+
+  it("site factor only touches electricity - fuel rows are unaffected", () => {
+    const row = { quantity: 100, unit: "gallons", activity_type: "diesel" };
+    const item = rowToLineItem(row, SEED_FACTORS, "co_test", null, [], "egrid.CAMX.2024");
+    expect(item.factorId).toBe("fuel.diesel.2025");
+  });
 });

@@ -711,6 +711,7 @@ export async function createSnapshot(companyId: string, formData: FormData) {
     period: i.period,
     factorId: i.factorId,
     calcLog: i.calcLog,
+    locationId: i.locationId,
   }));
 
   const id = snapId();
@@ -947,6 +948,75 @@ export async function saveRequestTemplate(formData: FormData) {
     createdAt: new Date().toISOString(),
   });
   revalidatePath("/consultant", "layout");
+}
+
+// ─────────── Plan MO - multi-office locations ───────────
+
+/** Adds a site to a client (MO1). Subregion comes from the dropdown for now -
+ *  auto zip→subregion lookup is deferred (MO6). */
+export async function addLocation(companyId: string, formData: FormData) {
+  const user = await ownsClient(companyId);
+  if (!user) return;
+  const { EGRID_SUBREGION_OPTIONS } = await import("./locations");
+  const name = String(formData.get("name") ?? "").trim();
+  const egridSubregion = String(formData.get("egrid_subregion") ?? "");
+  if (!name || !EGRID_SUBREGION_OPTIONS.some((o) => o.factorId === egridSubregion)) return;
+
+  const { locations } = await import("./db/schema");
+  await db.insert(locations).values({
+    id: newId("loc"),
+    companyId,
+    name,
+    address: String(formData.get("address") ?? "").trim(),
+    city: String(formData.get("city") ?? "").trim(),
+    state: String(formData.get("state") ?? "").trim().toUpperCase(),
+    zip: String(formData.get("zip") ?? "").trim(),
+    egridSubregion,
+    contactName: String(formData.get("contact_name") ?? "").trim() || null,
+    contactEmail: String(formData.get("contact_email") ?? "").trim() || null,
+  });
+  logEvent({ companyId, actor: user.id, actorType: "consultant", verb: "location.added", subject: name });
+  revalidatePath(`/consultant/clients/${companyId}`);
+}
+
+/** Removes a site - only while nothing references it (no data, no requests). */
+export async function removeLocation(companyId: string, locationId: string) {
+  const user = await ownsClient(companyId);
+  if (!user) return;
+  const { locations } = await import("./db/schema");
+  const [loc] = await db.select().from(locations).where(eq(locations.id, locationId));
+  if (!loc || loc.companyId !== companyId) return;
+  const [item] = await db.select({ id: emissionLineItems.id }).from(emissionLineItems).where(eq(emissionLineItems.locationId, locationId)).limit(1);
+  const req = await db.query.dataRequests.findFirst({ where: eq(dataRequests.locationId, locationId) });
+  if (item || req) return; // referenced sites stay - the audit trail needs them
+  await db.delete(locations).where(eq(locations.id, locationId));
+  logEvent({ companyId, actor: user.id, actorType: "consultant", verb: "location.removed", subject: loc.name || loc.city });
+  revalidatePath(`/consultant/clients/${companyId}`);
+}
+
+/** Sends (or re-sends) the site's delegation link (MO2), optionally saving the
+ *  site contact first. */
+export async function sendSiteLinkAction(companyId: string, locationId: string, formData: FormData) {
+  const user = await ownsClient(companyId);
+  if (!user) return;
+  const { locations } = await import("./db/schema");
+  const [loc] = await db.select().from(locations).where(eq(locations.id, locationId));
+  if (!loc || loc.companyId !== companyId) return;
+
+  const contactName = String(formData.get("contact_name") ?? "").trim();
+  const contactEmail = String(formData.get("contact_email") ?? "").trim();
+  if (contactName || contactEmail) {
+    await db
+      .update(locations)
+      .set({ ...(contactName ? { contactName } : {}), ...(contactEmail ? { contactEmail } : {}) })
+      .where(eq(locations.id, locationId));
+    if (contactName) loc.contactName = contactName;
+    if (contactEmail) loc.contactEmail = contactEmail;
+  }
+
+  const { sendSiteLink } = await import("./site-requests");
+  await sendSiteLink({ companyId, location: loc, requestedBy: user.id, actorType: "consultant" });
+  revalidatePath(`/consultant/clients/${companyId}`);
 }
 
 /** Pauses/resumes automatic chasing for one request (#21). */

@@ -44,11 +44,16 @@ export const userCompanies = pgTable("gt_user_companies", {
 export const locations = pgTable("gt_locations", {
   id: text("id").primaryKey(),
   companyId: text("company_id").notNull().references(() => companies.id),
+  // Site name ("Fresno plant") - legacy rows fall back to city/address
+  name: text("name").notNull().default(""),
   address: text("address").notNull().default(""),
   city: text("city").notNull().default(""),
   state: text("state").notNull().default("CA"),
   zip: text("zip").notNull().default(""),
   egridSubregion: text("egrid_subregion").notNull(),
+  // Who at this site receives its delegated data-request link (Plan MO2)
+  contactName: text("contact_name"),
+  contactEmail: text("contact_email"),
 });
 
 export const companyConnections = pgTable("gt_connections", {
@@ -245,6 +250,9 @@ export const emissionLineItems = pgTable("gt_emission_line_items", {
   factorId: text("factor_id"),
   calcLog: jsonb("calc_log").notNull().default({}),
   mappingProfileId: text("mapping_profile_id"),
+  // Which site this row belongs to (Plan MO3) - electricity calculates against
+  // the site's own eGRID subregion, never a company-wide average. Null = company-wide.
+  locationId: text("location_id"),
   createdAt: text("created_at").notNull(),
 });
 
@@ -299,6 +307,10 @@ export const dataRequests = pgTable("gt_data_requests", {
   remindersSentAt: jsonb("reminders_sent_at"),
   // Per-request kill switch for automatic chasing (#21)
   remindersEnabled: boolean("reminders_enabled").notNull().default(true),
+  // Multi-office delegation (Plan MO2): a location-scoped child request. The
+  // CFO's company-wide request is the parent; each site gets its own link.
+  locationId: text("location_id"),
+  parentRequestId: text("parent_request_id"),
 });
 
 /** Cross-client vendor → category memory (Plan J). Global: one confirmation

@@ -98,7 +98,7 @@ P1 (bigger, after pilots): SMS channel + missing-item nudges · mobile photo upl
 
 **Blocked on Malachi / env (can't fully build or test until):** ~~Resend~~ (verified 2026-07-28) · `BLOB_READ_WRITE_TOKEN` (evidence, BUG-B2) · real eGRID/USEEIO factor values (N7.2). ~~deploy v3 → main~~ (deployed 2026-07-28).
 
-## MO — Multi-office collection (Phase 1, for design testing ~week of 2026-08-04)
+## MO — Multi-office collection (Phase 1) — BUILT 2026-07-31 (see TASKS.md MO; verified live E2E via portal delegation + site upload)
 > Feedback: the CFO (who the consultant talks to) struggles to gather data across the client's own offices/plants. This is the existential data-collection bottleneck. Method is GHG-Protocol-standard (validated by research): **calculate each facility with its own grid factor, then sum — never a company-wide average**; grid factor = zip → eGRID subregion. Bones already exist: `locations` table (address/city/state/zip/`egridSubregion`), per-location `utilityData`, and the scope2 page already does per-location calc via `getFactor(egridSubregion)`. This wires those into the consultant portal collection flow.
 > Scope for the DESIGN TEST = the visible flow + accurate per-location factors. Keep it tight; the goal is reactions, not production polish.
 

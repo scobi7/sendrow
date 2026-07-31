@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import { and, desc, eq, isNull } from "drizzle-orm";
 import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { companies, consultantClients, evidence, shareLinks, snapshots, userCompanies } from "@/lib/db/schema";
+import { companies, consultantClients, evidence, locations, shareLinks, snapshots, userCompanies } from "@/lib/db/schema";
+import { siteLabel } from "@/lib/site-requests";
 import { shareSnapshot, revokeShareLink } from "@/lib/consultant-actions";
 import { BackLink } from "@/components/workflow";
 import { ShareLinkButton } from "../../share-link-button";
@@ -46,8 +47,22 @@ export default async function SnapshotSharePage({
       .where(eq(snapshots.companyId, id))
       .orderBy(desc(snapshots.createdAt)),
   ]);
+  const sites = await db.select().from(locations).where(eq(locations.companyId, id));
 
   const totals = snap.totals as SnapshotTotals;
+
+  // Per-location breakdown (Plan MO4) from the frozen items themselves - the
+  // snapshot stays self-describing even if sites are edited later.
+  const frozenItems = (snap.lineItems as { locationId?: string | null; co2eKg: string }[]) ?? [];
+  const siteById = new Map(sites.map((s) => [s.id, siteLabel(s)]));
+  const byLocation = [...new Set(frozenItems.map((i) => i.locationId ?? null))]
+    .map((locId) => ({
+      key: locId ?? "company",
+      label: locId ? siteById.get(locId) ?? "Removed site" : "Company-wide",
+      co2eT: frozenItems.filter((i) => (i.locationId ?? null) === locId).reduce((s, i) => s + Number(i.co2eKg), 0) / 1000,
+    }))
+    .sort((a, b) => b.co2eT - a.co2eT);
+  const hasSiteData = byLocation.some((b) => b.key !== "company");
   const isLatest = newerSnapshots[0]?.id === snap.id;
   const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 1 });
   const fmtDate = (iso: string) =>
@@ -92,6 +107,24 @@ export default async function SnapshotSharePage({
           </div>
         ))}
       </div>
+
+      {/* Per-location breakdown (Plan MO4): per-site factor, then sum */}
+      {hasSiteData && (
+        <div className="card mb-4">
+          <p className="eyebrow">By location</p>
+          <div className="mt-2 divide-y" style={{ borderColor: "var(--divider)" }}>
+            {byLocation.map((b) => (
+              <div key={b.key} className="flex items-center justify-between py-2 text-sm">
+                <p style={{ color: "var(--text)" }}>{b.label}</p>
+                <p className="font-data font-semibold" style={{ color: "var(--text)" }}>{fmt(b.co2eT)} tCO2e</p>
+              </div>
+            ))}
+          </div>
+          <p className="mt-2 text-xs" style={{ color: "var(--text-muted)" }}>
+            Each site frozen with its own eGRID subregion factor; the total is the sum of sites.
+          </p>
+        </div>
+      )}
 
       <p className="mb-2 text-xs" style={{ color: "var(--text-muted)" }}>
         Calculated from approved line items (see Review &amp; Approve) using stored methodology + emission factors ·

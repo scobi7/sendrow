@@ -80,7 +80,7 @@ function resolveScope(activityType?: string): { scope: number; category: string 
 }
 
 /** Finds the best factor for a normalized row given the full factor list. */
-function resolveFactorQuery(row: NormalizedRow) {
+function resolveFactorQuery(row: NormalizedRow, electricityFactorId?: string | null) {
   const t = (row.activity_type ?? "").toLowerCase();
   const u = (row.unit ?? "").toLowerCase();
 
@@ -89,9 +89,10 @@ function resolveFactorQuery(row: NormalizedRow) {
   // unmapped and route to review - contracts/ "no silent reinterpretation".
   if (u.includes("usd") || u.includes("$") || u.includes("dollar")) return null;
 
-  // Spreadsheet rows carry no location, so grid electricity uses the national
-  // average - a category query would pick an arbitrary subregion.
-  if (u.includes("kwh") || t.includes("electric")) return { factorId: "egrid.USAVG.2024" };
+  // Grid electricity: location-scoped submissions calculate with the site's
+  // own eGRID subregion (Plan MO - GHG Protocol: per-facility factor, then
+  // sum). Rows with no location fall back to the national average.
+  if (u.includes("kwh") || t.includes("electric")) return { factorId: electricityFactorId ?? "egrid.USAVG.2024" };
   if (u.includes("therm") || (t.includes("gas") && !t.includes("gasoline"))) return { category: "stationary_combustion", unit: "therm" };
   // Fuel in gallons: the fuel TYPE must reach the lookup, or every fuel resolves
   // to gasoline (diesel and propane have their own factors). Default gasoline
@@ -240,7 +241,8 @@ export function rowToLineItem(
   factors: EmissionFactor[],
   companyId: string,
   mappingProfileId: string | null = null,
-  vendorMappings: VendorMapping[] = []
+  vendorMappings: VendorMapping[] = [],
+  electricityFactorId: string | null = null
 ): LineItemInsert {
   if (row.quantity === undefined || row.quantity === null) {
     return unmappedLineItem(row, "Missing or non-numeric quantity", companyId, mappingProfileId);
@@ -281,7 +283,7 @@ export function rowToLineItem(
     ? { scope: row.scope, category: row.category ?? resolveScope(row.activity_type).category }
     : resolveScope(row.activity_type);
 
-  const query = resolveFactorQuery(row);
+  const query = resolveFactorQuery(row, electricityFactorId);
   const factor = query ? lookupFactor(factors, query) : null;
 
   if (!factor) {

@@ -2,11 +2,13 @@
 > Current state + what only the user can do. History lives in git; build order in PLANS.md; UI spec: `docs/wireframes-2026-07-13.md`.
 > Last updated: 2026-07-31
 
-## 🟡 Next build — Multi-office collection (Plan MO, Phase 1) for design testing ~week of 2026-08-04
-Consultant feedback: the CFO (who the consultant talks to) can't gather emissions data across the client's own offices/plants — the #1 data-collection bottleneck. **Decided:** build the delegation + per-location layer (Version A), consultant-gated + white-labeled. Client-facing dashboard is provisioned ONLY through the consultant (login/link) — NOT a standalone client SaaS (that was the v2 direct-to-company model, deleted in Plan M; the consultant stays gatekeeper + brand + approver).
-- **Method (GHG-Protocol standard, research-validated):** each facility calculated with its OWN grid factor (zip → eGRID subregion), then summed — never a company-wide average.
-- **Ships in Phase 1 (see PLANS.md Plan MO / TASKS.md MO1–MO5):** add locations (name/address/zip + subregion), per-site delegation magic links, per-location upload + calc, aggregate, CFO rollup view. Bones already exist (`locations` table + per-location scope2 calc). eGRID subregion is a dropdown for the demo; auto zip-lookup deferred (MO6). Also fixes the old "electricity uses USAVG" accuracy gap.
-- **Deferred to Phase 2 (validate demand in the design test first):** the persistent client charts/report dashboard. Ask a consultant point-blank whether their client wants to log in and watch charts, or just wants a clean handoff.
+## 🟢 BUILT 2026-07-31 — Multi-office collection (Plan MO, Phase 1), ready for design testing ~week of 2026-08-04
+The CFO delegation + per-location layer is live on `sendrow-v3` (not yet deployed to main). Verified live E2E with no Clerk needed (portal is token-auth): CFO parent link shows a "Your locations" panel → delegates the Dayton plant its own link → site contact uploads kWh → rows tagged to the site and calculated with the site's OWN eGRID factor (RFCW 0.455 kg/kWh, not the 0.369 USAVG) → CFO rollup shows per-site status + aggregate = sum of sites (9.5+11.1+8.9=29.5 t).
+- **Where it shows up:** consultant client detail gets a Locations panel (add site w/ subregion dropdown, send/resend site links, per-site status + tCO2e + combined total) · the CFO's company-wide portal gets the same rollup + "send upload link" per site (`/api/portal/delegate`, parent token = auth) · site portal pages show "Company — Site" · review + snapshot get a "By location" breakdown (frozen items carry locationId) · ledger rows show their site.
+- **Method (GHG-Protocol standard):** per-facility factor, then sum — never a company-wide average. Also fixes the old "portal electricity uses USAVG" gap for site-scoped uploads.
+- **Demo:** reset-demo.ts now seeds client 4, Sierra Materials Group — Fresno done (CAMX), Fort Worth responding (ERCT), Dayton not yet invited (RFCW). Reseeded clean after QA.
+- **Deferred (MO6 / Phase 2):** auto zip→subregion lookup · client charts dashboard (validate demand in the design test first) · international factors.
+- Tests **227/227** · tsc + `next build` clean (build's drizzle push applied the additive columns).
 
 ## 🟢 Where the product stands
 - **DEPLOYED TO PRODUCTION 2026-07-28** (`main` = `ef96739`, fast-forwarded from `sendrow-v3`; Vercel build green). Everything below is live on sendrow.app: Plan X, the dashboard-table revert, Z1.1 (diesel fix), Z2 (comments gap), portal multi-file + batch-submit. **Resend sending domain verified** → email now delivers. `CRON_SECRET` set. `sendrow-v3` remains the active dev branch (now == main).
@@ -19,7 +21,7 @@ Consultant feedback: the CFO (who the consultant talks to) can't gather emission
 - **Plan X (on v2, not yet deployed):** portal crash-proofing + PDF path, completeness fix, supplier↔consultant flag/reply loop, review-page flags, clarity pass, QuickBooks/connections removed, minimal /for-companies, emoji + em-dash sweep.
 - **QA:** full page-by-page sweep + mutation pass done → TASKS.md "BUGS". Core flows verified live (create request, reply-to-flag, approve/freeze, share, portal staged-submit). Open: **BUG-9 diesel/propane use the gasoline factor** (auto-mapper can't disambiguate); BUG-1 /admin/factors hydration hang; email + evidence blocked on env. **QA test kit** in `~/Downloads/qa-*.csv` (+ combined) with ground-truth calcs — Malachi cross-referencing.
 - **Demo kit:** demo consultant `contact@sendrow.app` (Clerk `user_3GVr5Css8qERqxyWiySrhNeX3WF`), reseed w/ `npx tsx scripts/reset-demo.ts user_3GVr5Css8qERqxyWiySrhNeX3WF` before each demo · pitch deck (12 slides, editable PPTX in ~/Downloads): https://claude.ai/code/artifact/8cfbdcd9-aa65-4226-a901-92d46bc1b2e7
-- **Theme:** Aurora Green. Tests: **218/218** · tsc + `next build` clean.
+- **Theme:** Aurora Green. Tests: **227/227** · tsc + `next build` clean.
 
 ## 🔴 Only you can do these
 | # | What | Where |

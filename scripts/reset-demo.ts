@@ -30,7 +30,7 @@ async function main() {
   const daysAgo = (n: number) => new Date(Date.now() - n * 86_400_000).toISOString();
 
   // ── Wipe previous demo data (demo_ prefix only — real data untouched)
-  const demoIds = ["demo_ggcr", "demo_bayb", "demo_pcl"];
+  const demoIds = ["demo_ggcr", "demo_bayb", "demo_pcl", "demo_smx"];
   for (const table of [
     schema.events, schema.comments, schema.shareLinks, schema.snapshots, schema.emissionLineItems,
     schema.intakeSessions, schema.mappingProfiles, schema.dataRequests, schema.evidence,
@@ -166,7 +166,78 @@ async function main() {
     recipientLabel: "Whole Foods (buyer)", recipientEmail: null, createdBy: consultantId, createdAt: daysAgo(18),
   });
 
-  // ── Link all three to the consultant
+  // ── Client 4: Sierra Materials — multi-plant manufacturer (Plan MO): three
+  //    sites on three grids, each at a different delegation stage. The CFO
+  //    holds the parent link; each plant has (or awaits) its own site link.
+  await db.insert(schema.companies).values({
+    id: "demo_smx", name: "Sierra Materials Group", industry: "Manufacturing",
+    naicsCode: "31-33", headcountRange: "150_350", clientContactName: "Elaine Park (CFO)",
+    clientContactEmail: "elaine@example.com", createdAt: daysAgo(21), setupComplete: false, sectionStatus,
+  });
+  const smxSites = [
+    { id: "loc_demo_smx_ca", name: "Fresno plant", city: "Fresno", state: "CA", zip: "93706", egridSubregion: "egrid.CAMX.2024", kgPerKwh: 0.209, contactName: "Luis Herrera", contactEmail: "luis@example.com" },
+    { id: "loc_demo_smx_tx", name: "Fort Worth plant", city: "Fort Worth", state: "TX", zip: "76102", egridSubregion: "egrid.ERCT.2024", kgPerKwh: 0.370, contactName: "Dee Walker", contactEmail: "dee@example.com" },
+    { id: "loc_demo_smx_oh", name: "Dayton plant", city: "Dayton", state: "OH", zip: "45402", egridSubregion: "egrid.RFCW.2024", kgPerKwh: 0.455, contactName: null, contactEmail: null },
+  ];
+  await db.insert(schema.locations).values(
+    smxSites.map((s) => ({
+      id: s.id, companyId: "demo_smx", name: s.name, address: "", city: s.city, state: s.state,
+      zip: s.zip, egridSubregion: s.egridSubregion, contactName: s.contactName, contactEmail: s.contactEmail,
+    }))
+  );
+  // Parent request: the CFO's company-wide link (delegation happens from here)
+  await db.insert(schema.dataRequests).values({
+    id: "dr_demo_smx_p", companyId: "demo_smx", requestedBy: consultantId,
+    description: "FY2025 footprint — all plants (utilities per site + company fleet)",
+    status: "open", dueDate: new Date(Date.now() + 20 * 86_400_000).toISOString().slice(0, 10),
+    periodLabel: "Calendar year 2025", createdAt: daysAgo(18), token: generatePortalToken(),
+    expiresAt: portalExpiry(), checklist: buildChecklist(["fleet_fuel_dollar"], ""),
+    remindersSentAt: {}, remindersEnabled: true,
+  });
+  // Site links: Fresno complete, Fort Worth responding, Dayton not yet invited
+  await db.insert(schema.dataRequests).values([
+    {
+      id: "dr_demo_smx_ca", companyId: "demo_smx", requestedBy: "portal:dr_demo_smx_p",
+      description: "Facility data - Fresno plant", status: "fulfilled", fulfilledAt: daysAgo(4),
+      periodLabel: "Calendar year 2025", createdAt: daysAgo(15), token: generatePortalToken(),
+      expiresAt: portalExpiry(),
+      checklist: buildChecklist(["utility_bills"], "").map((i) => ({ ...i, status: "received" as const, fileCount: 1 })),
+      remindersSentAt: {}, remindersEnabled: true, locationId: "loc_demo_smx_ca", parentRequestId: "dr_demo_smx_p",
+    },
+    {
+      id: "dr_demo_smx_tx", companyId: "demo_smx", requestedBy: "portal:dr_demo_smx_p",
+      description: "Facility data - Fort Worth plant", status: "open",
+      periodLabel: "Calendar year 2025", createdAt: daysAgo(15), token: generatePortalToken(),
+      expiresAt: portalExpiry(), checklist: buildChecklist(["utility_bills"], ""),
+      remindersSentAt: {}, remindersEnabled: true, locationId: "loc_demo_smx_tx", parentRequestId: "dr_demo_smx_p",
+    },
+  ]);
+  // Per-site electricity: each plant × its OWN grid factor (CAMX vs ERCT),
+  // never a company average — the whole point of the multi-office story.
+  const smxUsage: { site: (typeof smxSites)[number]; months: number[] }[] = [
+    { site: smxSites[0], months: [11200, 10800, 11500, 12050] },
+    { site: smxSites[1], months: [14800, 15200] },
+  ];
+  await db.insert(schema.emissionLineItems).values(
+    smxUsage.flatMap(({ site, months }) =>
+      months.map((v, i) => ({
+        id: `li_demo_smx_${site.state.toLowerCase()}${i}`, companyId: "demo_smx",
+        sourceRef: `${site.name} - utility acct`, scope: 2, category: "electricity",
+        rawValue: String(v), rawUnit: "kWh", co2eKg: (v * site.kgPerKwh).toFixed(4),
+        confidence: "actual", status: "mapped" as const, period: "2025",
+        activityDate: `2025-0${i + 1}`, factorId: site.egridSubregion,
+        calcLog: {
+          factor_id: site.egridSubregion,
+          formula: `${v} kWh × ${site.kgPerKwh / 1000} tCO2e/kWh × 1000 kg/t`,
+          submitted_via: `portal:dr_demo_smx_${site.state.toLowerCase()}`,
+        },
+        mappingProfileId: null, locationId: site.id, createdAt: daysAgo(6),
+      }))
+    )
+  );
+  await db.insert(schema.pipelineStatus).values({ companyId: "demo_smx", status: "in_progress", updatedAt: daysAgo(6) });
+
+  // ── Link all demo clients to the consultant
   await db.insert(schema.consultantClients).values(
     demoIds.map((companyId, i) => ({
       id: `cc_demo_${i}`, consultantId, companyId, addedAt: daysAgo(45 - i * 15), archivedAt: null,
@@ -177,6 +248,7 @@ async function main() {
   console.log("  1. Golden Gate Coffee Roasters — request just sent (open portal link from the workspace)");
   console.log("  2. Bayshore Bottling Co. — mid-response: 12 rows in, one checklist item stuck, one comment");
   console.log("  3. Pacific Coast Logistics — approved: locked pipeline, frozen snapshot, shared with a buyer");
+  console.log("  4. Sierra Materials Group — multi-plant: Fresno done (CAMX), Fort Worth responding (ERCT), Dayton not yet invited (RFCW)");
 }
 
 main().then(() => process.exit(0)).catch((e) => {

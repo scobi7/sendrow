@@ -30,6 +30,8 @@ const VERB_LABEL: Record<string, string> = {
   "review.changes_requested": "Changes requested",
   "client.stuck": "Client asked for help",
   "flag.replied": "Reply sent to client",
+  "location.added": "Site added",
+  "location.removed": "Site removed",
   "email.sent": "Email handed to the mail service",
   "email.failed": "Email failed to send",
 };

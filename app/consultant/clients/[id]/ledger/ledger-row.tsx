@@ -25,6 +25,7 @@ type Item = {
   period: string | null;
   confidence: string;
   flagReason: string | null;
+  locationName?: string | null;
 };
 
 type Comment = { id: string; body: string; authorType: string; createdAt: string };
@@ -62,6 +63,9 @@ export function LedgerRow({
       <tr style={{ borderBottom: "1px solid var(--divider)", opacity: excluded ? 0.45 : 1 }}>
         <td className="px-4 py-2.5">
           <p className="font-medium" style={{ color: "var(--text)" }}>{item.sourceRef || " - "}</p>
+          {item.locationName && (
+            <p className="text-xs" style={{ color: "var(--text-muted)" }}>{item.locationName}</p>
+          )}
           {item.flagReason && item.status === "unmapped" && (
             <p className="text-xs" style={{ color: "var(--warning-strong)" }}>Flagged: {item.flagReason}</p>
           )}

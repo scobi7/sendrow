@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { comments, dataRequests, companies, emissionLineItems } from "@/lib/db/schema";
+import { comments, dataRequests, companies, emissionLineItems, locations } from "@/lib/db/schema";
 import { desc, and, isNotNull } from "drizzle-orm";
 import { portalTokenValid } from "@/lib/portal";
 import type { ChecklistItem } from "@/lib/portal";
@@ -8,6 +8,10 @@ import { PortalChecklist } from "./portal-checklist";
 import { ConsultantQuestions, type QuestionThread } from "./consultant-questions";
 import { getBrandForCompany } from "@/lib/branding";
 import { RequestNewLink } from "./request-new-link";
+import { SiteDelegation, type SiteView } from "./site-delegation";
+import { siteRollups } from "@/lib/locations";
+import { siteLabel } from "@/lib/site-requests";
+import { egridLabel } from "@/lib/factors";
 
 export default async function PortalPage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
@@ -30,7 +34,7 @@ export default async function PortalPage({ params }: { params: Promise<{ token: 
     );
   }
 
-  const [[company], brand, threadRows, priorRows, lineComments, lineLabels] = await Promise.all([
+  const [[company], brand, threadRows, priorRows, lineComments, lineLabels, sites, siteRequests, taggedItems] = await Promise.all([
     db.select({ name: companies.name }).from(companies).where(eq(companies.id, request.companyId)),
     getBrandForCompany(request.companyId),
     // Per-item conversation (X2): the supplier's stuck messages + consultant replies
@@ -66,6 +70,13 @@ export default async function PortalPage({ params }: { params: Promise<{ token: 
       .select({ id: emissionLineItems.id, sourceRef: emissionLineItems.sourceRef, category: emissionLineItems.category, rawValue: emissionLineItems.rawValue, rawUnit: emissionLineItems.rawUnit, activityDate: emissionLineItems.activityDate })
       .from(emissionLineItems)
       .where(eq(emissionLineItems.companyId, request.companyId)),
+    // Multi-office (Plan MO): sites + their delegation state for the CFO rollup
+    db.select().from(locations).where(eq(locations.companyId, request.companyId)),
+    db.select().from(dataRequests).where(and(eq(dataRequests.companyId, request.companyId), isNotNull(dataRequests.locationId))),
+    db
+      .select({ locationId: emissionLineItems.locationId, co2eKg: emissionLineItems.co2eKg, status: emissionLineItems.status })
+      .from(emissionLineItems)
+      .where(eq(emissionLineItems.companyId, request.companyId)),
   ]);
   const prefill = priorRows.map((r) => ({
     date: r.activityDate ?? "",
@@ -90,6 +101,19 @@ export default async function PortalPage({ params }: { params: Promise<{ token: 
     if (!c.lineItemId) continue;
     (byLine[c.lineItemId] ??= []).push({ authorType: c.authorType, body: c.body, createdAt: c.createdAt });
   }
+  // CFO rollup (Plan MO5): only on the company-wide request, never on site links
+  const currentSite = request.locationId ? sites.find((s) => s.id === request.locationId) ?? null : null;
+  const rollups = siteRollups(sites.map((s) => s.id), siteRequests, taggedItems);
+  const siteViews: SiteView[] = sites.map((s, i) => ({
+    id: s.id,
+    label: siteLabel(s),
+    regionLabel: egridLabel(s.egridSubregion),
+    contactName: s.contactName,
+    contactEmail: s.contactEmail,
+    rollup: rollups[i],
+  }));
+  const totalKg = taggedItems.filter((i) => i.status === "mapped").reduce((s, i) => s + Number(i.co2eKg), 0);
+
   const questionThreads: QuestionThread[] = Object.entries(byLine)
     .filter(([, msgs]) => msgs.some((m) => m.authorType === "consultant"))
     .map(([lineItemId, messages]) => {
@@ -125,6 +149,7 @@ export default async function PortalPage({ params }: { params: Promise<{ token: 
         </p>
         <h1 className="mt-1 text-2xl font-extrabold font-display" style={{ color: "var(--text)" }}>
           {company?.name ?? "your company"}
+          {currentSite && <span style={{ color: "var(--text-muted)" }}> - {siteLabel(currentSite)}</span>}
         </h1>
         <p className="mt-2 text-sm" style={{ color: "var(--text-muted)" }}>{request.description}</p>
         {request.periodLabel && (
@@ -139,6 +164,11 @@ export default async function PortalPage({ params }: { params: Promise<{ token: 
 
       {/* Consultant questions on specific figures - visible even once fulfilled (Z2) */}
       <ConsultantQuestions token={token} threads={questionThreads} />
+
+      {/* Delegate per-site collection (Plan MO2/MO5) - company-wide links only */}
+      {!request.locationId && siteViews.length > 0 && (
+        <SiteDelegation token={token} sites={siteViews} totalKg={totalKg} />
+      )}
 
       {request.status === "fulfilled" ? (
         <div className="rounded-2xl p-8 text-center" style={{ background: "var(--card)" }}>

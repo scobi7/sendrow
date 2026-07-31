@@ -10,6 +10,7 @@ import { resendPortalEmail, renewPortalLink, replyToFlag, resolveFlag } from "@/
 import { BackLink, StatusBadge, CompletenessMeter } from "@/components/workflow";
 import { workflowStatus, nextDueDate, completenessPercent, STATUS_META } from "@/lib/client-status";
 import { PortalLinkButton } from "./portal-link-button";
+import { LocationsPanel } from "./locations-panel";
 import type { ChecklistItem } from "@/lib/portal";
 
 /** Client Detail View (#19 #6 #13): clicking into a client from the dashboard
@@ -166,6 +167,9 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
+          {/* Locations - per-site delegation + rollup (Plan MO) */}
+          <LocationsPanel companyId={id} />
+
           {/* Requests */}
           <div className="glass-panel">
             <div className="flex items-center justify-between px-5 pt-4 pb-3" style={{ borderBottom: "1px solid var(--divider)" }}>

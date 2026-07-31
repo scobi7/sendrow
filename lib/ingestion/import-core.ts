@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { mappingProfiles, emissionLineItems, intakeSessions, pipelineStatus, dataRequests } from "@/lib/db/schema";
+import { mappingProfiles, emissionLineItems, intakeSessions, pipelineStatus, dataRequests, locations } from "@/lib/db/schema";
 import { sql, inArray } from "drizzle-orm";
 import { vendorMappings as vendorMappingsTable } from "@/lib/db/schema";
 import { applyProfile, rowToLineItem, fleetFuelToLineItems } from "./ingest";
@@ -35,6 +35,9 @@ export type ImportInput = {
   headerFingerprint?: string | null;
   /** The uploader explicitly confirmed the column mapping (Plan T2). */
   mappingConfirmed?: boolean;
+  /** Site this submission belongs to (Plan MO3): rows are tagged with it and
+   *  electricity calculates against the site's own eGRID subregion. */
+  locationId?: string | null;
 };
 
 export type ImportOutcome = {
@@ -85,12 +88,19 @@ export async function processImport(input: ImportInput): Promise<ImportOutcome> 
     createdAt: new Date().toISOString(),
   });
 
-  const [factors, vendorMaps, companyRow] = await Promise.all([
+  const [factors, vendorMaps, companyRow, locationRow] = await Promise.all([
     getFactorsFromDb(),
     getVendorMappingsFromDb(companyId),
     db.query.companies.findFirst({ where: eq(companies.id, companyId) }),
+    input.locationId
+      ? db.query.locations.findFirst({ where: eq(locations.id, input.locationId) })
+      : Promise.resolve(undefined),
   ]);
   const normalized = applyProfile(rows, columnMap);
+  // The site's own grid factor (GHG Protocol: per-facility, then sum) - never
+  // trust a locationId that doesn't belong to this company.
+  const siteFactorId = locationRow?.companyId === companyId ? locationRow.egridSubregion : null;
+  const locationId = siteFactorId ? input.locationId! : null;
 
   // Every row becomes a line item - unmappable rows are flagged, never dropped
   let inserts;
@@ -99,7 +109,7 @@ export async function processImport(input: ImportInput): Promise<ImportOutcome> 
   } else {
     // 1:1 with normalized rows, so each item can be period-tagged from its row date
     inserts = normalized.map((row) => ({
-      ...rowToLineItem(row, factors, companyId, profileId, vendorMaps),
+      ...rowToLineItem(row, factors, companyId, profileId, vendorMaps, siteFactorId),
       period: periodForDate(row.date, companyRow?.fiscalYearEndMonth ?? null),
       activityDate: row.date ?? null,
     }));
@@ -108,6 +118,7 @@ export async function processImport(input: ImportInput): Promise<ImportOutcome> 
   // uploads, which stored source document it came from (evidence locker)
   inserts = inserts.map((i) => ({
     ...i,
+    locationId,
     calcLog: {
       ...(i.calcLog as Record<string, unknown>),
       submitted_via: uploadedBy,
