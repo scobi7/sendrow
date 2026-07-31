@@ -97,6 +97,16 @@
 - [ ] **Z5.1** — Draft-persistence for staged uploads (survive tab close)
 - [ ] **Z5.2** — QA untested flows: manual entry (QA-1), create-client, scope-2 override, line-item comment
 
+### MO — Multi-office collection (Phase 1, for design testing ~2026-08-04; PLANS.md Plan MO)
+> Builds on existing `locations` table (address/zip/egridSubregion) + per-location scope2 calc. Scope = the visible delegation flow + accurate per-location factors. Sequence: MO1 → MO2 → MO3 → MO4 → MO5, then demo data.
+- [ ] **MO1** — Locations first-class: add site (name/address/zip + subregion DROPDOWN for demo); extend `locations` w/ contactName/contactEmail
+- [ ] **MO2** — Per-site delegation links: `dataRequests` + `locationId`/`parentRequestId`; "Send link to this site" from CFO portal + consultant client page; reuse portal per location
+- [ ] **MO3** — Per-location upload + tag `emissionLineItems.locationId` so rows calc against the site's subregion
+- [ ] **MO4** — Per-location calc (site's subregion factor) + aggregate; per-location breakdown in review/ledger/snapshot (fixes USAVG limitation)
+- [ ] **MO5** — CFO rollup view: locations panel w/ per-site status + completeness + send/resend + aggregate total
+- [ ] **MO-demo** — Add a multi-plant manufacturer (CA/TX/OH, 3 stages) to `reset-demo.ts`
+- [ ] **MO6 (defer)** — auto zip→eGRID lookup (EPA mapping) · client charts dashboard (validate demand first) · international factors
+
 ### D — Azoulay demo prep (meeting next Thu ~2026-07-23; PLANNED 2026-07-16, no code started)
 > Danielle Azoulay = founder, The CSO Shop (fractional sustainability consultancy; ex-L'Oreal USA CSR head, Columbia Climate School adjunct). She IS the ICP: a consultant running CPG/apparel client books. She will know SB 253 + GHG Protocol cold. Goal of meeting: design-partner interest, not just applause.
 

@@ -96,7 +96,19 @@ P1 (bigger, after pilots): SMS channel + missing-item nudges · mobile photo upl
 - Z5.1 Draft-persistence for staged uploads (survive tab close) — the accepted downside of the batch-submit model; add if pilots hit it.
 - Z5.2 QA-1: walk the manual-entry ("Type it in") path end-to-end; QA-2..: create-client, scope-2 override, line-item comment (untested mutations).
 
-**Blocked on Malachi / env (can't fully build or test until):** Resend sending domain (email delivery, BUG-B1) · `BLOB_READ_WRITE_TOKEN` (evidence, BUG-B2) · real eGRID/USEEIO factor values (N7.2) · deploy v3 → main.
+**Blocked on Malachi / env (can't fully build or test until):** ~~Resend~~ (verified 2026-07-28) · `BLOB_READ_WRITE_TOKEN` (evidence, BUG-B2) · real eGRID/USEEIO factor values (N7.2). ~~deploy v3 → main~~ (deployed 2026-07-28).
+
+## MO — Multi-office collection (Phase 1, for design testing ~week of 2026-08-04)
+> Feedback: the CFO (who the consultant talks to) struggles to gather data across the client's own offices/plants. This is the existential data-collection bottleneck. Method is GHG-Protocol-standard (validated by research): **calculate each facility with its own grid factor, then sum — never a company-wide average**; grid factor = zip → eGRID subregion. Bones already exist: `locations` table (address/city/state/zip/`egridSubregion`), per-location `utilityData`, and the scope2 page already does per-location calc via `getFactor(egridSubregion)`. This wires those into the consultant portal collection flow.
+> Scope for the DESIGN TEST = the visible flow + accurate per-location factors. Keep it tight; the goal is reactions, not production polish.
+
+**MO1 — Locations as first-class in a client.** Consultant/CFO adds sites (name, address, zip). Extend `locations` with `contactName` + `contactEmail`. For the demo, **eGRID subregion is a dropdown** (the ~26 seed subregions) — auto zip→subregion lookup deferred (MO6).
+**MO2 — Per-site delegation links.** From the CFO portal (and consultant client page), "Send data-request link to this site's contact" → a location-scoped magic link. Extend `dataRequests` with `locationId` + `parentRequestId`; reuse the entire portal machinery per location. The CFO delegates instead of doing it all.
+**MO3 — Per-location upload + tagging.** Site contact uploads via their link (existing staged-upload portal). Tag `emissionLineItems` with `locationId` so each row calculates against its location's subregion.
+**MO4 — Per-location calc + aggregate.** Each site's electricity × its subregion factor (CAMX vs ERCT vs …); company total = sum of sites. Review/ledger/snapshot show per-location breakdown + aggregate. (Fixes the old "spreadsheet electricity uses USAVG" limitation — same work.)
+**MO5 — CFO rollup view.** Locations panel: each site's status (link sent / responding / complete) + completeness + a "send/resend link" action, plus the aggregated total. This is the coordination surface that unblocks the CFO.
+**MO6 (defer, post-demo):** auto zip→eGRID-subregion lookup (bundle EPA Power Profiler mapping; handle the 1–3 subregion ambiguity) · client charts dashboard (validate demand in the design test first) · international factors (non-eGRID).
+**Demo data:** add a multi-plant manufacturer to `reset-demo.ts` (e.g. 3 sites in CA/TX/OH at different stages) so the per-location + aggregate story is visible.
 
 ## Roadmap — Future CONSULT/reduce layer (NOT this cycle; captured, do not build yet)
 > These make the consultant's *own* offering more valuable (upsell reduction advice), justifying a higher per-client price later. All ride on the existing data layer + config-driven format engine.

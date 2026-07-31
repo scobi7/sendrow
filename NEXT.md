@@ -1,15 +1,12 @@
 # NEXT.md
 > Current state + what only the user can do. History lives in git; build order in PLANS.md; UI spec: `docs/wireframes-2026-07-13.md`.
-> Last updated: 2026-07-29
+> Last updated: 2026-07-31
 
-## 🔵 Under consideration — multi-office / CFO data-collection (feedback 2026-07-29, NOT decided)
-Consultant feedback: the person they talk to (often the **CFO**) struggles to get emissions data, *especially across multiple offices/plants* — the data is scattered inside the client's own org. This is the #1 data-collection bottleneck (existential). Malachi's idea: a client/CFO dashboard to collect + download data, check their dashboard, and receive the consultation report.
-**Claude's recommendation — split problem from solution:**
-- **DO (Version A, on-strategy): a multi-office coordination layer.** Treat the CFO as a data-provider who must collect from their own sites first. Add portal **delegation** (send a sub-request to each office/plant), **rollup**, and a cross-site **progress view** → flows to the consultant as one package. Consultant-initiated, low-friction, sharpens the multi-site-SMB wedge (Jasmin's world). Delegation was already sketched in W4.
-- **DO: extend the white-label `/shared` surface** so the consultant can hand the client a live branded dashboard + report. The consultant delivers it; we never go around them.
-- **DON'T (Version B): a standalone client-logs-in-independently product.** That re-opens the direct-to-company model deleted in v2 (Plan M) and breaks "never replace the consultant" + "consultant is the only paying customer." Client-facing surfaces must stay white-labeled + consultant-controlled.
-- Caveat: software eases *coordination*; it can't conjure data that doesn't exist centrally (partly a client people/process problem).
-→ If approved, this becomes a Plan (delegation + rollup + `/shared` dashboard extension), not a client SaaS.
+## 🟡 Next build — Multi-office collection (Plan MO, Phase 1) for design testing ~week of 2026-08-04
+Consultant feedback: the CFO (who the consultant talks to) can't gather emissions data across the client's own offices/plants — the #1 data-collection bottleneck. **Decided:** build the delegation + per-location layer (Version A), consultant-gated + white-labeled. Client-facing dashboard is provisioned ONLY through the consultant (login/link) — NOT a standalone client SaaS (that was the v2 direct-to-company model, deleted in Plan M; the consultant stays gatekeeper + brand + approver).
+- **Method (GHG-Protocol standard, research-validated):** each facility calculated with its OWN grid factor (zip → eGRID subregion), then summed — never a company-wide average.
+- **Ships in Phase 1 (see PLANS.md Plan MO / TASKS.md MO1–MO5):** add locations (name/address/zip + subregion), per-site delegation magic links, per-location upload + calc, aggregate, CFO rollup view. Bones already exist (`locations` table + per-location scope2 calc). eGRID subregion is a dropdown for the demo; auto zip-lookup deferred (MO6). Also fixes the old "electricity uses USAVG" accuracy gap.
+- **Deferred to Phase 2 (validate demand in the design test first):** the persistent client charts/report dashboard. Ask a consultant point-blank whether their client wants to log in and watch charts, or just wants a clean handoff.
 
 ## 🟢 Where the product stands
 - **DEPLOYED TO PRODUCTION 2026-07-28** (`main` = `ef96739`, fast-forwarded from `sendrow-v3`; Vercel build green). Everything below is live on sendrow.app: Plan X, the dashboard-table revert, Z1.1 (diesel fix), Z2 (comments gap), portal multi-file + batch-submit. **Resend sending domain verified** → email now delivers. `CRON_SECRET` set. `sendrow-v3` remains the active dev branch (now == main).
