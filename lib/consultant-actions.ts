@@ -1005,6 +1005,7 @@ export async function sendSiteLinkAction(companyId: string, locationId: string, 
 
   const contactName = String(formData.get("contact_name") ?? "").trim();
   const contactEmail = String(formData.get("contact_email") ?? "").trim();
+  const message = String(formData.get("message") ?? "").trim().slice(0, 500) || null;
   if (contactName || contactEmail) {
     await db
       .update(locations)
@@ -1015,7 +1016,7 @@ export async function sendSiteLinkAction(companyId: string, locationId: string, 
   }
 
   const { sendSiteLink } = await import("./site-requests");
-  await sendSiteLink({ companyId, location: loc, requestedBy: user.id, actorType: "consultant" });
+  await sendSiteLink({ companyId, location: loc, requestedBy: user.id, actorType: "consultant", message });
   revalidatePath(`/consultant/clients/${companyId}`);
 }
 

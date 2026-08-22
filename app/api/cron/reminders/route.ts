@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { and, eq, isNull } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { dataRequests, userCompanies, companies, consultantClients } from "@/lib/db/schema";
+import { dataRequests, userCompanies, companies, consultantClients, locations } from "@/lib/db/schema";
 import { dueReminders } from "@/lib/reminders";
 import { sendPortalReminderEmail } from "@/lib/email";
 import { getBrandForCompany } from "@/lib/branding";
+import { siteLabel } from "@/lib/site-requests";
 
 /** Daily cron (vercel.json): nudges clients with open data requests. */
 export async function GET(request: NextRequest) {
@@ -31,7 +32,21 @@ export async function GET(request: NextRequest) {
     if (!req.token) continue; // pre-portal requests have no magic link to remind about
 
     const company = await db.query.companies.findFirst({ where: eq(companies.id, req.companyId) });
-    if (!company?.clientContactEmail) continue; // no contact on file - nothing to remind
+    if (!company) continue;
+
+    // Site-scoped requests (Plan MO) go to that site's own contact, not the
+    // company-wide CFO contact - they're the ones who actually have the data.
+    let recipientEmail: string | string[] | null = company.clientContactEmail;
+    let recipientName = company.clientContactName ?? "there";
+    let subjectName = company.name;
+    if (req.locationId) {
+      const loc = await db.query.locations.findFirst({ where: eq(locations.id, req.locationId) });
+      if (!loc?.contactEmail) continue; // no site contact on file - nothing to remind
+      recipientEmail = loc.contactEmail.split(",").map((e) => e.trim()).filter(Boolean);
+      recipientName = loc.contactName ?? "there";
+      subjectName = siteLabel(loc);
+    }
+    if (!recipientEmail) continue; // no contact on file - nothing to remind
 
     let consultantEmail: string | null = null;
     if (reminder.ccConsultant) {
@@ -48,9 +63,9 @@ export async function GET(request: NextRequest) {
 
     try {
       await sendPortalReminderEmail(
-        company.clientContactEmail,
-        company.clientContactName ?? "there",
-        company.name,
+        recipientEmail,
+        recipientName,
+        subjectName,
         req.description,
         req.token,
         reminder,

@@ -75,9 +75,23 @@ export async function LocationsPanel({ companyId }: { companyId: string }) {
                 </div>
                 <div className="mt-2 flex flex-wrap items-center gap-1.5">
                   <form action={sendSiteLinkAction.bind(null, companyId, site.id)} className="flex flex-wrap items-center gap-1.5">
-                    {!site.contactEmail && (
-                      <input name="contact_email" type="email" required placeholder="site-contact@company.com" className="input px-2 py-1 text-xs" style={{ width: "13rem" }} />
-                    )}
+                    <input
+                      name="contact_email"
+                      type="text"
+                      required
+                      defaultValue={site.contactEmail ?? ""}
+                      placeholder="site-contact@company.com - comma-separate for more than one"
+                      className="input px-2 py-1 text-xs"
+                      style={{ width: "18rem" }}
+                    />
+                    <input
+                      name="message"
+                      type="text"
+                      maxLength={500}
+                      placeholder="Add a note for them (optional)"
+                      className="input px-2 py-1 text-xs"
+                      style={{ width: "14rem" }}
+                    />
                     <button className="rounded-full px-2 py-0.5 text-xs font-medium transition-opacity hover:opacity-70" style={{ background: "var(--primary-tint)", color: "var(--primary)" }}>
                       {r.status === "no_link" ? "Send site link" : "Resend site link"}
                     </button>
@@ -110,7 +124,7 @@ export async function LocationsPanel({ companyId }: { companyId: string }) {
             <option key={o.factorId} value={o.factorId}>{o.label}</option>
           ))}
         </select>
-        <input name="contact_email" type="email" placeholder="Site contact email (optional)" className="input text-xs" style={{ width: "13rem" }} />
+        <input name="contact_email" type="text" placeholder="Site contact email(s), optional - comma-separated" className="input text-xs" style={{ width: "16rem" }} />
         <button className="btn btn-secondary shrink-0 px-3 py-1.5 text-xs">Add site</button>
       </form>
     </div>

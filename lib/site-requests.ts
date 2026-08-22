@@ -27,6 +27,7 @@ export async function sendSiteLink(opts: {
   parentRequestId?: string | null;
   dueDate?: string | null;
   periodLabel?: string | null;
+  message?: string | null; // optional personal note from whoever's sending the link
 }): Promise<{ token: string; created: boolean }> {
   const { companyId, location } = opts;
   const label = siteLabel(location);
@@ -84,15 +85,17 @@ export async function sendSiteLink(opts: {
   }
 
   if (location.contactEmail) {
+    const recipients = location.contactEmail.split(",").map((e) => e.trim()).filter(Boolean);
     const brand = await getBrandForCompany(companyId);
     const sent = await sendDataRequestEmail(
-      location.contactEmail,
+      recipients,
       location.contactName ?? "there",
       label,
       `Facility data for ${label} - utility bills for your site`,
       opts.dueDate ?? existing?.dueDate ?? null,
       token,
-      brand ? { brandName: brand.brandName, replyTo: brand.replyTo } : null
+      brand ? { brandName: brand.brandName, replyTo: brand.replyTo } : null,
+      opts.message
     );
     logEvent({
       companyId,

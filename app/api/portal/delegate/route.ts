@@ -14,6 +14,7 @@ export async function POST(request: NextRequest) {
   const locationId: string = body.locationId ?? "";
   const contactName = String(body.contactName ?? "").trim();
   const contactEmail = String(body.contactEmail ?? "").trim();
+  const message = String(body.message ?? "").trim().slice(0, 500) || null;
 
   if (!token) return NextResponse.json({ error: "Missing link token" }, { status: 401 });
 
@@ -46,6 +47,7 @@ export async function POST(request: NextRequest) {
     parentRequestId: parent.id,
     dueDate: parent.dueDate,
     periodLabel: parent.periodLabel,
+    message,
   });
 
   return NextResponse.json({

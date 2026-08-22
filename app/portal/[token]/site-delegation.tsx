@@ -18,7 +18,10 @@ export type SiteView = {
  *  same magic link, no account. */
 export function SiteDelegation({ token, sites, totalKg }: { token: string; sites: SiteView[]; totalKg: number }) {
   const router = useRouter();
-  const [emails, setEmails] = useState<Record<string, string>>({});
+  const [emails, setEmails] = useState<Record<string, string>>(() =>
+    Object.fromEntries(sites.map((s) => [s.id, s.contactEmail ?? ""]))
+  );
+  const [messages, setMessages] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState<string | null>(null);
   const [notice, setNotice] = useState<Record<string, string>>({});
 
@@ -28,7 +31,12 @@ export function SiteDelegation({ token, sites, totalKg }: { token: string; sites
       const res = await fetch("/api/portal/delegate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, locationId: site.id, contactEmail: emails[site.id] ?? "" }),
+        body: JSON.stringify({
+          token,
+          locationId: site.id,
+          contactEmail: emails[site.id] ?? "",
+          message: messages[site.id] ?? "",
+        }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -68,7 +76,6 @@ export function SiteDelegation({ token, sites, totalKg }: { token: string; sites
                   </p>
                   <p className="mt-0.5 text-xs" style={{ color: "var(--text-muted)" }}>
                     {SITE_STATUS_LABEL[r.status]}
-                    {site.contactEmail && ` · ${site.contactEmail}`}
                     {r.itemsTotal > 0 && ` · ${r.itemsReceived}/${r.itemsTotal} items in`}
                     {r.co2eKg > 0 && ` · ${fmt(r.co2eKg / 1000)} tCO2e`}
                   </p>
@@ -80,19 +87,26 @@ export function SiteDelegation({ token, sites, totalKg }: { token: string; sites
                 )}
               </div>
               <div className="mt-2 flex flex-wrap items-center gap-2">
-                {!site.contactEmail && (
-                  <input
-                    type="email"
-                    placeholder="Site contact's email"
-                    value={emails[site.id] ?? ""}
-                    onChange={(e) => setEmails((m) => ({ ...m, [site.id]: e.target.value }))}
-                    className="rounded-lg px-2.5 py-1.5 text-xs"
-                    style={{ background: "var(--bg)", border: "1px solid var(--divider)", color: "var(--text)", width: "14rem" }}
-                  />
-                )}
+                <input
+                  type="text"
+                  placeholder="Site contact email(s) - comma-separate for more than one"
+                  value={emails[site.id] ?? ""}
+                  onChange={(e) => setEmails((m) => ({ ...m, [site.id]: e.target.value }))}
+                  className="rounded-lg px-2.5 py-1.5 text-xs"
+                  style={{ background: "var(--bg)", border: "1px solid var(--divider)", color: "var(--text)", width: "20rem" }}
+                />
+                <input
+                  type="text"
+                  placeholder="Add a note for them (optional)"
+                  value={messages[site.id] ?? ""}
+                  onChange={(e) => setMessages((m) => ({ ...m, [site.id]: e.target.value }))}
+                  maxLength={500}
+                  className="rounded-lg px-2.5 py-1.5 text-xs"
+                  style={{ background: "var(--bg)", border: "1px solid var(--divider)", color: "var(--text)", width: "16rem" }}
+                />
                 <button
                   onClick={() => sendLink(site)}
-                  disabled={busy === site.id || (!site.contactEmail && !(emails[site.id] ?? "").includes("@"))}
+                  disabled={busy === site.id || !(emails[site.id] ?? "").includes("@")}
                   className="rounded-full px-3 py-1 text-xs font-semibold transition-opacity hover:opacity-80 disabled:opacity-40"
                   style={{ background: "var(--primary)", color: "white" }}
                 >

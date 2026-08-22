@@ -4,6 +4,12 @@ const FROM = process.env.FROM_EMAIL ?? "hello@sendrow.app";
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://sendrow.app";
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? "malachi.nguyen@sendrow.app";
 
+// Free-text notes (e.g. a CFO's message to a site contact) can come from an
+// unauthenticated portal-token holder, so they're escaped before going into HTML.
+function escapeHtml(s: string): string {
+  return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
+}
+
 /** Sends via Resend. Returns false when the send definitively failed (no key,
  *  rejected by Resend, network error) so callers can record it - a silent
  *  drop here is a consultant waiting on a reply that never went out. */
@@ -105,13 +111,14 @@ export async function sendAgencyQuoteRequest(data: {
 }
 
 export async function sendDataRequestEmail(
-  clientEmail: string,
+  clientEmail: string | string[],
   clientName: string,
   companyName: string,
   description: string,
   dueDate: string | null,
   portalToken: string,
-  brand?: { brandName: string; replyTo: string | null } | null
+  brand?: { brandName: string; replyTo: string | null } | null,
+  message?: string | null
 ): Promise<boolean> {
   const firstName = clientName.split(" ")[0];
   const link = `${APP_URL}/portal/${portalToken}`;
@@ -122,6 +129,7 @@ export async function sendDataRequestEmail(
 <p>Your reviewer has requested additional data for <strong>${companyName}</strong>:</p>
 <blockquote><p>${description}</p></blockquote>
 ${dueDate ? `<p><strong>Due:</strong> ${dueDate}</p>` : ""}
+${message ? `<p><em>"${escapeHtml(message)}"</em></p>` : ""}
 <p><a href="${link}">Open your secure upload link →</a></p>
 <p>No account or password needed - the link is unique to you.</p>
 ${brand ? `<p> - ${brand.brandName}</p>` : ""}`,
@@ -143,7 +151,7 @@ export async function sendReferralLeadEmail(data: { name: string; email: string;
 }
 
 export async function sendPortalReminderEmail(
-  clientEmail: string,
+  clientEmail: string | string[],
   clientName: string,
   companyName: string,
   description: string,
@@ -153,7 +161,8 @@ export async function sendPortalReminderEmail(
   brand?: { brandName: string; replyTo: string | null } | null
 ) {
   const firstName = clientName.split(" ")[0];
-  const to = ccConsultant ? [clientEmail, ccConsultant] : clientEmail;
+  const recipients = Array.isArray(clientEmail) ? clientEmail : [clientEmail];
+  const to = ccConsultant ? [...recipients, ccConsultant] : recipients;
   const urgency =
     reminder.tier === "overdue"
       ? "This is now past due - a few minutes today keeps everything on track."
