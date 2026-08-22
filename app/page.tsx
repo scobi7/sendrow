@@ -49,9 +49,6 @@ export default async function Home() {
             <Link href="/for-consultants" className="btn btn-primary px-6 py-3 text-sm">
               See the consultant workspace →
             </Link>
-            <Link href="/get-matched" className="btn btn-secondary px-6 py-3 text-sm">
-              I&rsquo;m a company - get matched
-            </Link>
           </div>
         </div>
 
@@ -133,22 +130,12 @@ export default async function Home() {
         </article>
       </section>
 
-      {/* ── Audience cards ── */}
-      <section className="mx-auto grid max-w-6xl gap-4 px-6 pb-20 sm:grid-cols-2">
-        <Link href="/get-matched" className="card group transition-transform duration-200 hover:-translate-y-0.5">
-          <p className="eyebrow">For companies</p>
-          <h2 className="mt-3 text-lg font-bold leading-snug" style={{ color: "var(--text)" }}>
-            Got an ESG questionnaire from a customer?
-          </h2>
-          <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>
-            We&rsquo;ll match you with a vetted climate consultant who handles it end to end - free,
-            usually within two business days.
-          </p>
-          <span className="mt-5 inline-flex items-center gap-1 text-sm font-semibold" style={{ color: "var(--primary)" }}>
-            Get matched →
-          </span>
-        </Link>
-        <Link href="/for-consultants" className="card group transition-transform duration-200 hover:-translate-y-0.5">
+      {/* ── Audience card ── */}
+      <section className="mx-auto max-w-6xl px-6 pb-20">
+        <Link
+          href="/for-consultants"
+          className="card group mx-auto block max-w-xl transition-transform duration-200 hover:-translate-y-0.5"
+        >
           <p className="eyebrow">For consultants</p>
           <h2 className="mt-3 text-lg font-bold leading-snug" style={{ color: "var(--text)" }}>
             Managing clients across spreadsheets?
@@ -251,8 +238,8 @@ export default async function Home() {
             {[
               {
                 num: "01",
-                title: "Connect your data",
-                desc: "Link your accounts. Sendrow pulls transactions and energy data automatically - no exports, no manual entry.",
+                title: "Send a secure link",
+                desc: "No account, no software to connect. Your client uploads utility bills and fuel receipts, or just types the numbers in.",
               },
               {
                 num: "02",
@@ -292,8 +279,8 @@ export default async function Home() {
           <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {[
               {
-                title: "Automated data sync",
-                desc: "QuickBooks and utility account data pulled automatically. No spreadsheets, no exports.",
+                title: "Secure upload links",
+                desc: "One link per client - no account, no software to connect. Upload bills or type the numbers in directly.",
               },
               {
                 title: "GHG Protocol calculations",

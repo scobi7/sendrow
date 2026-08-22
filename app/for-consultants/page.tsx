@@ -9,7 +9,7 @@ const FEATURES = [
   },
   {
     title: "Client invite links",
-    desc: "Generate a unique link for each client. They connect their accounts and fill in their data directly - you review.",
+    desc: "Generate a unique link for each client. They upload their data directly, no account needed - you review.",
   },
   {
     title: "Automated calculations",
@@ -85,7 +85,7 @@ export default function ForConsultants() {
             className="mx-auto mt-6 max-w-xl text-lg leading-relaxed"
             style={{ color: "var(--text-muted)" }}
           >
-            Clients connect their own accounts and fill in their data. Sendrow runs the calculations. You review, report, and deliver - without the spreadsheet overhead.
+            Clients upload their own data through a secure link - no account needed. Sendrow runs the calculations. You review, report, and deliver - without the spreadsheet overhead.
           </p>
 
           <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
@@ -255,12 +255,12 @@ export default function ForConsultants() {
                 data collection.
               </h2>
               <p className="mt-4 text-base leading-relaxed" style={{ color: "var(--text-muted)" }}>
-                Send a client an invite link. They connect their QuickBooks and utility account. Sendrow pulls the data and runs the calculations automatically - no back-and-forth, no manual data requests.
+                Send a client a secure link - no account, no software to connect. They upload utility bills and fuel receipts, or just type the numbers in, and Sendrow runs the calculations the moment it lands.
               </p>
               <ul className="mt-8 space-y-4">
                 {[
                   "Generate a unique invite link per client in one click",
-                  "Clients connect their own accounts - you never need their credentials",
+                  "Clients upload or type in their own data - you never chase spreadsheets by email",
                   "You see their progress in real time and can step in wherever needed",
                 ].map((item) => (
                   <li key={item} className="flex items-start gap-3 text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>
@@ -286,8 +286,8 @@ export default function ForConsultants() {
               <div className="space-y-3">
                 {[
                   { step: "1", title: "You generate an invite link", sub: "Takes 10 seconds. Unique per client." },
-                  { step: "2", title: "Client connects their accounts", sub: "QuickBooks + utility provider. No exports needed." },
-                  { step: "3", title: "Data populates automatically", sub: "Scope 1, 2, and 3 calculated in real time." },
+                  { step: "2", title: "Client uploads their data", sub: "Utility bills, fuel receipts, or typed in directly. No account needed." },
+                  { step: "3", title: "Calculations run automatically", sub: "Scope 1, 2, and 3 calculated the moment data lands." },
                   { step: "4", title: "You review and generate the report", sub: "Audit-ready PDF, pre-filled questionnaire fields." },
                 ].map(({ step, title, sub }) => (
                   <div
@@ -357,8 +357,8 @@ export default function ForConsultants() {
               },
               {
                 num: "02",
-                title: "They connect their accounts",
-                desc: "Clients link QuickBooks and their utility provider. Sendrow pulls transactions and energy data automatically.",
+                title: "They upload their data",
+                desc: "Clients upload utility bills and fuel receipts, or type the numbers in - no account, no software to connect.",
               },
               {
                 num: "03",

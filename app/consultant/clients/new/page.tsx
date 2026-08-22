@@ -90,7 +90,7 @@ export default async function NewClientPage({
           </select>
         </div>
         <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-          After adding the client, you'll be able to generate an invite link for them to connect their account.
+          After adding the client, you'll be able to generate a secure upload link for them - no account needed on their end.
         </p>
         <div className="flex justify-end gap-3">
           <Link href="/consultant" className="btn btn-secondary">Cancel</Link>
