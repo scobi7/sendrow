@@ -1,15 +1,11 @@
 export const dynamic = "force-dynamic";
 
-import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { eq } from "drizzle-orm";
-import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
-import { emissionFactors as factorsTable, userCompanies } from "@/lib/db/schema";
+import { emissionFactors as factorsTable } from "@/lib/db/schema";
 import { SEED_FACTORS } from "@/lib/factors";
 import { EmissionFactor } from "@/lib/types";
-
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? "malachinguyenn@gmail.com";
 
 const MIGRATION_SQL = `CREATE TABLE IF NOT EXISTS gt_emission_factors (
   factor_id text PRIMARY KEY,
@@ -36,24 +32,8 @@ const CATEGORY_LABELS: Record<string, string> = {
 };
 
 export default async function AdminFactorsPage() {
-  const { userId } = await auth();
-  if (!userId) redirect("/login");
-
-  const userRow = await db.query.userCompanies.findFirst({
-    where: eq(userCompanies.clerkId, userId),
-  });
-  if (!userRow || userRow.email !== ADMIN_EMAIL) {
-    return (
-      <div
-        className="rounded-xl p-8 text-center"
-        style={{ border: "1px solid var(--danger-tint)", background: "var(--danger-tint)" }}
-      >
-        <p className="font-semibold" style={{ color: "var(--danger)" }}>Access denied</p>
-        <p className="mt-1 text-sm" style={{ color: "var(--danger)" }}>This page is restricted to the platform administrator.</p>
-      </div>
-    );
-  }
-
+  // Admin access is enforced by middleware.ts (ADMIN_CLERK_ID gate on /admin(.*)) —
+  // no second check needed here.
   let dbOverrides: EmissionFactor[] = [];
   let tableReady = true;
 

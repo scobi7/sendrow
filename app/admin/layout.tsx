@@ -30,6 +30,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           >
             Referral Leads
           </Link>
+          <Link
+            href="/admin/accounts"
+            className="text-sm font-medium transition-opacity hover:opacity-70"
+            style={{ color: "var(--text-muted)" }}
+          >
+            Accounts
+          </Link>
         </nav>
       </header>
       <main className="mx-auto max-w-5xl px-8 py-10">{children}</main>
