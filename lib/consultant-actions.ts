@@ -917,8 +917,8 @@ export async function attachEvidenceToItem(companyId: string, itemId: string, fo
 
 /** Comments for a set of line items - read side for the ledger. */
 export async function getCommentsForCompany(companyId: string) {
-  const user = await currentUser();
-  if (!user || user.role !== "consultant") return [];
+  const user = await ownsClient(companyId);
+  if (!user) return [];
   return db.select().from(comments).where(eq(comments.companyId, companyId));
 }
 

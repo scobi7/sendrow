@@ -39,5 +39,21 @@ SHA-256&nbsp;·&nbsp;${row.sha256}</p>
     return new NextResponse(html, { status: 200, headers: { "Content-Type": "text/html; charset=utf-8" } });
   }
 
-  return NextResponse.redirect(row.blobUrl);
+  // Stream the bytes ourselves rather than redirecting - the underlying blob
+  // URL never reaches the browser (no network-tab/history/copy-link leak),
+  // even though the object itself is still public at the storage layer
+  // (@vercel/blob 1.x has no private-access mode; that's a separate upgrade).
+  const blobRes = await fetch(row.blobUrl);
+  if (!blobRes.ok || !blobRes.body) {
+    return NextResponse.json({ error: "File unavailable" }, { status: 502 });
+  }
+  const safeFilename = row.filename.replace(/[^\w.\- ]/g, "_");
+  return new NextResponse(blobRes.body, {
+    status: 200,
+    headers: {
+      "Content-Type": blobRes.headers.get("content-type") ?? "application/octet-stream",
+      "Content-Disposition": `attachment; filename="${safeFilename}"`,
+      ...(blobRes.headers.get("content-length") ? { "Content-Length": blobRes.headers.get("content-length")! } : {}),
+    },
+  });
 }
