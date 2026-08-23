@@ -2,7 +2,29 @@
  *  calendar-year reporters, "FY2026" (labeled by end year) otherwise.
  *  Forward-only: line items imported before this existed keep period = null. */
 
+/** Excel/Numbers sometimes re-save a date column as a raw serial number
+ *  ("45657.66..." instead of "2026-01-15") when a file is opened and resaved.
+ *  Detected and converted to ISO so period tagging and activityDate don't
+ *  silently turn to garbage (BUG-11). 25569 = days between the Excel epoch
+ *  (1899-12-30) and the Unix epoch - the standard conversion constant. */
+export function normalizeDateInput(raw: string | undefined | null): string | undefined {
+  if (!raw) return raw ?? undefined;
+  const trimmed = raw.trim();
+  if (/^\d+(\.\d+)?$/.test(trimmed)) {
+    const serial = parseFloat(trimmed);
+    if (serial > 0 && serial < 80000) {
+      const d = new Date(Math.round((serial - 25569) * 86400 * 1000));
+      if (!isNaN(d.getTime())) {
+        return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(d.getUTCDate()).padStart(2, "0")}`;
+      }
+    }
+  }
+  return trimmed;
+}
+
 export function periodForDate(dateStr: string | undefined | null, fiscalYearEndMonth: number | null): string | null {
+  if (!dateStr) return null;
+  dateStr = normalizeDateInput(dateStr) ?? null;
   if (!dateStr) return null;
   // Accept "2026-03", "2026-03-15", "3/15/2026"
   let year: number | null = null;

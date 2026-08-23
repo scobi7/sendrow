@@ -9,7 +9,7 @@ import { getFactorsFromDb } from "@/lib/factor-engine";
 import { fuzzyMatchHeaders } from "./fuzzy-match";
 import { scoreSession } from "./session-score";
 import { checklistComplete } from "@/lib/portal";
-import { periodForDate } from "@/lib/period";
+import { periodForDate, normalizeDateInput } from "@/lib/period";
 import { logEvent } from "@/lib/events";
 import { companies } from "@/lib/db/schema";
 import type { ChecklistItem } from "@/lib/portal";
@@ -111,7 +111,7 @@ export async function processImport(input: ImportInput): Promise<ImportOutcome> 
     inserts = normalized.map((row) => ({
       ...rowToLineItem(row, factors, companyId, profileId, vendorMaps, siteFactorId),
       period: periodForDate(row.date, companyRow?.fiscalYearEndMonth ?? null),
-      activityDate: row.date ?? null,
+      activityDate: normalizeDateInput(row.date) ?? null,
     }));
   }
   // Provenance: every line item's calc log records how it arrived and, for

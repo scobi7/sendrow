@@ -14,8 +14,8 @@
 **Still open**
 - [ ] **BUG-9 (P1, correctness — found in QA) — diesel & propane are calculated with the GASOLINE factor.** `resolveFactorQuery` returns the same generic `{mobile_combustion, gallon}` query for any fuel, and `lookupFactor` returns the first match (gasoline 0.008887) regardless of diesel/propane. E.g. 400 gal diesel → app says 3554.80 kg, correct is 4084.00 kg (~13% understated). Fix: pass the specific fuel type through to the factor lookup. Small change, high value.
 - [ ] **BUG-1 (P1)** — `/admin/factors` hangs ~15s + React hydration error before redirecting a non-admin to `/login`. Blocks real emission-factor entry (N7.2). Partly a keyless-dev artifact; investigate once ADMIN_CLERK_ID + prod Clerk are set.
-- [ ] **BUG-4 (P2)** — Slow authenticated loads (dev, cold): client detail 4.3s, review 4.7s, manage 6.7s. Inflated by dev + Neon latency + sequential queries; BUG-3 loading states mask it, but a perf pass (parallelize queries) is still worth it. Re-measure on prod.
-- [ ] **BUG-11 (P2, found in QA) — Excel serial dates.** Files opened/re-saved in Excel or Numbers convert dates like `2025-04` into serial numbers (`45657.66…`). Calcs are unaffected (quantity × factor), but date/period tagging is garbage. Fix: detect + convert Excel serials in the parser, or note "upload the raw CSV."
+- [x] **BUG-4 (FIXED)** — Audited client detail/review/manage/snapshot: `loadCompany()` already batches its 7 sub-queries via `Promise.all` and is React-`cache()`-memoized per request; client detail and review already batch theirs too. Found and fixed one real gap: the snapshot page ran its `sites` query sequentially after two other batches even though it didn't depend on either - merged into the existing `Promise.all`. Remaining latency on manage/scope pages is just the unavoidable auth-check-then-load-company two-step (the auth gate has to resolve before touching company data).
+- [x] **BUG-11 (FIXED)** — Excel serial dates: `lib/period.ts` now has `normalizeDateInput()`, which detects a bare (optionally fractional) numeric string in serial-date range and converts it to ISO before it reaches `periodForDate` or gets stored as `activityDate`. +4 tests.
 
 **Dead / disabled surfaces (harmless but confusing if a demo wanders in)**
 - [x] **BUG-6 (FIXED)** — Codebase cleanup pass: removed the dead QuickBooks OAuth routes, `lib/quickbooks.ts`, `lib/utilityapi.ts`'s only caller (`startUtilityConnectForClient`, redirected to the already-deleted `/connections` page), the orphaned `/api/demo` route (zero callers, unrelated to the real `/demo` request-a-demo page), and the reverted pipeline board (`components/pipeline-board.tsx` + `pipelineStage`/`STAGE_META`/`isOverdue` in `lib/client-status.ts`, unused since the Y1 revert). Left `lib/calc.ts`'s QuickBooks-spend/utility-connected calc branches and the `Company.connections`/`qbTransactions`/`utilityData` data model alone — still live, tested (`test/calc.test.ts`, `test/progress.test.ts`), and wired into the scope1/2/3 manage pages; removing it is a bigger, separate decision (touches the DB schema, not just dead files).
@@ -79,12 +79,12 @@
 ### Z — MVP reporting hardening (APPROVED 2026-07-28; PLANS.md Plan Z). Sequence: Z1.1 → Z2 → Z4 → Z3.
 **Z1 — Correctness**
 - [x] **Z1.1** — BUG-9 FIXED: `FactorQuery.keyword` disambiguates fuel; `resolveFactorQuery` + `fleetFuelToLineItems` pass the fuel type. diesel→fuel.diesel (400gal = 4084kg ✓), propane→equip/fuel.propane. +2 tests (220 total).
-- [ ] **Z1.2** — BUG-11: Excel serial dates (`45657.66`) → detect + convert to ISO in the parser
+- [x] **Z1.2** — BUG-11 FIXED: Excel serial dates detected + converted to ISO in `lib/period.ts` (see BUGS section above)
 **Z2 — Comments gap (supplier can't see/answer line-item questions without an account) — DONE 2026-07-28**
 - [x] **Z2.1** — "Questions from your consultant" section on the portal shows consultant line-item comments (figure-labeled) + a Reply box (two-way, via new `/api/portal/line-comment`). Verified live on demo_bayb (July-spike question shows; reply posts).
 - [x] **Z2.2** — `sendCommentEmail` now links to the portal ("Open your secure page to answer") instead of the dead-end "reply to this email"; caller passes the open request's token.
 **Z3 — Polish / cleanup**
-- [ ] **Z3.1** — BUG-4: parallelize slow queries (client detail/review/manage/snapshot)
+- [x] **Z3.1** — BUG-4 FIXED: audited and parallelized (see BUGS section above)
 - [x] **Z3.2** — BUG-6: removed dead QuickBooks API routes (see BUGS section above)
 - [ ] **Z3.3** — BUG-7: ensure nothing links into disabled `/checkout`
 - [x] **Z3.4** — BUG-1: fixed - `/admin/factors` had its own redundant `ADMIN_EMAIL` gate on top of middleware's `ADMIN_CLERK_ID` check; removed it, now relies on the single middleware gate like every other `/admin/*` route

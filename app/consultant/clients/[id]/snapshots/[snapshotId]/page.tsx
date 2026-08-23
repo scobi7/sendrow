@@ -35,7 +35,7 @@ export default async function SnapshotSharePage({
   ]);
   if (!company || !snap || snap.companyId !== id) notFound();
 
-  const [shares, evidenceRows, approver, newerSnapshots] = await Promise.all([
+  const [shares, evidenceRows, approver, newerSnapshots, sites] = await Promise.all([
     db
       .select()
       .from(shareLinks)
@@ -46,8 +46,8 @@ export default async function SnapshotSharePage({
       .from(snapshots)
       .where(eq(snapshots.companyId, id))
       .orderBy(desc(snapshots.createdAt)),
+    db.select().from(locations).where(eq(locations.companyId, id)),
   ]);
-  const sites = await db.select().from(locations).where(eq(locations.companyId, id));
 
   const totals = snap.totals as SnapshotTotals;
 
