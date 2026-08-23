@@ -18,7 +18,7 @@
 - [ ] **BUG-11 (P2, found in QA) — Excel serial dates.** Files opened/re-saved in Excel or Numbers convert dates like `2025-04` into serial numbers (`45657.66…`). Calcs are unaffected (quantity × factor), but date/period tagging is garbage. Fix: detect + convert Excel serials in the parser, or note "upload the raw CSV."
 
 **Dead / disabled surfaces (harmless but confusing if a demo wanders in)**
-- [ ] **BUG-6 (P2)** — QuickBooks API routes (`/api/auth/quickbooks/redirect|callback`) still exist though the UI was removed in Plan X4. Dead endpoints — remove or leave dormant (documented).
+- [x] **BUG-6 (FIXED)** — Codebase cleanup pass: removed the dead QuickBooks OAuth routes, `lib/quickbooks.ts`, `lib/utilityapi.ts`'s only caller (`startUtilityConnectForClient`, redirected to the already-deleted `/connections` page), the orphaned `/api/demo` route (zero callers, unrelated to the real `/demo` request-a-demo page), and the reverted pipeline board (`components/pipeline-board.tsx` + `pipelineStage`/`STAGE_META`/`isOverdue` in `lib/client-status.ts`, unused since the Y1 revert). Left `lib/calc.ts`'s QuickBooks-spend/utility-connected calc branches and the `Company.connections`/`qbTransactions`/`utilityData` data model alone — still live, tested (`test/calc.test.ts`, `test/progress.test.ts`), and wired into the scope1/2/3 manage pages; removing it is a bigger, separate decision (touches the DB schema, not just dead files).
 - [ ] **BUG-7 (P2)** — Payment gate is disabled (middleware comment), so `/checkout`, `/pricing`, `/pricing/agency` are reachable but non-functional. By design during dev, but pricing is deferred (GOALS.md) — make sure no demo path links into checkout.
 
 **Could NOT verify — BLOCKED on env or would mutate prod data (not confirmed broken, just untested)**
@@ -85,9 +85,9 @@
 - [x] **Z2.2** — `sendCommentEmail` now links to the portal ("Open your secure page to answer") instead of the dead-end "reply to this email"; caller passes the open request's token.
 **Z3 — Polish / cleanup**
 - [ ] **Z3.1** — BUG-4: parallelize slow queries (client detail/review/manage/snapshot)
-- [ ] **Z3.2** — BUG-6: remove dead QuickBooks API routes
+- [x] **Z3.2** — BUG-6: removed dead QuickBooks API routes (see BUGS section above)
 - [ ] **Z3.3** — BUG-7: ensure nothing links into disabled `/checkout`
-- [ ] **Z3.4** — BUG-1: `/admin/factors` hydration hang (partly blocked on prod Clerk + ADMIN_CLERK_ID)
+- [x] **Z3.4** — BUG-1: fixed - `/admin/factors` had its own redundant `ADMIN_EMAIL` gate on top of middleware's `ADMIN_CLERK_ID` check; removed it, now relies on the single middleware gate like every other `/admin/*` route
 **Z4 — Conversion P0 (existential)**
 - [ ] **Z4.1** — Early-engagement reminder 48–72h after send (≤4 total touches)
 - [ ] **Z4.2** — Checklist items + est. time inside the request email
