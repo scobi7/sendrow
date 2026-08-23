@@ -1,6 +1,6 @@
 import { pgTable, text, boolean, integer, numeric, jsonb, serial } from "drizzle-orm/pg-core";
 
-export const companies = pgTable("gt_companies", {
+export const companies = pgTable("companies", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
   industry: text("industry"),
@@ -21,7 +21,7 @@ export const companies = pgTable("gt_companies", {
   sectionStatus: jsonb("section_status"),
 });
 
-export const scope3Screening = pgTable("gt_scope3_screening", {
+export const scope3Screening = pgTable("scope3_screening", {
   id: text("id").primaryKey(),
   companyId: text("company_id").notNull().references(() => companies.id),
   categoryNumber: integer("category_number").notNull(),
@@ -32,7 +32,7 @@ export const scope3Screening = pgTable("gt_scope3_screening", {
   updatedAt: text("updated_at").notNull(),
 });
 
-export const userCompanies = pgTable("gt_user_companies", {
+export const userCompanies = pgTable("user_companies", {
   clerkId: text("clerk_id").primaryKey(),
   companyId: text("company_id").references(() => companies.id),
   name: text("name").notNull(),
@@ -41,7 +41,7 @@ export const userCompanies = pgTable("gt_user_companies", {
   createdAt: text("created_at").notNull(),
 });
 
-export const locations = pgTable("gt_locations", {
+export const locations = pgTable("locations", {
   id: text("id").primaryKey(),
   companyId: text("company_id").notNull().references(() => companies.id),
   // Site name ("Fresno plant") - legacy rows fall back to city/address
@@ -56,7 +56,7 @@ export const locations = pgTable("gt_locations", {
   contactEmail: text("contact_email"),
 });
 
-export const companyConnections = pgTable("gt_connections", {
+export const companyConnections = pgTable("connections", {
   companyId: text("company_id").primaryKey().references(() => companies.id),
   qbConnected: boolean("qb_connected").notNull().default(false),
   qbLastSynced: text("qb_last_synced"),
@@ -70,12 +70,12 @@ export const companyConnections = pgTable("gt_connections", {
   qbTokenExpiresAt: text("qb_token_expires_at"),
 });
 
-export const companyInputs = pgTable("gt_company_inputs", {
+export const companyInputs = pgTable("company_inputs", {
   companyId: text("company_id").primaryKey().references(() => companies.id),
   data: jsonb("data").notNull().default({}),
 });
 
-export const calcs = pgTable("gt_calcs", {
+export const calcs = pgTable("calcs", {
   id: text("id").primaryKey(),
   companyId: text("company_id").notNull().references(() => companies.id),
   scope: integer("scope").notNull(),
@@ -87,7 +87,7 @@ export const calcs = pgTable("gt_calcs", {
   marketBasedTons: numeric("market_based_tons", { precision: 14, scale: 4 }),
 });
 
-export const qbTransactions = pgTable("gt_qb_transactions", {
+export const qbTransactions = pgTable("qb_transactions", {
   id: text("id").primaryKey(),
   companyId: text("company_id").notNull().references(() => companies.id),
   vendor: text("vendor").notNull(),
@@ -96,7 +96,7 @@ export const qbTransactions = pgTable("gt_qb_transactions", {
   date: text("date").notNull(),
 });
 
-export const utilityData = pgTable("gt_utility_data", {
+export const utilityData = pgTable("utility_data", {
   id: serial("id").primaryKey(),
   companyId: text("company_id").notNull().references(() => companies.id),
   locationId: text("location_id").notNull(),
@@ -107,7 +107,7 @@ export const utilityData = pgTable("gt_utility_data", {
 
 /** Unified immutable event log (pipeline Ground Rule 3): every create /
  *  approve / share / convert / edit / comment, from day one. Append-only -  *  no update or delete path exists in code. */
-export const events = pgTable("gt_events", {
+export const events = pgTable("events", {
   id: text("id").primaryKey(),
   companyId: text("company_id").notNull().references(() => companies.id),
   actor: text("actor").notNull(),          // clerk id, "portal:<requestId>", or "system"
@@ -121,7 +121,7 @@ export const events = pgTable("gt_events", {
 
 /** Comment threads pinned to specific data lines (U1.5/#6): the conversation
  *  lives ON the number, not in an email chain. */
-export const comments = pgTable("gt_comments", {
+export const comments = pgTable("comments", {
   id: text("id").primaryKey(),
   companyId: text("company_id").notNull().references(() => companies.id),
   lineItemId: text("line_item_id"), // null for checklist-item threads (X2)
@@ -133,7 +133,7 @@ export const comments = pgTable("gt_comments", {
   createdAt: text("created_at").notNull(),
 });
 
-export const auditLog = pgTable("gt_audit_log", {
+export const auditLog = pgTable("audit_log", {
   id: text("id").primaryKey(),
   ts: text("ts").notNull(),
   companyId: text("company_id").notNull().references(() => companies.id),
@@ -147,7 +147,7 @@ export const auditLog = pgTable("gt_audit_log", {
   formula: text("formula"),
 });
 
-export const consultantClients = pgTable("gt_consultant_clients", {
+export const consultantClients = pgTable("consultant_clients", {
   id: text("id").primaryKey(),
   consultantId: text("consultant_id").notNull(),
   companyId: text("company_id").notNull().references(() => companies.id),
@@ -157,7 +157,7 @@ export const consultantClients = pgTable("gt_consultant_clients", {
 
 /** White-label brand (Plan N5): what the consultant's clients see instead of
  *  Sendrow, on the portal, shared results, and client-facing emails (§11). */
-export const consultantProfiles = pgTable("gt_consultant_profiles", {
+export const consultantProfiles = pgTable("consultant_profiles", {
   consultantId: text("consultant_id").primaryKey(), // clerk id
   brandName: text("brand_name"),
   logoUrl: text("logo_url"),
@@ -168,7 +168,7 @@ export const consultantProfiles = pgTable("gt_consultant_profiles", {
 
 /** Read-only client results links (Plan N5): the consultant-branded "dashboard"
  *  a company sees - shared as a link, never a login. */
-export const shareLinks = pgTable("gt_share_links", {
+export const shareLinks = pgTable("share_links", {
   token: text("token").primaryKey(),
   companyId: text("company_id").notNull().references(() => companies.id),
   // When set, the link shows this frozen snapshot (§13); null = legacy live view
@@ -184,7 +184,7 @@ export const shareLinks = pgTable("gt_share_links", {
 /** Frozen, dated, approved versions (Plan T3 / invariant §13): the ONLY thing
  *  ever shared. Immutable by construction - corrections create a new snapshot
  *  and restatement-alert every recipient of the old one. */
-export const snapshots = pgTable("gt_snapshots", {
+export const snapshots = pgTable("snapshots", {
   id: text("id").primaryKey(),
   companyId: text("company_id").notNull().references(() => companies.id),
   label: text("label").notNull(),
@@ -199,7 +199,7 @@ export const snapshots = pgTable("gt_snapshots", {
 
 /** Engagement templates (#23): a consultant's standard request package,
  *  reusable in one click. Stored as config (Ground Rule #1). */
-export const requestTemplates = pgTable("gt_request_templates", {
+export const requestTemplates = pgTable("request_templates", {
   id: text("id").primaryKey(),
   consultantId: text("consultant_id").notNull(),
   name: text("name").notNull(),
@@ -210,7 +210,7 @@ export const requestTemplates = pgTable("gt_request_templates", {
   createdAt: text("created_at").notNull(),
 });
 
-export const inviteTokens = pgTable("gt_invite_tokens", {
+export const inviteTokens = pgTable("invite_tokens", {
   token: text("token").primaryKey(),
   consultantId: text("consultant_id").notNull(),
   companyId: text("company_id").notNull().references(() => companies.id),
@@ -219,7 +219,7 @@ export const inviteTokens = pgTable("gt_invite_tokens", {
   usedAt: text("used_at"),
 });
 
-export const mappingProfiles = pgTable("gt_mapping_profiles", {
+export const mappingProfiles = pgTable("mapping_profiles", {
   id: text("id").primaryKey(),
   companyId: text("company_id").notNull().references(() => companies.id),
   name: text("name").notNull(),
@@ -231,7 +231,7 @@ export const mappingProfiles = pgTable("gt_mapping_profiles", {
   createdAt: text("created_at").notNull(),
 });
 
-export const emissionLineItems = pgTable("gt_emission_line_items", {
+export const emissionLineItems = pgTable("emission_line_items", {
   id: text("id").primaryKey(),
   companyId: text("company_id").notNull().references(() => companies.id),
   sourceRef: text("source_ref").notNull().default(""),
@@ -256,7 +256,7 @@ export const emissionLineItems = pgTable("gt_emission_line_items", {
   createdAt: text("created_at").notNull(),
 });
 
-export const intakeSessions = pgTable("gt_intake_sessions", {
+export const intakeSessions = pgTable("intake_sessions", {
   id: text("id").primaryKey(),
   companyId: text("company_id").notNull().references(() => companies.id),
   uploadedBy: text("uploaded_by").notNull(),
@@ -274,7 +274,7 @@ export const intakeSessions = pgTable("gt_intake_sessions", {
 
 /** Evidence locker (Plan N3): the original source document behind an import.
  *  The hash is always recorded, even when blob storage isn't configured -  *  provenance survives without the bytes. */
-export const evidence = pgTable("gt_evidence", {
+export const evidence = pgTable("evidence", {
   id: text("id").primaryKey(),
   companyId: text("company_id").notNull().references(() => companies.id),
   dataRequestId: text("data_request_id"),
@@ -287,7 +287,7 @@ export const evidence = pgTable("gt_evidence", {
   createdAt: text("created_at").notNull(),
 });
 
-export const dataRequests = pgTable("gt_data_requests", {
+export const dataRequests = pgTable("data_requests", {
   id: text("id").primaryKey(),
   companyId: text("company_id").notNull().references(() => companies.id),
   requestedBy: text("requested_by").notNull(),
@@ -315,7 +315,7 @@ export const dataRequests = pgTable("gt_data_requests", {
 
 /** Cross-client vendor → category memory (Plan J). Global: one confirmation
  *  maps that vendor for every client, forever. Human-confirmed only. */
-export const vendorMappings = pgTable("gt_vendor_mappings", {
+export const vendorMappings = pgTable("vendor_mappings", {
   id: text("id").primaryKey(),
   vendorPattern: text("vendor_pattern").notNull(), // normalized vendor name
   // null = global (applies to every client); set = only this client.
@@ -331,7 +331,7 @@ export const vendorMappings = pgTable("gt_vendor_mappings", {
   timesApplied: integer("times_applied").notNull().default(0),
 });
 
-export const referralLeads = pgTable("gt_referral_leads", {
+export const referralLeads = pgTable("referral_leads", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
   email: text("email").notNull(),
@@ -341,7 +341,7 @@ export const referralLeads = pgTable("gt_referral_leads", {
   createdAt: text("created_at").notNull(),
 });
 
-export const pipelineStatus = pgTable("gt_pipeline_status", {
+export const pipelineStatus = pgTable("pipeline_status", {
   companyId: text("company_id").primaryKey().references(() => companies.id),
   status: text("status").notNull().default("not_started"),
   lockedAt: text("locked_at"),
@@ -350,7 +350,7 @@ export const pipelineStatus = pgTable("gt_pipeline_status", {
   updatedAt: text("updated_at").notNull(),
 });
 
-export const emissionFactors = pgTable("gt_emission_factors", {
+export const emissionFactors = pgTable("emission_factors", {
   factorId: text("factor_id").primaryKey(),
   factorName: text("factor_name").notNull(),
   category: text("category").notNull(),
