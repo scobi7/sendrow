@@ -16,12 +16,6 @@ export default async function Home() {
           <Link href="/how-it-works" className="hidden text-sm font-medium transition-opacity hover:opacity-70 sm:block" style={{ color: "var(--text-muted)" }}>
             How it works
           </Link>
-          <Link href="/for-companies" className="hidden text-sm font-medium transition-opacity hover:opacity-70 sm:block" style={{ color: "var(--text-muted)" }}>
-            For companies
-          </Link>
-          <Link href="/for-consultants" className="hidden text-sm font-medium transition-opacity hover:opacity-70 sm:block" style={{ color: "var(--text-muted)" }}>
-            For consultants
-          </Link>
           <Link href="/login" className="text-sm font-medium transition-opacity hover:opacity-70" style={{ color: "var(--text-muted)" }}>
             Sign in
           </Link>

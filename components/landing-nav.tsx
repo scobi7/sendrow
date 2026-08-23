@@ -27,20 +27,6 @@ export function LandingNav() {
             How it works
           </Link>
           <Link
-            href="/for-companies"
-            className="text-sm font-medium transition-colors"
-            style={{ color: "var(--text-muted)" }}
-          >
-            For companies
-          </Link>
-          <Link
-            href="/for-consultants"
-            className="text-sm font-medium transition-colors"
-            style={{ color: "var(--text-muted)" }}
-          >
-            For consultants
-          </Link>
-          <Link
             href="/pricing"
             className="text-sm font-medium transition-colors"
             style={{ color: "var(--text-muted)" }}
@@ -83,12 +69,6 @@ export function LandingNav() {
           <nav className="flex flex-col gap-5">
             <Link href="/how-it-works" onClick={() => setOpen(false)} className="text-sm font-medium" style={{ color: "var(--text-muted)" }}>
               How it works
-            </Link>
-            <Link href="/for-companies" onClick={() => setOpen(false)} className="text-sm font-medium" style={{ color: "var(--text-muted)" }}>
-              For companies
-            </Link>
-            <Link href="/for-consultants" onClick={() => setOpen(false)} className="text-sm font-medium" style={{ color: "var(--text-muted)" }}>
-              For consultants
             </Link>
             <Link href="/pricing" onClick={() => setOpen(false)} className="text-sm font-medium" style={{ color: "var(--text-muted)" }}>
               Pricing
