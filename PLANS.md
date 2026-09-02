@@ -19,6 +19,14 @@
 | BUGS | BUG-2/3/5/8/10 fixes (review-email repoint + orphan delete, loading skeletons, flag-reply visibility, Node<20 File upload fix); SB 253 date → Nov 10 | 2026-07-21→23, `sendrow-v3` |
 | Y6 | Portal: multiple files per checklist item (≤12) + batch-submit staging (files held private until one Submit) | 2026-07-23, `sendrow-v3` |
 | — | Pipeline board (Y1) built then reverted to the table dashboard (Malachi's call) | 2026-07-23, `sendrow-v3` |
+| MO | Multi-office collection Phase 1: CFO delegates per-site links, each facility calcs on its own grid factor | 2026-07-31 built, deployed to `main` 2026-09-02 |
+| — | Admin gate fix (removed BUG-1's redundant double auth check) + new `/admin/accounts` (grant/revoke free access) + billing-portal URL fallback fix | 2026-09-02, `main` |
+| — | Site delegation follow-ups: editable/multi-contact emails, optional personal note on send, reminders fixed to nudge the site's own contact instead of the CFO | 2026-09-02, `main` |
+| — | Security pass: closed a real cross-tenant read (`getCommentsForCompany`), rewrote `separation.test.ts` to auto-discover coverage instead of a drifting allowlist, evidence downloads now stream instead of redirecting to a public blob URL | 2026-09-02, `main` |
+| — | GreenTrack-era cleanup: dead QuickBooks/UtilityAPI code removed (BUG-6), orphaned `/api/demo` route removed, reverted pipeline-board helpers removed, all 27 DB tables renamed off the `gt_` prefix | 2026-09-02, `main` |
+| — | Marketing/product copy fixed to match reality (removed stale "auto-connects your QuickBooks/utility" claims); nav decluttered (for-companies page + both nav links removed, for-consultants kept) | 2026-09-02, `main` |
+| — | BUG-11 (Excel serial dates) + BUG-4 (query parallelization, one real fix on the snapshot page) | 2026-09-02, `main` |
+| — | RLS investigated: `neon-http` driver confirmed to have zero transaction support; `neon-serverless`+`Pool` confirmed as the fix but requires a full DB-driver migration. Shelved by design decision, not by default. | 2026-09-02, research only, no code shipped |
 
 ---
 

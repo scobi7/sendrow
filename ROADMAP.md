@@ -1,6 +1,6 @@
 # ROADMAP.md — Build Order
 > Sendrow = the system of record for supplier emissions data, consultant-operated (GOALS.md). Build order source of truth: **Masao's pipeline, `docs/build-pipeline-2026-07-10.pdf`** — work top to bottom, don't skip ahead. Active plan detail: PLANS.md.
-> Last updated: 2026-07-12
+> Last updated: 2026-09-02
 
 ## Status by pipeline phase
 | Phase | Goal | Status |
@@ -17,7 +17,7 @@
 AI suggestions · buyer features (2027) · QuickBooks/utility integrations · peer benchmarking · EPR module · referral-routing software (spreadsheet).
 
 ## Standing P0 ops (user actions — tracked in NEXT.md)
-Vercel env (`BLOB_READ_WRITE_TOKEN`, `CRON_SECRET`, `ADMIN_CLERK_ID`) · real eGRID/USEEIO factor data · Clerk prod Google OAuth · attorney ToS (tool-not-advice) · Calendly links · production deploy of v2.
+`BLOB_READ_WRITE_TOKEN` (Vercel) · real eGRID/USEEIO factor data · Clerk prod Google OAuth · attorney ToS (tool-not-advice) · Calendly links. `CRON_SECRET` and `ADMIN_CLERK_ID` are set and working.
 
 ## Key facts in force
 SB 253 first Scope 1/2 deadline **Nov 10, 2026** (confirmed 2026-07-21) · 2027 = Scope 3 + limited assurance (**ISSA 5000**) · **PACT V3 only** · vendor memory workspace-scoped.
