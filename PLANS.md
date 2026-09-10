@@ -27,6 +27,26 @@
 | — | Marketing/product copy fixed to match reality (removed stale "auto-connects your QuickBooks/utility" claims); nav decluttered (for-companies page + both nav links removed, for-consultants kept) | 2026-09-02, `main` |
 | — | BUG-11 (Excel serial dates) + BUG-4 (query parallelization, one real fix on the snapshot page) | 2026-09-02, `main` |
 | — | RLS investigated: `neon-http` driver confirmed to have zero transaction support; `neon-serverless`+`Pool` confirmed as the fix but requires a full DB-driver migration. Shelved by design decision, not by default. | 2026-09-02, research only, no code shipped |
+| L | Landing relaunch: homepage rebuilt to "Option B" (concise pitch + waitlist + design-partner ask), `waitlist_signups`/`marketing_events` tables, `/api/track` beacon, `/admin/waitlist` view | 2026-09-10, `sendrow-v3` |
+
+---
+
+# Plan L — Landing relaunch + design-partner funnel (APPROVED 2026-09-10, branch `sendrow-v3`)
+> Source: Malachi's design-partner recruitment notes (Berkeley network + startup-advisor framing) + three homepage directions mocked as a Claude artifact, iterated live, "Option B" (product-first, ask-second) chosen. Goal: a concise homepage that pitches Sendrow, captures early-access signups, and lets Malachi see engagement without a third-party analytics tool.
+
+**L1 — Schema (additive/nullable, safe with the existing `drizzle-kit push --force` on deploy):**
+- `waitlist_signups` — one row per email (unique), `wants_design_partner` boolean, `source` (`hero` | `partner`), `created_at`. Upserted, not inserted twice, so re-submitting from the partner card just flips the flag on an existing row.
+- `marketing_events` — lightweight page-engagement log (`page_view`, `nav_how_it_works_click`, `nav_signin_click`), fixed allowlist enforced server-side. Deliberately separate from the existing `events` table (that one is the product's per-company audit log; this is anonymous homepage traffic, no `companyId`).
+
+**L2 — Capture:** `lib/waitlist.ts` (`"use server"`) — `submitWaitlist()` as a Server Action called directly from the form (no new public API route needed; Server Actions post back to `/`, already public). `app/api/track/route.ts` — the one new public route, for fire-and-forget `sendBeacon` clicks/pageviews that can't wait on a page-bound action. Both rate-limited via the existing `lib/ratelimit.ts` (`clientIp` + `checkRateLimit`), same pattern as the rest of the app.
+
+**L3 — Homepage rebuild (`app/page.tsx`), Option B:** concise hero (one headline, one line of pitch, single-field "Get early access" form - no newsletter checkbox, matches GOALS.md's "no in-app newsletter" call) - three real, shipped steps (send a link / auto-calculate / export) - one unnumbered line on automated chasing (shipped, Plan Y3/Z4 reminders) - a condensed two-column "design partner" card (short ask + its own email field, SB 253 date on the right) - **no seat-count chip** (removed per review - true, verifiable numbers only). Copy claim "Scope 1, 2, and 3" stays: confirmed Scope 3 is real, tested calculation logic (`test/vendor-mappings.test.ts`), not a placeholder - the only caveat is the underlying factor *values* are still labeled representative pending real eGRID/USEEIO data (standing item N7.2), which is a data-precision note, not a "we don't calculate it" gap.
+
+**L4 — Admin visibility (`/admin/waitlist`):** signup count (total + design-partner-interested split), a plain table of signups, and engagement counts by event name - so "how many signups / how many clicked through" has an answer inside the product instead of a manual SQL query.
+
+**L5 — House style:** grep-verify no emoji / no em dash on all new copy before calling this done (GOALS.md standing constraint).
+
+**Explicitly not in this pass:** no newsletter (parked per GOALS.md), no third-party analytics/ad pixel, no A/B test harness for Option C - those stay ideas until there's a reason to build them.
 
 ---
 

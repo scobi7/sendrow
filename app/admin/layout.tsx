@@ -37,6 +37,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           >
             Accounts
           </Link>
+          <Link
+            href="/admin/waitlist"
+            className="text-sm font-medium transition-opacity hover:opacity-70"
+            style={{ color: "var(--text-muted)" }}
+          >
+            Waitlist
+          </Link>
         </nav>
       </header>
       <main className="mx-auto max-w-5xl px-8 py-10">{children}</main>

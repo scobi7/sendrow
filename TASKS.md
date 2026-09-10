@@ -32,6 +32,18 @@
 - Seed dates are relative (`daysAgo` in reset-demo.ts): reseed the morning of any demo so dates read sensibly (D3.3). Last reseeded clean 2026-07-23.
 - **QA test kit** in `~/Downloads/qa-A…D-*.csv` + `qa-combined.csv` — sample sheets with ground-truth CO2e (electricity/gas/fuel + edge cases). Upload `qa-combined.csv` to exercise everything in one item; diesel rows reveal BUG-9.
 
+## Plan L — Landing relaunch + design-partner funnel (branch `sendrow-v3`, PLANS.md Plan L) — BUILT 2026-09-10
+- [x] **L1.1** — `waitlist_signups` table in `lib/db/schema.ts` (unique email, `wants_design_partner`, `source`, `created_at`)
+- [x] **L1.2** — `marketing_events` table (`event_name`, `path`, `session_id`, `meta`, `created_at`) - separate from the product's `events` audit log
+- [x] **L2.1** — `lib/waitlist.ts`: `normalizeEmail`/`isValidEmail` (pure, tested in `lib/waitlist-validation.ts`) + `submitWaitlist()` Server Action (upsert via `onConflictDoUpdate`, rate-limited)
+- [x] **L2.2** — `app/api/track/route.ts`: public POST, fixed event-name allowlist (`page_view`/`nav_how_it_works_click`/`nav_signin_click`), rate-limited; added to middleware's public routes
+- [x] **L2.3** — `lib/track-client.ts` (sendBeacon helper) + `components/tracked-link.tsx` + `components/page-view-tracker.tsx`
+- [x] **L2.4** — `components/waitlist-form.tsx`: controlled form, loading/success/error states, no dead ends
+- [x] **L3.1** — Rebuilt `app/page.tsx` per Option B (concise hero, 3-step, chasing line, condensed partner card, no seat counter)
+- [x] **L4.1** — `/admin/waitlist` page (signup table + funnel counts) + nav link in `app/admin/layout.tsx`
+- [x] **L5.1** — Grep-verified no emoji / em dash on new copy; `npm test` (229/229) + `tsc` + `next build` all green
+- [~] **L6.1** — MD files hydrated. **Not done: live DB round-trip of the upsert query** - `DATABASE_URL` in `.env.local` is the production database (per prior session notes), so no schema push or test write was run against it from here. The two new tables get created automatically by the existing `drizzle-kit push --force` in `npm run build` the next time this deploys, same as every prior schema change - but that means the `onConflictDoUpdate` upsert hasn't actually executed against Postgres yet, only reviewed against the same pattern used elsewhere (`lib/consultant-actions.ts`). Malachi: worth a real signup test right after this ships. Committed + pushed to `sendrow-v3`; `main` untouched pending review.
+
 ## Plan W — Wireframe Workflow Alignment
 
 ### W1 — Consultant IA shell + core-loop reshape — BUILT 2026-07-13

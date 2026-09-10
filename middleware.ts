@@ -17,6 +17,7 @@ const isPublicRoute = createRouteMatcher([
   "/privacy(.*)",
   "/portal(.*)",      // magic-link client portal — token is the auth
   "/api/portal(.*)",  // portal submissions — token validated in the route
+  "/api/track(.*)",   // homepage engagement beacon — public, rate-limited, allowlisted events
   "/security(.*)",
   "/dpa(.*)",
   "/get-matched(.*)",

@@ -350,6 +350,29 @@ export const pipelineStatus = pgTable("pipeline_status", {
   updatedAt: text("updated_at").notNull(),
 });
 
+/** Homepage early-access + design-partner capture (Plan L). One row per
+ *  email - re-submitting from the partner card upserts the same row rather
+ *  than duplicating it. */
+export const waitlistSignups = pgTable("waitlist_signups", {
+  id: text("id").primaryKey(),
+  email: text("email").notNull().unique(),
+  wantsDesignPartner: boolean("wants_design_partner").notNull().default(false),
+  source: text("source").notNull(), // hero | partner
+  createdAt: text("created_at").notNull(),
+});
+
+/** Anonymous homepage engagement (Plan L) - page views and a handful of
+ *  allowlisted clicks. Separate from `events` above, which is the
+ *  per-company product audit log; this table has no companyId on purpose. */
+export const marketingEvents = pgTable("marketing_events", {
+  id: text("id").primaryKey(),
+  eventName: text("event_name").notNull(),
+  path: text("path").notNull(),
+  sessionId: text("session_id"),
+  meta: jsonb("meta"),
+  createdAt: text("created_at").notNull(),
+});
+
 export const emissionFactors = pgTable("emission_factors", {
   factorId: text("factor_id").primaryKey(),
   factorName: text("factor_name").notNull(),
