@@ -14,16 +14,27 @@ export function Logo({ light = false }: { light?: boolean }) {
 
 function SendrowMark() {
   return (
-    <span
+    <svg
       aria-hidden
-      className="grid h-8 w-8 shrink-0 place-items-center rounded-[10px] text-[15px] font-extrabold text-white"
-      style={{
-        backgroundImage: "linear-gradient(135deg, var(--green), var(--teal))",
-        boxShadow: "0 10px 30px rgba(34,197,94,0.28)",
-      }}
+      width={32}
+      height={32}
+      viewBox="0 0 100 100"
+      className="shrink-0"
+      style={{ borderRadius: 8, boxShadow: "0 10px 30px rgba(34,197,94,0.28)" }}
     >
-      S
-    </span>
+      <defs>
+        <linearGradient id="sendrow-mark-g" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="var(--green)" />
+          <stop offset="1" stopColor="var(--teal)" />
+        </linearGradient>
+      </defs>
+      <rect width="100" height="100" rx="24" fill="url(#sendrow-mark-g)" />
+      <rect x="24" y="24" width="40" height="13" rx="6.5" fill="#fff" />
+      <circle cx="72" cy="30.5" r="6.5" fill="#fff" />
+      <rect x="20" y="41" width="60" height="16" rx="8" fill="#fff" />
+      <circle cx="28" cy="67.5" r="6.5" fill="#fff" />
+      <rect x="36" y="61" width="44" height="13" rx="6.5" fill="#fff" />
+    </svg>
   );
 }
 
