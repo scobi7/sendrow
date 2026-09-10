@@ -57,7 +57,6 @@ export default async function Home() {
           buttonLabel="Get early access"
           placeholder="you@firm.com"
           successMessage="You're on the list. We'll email you when your seat opens."
-          helperText="No spam - just a note the day your seat opens."
           className="mx-auto mt-8 max-w-md"
         />
       </section>
@@ -83,10 +82,23 @@ export default async function Home() {
             },
           ].map(({ num, title, desc }) => (
             <div key={num}>
-              <p className="font-data text-2xl font-bold" style={{ color: "rgba(26,92,48,0.28)" }}>
+              <span
+                className="font-data text-sm font-bold"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: 32,
+                  height: 32,
+                  borderRadius: "50%",
+                  background: "var(--primary-tint)",
+                  border: "1px solid rgba(23,137,90,0.35)",
+                  color: "var(--primary-strong)",
+                }}
+              >
                 {num}
-              </p>
-              <h3 className="mt-2 text-[15px] font-bold" style={{ color: "var(--text)" }}>
+              </span>
+              <h3 className="mt-3 text-[15px] font-bold" style={{ color: "var(--text)" }}>
                 {title}
               </h3>
               <p className="mt-1.5 text-[13px] leading-relaxed" style={{ color: "var(--text-muted)" }}>
@@ -119,12 +131,12 @@ export default async function Home() {
               source="partner"
               wantsDesignPartner
               buttonLabel="Apply for a seat"
-              buttonVariant="secondary"
+              buttonVariant="primary"
               successMessage="Thanks - we'll reach out to schedule your first call."
               className="mt-4"
             />
           </div>
-          <div style={{ borderLeft: "1px solid var(--divider)", paddingLeft: 24 }}>
+          <div style={{ borderLeft: "1px solid rgba(23,33,28,0.14)", paddingLeft: 24 }}>
             <p className="eyebrow">Why now</p>
             <p className="mt-2 text-[12.5px] leading-relaxed" style={{ color: "var(--text-muted)" }}>
               California&rsquo;s SB 253 sets its first Scope 1 + 2 disclosure deadline for{" "}

@@ -54,10 +54,10 @@ export function WaitlistForm({
 
   return (
     <div className={className}>
-      <form onSubmit={handleSubmit} style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+      <form onSubmit={handleSubmit} style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center", justifyContent: "center" }}>
         <input
-          className="field"
-          style={{ flex: 1, minWidth: 180 }}
+          className="input"
+          style={{ flex: 1, minWidth: 180, border: "1px solid rgba(23,33,28,0.18)" }}
           type="email"
           placeholder={placeholder}
           value={email}
