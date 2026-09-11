@@ -81,7 +81,11 @@ export default async function Home() {
               desc: "Audit-ready PDF or a pre-filled questionnaire, already mapped.",
             },
           ].map(({ num, title, desc }) => (
-            <div key={num}>
+            <div
+              key={num}
+              className="rounded-2xl bg-white p-6 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg"
+              style={{ border: "1px solid var(--divider)", boxShadow: "0 1px 3px rgba(15,50,28,0.04)" }}
+            >
               <span
                 className="font-data text-sm font-bold"
                 style={{
