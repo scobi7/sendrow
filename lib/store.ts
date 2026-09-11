@@ -212,33 +212,3 @@ export async function saveLocations(
     await db.insert(locations).values(locs.map((l) => ({ ...l, companyId })));
   }
 }
-
-export async function saveQBTransactions(
-  companyId: string,
-  txns: Company["qbTransactions"]
-): Promise<void> {
-  await db.delete(qbTransactions).where(eq(qbTransactions.companyId, companyId));
-  if (txns.length > 0) {
-    await db.insert(qbTransactions).values(
-      txns.map((t) => ({ ...t, companyId, amount: String(t.amount) }))
-    );
-  }
-}
-
-export async function saveUtilityData(
-  companyId: string,
-  data: Company["utilityData"]
-): Promise<void> {
-  await db.delete(utilityData).where(eq(utilityData.companyId, companyId));
-  if (data.length > 0) {
-    await db.insert(utilityData).values(
-      data.map((u) => ({
-        companyId,
-        locationId: u.locationId,
-        month: u.month,
-        kwh: String(u.kwh),
-        therms: String(u.therms),
-      }))
-    );
-  }
-}

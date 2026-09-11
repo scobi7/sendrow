@@ -129,20 +129,6 @@ export async function consultantSaveScope3Decision(companyId: string, category: 
 
 
 
-export async function consultantMarkQBReviewed(companyId: string) {
-  const { user, company } = await asConsultantFor(companyId);
-  await logChange({ user, companyId: company.id, section: "connections", field: "qb_data_reviewed", prev: false, next: true });
-  company.inputs.qb_data_reviewed = true;
-  await persist(company);
-}
-
-export async function consultantMarkUtilityReviewed(companyId: string) {
-  const { user, company } = await asConsultantFor(companyId);
-  await logChange({ user, companyId: company.id, section: "connections", field: "scope2_reviewed", prev: false, next: true });
-  company.inputs.scope2_reviewed = true;
-  await persist(company);
-}
-
 export async function consultantGenerateReport(companyId: string) {
   const { user, company } = await asConsultantFor(companyId);
   const s = company.sectionStatus;
@@ -477,22 +463,6 @@ export async function confirmVendorMapping(companyId: string, vendorRaw: string,
   revalidatePath(`/consultant/clients/${companyId}`);
 }
 
-export async function lockPipeline(companyId: string, notes: string) {
-  const user = await ownsClient(companyId);
-  if (!user) return;
-  await db
-    .insert(pipelineStatus)
-    .values({ companyId, status: "locked", lockedAt: new Date().toISOString(), lockedBy: user.id, notes: notes || null, updatedAt: new Date().toISOString() })
-    .onConflictDoUpdate({
-      target: pipelineStatus.companyId,
-      set: { status: "locked", lockedAt: new Date().toISOString(), lockedBy: user.id, notes: notes || null, updatedAt: new Date().toISOString() },
-    });
-  revalidatePath(`/consultant/clients/${companyId}`);
-}
-
-// ── Notify consultant when client accepts invite ───────────────────────────
-
-
 // ─────────── White-label brand + shared results (Plan N5) ───────────
 
 export async function saveBrandProfile(formData: FormData) {
@@ -537,28 +507,6 @@ export async function saveBrandProfile(formData: FormData) {
     });
 
   revalidatePath("/consultant/settings");
-}
-
-export async function createShareLink(companyId: string) {
-  const user = await currentUser();
-  if (!user || user.role !== "consultant") return;
-  const link = await db.query.consultantClients.findFirst({
-    where: and(
-      eq(consultantClients.consultantId, user.id),
-      eq(consultantClients.companyId, companyId),
-      isNull(consultantClients.archivedAt)
-    ),
-  });
-  if (!link) return;
-
-  const { generatePortalToken } = await import("./portal");
-  await db.insert(shareLinks).values({
-    token: generatePortalToken(),
-    companyId,
-    createdBy: user.id,
-    createdAt: new Date().toISOString(),
-  });
-  revalidatePath(`/consultant/clients/${companyId}`);
 }
 
 export async function revokeShareLink(token: string, companyId: string) {
@@ -913,13 +861,6 @@ export async function attachEvidenceToItem(companyId: string, itemId: string, fo
     .where(eq(emissionLineItems.id, itemId));
   logEvent({ companyId, actor: ctx.user.id, actorType: "consultant", verb: "evidence.attached", subject: file.name, subjectId: itemId });
   revalidatePath(`/consultant/clients/${companyId}/ledger`);
-}
-
-/** Comments for a set of line items - read side for the ledger. */
-export async function getCommentsForCompany(companyId: string) {
-  const user = await ownsClient(companyId);
-  if (!user) return [];
-  return db.select().from(comments).where(eq(comments.companyId, companyId));
 }
 
 // ─────────── U2 - engagement templates & chasing controls ───────────

@@ -80,8 +80,3 @@ export function BackLink({ href = "/consultant", label = "Dashboard" }: { href?:
     </Link>
   );
 }
-
-/** Mono usage-context line under page titles - mirrors the wireframes' annotations. */
-export function UsageNote({ children }: { children: React.ReactNode }) {
-  return <p className="eyebrow mt-1" style={{ color: "var(--text-muted)" }}>{children}</p>;
-}

@@ -1,4 +1,3 @@
-import { eq, desc } from "drizzle-orm";
 import { db } from "./db";
 import { auditLog } from "./db/schema";
 import { uid } from "./store";
@@ -31,12 +30,4 @@ export async function logChange(opts: {
     factorId: opts.factorId ?? null,
     formula: opts.formula ?? null,
   });
-}
-
-export async function auditForCompany(companyId: string) {
-  return db
-    .select()
-    .from(auditLog)
-    .where(eq(auditLog.companyId, companyId))
-    .orderBy(desc(auditLog.ts));
 }

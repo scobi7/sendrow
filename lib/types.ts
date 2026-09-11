@@ -106,20 +106,6 @@ export interface CalcResult {
   marketBasedTons?: number; // scope 2 only
 }
 
-export interface AuditRow {
-  id: string;
-  ts: string;
-  companyId: string;
-  userId: string;
-  userName: string;
-  section: string;
-  field: string;
-  prev: string;
-  next: string;
-  factorId?: string;
-  formula?: string;
-}
-
 export interface Company {
   id: string;
   name: string;
@@ -150,23 +136,6 @@ export interface User {
   companyId: string;
   role?: "company" | "consultant";
   createdAt: string;
-}
-
-export interface ConsultantClient {
-  id: string;
-  consultantId: string;
-  companyId: string;
-  addedAt: string;
-  archivedAt: string | null;
-}
-
-export interface InviteToken {
-  token: string;
-  consultantId: string;
-  companyId: string;
-  createdAt: string;
-  expiresAt: string;
-  usedAt: string | null;
 }
 
 export interface EmissionFactor {

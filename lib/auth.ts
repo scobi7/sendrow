@@ -1,5 +1,5 @@
 import { cache } from "react";
-import { auth, currentUser as getClerkUser } from "@clerk/nextjs/server";
+import { auth } from "@clerk/nextjs/server";
 import { eq } from "drizzle-orm";
 import { db } from "./db";
 import { userCompanies } from "./db/schema";
@@ -22,5 +22,3 @@ export const currentUser = cache(async (): Promise<User | null> => {
     createdAt: record.createdAt,
   };
 });
-
-export { getClerkUser };
