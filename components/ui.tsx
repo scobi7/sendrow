@@ -3,7 +3,7 @@ import { SectionStatus } from "@/lib/types";
 export function Logo({ light = false }: { light?: boolean }) {
   return (
     <span
-      className="flex items-center gap-3 text-lg font-bold font-display tracking-tight"
+      className="flex items-center gap-2 text-xl font-extrabold font-display tracking-tight"
       style={{ color: light ? "#fff" : "var(--text)" }}
     >
       <SendrowMark />
@@ -29,11 +29,14 @@ function SendrowMark() {
         </linearGradient>
       </defs>
       <rect width="100" height="100" rx="24" fill="url(#sendrow-mark-g)" />
-      <rect x="24" y="24" width="40" height="13" rx="6.5" fill="#fff" />
-      <circle cx="72" cy="30.5" r="6.5" fill="#fff" />
-      <rect x="20" y="41" width="60" height="16" rx="8" fill="#fff" />
-      <circle cx="28" cy="67.5" r="6.5" fill="#fff" />
-      <rect x="36" y="61" width="44" height="13" rx="6.5" fill="#fff" />
+      {/* Top bar - rounded top-left only, a long diagonal sweep into the corner */}
+      <path d="M33,23 L67,23 L67,35 L19,35 L19,32 A14,9 0 0 1 33,23 Z" fill="#fff" />
+      <circle cx="79" cy="29" r="6" fill="#fff" />
+      {/* Middle bar - rounded top-right + bottom-left, carrying the curve through */}
+      <path d="M19,44 L67,44 A14,9 0 0 1 81,53 L81,56 L33,56 A14,9 0 0 1 19,47 L19,44 Z" fill="#fff" />
+      <circle cx="21" cy="71" r="6" fill="#fff" />
+      {/* Bottom bar - rounded bottom-right only, the S's exit point */}
+      <path d="M33,65 L81,65 L81,68 A14,9 0 0 1 67,77 L33,77 L33,65 Z" fill="#fff" />
     </svg>
   );
 }
