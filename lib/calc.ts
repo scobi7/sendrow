@@ -242,29 +242,75 @@ export interface Totals {
   total: number;
 }
 
+export type RecContext = { hasRecs: boolean; recCoveragePct: number; residualFactorValue: number };
+
+/** Builds the REC/residual-mix context for a company, same inputs + factor
+ *  (`residual.WECC.2024`) the manual-entry path uses in recalcCompany above.
+ *  Shared so every consumer of imported line items applies the identical
+ *  market-based adjustment instead of each reimplementing it (or skipping it). */
+export function recContextFor(company: Company): RecContext {
+  const inp = company.inputs;
+  return {
+    hasRecs: !!inp?.has_recs,
+    recCoveragePct: Math.min(Math.max(inp?.rec_coverage_pct ?? 0, 0), 100),
+    residualFactorValue: getFactor("residual.WECC.2024").value,
+  };
+}
+
 /** Tons of CO2e from imported line items (the portal pipeline). Only mapped
- *  rows count - unmapped/excluded carry zero. Line items don't distinguish
- *  market-based scope 2, so they add equally to both bases. */
-export function lineItemTotals(items: { scope: number; co2eKg: string | number; status: string }[]): Totals {
-  let s1 = 0, s2 = 0, s3 = 0;
+ *  rows count - unmapped/excluded carry zero.
+ *
+ *  Market-based scope 2: when `rec` is supplied and a row is a kWh electricity
+ *  line item, market-based is recomputed from the row's raw kWh via the
+ *  residual-mix factor and REC coverage - matching the manual-entry formula
+ *  in recalcCompany above - instead of reusing the location-based figure.
+ *  Without `rec` (or for non-electricity/non-kWh rows), location-based stands
+ *  in, same as before. */
+export function lineItemTotals(
+  items: {
+    scope: number;
+    category?: string;
+    co2eKg: string | number;
+    rawValue?: string | number | null;
+    rawUnit?: string | null;
+    status: string;
+  }[],
+  rec?: RecContext
+): Totals {
+  let s1 = 0, s2Location = 0, s2Market = 0, s3 = 0;
   for (const i of items) {
     if (i.status !== "mapped") continue;
     const tons = Number(i.co2eKg) / 1000;
-    if (i.scope === 1) s1 += tons;
-    else if (i.scope === 2) s2 += tons;
-    else s3 += tons;
+    if (i.scope === 1) { s1 += tons; continue; }
+    if (i.scope === 3) { s3 += tons; continue; }
+    s2Location += tons;
+    if (rec && i.category === "electricity" && i.rawUnit === "kWh" && i.rawValue != null) {
+      const kwh = Number(i.rawValue);
+      // residualFactorValue is tCO2e/kWh (same unit as egrid factors) - this is
+      // already tons, unlike co2eKg above which is kg. Do not divide by 1000.
+      s2Market += kwh * rec.residualFactorValue * (1 - (rec.hasRecs ? rec.recCoveragePct : 0) / 100);
+    } else {
+      s2Market += tons;
+    }
   }
-  return { scope1: r2(s1), scope2Location: r2(s2), scope2Market: r2(s2), scope3: r2(s3), total: r2(s1 + s2 + s3) };
+  return { scope1: r2(s1), scope2Location: r2(s2Location), scope2Market: r2(s2Market), scope3: r2(s3), total: r2(s1 + s2Location + s3) };
 }
 
 /** The company's full picture: inputs-based calcs (manage-on-behalf, connections)
  *  PLUS imported line items (portal). Duplicates are the consultant's call -  *  the ledger's exclude exists for exactly that. */
 export function combinedTotals(
   company: Company,
-  items: { scope: number; co2eKg: string | number; status: string }[]
+  items: {
+    scope: number;
+    category?: string;
+    co2eKg: string | number;
+    rawValue?: string | number | null;
+    rawUnit?: string | null;
+    status: string;
+  }[]
 ): Totals {
   const a = totals(company);
-  const b = lineItemTotals(items);
+  const b = lineItemTotals(items, recContextFor(company));
   return {
     scope1: r2(a.scope1 + b.scope1),
     scope2Location: r2(a.scope2Location + b.scope2Location),

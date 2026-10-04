@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { dataRequests, locations } from "@/lib/db/schema";
 import { portalTokenValid } from "@/lib/portal";
 import { sendSiteLink, siteLabel } from "@/lib/site-requests";
+import { checkRateLimit } from "@/lib/ratelimit";
 
 /** CFO delegation (Plan MO2): from the company-wide portal page, send each
  *  site's contact their own location-scoped upload link. The parent portal
@@ -17,6 +18,9 @@ export async function POST(request: NextRequest) {
   const message = String(body.message ?? "").trim().slice(0, 500) || null;
 
   if (!token) return NextResponse.json({ error: "Missing link token" }, { status: 401 });
+  if (!checkRateLimit(`portal:delegate:${token}`, 25, 60 * 60 * 1000)) {
+    return NextResponse.json({ error: "Too many site links sent - try again later" }, { status: 429 });
+  }
 
   const [parent] = await db.select().from(dataRequests).where(eq(dataRequests.token, token));
   if (!parent || !portalTokenValid({ token: parent.token, expiresAt: parent.expiresAt, status: parent.status })) {

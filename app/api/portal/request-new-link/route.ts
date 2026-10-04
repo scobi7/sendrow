@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { companies, consultantClients, dataRequests, userCompanies } from "@/lib/db/schema";
 import { logEvent } from "@/lib/events";
 import { sendNewLinkRequestEmail } from "@/lib/email";
+import { checkRateLimit } from "@/lib/ratelimit";
 
 /** The expired page's "request a new link" (U1.2): an expired token can't do
  *  anything EXCEPT ask the consultant for a fresh one. No dead ends. */
@@ -11,6 +12,9 @@ export async function POST(request: NextRequest) {
   const body = await request.json();
   const token: string = body.token ?? "";
   if (!token) return NextResponse.json({ error: "Missing token" }, { status: 400 });
+  if (!checkRateLimit(`portal:request-new-link:${token}`, 5, 60 * 60 * 1000)) {
+    return NextResponse.json({ error: "Already asked recently - check your email or wait a bit" }, { status: 429 });
+  }
 
   const [req] = await db.select().from(dataRequests).where(eq(dataRequests.token, token));
   if (!req || req.status === "cancelled") {

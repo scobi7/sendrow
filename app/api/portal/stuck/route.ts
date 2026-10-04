@@ -6,6 +6,7 @@ import { portalTokenValid } from "@/lib/portal";
 import type { ChecklistItem } from "@/lib/portal";
 import { sendClientStuckEmail } from "@/lib/email";
 import { logEvent } from "@/lib/events";
+import { checkRateLimit } from "@/lib/ratelimit";
 
 /** "I'm stuck - ask my consultant" (Plan T5.2): turns silent abandonment into
  *  an actionable flag. Token is the auth. */
@@ -16,6 +17,9 @@ export async function POST(request: NextRequest) {
   const message: string = String(body.message ?? "").trim().slice(0, 1000);
 
   if (!token) return NextResponse.json({ error: "Missing link token" }, { status: 401 });
+  if (!checkRateLimit(`portal:stuck:${token}`, 20, 60 * 60 * 1000)) {
+    return NextResponse.json({ error: "Too many messages sent - try again later" }, { status: 429 });
+  }
   if (!message) return NextResponse.json({ error: "Tell us what's tripping you up" }, { status: 400 });
 
   const [dataRequest] = await db.select().from(dataRequests).where(eq(dataRequests.token, token));

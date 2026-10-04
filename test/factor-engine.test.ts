@@ -14,10 +14,16 @@ describe("lookupFactor", () => {
     expect(f).toBeNull();
   });
 
-  it("finds a factor by category", () => {
-    const f = lookupFactor(SEED_FACTORS, { category: "mobile_combustion" });
+  it("finds a factor by category + keyword", () => {
+    const f = lookupFactor(SEED_FACTORS, { category: "mobile_combustion", keyword: "gasoline" });
     expect(f).not.toBeNull();
     expect(f!.category).toBe("mobile_combustion");
+  });
+
+  it("throws on an ambiguous category-only query instead of silently picking one (the BUG-9 landmine)", () => {
+    // mobile_combustion matches gasoline, diesel, AND propane with no keyword -
+    // exactly the shape of query that used to silently resolve to gasoline.
+    expect(() => lookupFactor(SEED_FACTORS, { category: "mobile_combustion" })).toThrow(/ambiguous/);
   });
 
   it("disambiguates fuel by keyword - diesel/propane don't fall back to gasoline (Z1.1/BUG-9)", () => {

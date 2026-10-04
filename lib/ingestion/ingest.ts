@@ -95,10 +95,20 @@ function resolveFactorQuery(row: NormalizedRow, electricityFactorId?: string | n
   if (u.includes("kwh") || t.includes("electric")) return { factorId: electricityFactorId ?? "egrid.USAVG.2024" };
   if (u.includes("therm") || (t.includes("gas") && !t.includes("gasoline"))) return { category: "stationary_combustion", unit: "therm" };
   // Fuel in gallons: the fuel TYPE must reach the lookup, or every fuel resolves
-  // to gasoline (diesel and propane have their own factors). Default gasoline
-  // when unspecified - it's the most common and the safest floor.
+  // to gasoline (diesel and propane have their own factors, and diesel is
+  // ~13% more carbon-intensive per gallon). A row whose activity_type doesn't
+  // name a recognized fuel is genuinely ambiguous - return null so it flags as
+  // unmapped for review instead of silently guessing gasoline (contracts
+  // invariant: no unrecognized input is silently reinterpreted).
   if (u.includes("gallon")) {
-    const fuel = t.includes("diesel") ? "diesel" : t.includes("propane") ? "propane" : "gasoline";
+    const fuel = t.includes("diesel")
+      ? "diesel"
+      : t.includes("propane")
+      ? "propane"
+      : t.includes("gasoline") || t.includes("petrol") || t.includes("unleaded")
+      ? "gasoline"
+      : null;
+    if (!fuel) return null;
     return { category: "mobile_combustion", unit: "gallon", keyword: fuel };
   }
   if (u.includes("mile")) return { category: "commute", unit: "mile" };

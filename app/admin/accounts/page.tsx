@@ -81,7 +81,7 @@ export default async function AdminAccountsPage() {
 
       {rows.length === 0 ? (
         <div className="card py-12 text-center" style={{ color: "var(--text-muted)" }}>
-          No accounts yet — they appear after someone signs up and completes onboarding.
+          No accounts yet - they appear after someone signs up and completes onboarding.
         </div>
       ) : (
         <div className="glass-panel overflow-hidden">

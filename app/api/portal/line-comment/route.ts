@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { comments, dataRequests, emissionLineItems } from "@/lib/db/schema";
 import { portalTokenValid } from "@/lib/portal";
 import { logEvent } from "@/lib/events";
+import { checkRateLimit } from "@/lib/ratelimit";
 
 /** Supplier reply to a consultant's question on a specific figure (Z2). The
  *  token is the auth - no account. The reply posts as a comment on the line
@@ -20,6 +21,9 @@ export async function POST(request: NextRequest) {
   const message = String(body.message ?? "").trim().slice(0, 2000);
 
   if (!token) return NextResponse.json({ error: "Missing link token" }, { status: 401 });
+  if (!checkRateLimit(`portal:line-comment:${token}`, 30, 60 * 60 * 1000)) {
+    return NextResponse.json({ error: "Too many replies sent - try again later" }, { status: 429 });
+  }
   if (!message) return NextResponse.json({ error: "Write a reply first" }, { status: 400 });
 
   const [dataRequest] = await db.select().from(dataRequests).where(eq(dataRequests.token, token));

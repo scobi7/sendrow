@@ -103,4 +103,22 @@ describe("line items feed the headline totals (the 'approve changed nothing' bug
     const t = combinedTotals(emptyCompany, items);
     expect(t.total).toBe(2.5);
   });
+
+  it("market-based scope 2 applies the REC/residual-mix adjustment to imported electricity line items, not just manual entry", async () => {
+    const { combinedTotals } = await import("@/lib/calc");
+    // 10,000 kWh, location-based already computed at 2.09 t (e.g. via CAMX).
+    const items = [
+      { scope: 2, category: "electricity", co2eKg: 2090, rawValue: 10000, rawUnit: "kWh", status: "mapped" },
+    ];
+    const company = {
+      calcs: [],
+      inputs: { has_recs: true, rec_coverage_pct: 50 },
+    } as unknown as import("@/lib/types").Company;
+    const t = combinedTotals(company, items);
+    expect(t.scope2Location).toBe(2.09);
+    // residual.WECC.2024 = 0.000428 tCO2e/kWh; 10,000 kWh x 0.000428 x (1 - 50% REC) = 2.14 t.
+    // Before the fix, line items always set market-based = location-based (2.09), ignoring RECs entirely.
+    expect(t.scope2Market).toBe(2.14);
+    expect(t.scope2Market).not.toBe(t.scope2Location);
+  });
 });

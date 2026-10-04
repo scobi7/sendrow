@@ -2,6 +2,7 @@ import { renderToBuffer, Document } from "@react-pdf/renderer";
 import { auth } from "@clerk/nextjs/server";
 import { currentUser } from "@/lib/auth";
 import { loadCompany, loadFactors } from "@/lib/store";
+import { recContextFor } from "@/lib/calc";
 import { GHGReportPDF } from "@/components/pdf/GHGReportPDF";
 import { getLineItemTotals, getScreeningDecisions } from "@/lib/report-totals";
 import React from "react";
@@ -16,10 +17,10 @@ export async function GET() {
   const user = await currentUser();
   if (!user?.companyId) return new Response("Unauthorized", { status: 401 });
 
-  const [company, overrides, lineItemTotals, screeningDecisions] = await Promise.all([
-    loadCompany(user.companyId),
-    loadFactors(),
-    getLineItemTotals(user.companyId),
+  const [company, overrides] = await Promise.all([loadCompany(user.companyId), loadFactors()]);
+  // recContextFor needs company.inputs, so this pair can't join the batch above.
+  const [lineItemTotals, screeningDecisions] = await Promise.all([
+    getLineItemTotals(user.companyId, recContextFor(company)),
     getScreeningDecisions(user.companyId),
   ]);
 

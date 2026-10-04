@@ -39,6 +39,10 @@ export const userCompanies = pgTable("user_companies", {
   email: text("email").notNull(),
   role: text("role").notNull().default("company"),
   createdAt: text("created_at").notNull(),
+  // Set by the Stripe webhook + checkout/verify on first payment. Billing
+  // reads this (DB), not Clerk session claims - privateMetadata isn't in the
+  // session JWT by default, so that read was silently always undefined.
+  stripeCustomerId: text("stripe_customer_id"),
 });
 
 export const locations = pgTable("locations", {

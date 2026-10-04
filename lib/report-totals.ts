@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
 import { db } from "./db";
 import { emissionLineItems, scope3Screening } from "./db/schema";
+import type { RecContext } from "./calc";
 
 export type ReportTotals = {
   scope1: number;
@@ -14,8 +15,11 @@ export type ReportTotals = {
 };
 
 /** Returns emission totals from imported line items.
- *  Returns null if no line items have been imported yet (caller falls back to gt_calcs). */
-export async function getLineItemTotals(companyId: string): Promise<ReportTotals | null> {
+ *  Returns null if no line items have been imported yet (caller falls back to gt_calcs).
+ *  Pass `rec` (see `recContextFor` in `lib/calc.ts`) so market-based scope 2
+ *  gets the same REC/residual-mix adjustment the manual-entry path applies -
+ *  without it, electricity line items fall back to location-based for both. */
+export async function getLineItemTotals(companyId: string, rec?: RecContext): Promise<ReportTotals | null> {
   const items = await db
     .select()
     .from(emissionLineItems)
@@ -40,10 +44,25 @@ export async function getLineItemTotals(companyId: string): Promise<ReportTotals
   const scope2Location = byCategory.filter((r) => r.scope === 2).reduce((s, r) => s + r.co2eTons, 0);
   const scope3 = byCategory.filter((r) => r.scope === 3).reduce((s, r) => s + r.co2eTons, 0);
 
+  let scope2Market = scope2Location;
+  if (rec) {
+    let marketKg = 0;
+    for (const item of items) {
+      if (item.scope !== 2) continue;
+      if (item.category === "electricity" && item.rawUnit === "kWh") {
+        const kwh = Number(item.rawValue);
+        marketKg += kwh * rec.residualFactorValue * (1 - (rec.hasRecs ? rec.recCoveragePct : 0) / 100) * 1000;
+      } else {
+        marketKg += Number(item.co2eKg);
+      }
+    }
+    scope2Market = marketKg / 1000;
+  }
+
   return {
     scope1,
     scope2Location,
-    scope2Market: scope2Location,
+    scope2Market,
     scope3,
     total: scope1 + scope2Location + scope3,
     byCategory,

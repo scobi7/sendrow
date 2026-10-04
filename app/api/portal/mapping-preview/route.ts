@@ -7,6 +7,7 @@ import type { ChecklistItem } from "@/lib/portal";
 import { fuzzyMatchHeaders } from "@/lib/ingestion/fuzzy-match";
 import { applyTemplate } from "@/lib/ingestion/data-type-templates";
 import { headerFingerprint } from "@/lib/ingestion/fingerprint";
+import { checkRateLimit } from "@/lib/ratelimit";
 
 /** Mapping suggestions for the portal's confirm screen (Plan T2).
  *  Memory first: if this company has confirmed the same file shape before,
@@ -19,6 +20,9 @@ export async function POST(request: NextRequest) {
   const headers: string[] = Array.isArray(body.headers) ? body.headers.map(String) : [];
 
   if (!token) return NextResponse.json({ error: "Missing link token" }, { status: 401 });
+  if (!checkRateLimit(`portal:mapping-preview:${token}`, 100, 60 * 60 * 1000)) {
+    return NextResponse.json({ error: "Too many requests - please wait a bit and try again" }, { status: 429 });
+  }
   if (!headers.length) return NextResponse.json({ error: "No headers provided" }, { status: 400 });
 
   const [dataRequest] = await db.select().from(dataRequests).where(eq(dataRequests.token, token));

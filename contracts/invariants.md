@@ -4,7 +4,7 @@ These invariants must hold at all times. Tests and code must enforce them.
 
 ## Calculation Engine
 
-1. **recalcCompany is the single source of truth.** All CO2e values in the DB are derived by `recalcCompany()` in `lib/calc.ts`. Never write co2e values directly — always call `persist()` which calls `recalcCompany`.
+1. **Two calc engines exist today — both must agree, and don't yet.** `recalcCompany()` in `lib/calc.ts` (tons-based) derives CO2e for manually-entered company data; `applyFactor()` in `lib/factor-engine.ts` (kg-based) derives CO2e for portal-ingested line items. Never write co2e values directly in either path — always go through `persist()`/`recalcCompany()` or `applyFactor()`. **Known open violation (TASKS.md CALC-2):** `combinedTotals()` sums both paths into one number, but only the manual path applies the REC/residual-mix adjustment to market-based Scope 2 — a client mixing both entry methods gets a partially-wrong market-based total. Fix before trusting this invariant again.
 
 2. **Factor lookup never falls through silently.** `getFactor(id)` throws if the factor_id is unknown. Code must never pass an unrecognized factor_id.
 
@@ -20,9 +20,9 @@ These invariants must hold at all times. Tests and code must enforce them.
 
 6. **Company users see only their own company.** `requireUser()` always loads the company for the authenticated user's `companyId`. No company ID should ever come from untrusted input for company-scoped operations.
 
-7. **Consultants can only access clients they own.** All consultant actions verify the `consultantClients` link exists and is not archived before operating on a company.
+7. **Consultants can only access clients they own.** All consultant actions verify the `consultantClients` link exists and is not archived before operating on a company. (Enforced app-layer only — see TRUST item in TASKS.md for the DB-level-RLS gap and the limits of `test/separation.test.ts`'s static coverage.)
 
-8. **Invite tokens expire after 7 days.** `acceptInvite` must reject tokens where `expiresAt < now` or `usedAt` is set.
+8. **Magic-link portal tokens expire and are single-purpose.** `portalTokenValid()` in `lib/portal.ts` rejects a cancelled request or a token past `expiresAt` (30-day TTL, `crypto.randomBytes(24)` — 192 bits). This replaced the old pre-pivot `acceptInvite`/7-day invite-token flow, which no longer exists in the codebase.
 
 ## Practice Platform (added 2026-07-08, direction reset)
 

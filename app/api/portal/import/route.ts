@@ -13,6 +13,7 @@ import { companies, consultantClients, userCompanies } from "@/lib/db/schema";
 import { fuzzyMatchHeaders } from "@/lib/ingestion/fuzzy-match";
 import { applyTemplate } from "@/lib/ingestion/data-type-templates";
 import type { ColumnMap } from "@/lib/ingestion/ingest";
+import { checkRateLimit } from "@/lib/ratelimit";
 
 /** Magic-link submissions: the token is the auth. No Clerk session involved.
  *  Uploads arrive as multipart (original file kept for the evidence locker);
@@ -77,6 +78,11 @@ async function handleImport(request: NextRequest) {
   }
 
   if (!token) return NextResponse.json({ error: "Missing link token" }, { status: 401 });
+  // Generous: legitimate batch uploads (up to 12 files x multiple checklist
+  // items) can mean dozens of calls in one session.
+  if (!checkRateLimit(`portal:import:${token}`, 100, 60 * 60 * 1000)) {
+    return NextResponse.json({ error: "Too many submissions - please wait a bit and try again" }, { status: 429 });
+  }
   if (!rows.length) return NextResponse.json({ error: "No rows provided" }, { status: 400 });
 
   const [dataRequest] = await db.select().from(dataRequests).where(eq(dataRequests.token, token));

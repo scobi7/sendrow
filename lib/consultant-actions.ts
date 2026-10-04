@@ -641,7 +641,7 @@ export async function createSnapshot(companyId: string, formData: FormData) {
       .where(and(eq(emissionLineItems.companyId, companyId), eq(emissionLineItems.status, "mapped"))),
   ]);
 
-  const t = computeTotals(company, items.map((i) => ({ scope: i.scope, co2eKg: Number(i.co2eKg), status: i.status })));
+  const t = computeTotals(company, items.map((i) => ({ scope: i.scope, category: i.category, co2eKg: Number(i.co2eKg), rawValue: i.rawValue, rawUnit: i.rawUnit, status: i.status })));
   const frozenTotals: SnapshotTotals = {
     scope1: t.scope1,
     scope2Location: t.scope2Location,

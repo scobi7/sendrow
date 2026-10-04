@@ -1,197 +1,41 @@
 # TASKS.md — Open Work
-> **DEPLOYED TO PRODUCTION 2026-09-02** (main = sendrow-v3 = `b9036a8`, no divergence). Plan Z done (Z1.1/Z1.2/Z2/Z3.1/Z3.2/Z3.4 all fixed; Z3.3/Z4/Z5 still open). Plan MO (multi-office) shipped and deployed this cycle, plus a security/cleanup pass (see NEXT.md for full detail): admin gate fix + `/admin/accounts`, closed a real cross-tenant data leak, `separation.test.ts` rewritten to self-verify, evidence downloads stream instead of redirecting, all DB tables renamed off `gt_`, dead GreenTrack-era code removed, stale marketing copy fixed, BUG-11/BUG-4 fixed. RLS investigated and shelved (driver limitation - see NEXT.md). Completed: A–N, T, U1–U2, W1–W2, X, Y (board reverted), Z, MO — history in git. BUGS section below = live "what's broken".
+> Only unchecked/open items live here. Everything shipped (A–N, T, U1–U2, W1–W2, X, Y, Z, MO, Plan L, rebrand, cleanup pass, security pass, BUG-1/2/3/4/5/6/8/9/10/11/12) is in git history and `PLANS.md`'s Built table — don't duplicate it here. Last hydrated 2026-10-02 (full codebase + API audit, then a same-session fix pass — see "Fixed this session" below).
 
-## BUGS — everything that doesn't work (audited 2026-07-21, last updated 2026-09-02, branch `sendrow-v3`)
-> Method: static route/link audit + live page-by-page sweep of all 34 routes + mutation pass, all driven against real demo data (temporary dev-only auth bypass, reverted each time). Every page returns HTTP 200 with no JS errors EXCEPT where noted. Severity: P0 blocks a demo, P1 real bug, P2 polish/cleanup, BLOCKED needs env/user to even test.
+## P0 — before any design partner touches real client data
+- [ ] **ENV** Confirm `BLOB_READ_WRITE_TOKEN` is actually set in production. If not, "evidence stapled to every number" silently degrades to hash-only for every upload — can't pilot on this.
+- [ ] **DATA** Real EPA eGRID2024 + USEEIO v2.5 factor values via `/admin/factors` — current values are explicitly labeled "representative" placeholders (`lib/factors.ts:4-8`). Both datasets have been publicly available for months; this is a data-entry job, not an architecture change. No number produced today is defensible on an actual filing.
+- [ ] **MIGRATE** `userCompanies.stripeCustomerId` is a new nullable column added to `lib/db/schema.ts` this session (fixes the billing/portal bug below). Additive/nullable, same pattern as every prior schema change — applies automatically via `npm run build`'s `drizzle-kit push --force` on next deploy, or run it manually first if you want to verify before deploying.
 
-**Fixed on v3 (2026-07-21 → 07-23)**
-- [x] **BUG-2 (FIXED)** — `/consultant/review` was orphaned BUT two notification emails linked to it → consultants landed on a stale page. Repointed `sendClientStuckEmail` → client detail (reply box, passes companyId), `sendUploadNeedsReviewEmail` (dead fn) → dashboard; deleted `app/consultant/review/`.
-- [x] **BUG-3 (FIXED)** — Added `app/consultant/loading.tsx` + `clients/[id]/loading.tsx` skeletons (cover all consultant pages). No more blank-screen gap; verified live.
-- [x] **BUG-5 (FIXED)** — Trailing scroll spacer on the (now-reverted) board.
-- [x] **BUG-8 (FIXED — found by mutation testing)** — Flag replies were write-only on the consultant side; the flag card now echoes "You replied: ..." with timestamps. Verified live.
-- [x] **BUG-10 (FIXED — found by staging E2E)** — `/api/portal/import` used `file instanceof File`, but `File` is not a global on Node <20 → ReferenceError silently killed EVERY file upload on older runtimes (incl. local dev). Now duck-types the Blob (`typeof file !== "string"`). Prod (Node 20+) was unaffected but it was fragile.
+## P1 — the moat, and the claim the homepage makes
+- [ ] **W3 — Format engine.** `lib/mapping.ts`'s questionnaire helper hardcodes exactly 3 buyers (CDP, EcoVadis, Walmart) as `if/else`, which `contracts/invariants.md` §14a calls a stop-the-line violation of its own config-not-code rule. Blocked on a real buyer questionnaire to design against (Kerri/Masao). (Note: `lib/formats.ts`, the actual downloadable-export engine, is already a clean config lookup table — the hardcoding is specifically in the question-mapping display helper.)
+- [ ] **Y3/Z4 — Conversion P0** (still not started, same list carried since July): early-engagement reminder 48-72h after send (biggest single lift, ≤4 total touches) · checklist items + time estimate shown inside the request email · per-item progress on the portal ("2 of 3 done, ~4 min left") · named-buyer "why" framing ("Whole Foods needs this for SB 253 by [date]"). The homepage's ≥60-70% response-rate claim is unvalidated with a single real supplier until these ship — industry baseline is ~41% (CDP).
+- [ ] **TRUST** No DB-level tenant isolation (RLS shelved — `neon-http` driver has no transaction support, confirmed; fix requires a full driver migration to `neon-serverless`+`Pool`, not just adding policies). Current safety net is app-layer `ownsClient()` checks + `test/separation.test.ts`, which is a static text-containment check (greps for the guard call-site), not a runtime test. Recommend adding at least one real two-tenant integration test (seed two consultants/companies, assert cross-access 404s) before scaling past a handful of design partners.
+- [ ] Refrigerant rows still can't be ingested via CSV/portal (`resolveFactorQuery` in `lib/ingestion/ingest.ts` has no refrigerant branch) — falls through to `unmapped` (fails safe, not silently wrong). Deliberately not fixed this session: refrigerant factors are `kgCO2e/kg` while `applyFactor()` assumes `tCO2e/x` everywhere, so wiring this through the generic path without also teaching `applyFactor()` about the unit difference would introduce a new 1000x unit bug. Needs that done properly, not as a quick patch. Only the manual-entry path (`lib/calc.ts:105-112`) handles refrigerants today.
 
-**Still open**
-- [x] **BUG-9 (FIXED via Z1.1, 2026-07-21→23)** — diesel & propane were calculated with the GASOLINE factor. `FactorQuery.keyword` now disambiguates fuel type through `resolveFactorQuery` + `fleetFuelToLineItems`; diesel→fuel.diesel (400gal = 4084kg, confirmed correct), propane→its own factor. Verified again this session by tracing the live code (`lib/factor-engine.ts`, `lib/factors.ts`) — this line was stale, not the fix.
-- [x] **BUG-1 (FIXED, 2026-09-02)** — root cause was `/admin/factors` having a second, redundant admin check (`ADMIN_EMAIL` + a `userCompanies` DB lookup) stacked on top of middleware's `ADMIN_CLERK_ID` gate — the double-gate caused the hydration hang. Removed the redundant check; every `/admin/*` route now relies on the single middleware gate, same pattern `/admin/referrals` already used.
-- [x] **BUG-4 (FIXED)** — Audited client detail/review/manage/snapshot: `loadCompany()` already batches its 7 sub-queries via `Promise.all` and is React-`cache()`-memoized per request; client detail and review already batch theirs too. Found and fixed one real gap: the snapshot page ran its `sites` query sequentially after two other batches even though it didn't depend on either - merged into the existing `Promise.all`. Remaining latency on manage/scope pages is just the unavoidable auth-check-then-load-company two-step (the auth gate has to resolve before touching company data).
-- [x] **BUG-11 (FIXED)** — Excel serial dates: `lib/period.ts` now has `normalizeDateInput()`, which detects a bare (optionally fractional) numeric string in serial-date range and converts it to ISO before it reaches `periodForDate` or gets stored as `activityDate`. +4 tests.
+## Fixed this session (2026-10-02) — verify after next deploy
+- [x] **SEC-1** `app/api/checkout/verify/route.ts` now rejects if `session.client_reference_id !== userId`, matching the webhook's correct pattern. Confirmed `lib/stripe.ts` always sets `client_reference_id` on session creation, so this doesn't break the real flow.
+- [x] **CALC-1** `lib/ingestion/ingest.ts`'s gallon-fuel resolver no longer defaults an unrecognized fuel label to gasoline — it now requires an explicit gasoline/diesel/propane match or flags the row `unmapped` for review.
+- [x] **CALC-2** Market-based Scope 2 now applies the REC/residual-mix adjustment to portal-ingested electricity line items too (`recContextFor()` + updated `lineItemTotals()`/`combinedTotals()` in `lib/calc.ts`), not just manual entry. Fixed in all three places that computed this (`lib/calc.ts`, `lib/report-totals.ts`'s separate `getLineItemTotals()`, and the snapshot-freeze call site in `lib/consultant-actions.ts` that was stripping the needed fields). New test: `test/ledger.test.ts`.
+- [x] Billing/portal bug: added `userCompanies.stripeCustomerId` (DB column, see MIGRATE above); webhook + checkout/verify now write it there; `billing/portal` reads it from the DB instead of the Clerk session claim that was never populated.
+- [x] `app/api/cron/reminders` now fails closed if `CRON_SECRET` is unset.
+- [x] Rate limiting added to all 6 previously-unlimited public portal routes (`stuck`, `request-new-link`, `import`, `line-comment`, `mapping-preview`, `delegate`), keyed per-token.
+- [x] `lib/factor-engine.ts` `lookupFactor()` now throws on a genuinely ambiguous category+unit query with no keyword (grouped by `factor_name`, so multi-year vintages of the same factor aren't falsely flagged) instead of silently picking one. New tests in `test/factor-engine.test.ts`.
+- [x] Em-dash fixed in `app/admin/accounts/page.tsx`.
+- [ ] `lib/ratelimit.ts` is still an in-process `Map` — doesn't survive across serverless instances on Vercel, so the new rate limits above (and the existing one on `/api/track`) are weaker in production than they look in code. Not fixed — would need a shared store (e.g. a DB table or Upstash) to be real.
 
-**Dead / disabled surfaces (harmless but confusing if a demo wanders in)**
-- [x] **BUG-6 (FIXED)** — Codebase cleanup pass: removed the dead QuickBooks OAuth routes, `lib/quickbooks.ts`, `lib/utilityapi.ts`'s only caller (`startUtilityConnectForClient`, redirected to the already-deleted `/connections` page), the orphaned `/api/demo` route (zero callers, unrelated to the real `/demo` request-a-demo page), and the reverted pipeline board (`components/pipeline-board.tsx` + `pipelineStage`/`STAGE_META`/`isOverdue` in `lib/client-status.ts`, unused since the Y1 revert). Left `lib/calc.ts`'s QuickBooks-spend/utility-connected calc branches and the `Company.connections`/`qbTransactions`/`utilityData` data model alone — still live, tested (`test/calc.test.ts`, `test/progress.test.ts`), and wired into the scope1/2/3 manage pages; removing it is a bigger, separate decision (touches the DB schema, not just dead files).
-- [ ] **BUG-7 (P2)** — Payment gate is disabled (middleware comment), so `/checkout`, `/pricing`, `/pricing/agency` are reachable but non-functional. By design during dev, but pricing is deferred (GOALS.md) — make sure no demo path links into checkout.
+## Untested (not confirmed broken, just never walked end-to-end)
+- [ ] **BUG-B1** — live smoke-test on prod: create a real data request to your own email on sendrow.app, confirm the link resolves (Malachi).
+- [ ] **QA-1** — walk the portal "Type it in" (manual entry) path end-to-end; file-upload path is verified, manual entry isn't.
+- [ ] Untested mutations: create client, scope-2 manual override save, comment on a line item.
+- [ ] **Z5.1** — draft-persistence for staged portal uploads (survive tab close) — accepted gap in the batch-submit model, add if a pilot hits it.
 
-**Could NOT verify — BLOCKED on env or would mutate prod data (not confirmed broken, just untested)**
-- [~] **BUG-B1 (UNBLOCKED 2026-07-28, root cause of broken links ALSO FIXED 2026-09-02)** — Resend sending domain verified, so email delivers in prod. Separately, every link inside those emails was 404ing — `NEXT_PUBLIC_APP_URL` was still pointed at the pre-rebrand `greentrack-sigma.vercel.app` domain. Fixed. Still needs a live smoke-test (Malachi: create a real request to your own email on sendrow.app → confirm the link resolves). The bypass can't test prod email (prod uses real Clerk).
-- [ ] **BUG-B2 (BLOCKED)** — Evidence view/download: `BLOB_READ_WRITE_TOKEN` unset, so uploads are hash-only and the download route serves the "file not stored" page (Plan X made that honest, but real storage is untested). Needs Malachi (Vercel env) — see D2.2.
-- [x] **BUG-B3 (VERIFIED 2026-07-23)** — Portal submission end-to-end driven live: upload file → mapping preview → confirm → stage → Submit all → line items land in the ledger (11 rows). Also confirmed the staging guarantee (ledger stayed empty while staged). Works.
-- [~] **BUG-B4 (mostly verified)** — Mutation pass: **create request ✓, reply-to-flag ✓, approve-and-freeze ✓, share snapshot ✓, portal staged-submit ✓.** Still untested: create client, scope-2 override save, comment on line item. QA mutations cleaned via `reset-demo.ts` after each pass.
-- [ ] **QA-1 — walk through manually uploading data.** Drive the portal "Type it in" (manual entry) path end-to-end: add rows (date/kind/quantity), stage, submit; confirm the entries convert + calculate + land in the ledger like the file-upload path. (File-upload/staging is verified in BUG-B3; manual entry not yet walked through.)
+## Dormant by design (not bugs)
+- [ ] **BUG-7 (P2)** — payment gate disabled in `middleware.ts`; make sure no demo/pilot path links into `/checkout` while it's off.
 
-**Not bugs, but demo-prep gotchas**
-- Seed dates are relative (`daysAgo` in reset-demo.ts): reseed the morning of any demo so dates read sensibly (D3.3). Last reseeded clean 2026-07-23.
-- **QA test kit** in `~/Downloads/qa-A…D-*.csv` + `qa-combined.csv` — sample sheets with ground-truth CO2e (electricity/gas/fuel + edge cases). Upload `qa-combined.csv` to exercise everything in one item; diesel rows reveal BUG-9.
+## Roadmap (not started, no urgency — see `PLANS.md` for detail)
+- **W4** — Supplier journey: portal attestation, claim-account flow, supplier trust page, section delegation, reply-by-email.
+- **W5-W7** — Audit-grade depth (method labels, trust badges, restatement UI) and retention engine (digests, hotspots, YoY) — after first design partner.
 
-## Plan L — Landing relaunch + design-partner funnel (branch `sendrow-v3`, PLANS.md Plan L) — BUILT 2026-09-10
-- [x] **L1.1** — `waitlist_signups` table in `lib/db/schema.ts` (unique email, `wants_design_partner`, `source`, `created_at`)
-- [x] **L1.2** — `marketing_events` table (`event_name`, `path`, `session_id`, `meta`, `created_at`) - separate from the product's `events` audit log
-- [x] **L2.1** — `lib/waitlist.ts`: `normalizeEmail`/`isValidEmail` (pure, tested in `lib/waitlist-validation.ts`) + `submitWaitlist()` Server Action (upsert via `onConflictDoUpdate`, rate-limited)
-- [x] **L2.2** — `app/api/track/route.ts`: public POST, fixed event-name allowlist (`page_view`/`nav_how_it_works_click`/`nav_signin_click`), rate-limited; added to middleware's public routes
-- [x] **L2.3** — `lib/track-client.ts` (sendBeacon helper) + `components/tracked-link.tsx` + `components/page-view-tracker.tsx`
-- [x] **L2.4** — `components/waitlist-form.tsx`: controlled form, loading/success/error states, no dead ends
-- [x] **L3.1** — Rebuilt `app/page.tsx` per Option B (concise hero, 3-step, chasing line, condensed partner card, no seat counter)
-- [x] **L4.1** — `/admin/waitlist` page (signup table + funnel counts) + nav link in `app/admin/layout.tsx`
-- [x] **L5.1** — Grep-verified no emoji / em dash on new copy; `npm test` (229/229) + `tsc` + `next build` all green
-- [~] **L6.1** — MD files hydrated. **Not done: live DB round-trip of the upsert query** - `DATABASE_URL` in `.env.local` is the production database (per prior session notes), so no schema push or test write was run against it from here. The two new tables get created automatically by the existing `drizzle-kit push --force` in `npm run build` the next time this deploys, same as every prior schema change - but that means the `onConflictDoUpdate` upsert hasn't actually executed against Postgres yet, only reviewed against the same pattern used elsewhere (`lib/consultant-actions.ts`). Malachi: worth a real signup test right after this ships. Committed + pushed to `sendrow-v3`; `main` untouched pending review.
-
-## Rebrand + cleanup (branch `sendrow-v3` -> `main`, 2026-09-10, same session as Plan L)
-- [x] New S-mark glyph in `components/ui.tsx` (`SendrowMark`), iterated against Malachi's reference file's actual pixel geometry: per-corner rounding (top bar top-left, middle bar top-right+bottom-left, bottom bar bottom-right) chains into a real S-curve instead of a pill shape; wide elliptical radii for a long diagonal sweep; dot diameter matched to bar height so edges line up; small gap tuned by feel across several passes. `app/icon.svg` favicon updated to match. Wordmark bumped `text-lg font-bold` -> `text-xl font-extrabold`, tighter `gap-2` to the icon.
-- [x] Homepage "how it works" steps boxed in the same white/bordered/hover-lift card the "what's included" grid already used (previously plain text columns).
-- [x] Codebase cleanup pass (knip + manual verification against PLANS/TASKS/GOALS/ROADMAP so nothing "kept on purpose" got deleted) - see PLANS.md for the full list. Confirmed via `test/separation.test.ts`'s auto-discovery (still 4/4) that removing dead consultant-actions didn't touch anything the security contract test tracks.
-- [ ] Not done, left alone on purpose: `lib/progress.ts`'s `gapAnalysis`/`Gap` (zero callers, but plausibly early scaffolding for ROADMAP.md's "Reduction insights (hotspots)" - not touched since deleting speculative future-feature code isn't the same call as deleting confirmed cruft) · root-level untracked files (`.Rhistory`, `ROUTE-TREE.md`, `Sendrow-QA-Checklist.pdf`, `Sendrow-Route-Tree.pdf`) - not part of the tracked codebase, look like Malachi's own working files, left untouched.
-
-## Plan W — Wireframe Workflow Alignment
-
-### W1 — Consultant IA shell + core-loop reshape — BUILT 2026-07-13
-- [x] **W1.1** — Sidebar per wireframe (Dashboard / New request / Request templates / Format library / Compliance calendar / Settings)
-- [x] **W1.2** — Dashboard #19: stat cards + client table (status · due · completeness) + `+ New request`
-- [x] **W1.3** — StatusBadge, CompletenessMeter, StatCard (`components/workflow.tsx`) + `lib/client-status.ts` (11 tests)
-- [x] **W1.4** — New Data Request page #1 (`/consultant/requests/new`) — template prefill, chips, cadence note, save-as-template, inline contact email
-- [x] **W1.5** — Client Detail rebuild: stats row, requests → review/snapshot, event timeline, comment threads
-- [x] **W1.6** — Engagement Templates page #23 (used-on count = matching request descriptions)
-- [x] **W1.7** — Format Library page #35 (built-ins; add-new = honest W3 placeholder w/ interim path)
-- [x] **W1.8** — Compliance Calendar page #44 (regulatory preloads + live request due dates)
-- [x] **W1.9** — Chasing schedule page #21 (tier dates, sent log, pause/resume; age-based fallback shown)
-- [x] **W1.10** — Settings #22 live email preview (name + accent update as you type)
-
-### W2 — Review & Approve → Snapshot & Share — BUILT 2026-07-13
-- [x] **W2.1** — Review & Approve page: category groups w/ files + threads, vendor confirm, session actions, dollar-fuel, ledger link
-- [x] **W2.2** — `approveFreezeAndGo`: approves pending sessions → freezes snapshot → redirects to Snapshot & Share
-- [x] **W2.3** — Open-flag warning modal (unmapped rows + stuck notes counted; approval logged w/ flags)
-- [x] **W2.4** — Snapshot & Share page: 🔒 header, scope cards, format chips, share + receipts, correction note
-- [ ] **W2.5** — Click-through verification with demo data (needs local Clerk login — Malachi)
-
-### Y — MVP for pilots + CRM reshape (branch `sendrow-v3`; from 2026-07-21 meeting, PLANS.md Plan Y)
-**Y1 — Pipeline board home — BUILT then REVERTED 2026-07-23**
-- [x] **Y1.1** — `pipelineStage()` + `STAGE_META` + `isOverdue()` in `lib/client-status.ts` (5-stage derived; overdue = flag) + 7 unit tests. **Kept (unused after revert).**
-- [x] **Y1.2** — `components/pipeline-board.tsx` (kanban columns + cards). **Kept (unused after revert).**
-- [~] **Y1.3** — Board was live at `/consultant`, then **REVERTED to the old stat-cards + table** (Malachi preferred the old style, 2026-07-23). Delete added to client detail. Board code stays for an easy toggle-back.
-- [x] **Y1.4** — Verified live: 3 seed clients landed in 3 columns (before revert).
-- [ ] **Y1.5** — Deeper CRM client-detail reshape — NOT built (board reverted; revisit only if the board comes back).
-
-**Y6 — Portal multi-file + batch-submit — BUILT 2026-07-23**
-- [x] **Y6.1** — Multiple files per checklist item (up to `MAX_FILES_PER_CHECKLIST_ITEM = 12`): `fileCount` on ChecklistItem, cap enforced server + client, "+ Add another file (N of 12)" button. Verified live.
-- [x] **Y6.2** — Batch-submit / true staging: confirmed files held client-side, sticky "Submit all N" bar with per-file remove, nothing reaches server/consultant until Submit. Verified live E2E (ledger empty while staged → data lands on submit). Tradeoff accepted: tab-close loses staged uploads.
-
-**Y3 — Conversion P0 (highest leverage; not started)**
-- [ ] **Y3.1** — Early-engagement reminder 48–72h after send (≤4 total touches)
-- [ ] **Y3.2** — Checklist items + est. time inside the request email
-- [ ] **Y3.3** — Per-item time estimates + overall progress on portal
-- [ ] **Y3.4** — Named-buyer "why" framing in the request
-
-**Y-discovery / research (Malachi-led or non-code)**
-- [ ] **Y2** — Confirm supplier persona + consultant need via discovery (Berkeley net + Azoulay intros)
-- [x] **Y4** — No emojis / em dashes verified across product UI (grep-clean)
-- [ ] **Y5** — Data-asset research thread (not scoped)
-
-### Z — MVP reporting hardening (APPROVED 2026-07-28; PLANS.md Plan Z). Sequence: Z1.1 → Z2 → Z4 → Z3.
-**Z1 — Correctness**
-- [x] **Z1.1** — BUG-9 FIXED: `FactorQuery.keyword` disambiguates fuel; `resolveFactorQuery` + `fleetFuelToLineItems` pass the fuel type. diesel→fuel.diesel (400gal = 4084kg ✓), propane→equip/fuel.propane. +2 tests (220 total).
-- [x] **Z1.2** — BUG-11 FIXED: Excel serial dates detected + converted to ISO in `lib/period.ts` (see BUGS section above)
-**Z2 — Comments gap (supplier can't see/answer line-item questions without an account) — DONE 2026-07-28**
-- [x] **Z2.1** — "Questions from your consultant" section on the portal shows consultant line-item comments (figure-labeled) + a Reply box (two-way, via new `/api/portal/line-comment`). Verified live on demo_bayb (July-spike question shows; reply posts).
-- [x] **Z2.2** — `sendCommentEmail` now links to the portal ("Open your secure page to answer") instead of the dead-end "reply to this email"; caller passes the open request's token.
-**Z3 — Polish / cleanup**
-- [x] **Z3.1** — BUG-4 FIXED: audited and parallelized (see BUGS section above)
-- [x] **Z3.2** — BUG-6: removed dead QuickBooks API routes (see BUGS section above)
-- [ ] **Z3.3** — BUG-7: ensure nothing links into disabled `/checkout`
-- [x] **Z3.4** — BUG-1: fixed - `/admin/factors` had its own redundant `ADMIN_EMAIL` gate on top of middleware's `ADMIN_CLERK_ID` check; removed it, now relies on the single middleware gate like every other `/admin/*` route
-**Z4 — Conversion P0 (existential)**
-- [ ] **Z4.1** — Early-engagement reminder 48–72h after send (≤4 total touches)
-- [ ] **Z4.2** — Checklist items + est. time inside the request email
-- [ ] **Z4.3** — Per-item progress on the portal ("2 of 3, ~4 min left")
-- [ ] **Z4.4** — Named-buyer "why" framing in the request
-**Z5 — Optional**
-- [ ] **Z5.1** — Draft-persistence for staged uploads (survive tab close)
-- [ ] **Z5.2** — QA untested flows: manual entry (QA-1), create-client, scope-2 override, line-item comment
-
-### MO — Multi-office collection (Phase 1) — BUILT 2026-07-31, verified live E2E
-> Schema (all additive/nullable, applied by build's drizzle push): `locations` + name/contactName/contactEmail · `dataRequests` + locationId/parentRequestId · `emissionLineItems` + locationId. New: `lib/locations.ts` (subregion options + pure `siteRollups`), `lib/site-requests.ts` (`sendSiteLink` create-or-resend, shared by consultant action + portal route), `/api/portal/delegate`.
-- [x] **MO1** — Locations first-class: LocationsPanel on consultant client detail (add site w/ subregion dropdown, contact, remove-if-unreferenced); events `location.added/removed`
-- [x] **MO2** — Per-site delegation links: consultant `sendSiteLinkAction` + CFO portal SiteDelegation panel → `/api/portal/delegate` (parent token = auth; site links can't fan out further); email via existing `sendDataRequestEmail`, copyable link when no contact email
-- [x] **MO3** — Portal imports tag `emissionLineItems.locationId` (locationId validated against companyId) and pass the site's `egridSubregion` into `rowToLineItem`
-- [x] **MO4** — Electricity calcs use the site's own factor (verified: 10,000 kWh Dayton → 4550 kg via RFCW, not 3690 USAVG); "By location" breakdown on review + snapshot (frozen items carry locationId), site tag in ledger rows
-- [x] **MO5** — CFO rollup on the parent portal + same rollup on consultant client page: per-site status (no link / link sent / responding / complete), items in, tCO2e, send/resend, aggregate = sum of sites (verified 9.5+11.1+8.9=29.5 t)
-- [x] **MO-demo** — Sierra Materials Group in `reset-demo.ts`: Fresno done (CAMX), Fort Worth responding (ERCT), Dayton not yet invited (RFCW)
-- [ ] **MO6 (defer)** — auto zip→eGRID lookup (EPA mapping) · client charts dashboard (validate demand first) · international factors
-
-### D — Azoulay demo prep (meeting next Thu ~2026-07-23; PLANNED 2026-07-16, no code started)
-> Danielle Azoulay = founder, The CSO Shop (fractional sustainability consultancy; ex-L'Oreal USA CSR head, Columbia Climate School adjunct). She IS the ICP: a consultant running CPG/apparel client books. She will know SB 253 + GHG Protocol cold. Goal of meeting: design-partner interest, not just applause.
-
-**D1 — Correctness she would catch (do first)**
-- [x] **D1.1** — SB 253 date RESOLVED = **Nov 10, 2026** (Malachi confirmed 2026-07-21). Aligned: calendar page, GOALS/ROADMAP/NEXT/wireframes docs, deck already says Nov 10. (period.test.ts Aug-10 is unrelated fiscal-year test, left as-is.)
-- [ ] **D1.2** — Real eGRID 2024 / USEEIO factor values via /admin/factors, or clearly label current factors as illustrative — she may check the math on screen (needs ADMIN_CLERK_ID env first)
-- [ ] **D1.3** — Sanity-pass GHG terminology on visible screens (market- vs location-based, Scope 2 dual reporting, assurance = ISSA 5000)
-- [ ] **D1.4** — SB 253 export chip: current output is a draft markdown — improve or label "draft pending CARB template" so it reads honest, not broken
-
-**D2 — Ship + verify (the app she sees must be the fixed one)**
-- [ ] **D2.1** — Deploy sendrow-v2 → main (Malachi decision; brings Plan X + emoji/em-dash sweep live; drizzle push adds nullable comment columns)
-- [ ] **D2.2** — Vercel env: BLOB_READ_WRITE_TOKEN (evidence view/download must work in demo), CRON_SECRET, ADMIN_CLERK_ID (Malachi)
-- [ ] **D2.3** — Resend: verify sending domain so request/reply emails actually deliver (Malachi) — the "client gets a link" beat depends on it
-- [ ] **D2.4** — Post-deploy QA: re-verify every [!] item in QA.md on production + full happy-path click-through (request → portal submit → flag/reply → review → approve → snapshot → share)
-
-**D3 — Make the demo hers**
-- [ ] **D3.1** — Add a demo client from her world to reset-demo.ts: a personal-care/apparel supplier (packaging or contract manufacturer) mid-flow — she should see her own client book, not logistics companies
-- [ ] **D3.2** — White-label the demo workspace as a plausible consultancy (settings: name/accent) so portal + share pages show the consultant-brand story
-- [ ] **D3.3** — Reseed + verify demo account morning-of (`npx tsx scripts/reset-demo.ts user_3GVr5Css8qERqxyWiySrhNeX3WF`)
-
-**D4 — The meeting itself**
-- [ ] **D4.1** — 5-click demo script anchored on her POV (dashboard → stuck client + reply → review w/ receipts → freeze → buyer view), rehearsed twice
-- [ ] **D4.2** — Backup: 3-min screen recording of the same path in case wifi/login fails
-- [ ] **D4.3** — Deck: date line current; consider a CPG-flavored example; PPTX is editable for tweaks
-- [ ] **D4.4** — One-pager on her (CSO Shop services, sectors, her CSO-role thesis) + 5 questions to ask HER (where collection fails for her clients, which formats she answers most, would she pilot w/ 1–2 clients, pricing sanity, who else should see this)
-- [ ] **D4.5** — The ask, decided in advance: design-partner pilot with 1–2 of her clients (free), feedback loop, intros to 3 consultants if it goes well
-
-### X — Demo-feedback fixes (APPROVED 2026-07-14, QA.md Part 1 = triage)
-- [x] **X1.1** — Portal import never crashes: `readJson` helper, 4MB client guard, try/catch wrapper in `/api/portal/import` (#4)
-- [x] **X1.2** — PDF uploads → stashed as evidence + routed to manual entry w/ notice; checklist copy fixed (#3)
-- [x] **X1.3** — `completenessPercent` includes fulfilled requests (#8) + regression test (211 passing)
-- [x] **X1.4** — `send()` returns success; request emails log `email.sent`/`email.failed` on the timeline (#1)
-- [x] **X1.5** — Evidence without blob: honest HTML page w/ sha256 + how-to-fix instead of raw 404 (#2/#13)
-- [x] **X1.6** — Activity: 5 missing verbs added; header explains audit-log vs exports (#21)
-- [x] **X2.1** — Comments extended to checklist items (nullable `lineItemId`, new `dataRequestId`/`checklistItemId`; schema applies at next deploy's drizzle push)
-- [x] **X2.2** — Portal renders per-item thread (stuck message + replies); stuck route also writes the comment (#5/#7)
-- [x] **X2.3** — Reply box + "mark resolved" on client-detail flag cards → thread + `sendFlagReplyEmail` w/ portal link (#5)
-- [x] **X2.4** — Review page renders "Client is stuck" cards (#18); inspect links filter ledger by category (#19)
-- [x] **X3.1** — "Data covers" preset dropdown + custom range (#14); reminder cadence in plain English (#15)
-- [x] **X3.2** — Ledger filter chips readable + hover (#17)
-- [x] **X3.3** — Format library: mailto intake w/ prefilled subject, circular links gone (#20)
-- [x] **X3.4** — Scope 2 market-based override (tons + reason, audit-logged via logChange, wins in `totals()`) (#10)
-- [x] **X3.5** — Scope 3 decision undo + low-confidence explanation tooltip (#11)
-- [x] **X4.1** — Connections page deleted; nav/redirect/scope-page/email references cleaned; dormant lib/API code kept (#9)
-- [x] **X4.2** — `/for-companies` rebuilt: one screen, get-matched funnel only (433 → 42 lines)
-- [x] **X.extra** — All emojis removed from product UI (Malachi 2026-07-14); activity icons dropped, text labels instead
-- [ ] **X.backlog** — Resend domain/key (Malachi) · env vars (Malachi) · "preflight checklist" + ledger "walkthrough link" repro (testers)
-
-### W3 — Format engine (= U3, the moat)
-- [ ] **W3.1** — `lib/formats.ts` → versioned template registry in DB (mappings + layout as data, conditional support)
-- [ ] **W3.2** — Format Mapping Builder #35: upload questionnaire → connect questions → save template
-- [ ] **W3.3** — Template versioning #33: snapshots/exports record version used
-- [ ] **W3.4** — Answer once, share many #26 + duplicate request detection
-- [ ] **W3.blocked** — SB 253 config vs CARB draft (Masao) · first real buyer questionnaire (Kerri)
-
-### W4 — Supplier journey (= U4)
-- [ ] **W4.1** — Portal Review & Submit step + per-snapshot attestation checkbox (#37)
-- [ ] **W4.2** — Confirmation screen → claim free account (#24)
-- [ ] **W4.3** — Supplier account trust page: share receipts (#38), download-all PACT V3 + CSV (#25), Q&A threads, flag path
-- [ ] **W4.4** — Section delegation modal (4.6) · deadline extension request + approve/deny (4.7)
-- [ ] **W4.5** — Supplier mini-report PDF (4.9) · reply-by-email v1 (#3, needs inbound provider)
-
-### W5–W7 — Audit-grade + retention (= U5/U6)
-- [ ] **W5** — Methodology detail (#17/#14/#15) · restatement alert UI (#11) · factor recalc preview (#39) · vendor-memory global removal (#18) · historical import (#36) · IMP (5.8)
-- [ ] **W7** — Calendar plumbing → chasing (#44) · digest (#45) · commentary (#43) · hotspot (#40) · YoY (#41) · score gaps (#42, blocked) 
-
-## Standing open items
-- [ ] **N7.2** — Real EPA eGRID 2024 + USEEIO v2 factor values via /admin/factors — pre-deliverable blocker
-- [ ] **OPS** — Vercel: `BLOB_READ_WRITE_TOKEN`, `CRON_SECRET`, `ADMIN_CLERK_ID`, Calendly links; v2 prod deploy is a user decision
-- [x] **BUG-12 (found + FIXED 2026-09-10)** — Automatic schema push (`drizzle-kit push --force` in `npm run build`) had been silently failing on every deploy: it hit `data_requests.token`'s long-pending `.unique()` constraint, tried an interactive "truncate this table?" confirmation, and crashed on Vercel's non-TTY build. Fixed by adding the constraint directly (`ALTER TABLE data_requests ADD CONSTRAINT data_requests_token_unique UNIQUE (token)` - safe, confirmed zero nulls/duplicates first). Re-ran `drizzle-kit push --force` locally afterward: clean "Changes applied", no prompt, no crash - the deploy pipeline's schema push is unblocked going forward.
+## Standing ops (user-only)
+- `CRON_SECRET` and `ADMIN_CLERK_ID` are set and working in prod.
+- Calendly links still point to a personal account — switch to business before wider outreach.

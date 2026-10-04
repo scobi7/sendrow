@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { clerkClient } from "@clerk/nextjs/server";
+import { eq } from "drizzle-orm";
 import { stripe } from "@/lib/stripe";
+import { db } from "@/lib/db";
+import { userCompanies } from "@/lib/db/schema";
 import Stripe from "stripe";
 
 export async function POST(request: NextRequest) {
@@ -33,6 +36,10 @@ export async function POST(request: NextRequest) {
         publicMetadata: { plan, planStatus: "active" },
         privateMetadata: { stripeCustomerId: session.customer },
       });
+      // Billing reads this from the DB (session claims don't carry privateMetadata).
+      if (session.customer) {
+        await db.update(userCompanies).set({ stripeCustomerId: session.customer as string }).where(eq(userCompanies.clerkId, userId));
+      }
     }
   }
 

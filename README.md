@@ -1,53 +1,44 @@
-# Sendrow — MVP (Company Customer Flow)
+# Sendrow
 
-ESG compliance software for California mid-market companies. This is the **pitch-ready MVP**: the full 16-screen direct-customer flow from the Product Bible, with a real calculation engine, versioned emission-factor library, append-only audit trail, and report generation. QuickBooks and utility connections are **simulated** with realistic, industry-scaled sample data (real OAuth is a production step — see roadmap below).
+The system of record for supplier emissions data, operated through sustainability consultants. See `GOALS.md` for the full product thesis — this file is just "how do I run it and where does everything live."
+
+A consultant sends a client (supplier) a data request. The client responds through a magic-link portal — no account, upload or type it in, evidence attached to every figure. The consultant reviews, approves, and freezes a dated **snapshot** — the only thing ever shared externally, reshaped into whatever format the recipient needs (CDP/EcoVadis/Walmart questionnaire mapping, Excel, a draft SB 253 report, a PACT-shaped JSON draft).
+
+**Consultants are the only paying customer.** Suppliers are always free to respond. Buyers (large companies demanding this data) are a 2027+ phase, not built.
 
 ## Run it
 
-Requires Node.js 18+ (check with `node -v`; install from nodejs.org if needed).
-
 ```bash
-cd sendrow-app
 npm install
 npm run dev
 ```
 
-Open http://localhost:3000.
+Needs `DATABASE_URL` (Neon Postgres), Clerk keys, and the other env vars below. Without `BLOB_READ_WRITE_TOKEN`, evidence uploads still record a sha256 hash but the file bytes aren't stored (the UI says so honestly, it doesn't fail silently).
 
-## Demo script for pitches (~5 minutes)
+## What's real vs. what's a placeholder
 
-1. **Landing page** — the one-sentence pitch. For live pitching, click **"View a demo company"** at the bottom: it logs you into *Pacific Coast Logistics*, a fully populated 240-person logistics company (login: `demo@pacificcoastlogistics.example` / `sendrow-demo`).
-2. **Dashboard** — show the progress checklist and the live emissions summary. "This is what your ops manager sees — no sustainability expertise required."
-3. **Connections** — show the QuickBooks and utility cards and the *Review What We Pulled* tables. "We connect read-only to systems you already have. This is where months of data gathering disappear."
-4. **Scope 2** — show dual location/market-based reporting and the REC section. "Most CA companies don't realize their green tariff already lowers their reportable number."
-5. **Scope 3** — show pre-filled travel/purchased-goods/freight from spend data, plus the skip-with-justification options. "First-time reporters aren't penalized for incomplete data — every skip is documented."
-6. **Reports** — run the pre-flight checklist, open the **GHG Inventory Report** (print to PDF from the browser), then the **Questionnaire Helper**: pick *Walmart* or *CDP* and show the field-by-field mapping. This is the money screen — "here's exactly what to paste into your customer's portal."
-7. **Audit Trail** — open it last. "Every number traces to its source, factor, and formula. This is what separates us from a spreadsheet."
-8. **Gap Analysis** — close with the retention story: "next year's to-do list lives here."
+**Real:** the calculation engine, append-only audit log, magic-link portal with evidence hashing, snapshot freeze + restatement diffing, vendor-mapping and file-format memory (workspace-scoped), multi-office per-site collection, Stripe webhook wiring.
 
-To demo the *empty → complete* journey instead, sign up fresh and walk the setup wizard + connect buttons live (each connect pulls in sample data instantly).
+**Placeholder, not yet production-grade:**
+- Emission factor *values* are labeled "representative" in `lib/factors.ts` — correct methodology, not the final EPA eGRID2024/USEEIO v2.5 dataset. Don't use current numbers on a real filing.
+- The questionnaire-mapping helper (`lib/mapping.ts`) only supports 3 named buyers (CDP, EcoVadis, Walmart) via hardcoded branches — the config-driven format engine (the actual moat) isn't built yet.
+- The PACT JSON export is a self-labeled draft (company-level totals in a PACT-shaped envelope), not conformance-tested against the real PACT Network spec.
+- Billing/checkout gate is disabled in `middleware.ts` during active development.
+- No DB-level row-level security — tenant isolation is app-layer (`ownsClient()` checks) plus a static contract test (`test/separation.test.ts`).
 
-## What's real vs. simulated
+## Where things live
 
-**Real:** server-side calculation engine; versioned emission-factor table with sources (EPA Factors Hub, eGRID, USEEIO, IPCC AR6, WARM); append-only audit log on every field change; section completion logic and pre-flight gating; GHG report with methodology + data-quality notes; questionnaire mappings (CDP / EcoVadis / Walmart / Generic); gap analysis; auth with scrypt-hashed passwords and signed 24h session cookies; data export.
+- `GOALS.md` — product thesis, business model, who pays, what's explicitly out of scope
+- `ROADMAP.md` — phase status against the build-order source of truth
+- `PLANS.md` — plan history (one-line-per-shipped-plan table) + what's still in flight
+- `TASKS.md` — the live open-work list; this is the one to read for "what's broken / not done"
+- `NEXT.md` — end-of-session state: what changed, what only Malachi can do, what's next
+- `contracts/invariants.md` — hard rules that must never be violated (tenant isolation, snapshot immutability, config-not-code, etc.)
+- `docs/` — research and design-direction docs (dated; check the date before trusting one as current)
+- `test/` — unit tests (`npm test`)
 
-**Simulated / deferred:** QuickBooks OAuth and UtilityAPI (sample data generators in `lib/mockdata.ts`, deterministic per company); file uploads to S3 (checkbox placeholders); Stripe billing; email sending. The emission-factor *values* are representative of the cited sources — verify each against the source before any real customer submission.
+## Architecture notes
 
-**Architecture note:** persistence is a JSON file (`data/db.json`) behind a thin data-access layer (`lib/store.ts`). Every accessor takes a company ID, so swapping to Postgres with row-level security is a contained change, not a rewrite.
-
-## Path to production (post-pitch)
-
-Best done in Claude Code in your terminal, where a live dev server, real API keys, and deployments are available:
-
-1. **Postgres + row-level security** — replace `lib/store.ts` with Prisma/Drizzle on Postgres (Supabase or Neon). RLS keyed to company ID at the DB level, per the Product Bible. Move the audit log to a DB trigger.
-2. **QuickBooks OAuth** — Intuit developer account → OAuth 2.0 (developer.intuit.com), pull Bill/Purchase objects, automatic token refresh (60-min expiry). Note Intuit's data-out metering for the cost model.
-3. **Utility data** — evaluate UtilityAPI vs Arcadia (coverage, per-account fee, docs), then integrate.
-4. **S3 document storage** — signed URLs with 15-min expiry; naming `company_id/section/field/timestamp_filename`.
-5. **Stripe** — Checkout + customer portal for the three company tiers (14-day trial, no card).
-6. **Email** — Postmark/SendGrid: welcome, report-ready, annual reminder at FY-end minus 60 days.
-7. **Hardening** — rate limiting on auth, HTTPS via the host (Vercel handles this), `npm audit` in CI, security scan before first real customer.
-8. **Consultant platform** — Part 3 of the Product Bible: same data engine, junction table for consultant↔client, white labeling, team seats, Stripe per-active-client billing.
-
-## Build verification status
-
-`next build` passes cleanly (full type-check, all 22 routes compile). A live click-through on your machine is the remaining check: run it, click **View a demo company**, and walk the 8 demo steps above once before pitching.
+- Next.js 15 App Router, Clerk v6 auth, NeonDB + Drizzle, Vercel Blob for evidence/branding, Stripe for billing (wired, gate disabled).
+- Two calculation code paths currently exist: `lib/calc.ts` (tons-based, feeds the consultant's manual "manage/scope1-3" entry screens) and `lib/factor-engine.ts` (kg-based, feeds the portal-ingested line-item ledger). Both read the same factor table independently — see `TASKS.md` CALC-2 for a known inconsistency between them on market-based Scope 2.
+- `npm run build` runs `drizzle-kit push --force` before `next build`, so schema changes apply automatically on deploy.

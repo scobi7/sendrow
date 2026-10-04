@@ -43,6 +43,19 @@ export function lookupFactor(
     return categoryMatch && unitMatch && keywordMatch && !f.year_retired;
   });
   if (matches.length === 0) return null;
+  if (!kw) {
+    // Without a keyword, a category+unit query is ambiguous the moment more
+    // than one distinct fuel/variant (by name, not vintage - multiple years
+    // of the same factor_name are not ambiguous, just versioned) shares that
+    // category+unit. This is exactly how BUG-9 happened: every gallon of fuel
+    // silently resolved to gasoline. Fail loud instead of picking one arbitrarily.
+    const distinctNames = new Set(matches.map((f) => f.factor_name));
+    if (distinctNames.size > 1) {
+      throw new Error(
+        `lookupFactor: ambiguous query (category=${query.category ?? "any"}, unit=${query.unit ?? "any"}) matches ${distinctNames.size} distinct factors (${[...distinctNames].join(", ")}) - pass a keyword to disambiguate.`
+      );
+    }
+  }
   return matches.sort((a, b) => b.year_effective - a.year_effective)[0];
 }
 
