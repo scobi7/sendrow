@@ -49,15 +49,15 @@ export default async function NewClientPage({
       <form action={consultantAddClient} className="card space-y-4">
         <div>
           <label className="label">Company name</label>
-          <input name="name" required className="input" placeholder="Acme Corp" />
+          <input name="name" required className="input" placeholder="Bluewater Logistics" />
         </div>
         <div>
           <label className="label">Contact name</label>
-          <input name="contact_name" className="input" placeholder="Jane Doe" />
+          <input name="contact_name" className="input" placeholder="Priya Shah" />
         </div>
         <div>
           <label className="label">Contact email</label>
-          <input name="contact_email" type="email" className="input" placeholder="jane@acme.com" />
+          <input name="contact_email" type="email" className="input" placeholder="priya@bluewaterlogistics.com" />
           <p className="mt-1 text-xs" style={{ color: "var(--text-muted)" }}>
             Portal links and reminders are emailed here. You can add it later, but requests won&apos;t be delivered until you do.
           </p>
