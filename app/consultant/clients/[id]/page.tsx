@@ -127,6 +127,13 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
           <Link href={`/consultant/requests/new?client=${id}`} className="btn btn-primary text-sm">
             + New request
           </Link>
+          <a
+            href={`/api/clients/${id}/export`}
+            className="text-xs transition-opacity hover:opacity-70"
+            style={{ color: "var(--text-muted)" }}
+          >
+            Export data
+          </a>
           <form action={archiveClient.bind(null, id)}>
             <button className="text-xs transition-opacity hover:opacity-70" style={{ color: "var(--text-muted)" }}>
               Archive

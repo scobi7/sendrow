@@ -10,7 +10,7 @@ const SECTIONS: [string, string][] = [
   ],
   [
     "Who can see it",
-    "Your data is visible only to your own account and, if you work with one, the consultant you have explicitly linked. Every consultant-client relationship is verified on every request - there is no cross-tenant access path. Sendrow staff access production data only for support you request, and every such access is logged.",
+    "Your data is visible only to your own account and, if you work with one, the consultant you have explicitly linked. Every consultant-client relationship is verified on every request before any data is returned. Sendrow staff access production data only for support you request.",
   ],
   [
     "Authentication",
@@ -22,7 +22,7 @@ const SECTIONS: [string, string][] = [
   ],
   [
     "Your data is yours",
-    "Export everything (ZIP or JSON) from Settings at any time, no questions asked. Request deletion from Settings and we remove your data from production within 30 days, confirmed by email.",
+    "Your consultant can export everything - inputs, calculations, the full audit trail, and the original evidence files - as a ZIP, anytime, no questions asked. A self-serve export for suppliers with their own account is coming as part of the supplier portal upgrade. To request deletion, email us - we remove your data from production within 30 days and confirm by email.",
   ],
   [
     "Subprocessors",
