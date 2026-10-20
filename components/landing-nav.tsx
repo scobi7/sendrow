@@ -27,13 +27,6 @@ export function LandingNav() {
             How it works
           </Link>
           <Link
-            href="/pricing"
-            className="text-sm font-medium transition-colors"
-            style={{ color: "var(--text-muted)" }}
-          >
-            Pricing
-          </Link>
-          <Link
             href="/login"
             className="text-sm font-medium transition-colors"
             style={{ color: "var(--text-muted)" }}
@@ -69,9 +62,6 @@ export function LandingNav() {
           <nav className="flex flex-col gap-5">
             <Link href="/how-it-works" onClick={() => setOpen(false)} className="text-sm font-medium" style={{ color: "var(--text-muted)" }}>
               How it works
-            </Link>
-            <Link href="/pricing" onClick={() => setOpen(false)} className="text-sm font-medium" style={{ color: "var(--text-muted)" }}>
-              Pricing
             </Link>
             <Link href="/login" className="text-sm font-medium" style={{ color: "var(--text-muted)" }}>
               Sign in

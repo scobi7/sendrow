@@ -36,7 +36,7 @@ export default function PrivacyPage() {
 
         <h2 className="mt-8 text-xl font-bold font-display" style={{ color: "var(--text)" }}>3. Third-Party Services</h2>
         <p style={{ color: "var(--text-muted)" }}>
-          Sendrow uses the following sub-processors: Clerk (authentication), Neon (database), Resend (transactional email), UtilityAPI (utility data), and Intuit QuickBooks (accounting data). Each operates under its own privacy policy.
+          Sendrow uses the following sub-processors: Clerk (authentication), Neon (database), Vercel (hosting), Resend (transactional email), and Stripe (payments). Each operates under its own privacy policy.
         </p>
 
         <h2 className="mt-8 text-xl font-bold font-display" style={{ color: "var(--text)" }}>4. Data Retention</h2>

@@ -73,7 +73,7 @@ const PROMISES: { title: string; body: string }[] = [
   },
   {
     title: "Your data is yours.",
-    body: "Export everything in the industry-standard PACT format, anytime, and take it with you.",
+    body: "Export everything - Excel, a PACT-formatted draft, your full audit trail - anytime, and take it with you.",
   },
 ];
 

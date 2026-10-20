@@ -195,9 +195,9 @@ export default function ForConsultants() {
       <div style={{ background: "#fff", borderTop: "1px solid var(--divider)", borderBottom: "1px solid var(--divider)" }}>
         <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-center gap-10 px-6 py-7">
           <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
-            Reports accepted by
+            Built on GHG Protocol methodology - questionnaire mapping for
           </span>
-          {["CDP", "EcoVadis", "Walmart Supplier Portal", "ENERGY STAR", "GHG Protocol"].map((name) => (
+          {["CDP", "EcoVadis", "Walmart Supplier Sustainability"].map((name) => (
             <span key={name} className="text-sm font-semibold" style={{ color: "var(--text-muted)" }}>
               {name}
             </span>
@@ -322,9 +322,9 @@ export default function ForConsultants() {
           <div className="overflow-hidden rounded-2xl" style={{ border: "1px solid var(--divider)" }}>
             <div className="grid grid-cols-1 divide-y sm:grid-cols-3 sm:divide-x sm:divide-y-0">
               {[
-                { value: "3 days", label: "Average time for a client to complete their report" },
+                { value: "Days, not months", label: "Target cycle time from request to approved snapshot" },
                 { value: "Zero", label: "Spreadsheets required to manage your book" },
-                { value: "5+", label: "Questionnaire frameworks supported per client" },
+                { value: "CDP, EcoVadis, Walmart", label: "Buyer questionnaires mapped today - more as we add real examples to design against" },
               ].map(({ value, label }) => (
                 <div key={value} className="bg-white px-8 py-10 text-center">
                   <p className="font-data text-4xl font-bold" style={{ color: "var(--primary)" }}>{value}</p>

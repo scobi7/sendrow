@@ -58,11 +58,11 @@ export default function AgencyQuotePage() {
       <main className="mx-auto max-w-2xl px-6 py-20">
 
         <Link
-          href="/pricing"
+          href="/for-consultants"
           className="mb-8 inline-block text-sm font-medium transition-opacity hover:opacity-70"
           style={{ color: "var(--primary)" }}
         >
-          ← Back to pricing
+          ← Back
         </Link>
 
         <h1 className="text-3xl font-black font-display tracking-tight" style={{ color: "var(--text)" }}>

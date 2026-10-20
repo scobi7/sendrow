@@ -44,11 +44,11 @@ export default async function Home() {
           className="mx-auto mt-4 max-w-2xl font-display font-extrabold"
           style={{ fontSize: "clamp(36px, 5.5vw, 58px)", lineHeight: 1.03, letterSpacing: "-0.035em", color: "var(--text)" }}
         >
-          One clean emissions file. Every format your clients need.
+          One clean emissions file. Mapped to the formats your clients actually need.
         </h1>
         <p className="mx-auto mt-5 max-w-xl text-[15px] leading-[1.7]" style={{ color: "var(--text-muted)" }}>
           Collected once, kept with proof attached, and mapped to CDP, EcoVadis, Walmart, and SB 253
-          automatically - under your brand.
+          - under your brand.
         </p>
 
         <WaitlistForm
