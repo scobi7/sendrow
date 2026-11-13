@@ -24,9 +24,14 @@ What's settled, with the date and why. This is the project's long-term memory: w
 AI suggestions; buyer features (2027); QuickBooks or utility integrations; peer benchmarking or any cross-client data use; EPR module; referral-routing software (Masao's spreadsheet; `/admin/referrals` frozen as is); scoring suppliers; managed service; direct-to-company self-serve (lives on `sendrow-v1`); enterprise SSO; in-app newsletter; third-party analytics or ad pixels; blockchain traceability; international expansion; ML on the dataset.
 
 ## Build decisions
+- 2026-11-13 (Malachi): `DESIGN.md` (repo root) is the UI rulebook. Before any new UI code: a design brief (palette tokens, two typefaces, layout, one motion idea, reference), approved by Malachi first. The "Ledger" rebrand predates it and is redone from the approved brief.
+- 2026-11-13 (Malachi): Spaced hyphens used as dashes (" - ") break house style, same as em dashes. Code comments and arithmetic are exempt.
+- 2026-11-13: Homepage is self-serve onboarding, not a design-partner pitch: Get started goes to /signup then /onboarding; a supplier who got a request is told they need no account. The waitlist form and its `submitWaitlist` action are gone; `/admin/waitlist` still shows past signups.
+- 2026-11-13: Ninth Circuit (Nov 9, 2026, preliminary): SB 253 Scope 3 and SB 261 likely unconstitutional, remanded; Scope 1/2 stays in force. `lib/regulatory-dates.ts` marks Scope 3 and SB 261 "On hold"; nothing in copy says Scope 3 starts in 2027.
+- 2026-11-13: Supplier-calculated rows (data type `existing_inventory`) are built in the core (invariant 1 amended): stored as the supplier states them, never re-factored, always held for review. Consultants can't select the type yet: it stays out of `DATA_TYPE_OPTIONS` until the ledger, review page and exports label the rows.
 - 2026-11-13 (Malachi): No company or third-party accounts. Suppliers and other third parties never sign up; their consultant sends them a link per request. Onboarding says so plainly, with "Get matched" as the fallback.
 - 2026-11-13 (Malachi): Upload links stay one per request (no per-client link).
-- 2026-11-13 (Malachi): Accept supplier-calculated emissions (pre-computed CO2e from an existing inventory or prior calculation), always labeled as such and never mixed silently with our own calculations. Needs an amendment to invariant 1 when built; plan pending approval.
+- 2026-11-13 (Malachi): Accept supplier-calculated emissions (pre-computed CO2e from an existing inventory or prior calculation), always labeled as such and never mixed silently with our own calculations. Plan approved; invariant 1 amended.
 - 2026-11-13 (Malachi): Symbol glyphs (check marks, crosses, arrows) break house style; use words. Scope 2 "complete" stays a plain checkbox. Merge to main only when Malachi says.
 - 2026-11-13: Rebrand default is the "Ledger" direction (docs/design-direction.md): paper background, white cards with hairline borders, one forest green, Fraunces / Instrument Sans / IBM Plex Mono, 8px and 6px radii, no glass, glow or gradients. Replaces "Aurora Pop" (2026-07-10). Why: Malachi asked to "un-AI-sloppify" and said to start and review after; it lives in the `:root` tokens of app/globals.css, so changing it is one file. Pending Malachi's review of the preview.
 - 2026-11-13: Regulatory dates live in `lib/regulatory-dates.ts`; every entry has a source and a checked-on date, and Malachi or Masao sign off changes. The dashboard shows a static "Upcoming deadlines" strip, not a scrolling ticker (fails reduced motion, hard to read).
@@ -43,7 +48,7 @@ AI suggestions; buyer features (2027); QuickBooks or utility integrations; peer 
 - Build order source of truth: Masao's pipeline, `docs/build-pipeline-2026-07-10.pdf`. W1 and W2 jumped ahead of it because they were pure frontend with no blocked inputs.
 
 ## Key facts in force
-- SB 253 first Scope 1/2 deadline: Nov 10, 2026 (confirmed 2026-07-21). That date has now passed; re-check the current state before quoting it in copy. 2027 brings Scope 3 and limited assurance.
+- SB 253 first Scope 1/2 deadline: Nov 10, 2026 (confirmed, passed). Next is expected Nov 10, 2027 (annual). Scope 3 is on hold after the Ninth Circuit's Nov 9, 2026 preliminary ruling. Re-check `lib/regulatory-dates.ts` sources before quoting any date in copy.
 - Assurance standard: ISSA 5000 (ISAE 3410 is withdrawn).
 - PACT V3 only. Our PACT export is an unvalidated draft.
 - Beachhead: California, SB 253, consultant-operated. Kerri is the founding partner.

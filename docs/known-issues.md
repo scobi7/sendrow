@@ -12,6 +12,7 @@ Traps that cost time, with the fix or workaround. Add one when something bites; 
 - Scope 2 has no manual kWh input. Electricity reaches totals only through imported line items.
 - The ledger "How calculated" panel reads each row's `calcLog`. Rows imported before factor fields were logged show "Not recorded" for them, and manual-entry calcs (`CalcResult`) carry only a formula and basis, no factor name, value or unit. The gaps are shown on purpose.
 - Excel exports of snapshots frozen before 2026-11-13 fill factor source and site name from today's tables (those snapshots never stored them), and have no evidence file column values.
+- Supplier-calculated line items (`calcLog.origin === "supplier_calculated"`) must never get one of our factors. Every path that recomputes or remaps a line item checks `isSupplierCalculated()` first (ledger.ts recompute and dollar-fuel, consultant-actions recategorize, edit quantity, mark actual, bulk dollar-fuel, and the vendor-confirm remap of unmapped rows). A new recompute path needs the same guard.
 - Regulatory dates (`lib/regulatory-dates.ts`) are compliance facts shown to consultants. Check each against its source before changing it; the dashboard strip hides dated entries once they pass.
 
 ## Database and deploy
@@ -38,7 +39,8 @@ Traps that cost time, with the fix or workaround. Add one when something bites; 
 - `useOptimistic` comes from Next's bundled React (package.json says React 18); `@types/react` canary types make it type-check. Don't "fix" it by upgrading React alone.
 
 ## Tooling
+- In zsh, `F="a b c"; grep ... $F` passes one filename with spaces in it, so grep fails and a "no hits" check passes falsely (a dash-sweep builder reported clean while 3 dashes remained, 2026-11-13). Run multi-file greps under `bash -c` with an array, or list the files inline, and check that grep didn't print "No such file".
 - `lib/format.ts` is display formatters; `lib/formats.ts` is the export-format engine. Easy to mix up.
-- `npm run knip` reports 5 items kept on purpose: `components/pricing-calculator.tsx`, `PRICE_IDS`, `gapAnalysis`, `Gap`, `Location`.
+- `npm run knip` reports 5 items kept on purpose: `components/pricing-calculator.tsx`, `PRICE_IDS`, `gapAnalysis`, `Gap`, `Location`. (`gapAnalysis`/`Gap`: leftover from the company self-serve product, shown nowhere; recommended for deletion, awaiting Malachi.)
 - CI (`.github/workflows/ci.yml`) runs tsc twice (`npm run lint` is tsc) and never runs `npm test`. It uses Node 20, which is deprecated.
 - Excel and Numbers can turn dates into serial numbers (`45657.66`). `normalizeDateInput()` in `lib/period.ts` handles it; use it for any new date input.
