@@ -2,7 +2,7 @@
 
 > Source: `Sendrow — Product Wireframes.fig` (Malachi's Downloads; decoded node tree in `wireframes-2026-07-13-raw-outline.txt` — exact microcopy for every screen lives there).
 > Frame titles carry Masao's pipeline item numbers (`docs/build-pipeline-2026-07-10.pdf`). Every frame is annotated CONSULTANT or SUPPLIER + when it's reached.
-> These wireframes are the UI spec for Plan W (PLANS.md).
+> These wireframes are the UI spec for Plan W (docs/plan-w-spec.md).
 
 ## 1. Core Loop — Request to Snapshot
 

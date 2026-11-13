@@ -1,6 +1,6 @@
 # Sendrow
 
-The system of record for supplier emissions data, operated through sustainability consultants. See `GOALS.md` for the full product thesis — this file is just "how do I run it and where does everything live."
+The system of record for supplier emissions data, operated through sustainability consultants. This file is just "how do I run it." Project rules, status and decisions live in `CLAUDE.md` and `docs/`.
 
 A consultant sends a client (supplier) a data request. The client responds through a magic-link portal — no account, upload or type it in, evidence attached to every figure. The consultant reviews, approves, and freezes a dated **snapshot** — the only thing ever shared externally, reshaped into whatever format the recipient needs (CDP/EcoVadis/Walmart questionnaire mapping, Excel, a draft SB 253 report, a PACT-shaped JSON draft).
 
@@ -28,17 +28,16 @@ Needs `DATABASE_URL` (Neon Postgres), Clerk keys, and the other env vars below. 
 
 ## Where things live
 
-- `GOALS.md` — product thesis, business model, who pays, what's explicitly out of scope
-- `ROADMAP.md` — phase status against the build-order source of truth
-- `PLANS.md` — plan history (one-line-per-shipped-plan table) + what's still in flight
-- `TASKS.md` — the live open-work list; this is the one to read for "what's broken / not done"
-- `NEXT.md` — end-of-session state: what changed, what only Malachi can do, what's next
-- `contracts/invariants.md` — hard rules that must never be violated (tenant isolation, snapshot immutability, config-not-code, etc.)
-- `docs/` — research and design-direction docs (dated; check the date before trusting one as current)
-- `test/` — unit tests (`npm test`)
+- `CLAUDE.md`: what the project is, the working rules, and the full folder map. Start here.
+- `docs/progress.md`: current state, what's next, what only Malachi can do
+- `docs/decisions.md`: what's settled and why (product thesis, out-of-scope list, key dates)
+- `docs/known-issues.md`: gotchas and their fixes
+- `docs/plan-w-spec.md`: build spec for the open phases
+- `contracts/invariants.md`: hard rules that must never be violated (tenant isolation, snapshot immutability, config-not-code, etc.)
+- `test/`: unit tests (`npm test`)
 
 ## Architecture notes
 
 - Next.js 15 App Router, Clerk v6 auth, NeonDB + Drizzle, Vercel Blob for evidence/branding, Stripe for billing (wired, gate disabled).
-- Two calculation code paths currently exist: `lib/calc.ts` (tons-based, feeds the consultant's manual "manage/scope1-3" entry screens) and `lib/factor-engine.ts` (kg-based, feeds the portal-ingested line-item ledger). Both read the same factor table independently — see `TASKS.md` CALC-2 for a known inconsistency between them on market-based Scope 2.
+- Two calculation code paths currently exist: `lib/calc.ts` (tons-based, feeds the consultant's manual "manage/scope1-3" entry screens) and `lib/factor-engine.ts` (kg-based, feeds the portal-ingested line-item ledger). Both read the same factor table independently; see `docs/known-issues.md` before changing either.
 - `npm run build` runs `drizzle-kit push --force` before `next build`, so schema changes apply automatically on deploy.
