@@ -3,12 +3,11 @@
 Update at the end of every session. Keep it current, not historical: git holds the history.
 
 ## Now (2026-11-13)
-- Branch `sendrow-v3`, 4 commits ahead of `origin/sendrow-v3` (not pushed). `main` (sendrow.app) was last caught up 2026-09-10.
-- Latest on v3: per-client data export, marketing copy fixed to match what's built, `/pricing` paused (redirects), the 2026-10-02 audit fixes (SEC-1, CALC-1, CALC-2, billing portal, cron fails closed, portal rate limits, factor ambiguity guard).
-- Last recorded test run: 231/231, tsc and build clean (2026-10-02).
-- Phases: 1 core loop and 2 demo readiness built. 3 format engine (W3) is next, blocked on a real buyer questionnaire. W4 to W7 queued. Spec: `docs/plan-w-spec.md`.
-- Current goal (set 2026-07-21): get real consultants using it and collect their feedback. A pilot-ready core loop plus supplier-response work, not feature completeness.
-- 2026-11-13 tech-debt pass is in the working tree, NOT committed: 86 files changed, lint clean, 248/248 tests. Security fixes, QuickBooks removal, dedup. See the log line below.
+- Branch `sendrow-v3`, pushed. Preview of the latest push: https://sendrow-git-sendrow-v3-malachinguyenn-4218s-projects.vercel.app. `main` (sendrow.app) was last caught up 2026-09-10.
+- Today on v3: tech-debt pass (security fixes, QuickBooks code removed), 20-item UX pass, design-partner fixes from `docs/plan-ui.md` (Ledger rebrand tokens, consultant nav and phone menu, client tabs, deadlines strip and sourced dates config, "Get started" checklist, per-row "How calculated" panel, Excel traceability columns, snapshot and PDF totals fixes, branded PDF).
+- Checks: `npm run lint` clean, `npm test` 263/263, knip shows only the 5 known items. Nothing walked in a browser yet (see Untested).
+- Phases: W3 format engine still blocked on a real buyer questionnaire. UI plan: Phase 0, most of 1, 3.1 and the Phase 4 foundation are built; the rest waits on Malachi's decisions (below).
+- Current goal (set 2026-07-21): get real consultants using it and collect their feedback.
 
 ## Before / after the next production deploy
 - Data check done 2026-11-13: the only QuickBooks/utility data belongs to pre-pivot internal test companies ("Greentrack", "masao inc.", June 2026; no active consultant links, no snapshots), so removing that code changes no real client's numbers.
@@ -29,6 +28,12 @@ P1:
 - Refrigerant rows via CSV/portal: teach `applyFactor()` about kgCO2e/kg units first.
 - Shared-store rate limiting (see known-issues).
 
+UI plan follow-ups (docs/plan-ui.md):
+- Phase 1.3 onboarding choice (consultant / corporate / third party): needs decision 1.
+- Phase 2 data in: supporting documents on any checklist item, manual Scope 2 kWh entry, supplier-calculated imports (decision 4), one link per client (decision 3).
+- Split the client overview page into its tabs' content; consolidate type sizes and inline styles; the /for-consultants marketing pass (mock dashboard, hover shadows).
+- Add CARB fee notices (~Dec 10 2026), CDP 2027 and EcoVadis to `lib/regulatory-dates.ts` once confirmed.
+
 Deferred tech debt (from the 2026-11-13 audit, not yet approved or decided):
 - Propane with no price set is priced as gasoline in `lib/ingestion/ingest.ts`; `lib/ledger.ts` returns null for the same case.
 - `lib/ratelimit.ts` never prunes expired keys.
@@ -37,6 +42,7 @@ Deferred tech debt (from the 2026-11-13 audit, not yet approved or decided):
 - Product calls: Scope 2 "complete" is now just a checkbox (no data gate); no manual kWh input; keep or drop `gapAnalysis`; do ✓/✕ glyphs and spaced hyphens break house style; drop the old qb/utility/invite tables (needs explicit OK).
 
 ## Untested (never walked end to end)
+- The 2026-11-13 UI work on the preview: Cmd+K, Archive then Undo, ledger Exclude/Restore rollback, "How calculated", phone menu, client tabs, branded PDF download, Excel export of a new snapshot with manual entries (Line items sum = Total).
 - Live prod smoke test: send a data request to your own email on sendrow.app, confirm the link resolves.
 - Portal "Type it in" manual-entry path.
 - Create client; Scope 2 manual override save; comment on a line item.
@@ -47,6 +53,9 @@ Deferred tech debt (from the 2026-11-13 audit, not yet approved or decided):
 | What | Where |
 |---|---|
 | Confirm `BLOB_READ_WRITE_TOKEN` in prod | Vercel |
+| Review the "Ledger" look on the preview (keep, adjust, or mock alternatives) | v3 preview |
+| UI plan decisions 1, 3, 4, 5 (account types, one link per client, supplier-calculated imports, who signs off regulatory dates) | docs/plan-ui.md |
+| Reflect proposals 1-5 from the tech-debt pass, plus today's | this session |
 | Real eGRID2024 / USEEIO v2.5 factor values | `/admin/factors` |
 | Real email smoke test on prod | sendrow.app |
 | A real buyer questionnaire to unblock W3 (CDP/EcoVadis/Walmart docs are public) | research or Masao |
@@ -55,6 +64,7 @@ Deferred tech debt (from the 2026-11-13 audit, not yet approved or decided):
 | Possibly stale (from 2026-09-02, check): Clerk prod Google OAuth, attorney ToS (tool, not advice), Calendly links to a business account | ops |
 
 ## Log
+- 2026-11-13 (evening): 20-item UX pass (command menu, undo archive, optimistic ledger, safe areas, delayed skeletons, disabled create buttons). Then design-partner UI work by Haiku builders, each check rerun by the orchestrator: Ledger rebrand tokens and fonts, consultant nav and phone menu, client tabs, sourced regulatory dates and deadlines strip, Get started checklist, "How calculated" panel, Excel traceability. Fixed: snapshots didn't freeze manual calcs (exports didn't reconcile), PDF counted excluded rows and dropped manual entries. 248 to 263 tests.
 - 2026-11-13 (later): Tech-debt audit by 4 Haiku workers, then fixes in 3 builder waves, each check rerun by the orchestrator. Fixed: stored XSS in the evidence page, cron blocked by Clerk, shared links leaking live data or another company's snapshot, consultant PDF report (401, gate, override), silent seed-factor fallback, 3 cross-tenant holes (requestChanges, flagSession, approveSession), broken /demo Calendly links. "Powered by Sendrow" on portal/shared/PDF. Removed QuickBooks/utility code (DB tables kept). Merged ownership checks (lib/guards.ts), portal route helpers (lib/portal-api.ts), Scope 2 formulas, id generators, formatters, pills. Added knip, tsx, auditor agent; untracked tsconfig.tsbuildinfo. 231 to 248 tests.
 - 2026-11-13: Set up the orchestrator/worker workflow (CLAUDE.md, docs/, builder and reviewer agents, reflect skill). Retired MAPS, TASKS, NEXT, PLANS, ROADMAP, GOALS, success/, logs/ and ROUTE-TREE; their content moved into docs/.
 - 2026-10-02: Full codebase and API audit, then fixed 8 findings. 231/231 tests.
