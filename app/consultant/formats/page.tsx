@@ -17,7 +17,7 @@ export default function FormatLibraryPage() {
       <div className="mb-6">
         <h1 className="text-2xl font-bold font-display" style={{ color: "var(--text)" }}>Format library</h1>
         <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>
-          How to output it - one approved snapshot in, any of these out. Available on every snapshot&apos;s
+          How to output it: one approved snapshot in, any of these out. Available on every snapshot&apos;s
           Snapshot &amp; Share screen.
         </p>
       </div>
@@ -39,8 +39,8 @@ export default function FormatLibraryPage() {
         <p className="font-semibold" style={{ color: "var(--text)" }}>+ Add a new format</p>
         <p className="mt-1.5 text-sm" style={{ color: "var(--text-muted)" }}>
           Got a buyer&apos;s custom questionnaire (PDF/Excel)? Email it over and it gets added as a config for your
-          practice, usually within a day. The self-serve builder - upload it, connect each question to a data field
-          once, reuse it forever - is the next build phase.
+          practice, usually within a day. The self-serve builder lets you upload it, connect each question to a data field
+          once, reuse it forever. It is the next build phase.
         </p>
         <a
           href={`mailto:${process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "hello@sendrow.app"}?subject=${encodeURIComponent("New format request: [buyer / framework name]")}&body=${encodeURIComponent("Attach the questionnaire (PDF or Excel) and tell us which client it's for.")}`}

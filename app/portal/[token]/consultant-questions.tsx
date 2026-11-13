@@ -39,7 +39,7 @@ export function ConsultantQuestions({ token, threads }: { token: string; threads
       setText("");
       router.refresh();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not send - please try again.");
+      setError(e instanceof Error ? e.message : "Could not send. Please try again.");
     } finally {
       setBusy(false);
     }

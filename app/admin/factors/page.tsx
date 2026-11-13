@@ -23,8 +23,8 @@ const MIGRATION_SQL = `CREATE TABLE IF NOT EXISTS emission_factors (
 const CATEGORY_LABELS: Record<string, string> = {
   mobile_combustion: "Mobile Combustion (Fleet)",
   stationary_combustion: "Stationary Combustion",
-  electricity_location: "Electricity - Location-based",
-  electricity_market: "Electricity - Market-based",
+  electricity_location: "Electricity: Location-based",
+  electricity_market: "Electricity: Market-based",
   refrigerant_gwp: "Refrigerants (GWP-100)",
   spend_based: "Spend-based Scope 3 (USEEIO)",
   commute: "Employee Commuting",
@@ -32,7 +32,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 };
 
 export default async function AdminFactorsPage() {
-  // Admin access is enforced by middleware.ts (ADMIN_CLERK_ID gate on /admin(.*)) —
+  // Admin access is enforced by middleware.ts (ADMIN_CLERK_ID gate on /admin(.*)).
   // no second check needed here.
   let dbOverrides: EmissionFactor[] = [];
   let tableReady = true;

@@ -9,7 +9,7 @@ const FEATURES = [
   },
   {
     title: "Client invite links",
-    desc: "Generate a unique link for each client. They upload their data directly, no account needed - you review.",
+    desc: "Generate a unique link for each client. They upload their data directly, no account needed: you review.",
   },
   {
     title: "Automated calculations",
@@ -85,7 +85,7 @@ export default function ForConsultants() {
             className="mx-auto mt-6 max-w-xl text-lg leading-relaxed"
             style={{ color: "var(--text-muted)" }}
           >
-            Clients upload their own data through a secure link - no account needed. Sendrow runs the calculations. You review, report, and deliver - without the spreadsheet overhead.
+            Clients upload their own data through a secure link, with no account needed. Sendrow runs the calculations. You review, report, and deliver without the spreadsheet overhead.
           </p>
 
           <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
@@ -115,7 +115,7 @@ export default function ForConsultants() {
                 <span className="h-2.5 w-2.5 rounded-full" style={{ background: "#FFBD2E" }} />
                 <span className="h-2.5 w-2.5 rounded-full" style={{ background: "#28C840" }} />
                 <span className="ml-4 text-xs font-medium" style={{ color: "var(--text-muted)" }}>
-                  Sendrow - Consultant Dashboard
+                  Sendrow: Consultant Dashboard
                 </span>
               </div>
 
@@ -195,7 +195,7 @@ export default function ForConsultants() {
       <div style={{ background: "#fff", borderTop: "1px solid var(--divider)", borderBottom: "1px solid var(--divider)" }}>
         <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-center gap-10 px-6 py-7">
           <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
-            Built on GHG Protocol methodology - questionnaire mapping for
+            Built on GHG Protocol methodology: questionnaire mapping for
           </span>
           {["CDP", "EcoVadis", "Walmart Supplier Sustainability"].map((name) => (
             <span key={name} className="text-sm font-semibold" style={{ color: "var(--text-muted)" }}>
@@ -255,12 +255,12 @@ export default function ForConsultants() {
                 data collection.
               </h2>
               <p className="mt-4 text-base leading-relaxed" style={{ color: "var(--text-muted)" }}>
-                Send a client a secure link - no account, no software to connect. They upload utility bills and fuel receipts, or just type the numbers in, and Sendrow runs the calculations the moment it lands.
+                Send a client a secure link: no account, no software to connect. They upload utility bills and fuel receipts, or just type the numbers in, and Sendrow runs the calculations the moment it lands.
               </p>
               <ul className="mt-8 space-y-4">
                 {[
                   "Generate a unique invite link per client in one click",
-                  "Clients upload or type in their own data - you never chase spreadsheets by email",
+                  "Clients upload or type in their own data. You never chase spreadsheets by email",
                   "You see their progress in real time and can step in wherever needed",
                 ].map((item) => (
                   <li key={item} className="flex items-start gap-3 text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>
@@ -324,7 +324,7 @@ export default function ForConsultants() {
               {[
                 { value: "Days, not months", label: "Target cycle time from request to approved snapshot" },
                 { value: "Zero", label: "Spreadsheets required to manage your book" },
-                { value: "CDP, EcoVadis, Walmart", label: "Buyer questionnaires mapped today - more as we add real examples to design against" },
+                { value: "CDP, EcoVadis, Walmart", label: "Buyer questionnaires mapped today, and more as we add real examples to design against" },
               ].map(({ value, label }) => (
                 <div key={value} className="bg-white px-8 py-10 text-center">
                   <p className="font-data text-4xl font-bold" style={{ color: "var(--primary)" }}>{value}</p>
@@ -358,7 +358,7 @@ export default function ForConsultants() {
               {
                 num: "02",
                 title: "They upload their data",
-                desc: "Clients upload utility bills and fuel receipts, or type the numbers in - no account, no software to connect.",
+                desc: "Clients upload utility bills and fuel receipts, or type the numbers in, with no account, no software to connect.",
               },
               {
                 num: "03",

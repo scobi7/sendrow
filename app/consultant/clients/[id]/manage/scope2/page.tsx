@@ -22,7 +22,7 @@ export default async function ManageScope2({ params }: { params: Promise<{ id: s
   return (
     <div>
       <PageHeader
-        title="Scope 2 - Electricity Emissions"
+        title="Scope 2: Electricity Emissions"
         subtitle={`Renewable energy and market-based adjustments for ${company.name}.`}
       />
 
@@ -36,7 +36,7 @@ export default async function ManageScope2({ params }: { params: Promise<{ id: s
         <h2 className="font-semibold font-display" style={{ color: "var(--text)" }}>Renewable Energy Credits</h2>
         <div className="mt-3 flex gap-4 text-sm">
           <label className="flex items-center gap-2">
-            <input type="radio" name="has_recs" value="yes" defaultChecked={inp.has_recs === true} /> Yes - on a green tariff or purchases RECs
+            <input type="radio" name="has_recs" value="yes" defaultChecked={inp.has_recs === true} /> Yes, on a green tariff or purchases RECs
           </label>
           <label className="flex items-center gap-2">
             <input type="radio" name="has_recs" value="no" defaultChecked={inp.has_recs === false} /> No / not sure

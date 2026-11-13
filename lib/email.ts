@@ -42,7 +42,7 @@ async function send(
       }),
     });
     if (!res.ok) {
-      console.error(`email rejected (${res.status}): "${subject}" - ${await res.text().catch(() => "")}`);
+      console.error(`email rejected (${res.status}): "${subject}": ${await res.text().catch(() => "")}`);
       return false;
     }
     return true;
@@ -68,9 +68,9 @@ export async function sendWelcomeEmail(name: string, email: string) {
     email,
     "Welcome to Sendrow",
     `<p>Hi ${firstName},</p>
-<p>Your Sendrow workspace is ready. Add your first client and send them a data request - they get a secure link, no account needed.</p>
+<p>Your Sendrow workspace is ready. Add your first client and send them a data request. They get a secure link, no account needed.</p>
 <p><a href="${APP_URL}/consultant">Go to your workspace →</a></p>
-<p> - The Sendrow team</p>`
+<p>The Sendrow team</p>`
   );
 }
 
@@ -96,17 +96,17 @@ export async function sendAgencyQuoteRequest(data: {
 <p><strong>Name:</strong> ${data.name}</p>
 <p><strong>Email:</strong> ${data.email}</p>
 <p><strong>Firm:</strong> ${data.firm}</p>
-<p><strong>Title:</strong> ${data.title || " - "}</p>
+<p><strong>Title:</strong> ${data.title || "None"}</p>
 <hr/>
 <p><strong>Team size (consultants):</strong> ${data.teamSize}</p>
 <p><strong>Active clients:</strong> ${data.clientCount}</p>
-<p><strong>Work types:</strong> ${data.workTypes.join(", ") || " - "}</p>
-<p><strong>Frameworks:</strong> ${data.frameworks.join(", ") || " - "}</p>
+<p><strong>Work types:</strong> ${data.workTypes.join(", ") || "None"}</p>
+<p><strong>Frameworks:</strong> ${data.frameworks.join(", ") || "None"}</p>
 <hr/>
-<p><strong>Current tools/process:</strong><br/>${data.currentTools || " - "}</p>
-<p><strong>Biggest pain point:</strong><br/>${data.painPoint || " - "}</p>
+<p><strong>Current tools/process:</strong><br/>${data.currentTools || "None"}</p>
+<p><strong>Biggest pain point:</strong><br/>${data.painPoint || "None"}</p>
 <p><strong>Timeline:</strong> ${data.timeline}</p>
-<p><strong>How they heard about us:</strong> ${data.source || " - "}</p>`
+<p><strong>How they heard about us:</strong> ${data.source || "None"}</p>`
   );
 }
 
@@ -131,8 +131,8 @@ export async function sendDataRequestEmail(
 ${dueDate ? `<p><strong>Due:</strong> ${dueDate}</p>` : ""}
 ${message ? `<p><em>"${escapeHtml(message)}"</em></p>` : ""}
 <p><a href="${link}">Open your secure upload link →</a></p>
-<p>No account or password needed - the link is unique to you.</p>
-${brand ? `<p> - ${brand.brandName}</p>` : ""}`,
+<p>No account or password needed. The link is unique to you.</p>
+${brand ? `<p>${brand.brandName}</p>` : ""}`,
     brand ? { fromName: brand.brandName, replyTo: brand.replyTo } : undefined
   );
 }
@@ -145,7 +145,7 @@ export async function sendReferralLeadEmail(data: { name: string; email: string;
 <p><strong>Name:</strong> ${data.name}</p>
 <p><strong>Email:</strong> ${data.email}</p>
 <p><strong>Company:</strong> ${data.company}</p>
-<p><strong>What triggered the need:</strong><br/>${data.trigger || " - "}</p>
+<p><strong>What triggered the need:</strong><br/>${data.trigger || "None"}</p>
 <p>Route to a partner consultant and log the outcome.</p>`
   );
 }
@@ -165,12 +165,12 @@ export async function sendPortalReminderEmail(
   const to = ccConsultant ? [...recipients, ccConsultant] : recipients;
   const urgency =
     reminder.tier === "overdue"
-      ? "This is now past due - a few minutes today keeps everything on track."
+      ? "This is now past due. A few minutes today keeps everything on track."
       : reminder.tier === "due-0"
         ? "It's due today."
         : reminder.daysUntilDue !== null
           ? `It's due in ${reminder.daysUntilDue} day${reminder.daysUntilDue === 1 ? "" : "s"}.`
-          : "A quick reminder - this is still waiting on you.";
+          : "A quick reminder: this is still waiting on you.";
   await send(
     to,
     reminder.tier === "overdue"
@@ -181,7 +181,7 @@ export async function sendPortalReminderEmail(
 <blockquote><p>${description}</p></blockquote>
 <p><a href="${APP_URL}/portal/${portalToken}">Open your secure upload link →</a></p>
 <p>It usually takes just a few minutes. No account or password needed.</p>
-${brand ? `<p> - ${brand.brandName}</p>` : ""}`,
+${brand ? `<p>${brand.brandName}</p>` : ""}`,
     brand ? { fromName: brand.brandName, replyTo: brand.replyTo } : undefined
   );
 }
@@ -201,10 +201,10 @@ export async function sendSubmissionEmail(
     consultantEmail,
     `${companyName} just submitted data`,
     `<p>Hi ${firstName},</p>
-<p><strong>${companyName}</strong> submitted <strong>${filename}</strong> - ${imported} row${imported === 1 ? "" : "s"}${unmapped > 0 ? `, ${unmapped} flagged for your review` : ""}.</p>
+<p><strong>${companyName}</strong> submitted <strong>${filename}</strong>: ${imported} row${imported === 1 ? "" : "s"}${unmapped > 0 ? `, ${unmapped} flagged for your review` : ""}.</p>
 <p>${autoApproved ? "It auto-processed (mapping was confirmed by the uploader)." : "It's waiting in your review queue."}</p>
 <p><a href="${APP_URL}/consultant/clients/${companyId}">Open the client →</a></p>
-<p> - The Sendrow team</p>`
+<p>The Sendrow team</p>`
   );
 }
 
@@ -223,7 +223,7 @@ export async function sendUploadNeedsReviewEmail(
 <p><strong>${companyName}</strong> uploaded <strong>${filename}</strong> and it was routed to your review queue.</p>
 ${unmappedCount > 0 ? `<p><strong>${unmappedCount}</strong> row${unmappedCount === 1 ? "" : "s"} could not be mapped to an emission factor and ${unmappedCount === 1 ? "is" : "are"} flagged for categorization.</p>` : ""}
 <p><a href="${APP_URL}/consultant">Open your dashboard →</a></p>
-<p> - The Sendrow team</p>`
+<p>The Sendrow team</p>`
   );
 }
 
@@ -239,7 +239,7 @@ export async function sendRestatementEmail(
   const rows = changes
     .map(
       (c) =>
-        `<tr><td style="padding:4px 12px 4px 0">${c.label}</td><td style="padding:4px 12px">${c.previous.toLocaleString("en-US", { maximumFractionDigits: 2 })} t</td><td style="padding:4px 12px">${c.current.toLocaleString("en-US", { maximumFractionDigits: 2 })} t</td><td style="padding:4px 0">${c.pct === null ? " - " : `${c.pct > 0 ? "+" : ""}${c.pct.toFixed(1)}%`}</td></tr>`
+        `<tr><td style="padding:4px 12px 4px 0">${c.label}</td><td style="padding:4px 12px">${c.previous.toLocaleString("en-US", { maximumFractionDigits: 2 })} t</td><td style="padding:4px 12px">${c.current.toLocaleString("en-US", { maximumFractionDigits: 2 })} t</td><td style="padding:4px 0">${c.pct === null ? "n/a" : `${c.pct > 0 ? "+" : ""}${c.pct.toFixed(1)}%`}</td></tr>`
     )
     .join("");
   await send(
@@ -250,7 +250,7 @@ export async function sendRestatementEmail(
 <table style="border-collapse:collapse;font-size:14px"><tr><th align="left" style="padding:4px 12px 4px 0">Figure</th><th align="left" style="padding:4px 12px">Previous</th><th align="left" style="padding:4px 12px">Corrected</th><th align="left">Change</th></tr>${rows}</table>
 ${newLink ? `<p><a href="${newLink}">View the corrected version →</a></p>` : ""}
 <p>The previous version remains on record; nothing was silently changed.</p>
-${brand ? `<p> - ${brand.brandName}</p>` : ""}`,
+${brand ? `<p>${brand.brandName}</p>` : ""}`,
     brand ? { fromName: brand.brandName, replyTo: brand.replyTo } : undefined
   );
 }
@@ -270,9 +270,9 @@ export async function sendClientStuckEmail(
     `<p>Hi ${firstName},</p>
 <p><strong>${companyName}</strong> hit a wall on the portal item <strong>&ldquo;${itemLabel}&rdquo;</strong> and asked for your help:</p>
 <blockquote><p>${message}</p></blockquote>
-<p>A quick reply usually keeps the response moving - stuck items are where portals lose people.</p>
+<p>A quick reply usually keeps the response moving. Stuck items are where portals lose people.</p>
 <p><a href="${APP_URL}/consultant/clients/${companyId}">Reply from the client page →</a></p>
-<p> - The Sendrow team</p>`
+<p>The Sendrow team</p>`
   );
 }
 
@@ -289,8 +289,8 @@ export async function sendNewLinkRequestEmail(
     `<p>Hi ${consultantName.split(" ")[0]},</p>
 <p><strong>${companyName}</strong> tried to open an expired upload link for the request
 &ldquo;${requestDescription}&rdquo; and asked for a new one.</p>
-<p><a href="${APP_URL}/consultant/clients/${companyId}">Open the client - the &ldquo;Renew link&rdquo; button is on the request →</a></p>
-<p> - The Sendrow team</p>`
+<p><a href="${APP_URL}/consultant/clients/${companyId}">Open the client: the &ldquo;Renew link&rdquo; button is on the request →</a></p>
+<p>The Sendrow team</p>`
   );
 }
 
@@ -308,10 +308,10 @@ export async function sendFlagReplyEmail(
     clientEmail,
     `Reply about “${itemLabel}”`,
     `<p>Hi ${clientName.split(" ")[0]},</p>
-<p>You asked about <strong>${itemLabel}</strong> - here's the answer:</p>
+<p>You asked about <strong>${itemLabel}</strong>. Here's the answer:</p>
 <blockquote><p>${body}</p></blockquote>
 <p><a href="${APP_URL}/portal/${portalToken}">Open your secure upload link to continue →</a></p>
-${brand ? `<p> - ${brand.brandName}</p>` : ""}`,
+${brand ? `<p>${brand.brandName}</p>` : ""}`,
     brand ? { fromName: brand.brandName, replyTo: brand.replyTo } : undefined
   );
 }
@@ -335,7 +335,7 @@ export async function sendCommentEmail(
 <p>Your reviewer has a question about <strong>${lineLabel}</strong>:</p>
 <blockquote><p>${body}</p></blockquote>
 ${link ? `<p><a href="${link}">Open your secure page to answer →</a></p>` : "<p>Your consultant will follow up.</p>"}
-${brand ? `<p> - ${brand.brandName}</p>` : ""}`,
+${brand ? `<p>${brand.brandName}</p>` : ""}`,
     brand ? { fromName: brand.brandName, replyTo: brand.replyTo } : undefined
   );
 }

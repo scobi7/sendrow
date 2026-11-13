@@ -16,9 +16,9 @@ const INDUSTRIES = [
 
 const HEADCOUNTS = [
   { value: "under_50", label: "Under 50" },
-  { value: "50_150", label: "50–150" },
-  { value: "150_350", label: "150–350" },
-  { value: "350_500", label: "350–500" },
+  { value: "50_150", label: "50 to 150" },
+  { value: "150_350", label: "150 to 350" },
+  { value: "350_500", label: "350 to 500" },
 ];
 
 export default async function NewClientPage({
@@ -36,7 +36,7 @@ export default async function NewClientPage({
       >
         Back to clients
       </Link>
-      <PageHeader title="Add New Client" subtitle="Create a client profile - data requests and portal links go to the contact you set here." />
+      <PageHeader title="Add New Client" subtitle="Create a client profile. Data requests and portal links go to the contact you set here." />
 
       {error && (
         <p
@@ -68,7 +68,7 @@ export default async function NewClientPage({
           <select name="naics" className="input">
             <option value="">Select sector…</option>
             {NAICS_SECTORS.map((s) => (
-              <option key={s.code} value={s.code}>{s.code} - {s.label}</option>
+              <option key={s.code} value={s.code}>{s.code}: {s.label}</option>
             ))}
           </select>
         </div>
@@ -91,7 +91,7 @@ export default async function NewClientPage({
           </select>
         </div>
         <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-          After adding the client, you'll be able to generate a secure upload link for them - no account needed on their end.
+          After adding the client, you'll be able to generate a secure upload link for them. No account needed on their end.
         </p>
         <div className="flex justify-end gap-3">
           <Link href="/consultant" className="btn btn-secondary">Cancel</Link>

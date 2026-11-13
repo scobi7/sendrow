@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Logo } from "@/components/ui";
 
-export const metadata = { title: "Security - Sendrow" };
+export const metadata = { title: "Security: Sendrow" };
 
 const SECTIONS: [string, string][] = [
   [
@@ -18,11 +18,11 @@ const SECTIONS: [string, string][] = [
   ],
   [
     "Audit trail",
-    "Every data change is logged with who, what, when, and the before/after values. Every calculated figure records its inputs, the emission factor and factor vintage used, and the formula - replayable at any time.",
+    "Every data change is logged with who, what, when, and the before/after values. Every calculated figure records its inputs, the emission factor and factor vintage used, and the formula, replayable at any time.",
   ],
   [
     "Your data is yours",
-    "Your consultant can export everything - inputs, calculations, the full audit trail, and the original evidence files - as a ZIP, anytime, no questions asked. A self-serve export for suppliers with their own account is coming as part of the supplier portal upgrade. To request deletion, email us - we remove your data from production within 30 days and confirm by email.",
+    "Your consultant can export everything (inputs, calculations, the full audit trail and the original evidence files) as a ZIP, anytime, no questions asked. A self-serve export for suppliers with their own account is coming as part of the supplier portal upgrade. To request deletion, email us. We remove your data from production within 30 days and confirm by email.",
   ],
   [
     "Subprocessors",
@@ -36,7 +36,7 @@ export default function SecurityPage() {
       <Link href="/"><Logo /></Link>
       <h1 className="mt-10 text-3xl font-extrabold font-display" style={{ color: "var(--text)" }}>Security overview</h1>
       <p className="mt-3 text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>
-        You trust us with utility bills and spend data. Here is exactly how that data is handled - answered before you have to ask. Questions:{" "}
+        You trust us with utility bills and spend data. Here is exactly how that data is handled, before you have to ask. Questions:{" "}
         <a href={`mailto:${process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "support@sendrow.app"}`} className="underline" style={{ color: "var(--primary)" }}>
           {process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "support@sendrow.app"}
         </a>

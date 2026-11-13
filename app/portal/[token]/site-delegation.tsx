@@ -39,14 +39,14 @@ export function SiteDelegation({ token, sites, totalKg }: { token: string; sites
           message: messages[site.id] ?? "",
         }),
       });
-      const data = await readJson(res, "Something went wrong - try again");
+      const data = await readJson(res, "Something went wrong. Try again");
       if (!res.ok || data.error) {
-        setNotice((n) => ({ ...n, [site.id]: data.error ?? "Something went wrong - try again" }));
+        setNotice((n) => ({ ...n, [site.id]: data.error ?? "Something went wrong. Try again" }));
         return;
       }
       setNotice((n) => ({
         ...n,
-        [site.id]: data.emailed ? `Link ${data.created ? "sent" : "re-sent"} to your site contact` : "Link created - copy it below and share it with the site",
+        [site.id]: data.emailed ? `Link ${data.created ? "sent" : "re-sent"} to your site contact` : "Link created. Copy it below and share it with the site",
       }));
       router.refresh();
     } finally {
@@ -61,7 +61,7 @@ export function SiteDelegation({ token, sites, totalKg }: { token: string; sites
       <div className="px-5 pt-4 pb-3" style={{ borderBottom: "1px solid var(--divider)" }}>
         <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>Your locations</p>
         <p className="mt-1 text-xs" style={{ color: "var(--text-muted)" }}>
-          You don&apos;t have to gather every site&apos;s data yourself - send each office or plant its own secure upload link.
+          You don&apos;t have to gather every site&apos;s data yourself. Send each office or plant its own secure upload link.
         </p>
       </div>
       <div className="divide-y" style={{ borderColor: "var(--divider)" }}>
@@ -90,7 +90,7 @@ export function SiteDelegation({ token, sites, totalKg }: { token: string; sites
               <div className="mt-2 flex flex-wrap items-center gap-2">
                 <input
                   type="text"
-                  placeholder="Site contact email(s) - comma-separate for more than one"
+                  placeholder="Site contact email(s), separate with commas for more than one"
                   value={emails[site.id] ?? ""}
                   onChange={(e) => setEmails((m) => ({ ...m, [site.id]: e.target.value }))}
                   className="rounded-lg px-2.5 py-1.5 text-xs"

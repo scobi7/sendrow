@@ -53,7 +53,7 @@ export default async function ActivityPage({ params }: { params: Promise<{ id: s
         <div>
           <h1 className="text-2xl font-bold font-display" style={{ color: "var(--text)" }}>Activity</h1>
           <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>
-            Every action, permanently recorded - this log can&apos;t be edited or deleted. It stays here as the
+            Every action, permanently recorded. This log can&apos;t be edited or deleted. It stays here as the
             audit trail; the numbers and methodology ship inside each snapshot&apos;s exports.
           </p>
         </div>
@@ -64,7 +64,7 @@ export default async function ActivityPage({ params }: { params: Promise<{ id: s
 
       {rows.length === 0 ? (
         <div className="card py-12 text-center" style={{ color: "var(--text-muted)" }}>
-          No activity yet - events appear here the moment anything happens.
+          No activity yet. Events appear here the moment anything happens.
         </div>
       ) : (
         <div className="glass-panel">
@@ -76,7 +76,7 @@ export default async function ActivityPage({ params }: { params: Promise<{ id: s
                   <div className="min-w-0 flex-1">
                     <p className="text-sm" style={{ color: "var(--text)" }}>
                       <span className="font-medium">{label}</span>
-                      {e.subject && <span style={{ color: "var(--text-muted)" }}> - {e.subject}</span>}
+                      {e.subject && <span style={{ color: "var(--text-muted)" }}>: {e.subject}</span>}
                     </p>
                     <p className="text-xs" style={{ color: "var(--text-muted)" }}>
                       {e.actorType === "supplier" ? "Client (via portal)" : e.actorType === "system" ? "System" : "You"} ·{" "}

@@ -81,7 +81,7 @@ export function NewRequestForm({
         <div>
           <label className="label">Start from a template <span style={{ color: "var(--text-muted)", fontWeight: 400 }}>(skips steps below)</span></label>
           <select className="input" value={templateId} onChange={(e) => applyTemplate(e.target.value)}>
-            <option value="">None - build from scratch</option>
+            <option value="">None (build from scratch)</option>
             {templates.map((t) => (
               <option key={t.id} value={t.id}>{t.name}</option>
             ))}
@@ -145,7 +145,7 @@ export function NewRequestForm({
         ))}
         {selectedTypes.length === 0 && (
           <p className="mt-1.5 text-xs" style={{ color: "var(--text-muted)" }}>
-            Nothing selected - the request goes out as one custom item described below.
+            Nothing selected. The request goes out as one custom item described below.
           </p>
         )}
       </div>
@@ -187,7 +187,7 @@ export function NewRequestForm({
             <input
               name="period_label"
               className="input mt-2"
-              placeholder="Jan 1, 2026 – Jun 30, 2026"
+              placeholder="Jan 1, 2026 to Jun 30, 2026"
               value={period}
               onChange={(e) => setPeriod(e.target.value)}
               autoFocus
@@ -208,7 +208,7 @@ export function NewRequestForm({
       >
         <span style={{ color: "var(--text)" }}>
           Automatic reminders go out <strong>7 days before</strong>, <strong>2 days before</strong>, <strong>on the due
-          date</strong>, and <strong>when overdue</strong> - no chasing by hand.
+          date</strong>, and <strong>when overdue</strong>. No chasing by hand.
         </span>
         <span className="shrink-0" style={{ color: "var(--text-muted)" }}>Pausable per request</span>
       </div>
@@ -220,7 +220,7 @@ export function NewRequestForm({
 
       {selectedClient && (
         <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-          {selectedClient.name} will get a magic link by email - no account needed to respond.
+          {selectedClient.name} will get a magic link by email. No account needed to respond.
           {!contactEmail && " Add a contact email above (or share the link manually after sending)."}
         </p>
       )}

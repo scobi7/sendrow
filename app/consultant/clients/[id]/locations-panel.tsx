@@ -47,7 +47,7 @@ export async function LocationsPanel({ companyId }: { companyId: string }) {
 
       {sites.length === 0 ? (
         <p className="px-5 py-4 text-sm" style={{ color: "var(--text-muted)" }}>
-          No sites yet - add offices or plants below so each one gets its own upload link and grid factor.
+          No sites yet. Add offices or plants below so each one gets its own upload link and grid factor.
         </p>
       ) : (
         <div className="divide-y" style={{ borderColor: "var(--divider)" }}>
@@ -82,7 +82,7 @@ export async function LocationsPanel({ companyId }: { companyId: string }) {
                       type="text"
                       required
                       defaultValue={site.contactEmail ?? ""}
-                      placeholder="site-contact@company.com - comma-separate for more than one"
+                      placeholder="site-contact@company.com (comma-separate for more than one)"
                       className="input px-2 py-1 text-xs"
                       style={{ width: "18rem" }}
                     />
@@ -126,7 +126,7 @@ export async function LocationsPanel({ companyId }: { companyId: string }) {
             <option key={o.factorId} value={o.factorId}>{o.label}</option>
           ))}
         </select>
-        <input name="contact_email" type="text" placeholder="Site contact email(s), optional - comma-separated" className="input text-xs" style={{ width: "16rem" }} />
+        <input name="contact_email" type="text" placeholder="Site contact email(s), optional (comma-separated)" className="input text-xs" style={{ width: "16rem" }} />
         <SubmitButton className="btn btn-secondary shrink-0 px-3 py-1.5 text-xs" pendingText="Adding...">Add site</SubmitButton>
       </form>
     </div>

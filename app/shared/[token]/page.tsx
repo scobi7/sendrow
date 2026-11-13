@@ -61,16 +61,16 @@ export default async function SharedResultsPage({ params }: { params: Promise<{ 
         {companyRow.name}
       </h1>
       <p className="mt-2 inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium" style={{ background: "var(--primary-tint)", color: "var(--primary)" }}>
-        {snapshot.label} - frozen {new Date(snapshot.createdAt).toLocaleDateString()} · this version can never silently change
+        {snapshot.label}, frozen {new Date(snapshot.createdAt).toLocaleDateString()} · this version can never silently change
       </p>
 
       <div className="card mt-8">
         <dl className="space-y-3 text-sm">
           {[
-            ["Scope 1 - direct", fmt(t.scope1)],
-            ["Scope 2 - electricity (location)", fmt(t.scope2Location)],
-            ["Scope 2 - electricity (market)", fmt(t.scope2Market)],
-            ["Scope 3 - value chain", fmt(t.scope3)],
+            ["Scope 1: direct", fmt(t.scope1)],
+            ["Scope 2: electricity (location)", fmt(t.scope2Location)],
+            ["Scope 2: electricity (market)", fmt(t.scope2Market)],
+            ["Scope 3: value chain", fmt(t.scope3)],
           ].map(([label, val]) => (
             <div key={label} className="flex justify-between">
               <dt style={{ color: "var(--text-muted)" }}>{label}</dt>
@@ -118,7 +118,7 @@ export default async function SharedResultsPage({ params }: { params: Promise<{ 
 
       <p className="mt-8 text-xs" style={{ color: "var(--text-muted)" }}>
         Prepared by {brand?.brandName ?? "your consultant"}.{" "}
-        Frozen snapshot {snapshot.sha256.slice(0, 12)}… - corrections are issued as new versions with change notices.
+        Frozen snapshot {snapshot.sha256.slice(0, 12)}… Corrections are issued as new versions with change notices.
       </p>
       <p className="mt-12 border-t pt-4 text-center text-xs" style={{ borderColor: "var(--divider)", color: "var(--text-muted)", opacity: 0.7 }}>
         Powered by Sendrow

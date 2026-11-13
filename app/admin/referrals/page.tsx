@@ -41,7 +41,7 @@ export default async function AdminReferralsPage() {
 
       {leads.length === 0 ? (
         <div className="card py-12 text-center" style={{ color: "var(--text-muted)" }}>
-          No leads yet - they arrive from /get-matched.
+          No leads yet. They arrive from /get-matched.
         </div>
       ) : (
         <div className="glass-panel overflow-hidden">
@@ -68,7 +68,7 @@ export default async function AdminReferralsPage() {
                       {lead.email}
                     </a>
                   </td>
-                  <td className="px-4 py-3 text-xs" style={{ color: "var(--text-muted)" }}>{lead.trigger ?? " - "}</td>
+                  <td className="px-4 py-3 text-xs" style={{ color: "var(--text-muted)" }}>{lead.trigger ?? "None"}</td>
                   <td className="px-4 py-3 text-xs" style={{ color: "var(--text-muted)" }}>
                     {new Date(lead.createdAt).toLocaleDateString()}
                   </td>

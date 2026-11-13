@@ -79,7 +79,7 @@ export function BrandingForm({
 
       {/* Live preview - the request email as the supplier receives it */}
       <div>
-        <p className="eyebrow mb-2">Preview - request email</p>
+        <p className="eyebrow mb-2">Preview: request email</p>
         <div className="card" style={{ padding: "1.25rem" }}>
           <div className="rounded-xl bg-white px-6 py-6" style={{ border: "1px solid var(--divider)" }}>
             <div className="flex items-center gap-2.5">
@@ -110,11 +110,11 @@ export function BrandingForm({
                 </span>
               </p>
               <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-                No account or password needed - the link is unique to you.
+                No account or password needed. The link is unique to you.
               </p>
             </div>
             <p className="mt-6 border-t pt-3 text-[11px]" style={{ borderColor: "#E5E7EB", color: "var(--neutral-muted)" }}>
-              Powered by sendrow - a secure way to share data with your customers
+              Powered by sendrow: a secure way to share data with your customers
             </p>
           </div>
         </div>

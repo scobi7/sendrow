@@ -18,7 +18,7 @@ export default async function GetMatchedPage({
         <div className="card text-center">
           <h1 className="text-xl font-bold font-display" style={{ color: "var(--text)" }}>Request received</h1>
           <p className="mt-2 text-sm" style={{ color: "var(--text-muted)" }}>
-            We&rsquo;ll introduce you to a vetted climate consultant who fits your industry and timeline - usually within two business days.
+            We&rsquo;ll introduce you to a vetted climate consultant who fits your industry and timeline, usually within two business days.
           </p>
         </div>
       ) : (
@@ -27,7 +27,7 @@ export default async function GetMatchedPage({
             Get matched with a climate consultant
           </h1>
           <p className="mt-3 text-center text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>
-            A customer or regulator asking for your emissions data? Tell us what you&rsquo;re facing and we&rsquo;ll connect you with a vetted consultant who handles it end to end - powered by Sendrow behind the scenes.
+            A customer or regulator asking for your emissions data? Tell us what you&rsquo;re facing and we&rsquo;ll connect you with a vetted consultant who handles it end to end, powered by Sendrow behind the scenes.
           </p>
 
           <form action={submitReferralLead} className="card mt-8 space-y-4">
@@ -59,7 +59,7 @@ export default async function GetMatchedPage({
               Request an introduction
             </SubmitButton>
             <p className="text-center text-xs" style={{ color: "var(--text-muted)" }}>
-              Free - the consultant pays us a referral fee, not you.
+              Free. The consultant pays us a referral fee, not you.
             </p>
           </form>
         </>

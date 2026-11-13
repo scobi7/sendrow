@@ -30,9 +30,9 @@ const ibmPlexMono = IBM_Plex_Mono({
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Sendrow - The practice platform for climate consultants",
+  title: "Sendrow: The practice platform for climate consultants",
   description:
-    "Turn a client's messy data into one audited emissions inventory, then answer every buyer and regulator format from it - under your brand.",
+    "Turn a client's messy data into one audited emissions inventory, then answer every buyer and regulator format from it, under your brand.",
 };
 
 export const viewport: Viewport = {
