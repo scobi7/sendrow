@@ -58,7 +58,7 @@ export default async function ManageLayout({
           className="text-xs font-medium transition-opacity hover:opacity-70"
           style={{ color: "var(--text-muted)" }}
         >
-          &larr; Back to client
+          Back to client
         </Link>
       </div>
 

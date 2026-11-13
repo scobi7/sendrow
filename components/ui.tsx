@@ -1,7 +1,7 @@
 export function Logo() {
   return (
     <span
-      className="flex items-center gap-2 text-xl font-extrabold font-display tracking-tight"
+      className="flex items-center gap-2 text-xl font-bold font-body tracking-tight"
       style={{ color: "var(--text)" }}
     >
       <SendrowMark />
@@ -18,15 +18,8 @@ function SendrowMark() {
       height={32}
       viewBox="0 0 100 100"
       className="shrink-0"
-      style={{ borderRadius: 8, boxShadow: "0 10px 30px rgba(34,197,94,0.28)" }}
     >
-      <defs>
-        <linearGradient id="sendrow-mark-g" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="var(--green)" />
-          <stop offset="1" stopColor="var(--teal)" />
-        </linearGradient>
-      </defs>
-      <rect width="100" height="100" rx="24" fill="url(#sendrow-mark-g)" />
+      <rect width="100" height="100" rx="24" style={{ fill: "var(--primary)" }} />
       {/* Top bar - rounded top-left only, a long diagonal sweep into the corner */}
       <path d="M33,23 L67,23 L67,35 L19,35 L19,32 A14,9 0 0 1 33,23 Z" fill="#fff" />
       <circle cx="79" cy="29" r="6" fill="#fff" />
@@ -42,7 +35,7 @@ function SendrowMark() {
 export function CO2eBox({ label, tons }: { label: string; tons: number }) {
   return (
     <div
-      className="mt-4 flex items-center justify-between rounded-xl px-4 py-3 text-sm"
+      className="mt-4 flex items-center justify-between rounded-canopy-sm px-4 py-3 text-sm"
       style={{ background: "var(--primary-tint)" }}
     >
       <span className="font-medium" style={{ color: "var(--primary)" }}>
@@ -72,18 +65,17 @@ export function PageHeader({ title, subtitle }: { title: string; subtitle?: stri
 
 export function InfoTip({ text }: { text: string }) {
   return (
-    <span className="group relative ml-1 inline-flex cursor-help">
+    <span className="group relative ml-1 inline-flex cursor-help" tabIndex={0} aria-label={text}>
       <span
         className="flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-bold"
         style={{ background: "var(--track-bg)", color: "var(--text-muted)" }}
       >
         i
       </span>
-      <span className="invisible absolute bottom-5 left-1/2 z-10 w-64 -translate-x-1/2 rounded-xl p-3 text-xs text-white shadow-lg group-hover:visible"
+      <span className="invisible absolute bottom-5 left-1/2 z-10 w-64 -translate-x-1/2 rounded-canopy-sm p-3 text-xs text-white shadow-lg group-hover:visible group-focus:visible"
         style={{ background: "var(--text)" }}>
         {text}
       </span>
     </span>
   );
 }
-

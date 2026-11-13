@@ -103,8 +103,8 @@ export default function HowItWorksPage() {
           {STEPS.map((step) => (
             <div key={step.n} className="card flex gap-5">
               <div
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full font-bold font-data"
-                style={{ background: "var(--primary-tint)", color: "var(--primary)" }}
+                className="shrink-0 font-bold font-data"
+                style={{ color: "var(--text-muted)" }}
               >
                 {step.n}
               </div>
@@ -146,10 +146,10 @@ export default function HowItWorksPage() {
           </h2>
           <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link href="/for-consultants" className="btn btn-primary px-6 py-3 text-sm">
-              Are you a consultant? See the workspace →
+              Are you a consultant? See the workspace
             </Link>
             <Link href="/get-matched" className="btn btn-secondary px-6 py-3 text-sm">
-              Got a data request? Get matched →
+              Got a data request? Get matched
             </Link>
           </div>
         </section>

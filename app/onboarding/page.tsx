@@ -56,7 +56,7 @@ export default async function OnboardingPage({
         <p className="mt-6 text-center text-sm" style={{ color: "var(--text-muted)" }}>
           Represent a company?{" "}
           <Link href="/get-matched" className="font-medium underline" style={{ color: "var(--primary)" }}>
-            Get matched with a climate consultant →
+            Get matched with a climate consultant
           </Link>
         </p>
       </div>

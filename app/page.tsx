@@ -143,9 +143,9 @@ export default async function Home() {
           <div style={{ borderLeft: "1px solid rgba(23,33,28,0.14)", paddingLeft: 24 }}>
             <p className="eyebrow">Why now</p>
             <p className="mt-2 text-[12.5px] leading-relaxed" style={{ color: "var(--text-muted)" }}>
-              California&rsquo;s SB 253 sets its first Scope 1 + 2 disclosure deadline for{" "}
-              <b style={{ color: "var(--text)" }}>November 10, 2026</b>. Every consultant with a CA
-              client is about to run this for the first time.
+              California&rsquo;s SB 253 made its first Scope 1 and 2 reports due{" "}
+              <b style={{ color: "var(--text)" }}>November 10, 2026</b>. Scope 3 and limited assurance
+              follow in 2027, and every consultant with a CA client now runs this every year.
             </p>
           </div>
         </div>

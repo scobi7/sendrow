@@ -55,7 +55,7 @@ export default async function ActivityPage({ params }: { params: Promise<{ id: s
         className="mb-4 inline-block text-sm font-medium transition-opacity hover:opacity-70"
         style={{ color: "var(--primary)" }}
       >
-        ← Back to {company.name}
+        Back to {company.name}
       </Link>
 
       <div className="mb-5 flex items-end justify-between">

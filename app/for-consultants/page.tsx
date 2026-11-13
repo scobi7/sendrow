@@ -62,7 +62,7 @@ export default function ForConsultants() {
       >
         <div className="relative z-10 w-full max-w-5xl">
           <div
-            className="mb-8 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-semibold"
+            className="mb-8 inline-flex items-center gap-2 rounded px-4 py-1.5 text-xs font-semibold"
             style={{
               border: "1px solid rgba(34,168,84,0.35)",
               background: "rgba(34,197,94,0.1)",
@@ -93,7 +93,7 @@ export default function ForConsultants() {
               Request a demo
             </Link>
             <Link href="/signup" className="btn btn-secondary px-6 py-3 text-sm">
-              Get started free &rarr;
+              Get started free
             </Link>
           </div>
 
@@ -104,7 +104,7 @@ export default function ForConsultants() {
               style={{
                 background: "var(--card)",
                 border: "1px solid rgba(15,50,28,0.12)",
-                boxShadow: "0 2px 0 rgba(255,255,255,0.7) inset, 0 32px 80px rgba(15,50,28,0.1)",
+                boxShadow: "var(--shadow-card)",
               }}
             >
               <div
@@ -174,7 +174,7 @@ export default function ForConsultants() {
                         </span>
                       </div>
                       <span
-                        className="inline-flex w-fit items-center rounded-full px-2 py-0.5 text-xs font-semibold"
+                        className="inline-flex w-fit items-center rounded px-2 py-0.5 text-xs font-semibold"
                         style={{
                           background: `${STATUS_COLORS[status]}22`,
                           color: STATUS_COLORS[status],
@@ -296,8 +296,8 @@ export default function ForConsultants() {
                     style={{ background: "#fff", border: "1px solid rgba(15,50,28,0.08)" }}
                   >
                     <div
-                      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-black"
-                      style={{ background: "rgba(34,197,94,0.12)", color: "var(--primary)" }}
+                      className="shrink-0 font-data text-xs font-black"
+                      style={{ color: "var(--text-muted)" }}
                     >
                       {step}
                     </div>

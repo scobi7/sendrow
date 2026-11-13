@@ -94,26 +94,26 @@ export function BrandingForm({
                   {displayName[0]?.toUpperCase() ?? "S"}
                 </span>
               )}
-              <span className="text-sm font-semibold" style={{ color: "#17211C" }}>{displayName}</span>
+              <span className="text-sm font-semibold" style={{ color: "var(--text)" }}>{displayName}</span>
             </div>
-            <div className="mt-5 space-y-3 text-sm" style={{ color: "#374151" }}>
+            <div className="mt-5 space-y-3 text-sm" style={{ color: "var(--text)" }}>
               <p>Hi Priya,</p>
               <p>
                 <strong>{displayName}</strong> is requesting your Q1 2026 emissions data. It only takes a few minutes.
               </p>
               <p>
                 <span
-                  className="inline-block rounded-full px-4 py-2 text-xs font-semibold text-white"
+                  className="inline-block rounded px-4 py-2 text-xs font-semibold text-white"
                   style={{ background: accent }}
                 >
-                  Answer now →
+                  Answer now
                 </span>
               </p>
-              <p className="text-xs" style={{ color: "#6B7280" }}>
+              <p className="text-xs" style={{ color: "var(--text-muted)" }}>
                 No account or password needed - the link is unique to you.
               </p>
             </div>
-            <p className="mt-6 border-t pt-3 text-[11px]" style={{ borderColor: "#E5E7EB", color: "#9CA3AF" }}>
+            <p className="mt-6 border-t pt-3 text-[11px]" style={{ borderColor: "#E5E7EB", color: "var(--neutral-muted)" }}>
               Powered by sendrow - a secure way to share data with your customers
             </p>
           </div>

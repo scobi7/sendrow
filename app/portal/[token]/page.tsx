@@ -188,7 +188,7 @@ export default async function PortalPage({ params }: { params: Promise<{ token: 
 
       {request.status === "fulfilled" ? (
         <div className="rounded-2xl p-8 text-center" style={{ background: "var(--card)" }}>
-          <p className="text-lg font-bold" style={{ color: "var(--primary)" }}>✓ All done</p>
+          <p className="text-lg font-bold" style={{ color: "var(--primary)" }}>All done</p>
           <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>
             Everything requested has been received. Your consultant will review it and be in touch.
           </p>

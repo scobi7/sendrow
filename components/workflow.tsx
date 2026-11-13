@@ -14,7 +14,7 @@ export function StatusBadge({ status }: { status: WorkflowStatus }) {
   const meta = STATUS_META[status];
   return (
     <span
-      className="inline-block whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-semibold"
+      className="inline-block whitespace-nowrap rounded px-2.5 py-1 text-[11px] font-semibold"
       style={{ ...TONE_STYLE[meta.tone], fontFamily: "var(--font-data), monospace" }}
     >
       {meta.label}
@@ -23,7 +23,7 @@ export function StatusBadge({ status }: { status: WorkflowStatus }) {
 }
 
 /** Shared base for small rounded labels and chips. */
-const PILL_BASE = "rounded-full px-2 py-0.5 text-xs font-medium";
+const PILL_BASE = "rounded px-2 py-0.5 text-xs font-medium";
 
 /** Pill: the common shape for status labels and small action buttons. Callers
  *  pass colors through `style` and any extra classes through `className`.
@@ -80,7 +80,7 @@ export function StatCard({ label, value, href, active = false, tone = "neutral" 
   const body = (
     <div
       className="card-inner transition-shadow"
-      style={active ? { borderColor: "var(--emerald)", boxShadow: "0 0 0 2px rgba(16,185,129,0.18)" } : undefined}
+      style={active ? { borderColor: "var(--primary)", boxShadow: "inset 0 0 0 1px var(--primary)" } : undefined}
     >
       <p className="eyebrow">{label}</p>
       <p className="mt-2 font-data text-3xl font-bold" style={{ color: valueColor }}>{value}</p>
@@ -96,7 +96,7 @@ export function BackLink({ href = "/consultant", label = "Dashboard" }: { href?:
       className="mb-4 inline-block text-sm font-medium transition-opacity hover:opacity-70"
       style={{ color: "var(--primary)" }}
     >
-      ← {label}
+      {label}
     </Link>
   );
 }

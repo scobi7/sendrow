@@ -5,16 +5,21 @@ import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { companies, consultantClients, dataRequests } from "@/lib/db/schema";
 import { BackLink } from "@/components/workflow";
+import { REGULATORY_DATES, STATUS_LABEL } from "@/lib/regulatory-dates";
 
-/** Compliance Calendar (#44): regulatory dates preloaded (Masao maintains
- *  them), consultant deadlines pulled live from open requests. Deadlines set
- *  each request's chasing cadence (7/2/day-of/overdue). */
-const REGULATORY_DATES: { date: string; dateLabel: string; title: string; note: string }[] = [
-  // Source: docs/build-pipeline-2026-07-10.pdf - corrections in force
-  { date: "2026-11-10", dateLabel: "Nov 10, 2026", title: "SB 253 - Scope 1/2 disclosure", note: "Regulatory, preloaded · all clients" },
-  { date: "2026-09-14", dateLabel: "Sep 14, 2026", title: "CDP submission window closes", note: "Regulatory, preloaded" },
-  { date: "2027-01-01", dateLabel: "2027 cycle", title: "SB 253 - Scope 3 disclosure begins", note: "Regulatory, preloaded" },
-];
+/** Compliance Calendar (#44): regulatory dates come from lib/regulatory-dates
+ *  (one config shared with the dashboard), consultant deadlines are pulled
+ *  live from open requests. Deadlines set each request's chasing cadence
+ *  (7/2/day-of/overdue). */
+
+type Entry = {
+  date: string | null;
+  dateLabel: string;
+  title: string;
+  note: string;
+  companyId: string | null;
+  source?: string;
+};
 
 export default async function ComplianceCalendarPage() {
   const user = (await currentUser())!;
@@ -36,7 +41,7 @@ export default async function ComplianceCalendarPage() {
     : [[], []];
 
   const nameOf = new Map(clientRows.map((c) => [c.id, c.name]));
-  const clientDeadlines = openRequests
+  const clientDeadlines: Entry[] = openRequests
     .filter((r) => r.dueDate)
     .map((r) => ({
       date: r.dueDate!,
@@ -46,10 +51,20 @@ export default async function ComplianceCalendarPage() {
       companyId: r.companyId,
     }));
 
-  const entries = [
-    ...REGULATORY_DATES.map((r) => ({ ...r, companyId: null as string | null })),
-    ...clientDeadlines,
-  ].sort((a, b) => a.date.localeCompare(b.date));
+  const regulatoryEntries: Entry[] = REGULATORY_DATES.map((r) => ({
+    date: r.date,
+    dateLabel: r.dateLabel,
+    title: `${r.regulation}: ${r.title}`,
+    note: `${STATUS_LABEL[r.status]}. Checked ${fmtShortDateYear(new Date(r.checkedOn + "T12:00:00"))}`,
+    companyId: null,
+    source: r.source,
+  }));
+
+  // Undated entries have no date and sort after dated ones (stable sort keeps
+  // config order, so tbd comes before paused).
+  const entries = [...regulatoryEntries, ...clientDeadlines].sort((a, b) =>
+    (a.date ?? "9999-12-31").localeCompare(b.date ?? "9999-12-31")
+  );
 
   const today = new Date().toISOString().slice(0, 10);
 
@@ -65,7 +80,7 @@ export default async function ComplianceCalendarPage() {
 
       <div className="glass-panel divide-y" style={{ borderColor: "var(--divider)" }}>
         {entries.map((e, i) => {
-          const past = e.date < today;
+          const past = e.date !== null && e.date < today;
           return (
             <div key={i} className="flex items-center gap-4 px-5 py-4">
               <span
@@ -83,6 +98,17 @@ export default async function ComplianceCalendarPage() {
                   <p className="truncate text-sm font-medium" style={{ color: "var(--text)" }}>{e.title}</p>
                 )}
                 <p className="text-xs" style={{ color: "var(--text-muted)" }}>{e.note}</p>
+                {e.source?.startsWith("http") && (
+                  <a
+                    href={e.source}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs underline"
+                    style={{ color: "var(--primary)" }}
+                  >
+                    Source
+                  </a>
+                )}
               </div>
               {past && (
                 <span className="shrink-0 font-data text-[11px]" style={{ color: "var(--danger)" }}>past</span>

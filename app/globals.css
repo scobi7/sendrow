@@ -3,34 +3,36 @@
 @tailwind utilities;
 
 :root {
-  /* ── "Aurora Green" (2026-07-10, Malachi's mockup) — glass over aurora orbs, green-leaning environmental SaaS ── */
-  --bg:             #F8FCFA;
-  --surface:        rgba(255, 255, 255, 0.66);  /* nav/sidebar glass */
-  --card:           rgba(255, 255, 255, 0.66);  /* #FFFFFFA8 — main glass */
-  --card-strong:    rgba(255, 255, 255, 0.78);  /* #FFFFFFC8 — inner cards */
-  --text:           #17211C;
-  --text-muted:     #61736A;
-  --primary:        #178B5A;   /* readable green — links, emphasis */
-  --primary-strong: #1FA85B;
-  --primary-tint:   #EAF8F1;   /* light mint chip */
-  --chip-border:    #D7F0E3;
-  --green:          #22C55E;
-  --emerald:        #10B981;
-  --mint:           #6EE7B7;
-  --teal:           #2DD4BF;
-  --accent:         #6366F1;   /* small indigo moment */
-  --accent-tint:    #EEF0FE;
-  --ink-band:       #12271C;
-  --ink-band-text:  #EAF8F1;
-  --track-bg:       #E7F0EB;
-  --scope1:         #178B5A;
-  --scope2:         #10B981;
-  --scope3:         #2DD4BF;
-  --divider:        #E7F0EB;
-  --status-green:   #1FA85B;
-  --success-bg:     #ECFDF5;
-  --success-border: #D5F6E4;
-  --success-text:   #0F8A56;
+  /* Ledger (2026-11-13): paper, ink, one forest green. No glass, no glow, flat fills. */
+  --bg:             #FAF9F6;
+  --surface:        #FFFFFF;
+  --card:           #FFFFFF;
+  --card-strong:    #FFFFFF;
+  --text:           #161D18;
+  --text-muted:     #5F6B62;
+  --primary:        #1D5A36;
+  --primary-strong: #174A2C;
+  --primary-tint:   #EEF3EF;
+  --chip-border:    #DCE5DE;
+  --green:          #1D5A36;
+  --emerald:        #2E7D4F;
+  --mint:           #A9C9B5;
+  --teal:           #2E7D4F;
+  --accent:         #B4532A;
+  --accent-tint:    #F8EDE7;
+  --ink-band:       #122619;
+  --ink-band-text:  #EEF3EF;
+  --track-bg:       #ECEAE3;
+  --scope1:         #1D5A36;
+  --scope2:         #4F8A63;
+  --scope3:         #9DBFA8;
+  --divider:        #E6E2D8;
+  --divider-strong: #D9D4C7;
+  --bg-subtle:      #F4F2EC;
+  --status-green:   #2E7D4F;
+  --success-bg:     #EEF6F0;
+  --success-border: #CFE3D5;
+  --success-text:   #1F6B3F;
   --warning:        #B45309;
   --warning-strong: #92400E;
   --warning-tint:   #FEF7EC;
@@ -38,13 +40,12 @@
   --danger:         #DC2626;
   --danger-tint:    #FEF1F1;
   --danger-border:  #F8D7D7;
-  --neutral-muted:  #8A968F;
-  --radius-lg:      26px;      /* the mockup's generous glass rounding */
-  --radius-sm:      12px;
-  --shadow-card:    0 18px 55px rgba(16, 185, 129, 0.10), inset 0 1px 0 rgba(255, 255, 255, 0.65);
+  --neutral-muted:  #737A74;
+  --radius-lg:      8px;
+  --radius-sm:      6px;
+  --shadow-card:    0 1px 2px rgba(22, 29, 24, 0.05);
 
-  /* ── Fonts — injected by layout.tsx via next/font ── */
-  /* --font-display / --font-body: Plus Jakarta Sans · --font-data: JetBrains Mono */
+  /* Fonts: Fraunces (display), Instrument Sans (body), IBM Plex Mono (data), injected by layout.tsx via next/font */
 }
 
 html {
@@ -55,47 +56,17 @@ body {
   margin: 0;
   color: var(--text);
   font-family: var(--font-body), system-ui, sans-serif;
+  background: var(--bg);
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
   position: relative;
   overflow-x: hidden;
-  background:
-    radial-gradient(circle at 8% 18%, rgba(110, 231, 183, 0.28), transparent 28%),
-    radial-gradient(circle at 88% 12%, rgba(99, 102, 241, 0.14), transparent 24%),
-    radial-gradient(circle at 82% 88%, rgba(45, 212, 191, 0.22), transparent 26%),
-    linear-gradient(180deg, #FBFEFC 0%, #F6FBF8 100%);
-  background-attachment: fixed;
+  background: var(--bg);
 }
 
-/* The aurora orbs: two big blurred gradient circles glowing behind the glass. */
-body::before,
-body::after {
-  content: "";
-  position: fixed;
-  z-index: -1;
-  pointer-events: none;
-  filter: blur(78px);
-  border-radius: 999px;
-  opacity: 0.7;
-}
-body::before {
-  width: 520px;
-  height: 520px;
-  background: linear-gradient(135deg, rgba(34, 197, 94, 0.30), rgba(45, 212, 191, 0.22));
-  top: -140px;
-  left: -110px;
-}
-body::after {
-  width: 560px;
-  height: 560px;
-  background: linear-gradient(135deg, rgba(110, 231, 183, 0.34), rgba(99, 102, 241, 0.14));
-  right: -150px;
-  top: 40px;
-}
-
-/* Headings: the mockup's tight, confident tracking */
+/* Headings: tight tracking */
 h1, h2, h3 {
-  letter-spacing: -0.04em;
+  letter-spacing: -0.015em;
   text-wrap: balance;
 }
 
@@ -136,28 +107,26 @@ section[id] {
 @media print {
   .no-print { display: none !important; }
   body { background: white; }
-  body::before, body::after { display: none; }
-  .card { backdrop-filter: none; background: white; box-shadow: none; }
+  .card { background: white; box-shadow: none; }
 }
 
 /* ── Utility classes ── */
 
 .input {
   width: 100%;
-  border: 1px solid var(--chip-border);
+  border: 1px solid var(--divider-strong);
   border-radius: var(--radius-sm);
-  background: rgba(255, 255, 255, 0.85);
+  background: #FFFFFF;
   color: var(--text);
   padding: 0.5rem 0.75rem;
   font-size: 0.875rem;
   font-family: var(--font-body), sans-serif;
-  box-shadow: 0 1px 2px 0 rgba(23, 33, 28, 0.04);
   transition: border-color 0.15s, box-shadow 0.15s;
 }
 .input:focus {
   outline: none;
-  border-color: var(--emerald);
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.14);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(29, 90, 54, 0.12);
 }
 
 .btn {
@@ -169,8 +138,8 @@ section[id] {
   font-size: 0.875rem;
   font-weight: 600;
   font-family: var(--font-body), sans-serif;
-  border-radius: 12px;
-  transition: opacity 0.15s, background-color 0.15s, transform 0.15s, box-shadow 0.15s;
+  border-radius: var(--radius-sm);
+  transition: opacity 0.15s, background-color 0.15s, border-color 0.15s, color 0.15s;
   cursor: pointer;
 }
 /* Touch screens: buttons at least 44px. Desktop is unchanged. */
@@ -184,76 +153,73 @@ section[id] {
 }
 
 .btn-primary {
-  background-image: linear-gradient(135deg, #1FA85B, #14B88C);
+  background: var(--primary);
   color: #fff;
-  border: none;
-  box-shadow: 0 10px 24px rgba(16, 185, 129, 0.20);
+  border: 1px solid var(--primary);
 }
 .btn-primary:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 12px 28px rgba(16, 185, 129, 0.28);
+  background: var(--primary-strong);
+  border-color: var(--primary-strong);
 }
 
 .btn-secondary {
-  border: 1px solid var(--chip-border);
-  background: var(--card-strong);
-  color: var(--primary);
+  border: 1px solid var(--divider-strong);
+  background: #FFFFFF;
+  color: var(--text);
 }
 .btn-secondary:hover:not(:disabled) {
-  background-color: var(--primary-tint);
-  border-color: var(--emerald);
+  background: var(--bg-subtle);
+  border-color: var(--divider-strong);
 }
 
 .nav-link:hover {
-  background: var(--primary-tint);
-  color: var(--primary) !important;
+  background: var(--bg-subtle);
+  color: var(--text) !important;
 }
 
-/* Glass cards: translucent white, WHITE hairline border, inset top highlight */
+/* Card: white surface, hairline border, small radius */
 .card {
   padding: 1.5rem;
   background: var(--card);
-  border: 1px solid rgba(255, 255, 255, 0.72);
+  border: 1px solid var(--divider);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-card);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
 }
 
-/* Inner cards nested inside glass */
+/* Inner card nested inside a card */
 .card-inner {
-  background: var(--card-strong);
-  border: 1px solid rgba(255, 255, 255, 0.65);
-  border-radius: 18px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--divider);
+  border-radius: var(--radius-sm);
   padding: 1.125rem;
 }
 
-/* Mono eyebrow — section openers ("ENVIRONMENTAL SAAS · CLEAN DATA…") */
+/* Mono eyebrow: section openers, a short uppercase label above a heading */
 .eyebrow {
   font-family: var(--font-data), monospace;
   font-size: 11px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--primary-strong);
+  color: var(--text-muted);
 }
 
-/* Mono chip — counts, cycles, statuses */
+/* Mono chip: counts, cycles, statuses */
 .chip {
   font-family: var(--font-data), monospace;
   font-size: 11px;
-  color: var(--primary);
-  background: var(--primary-tint);
-  border: 1px solid var(--chip-border);
-  padding: 0.4rem 0.6rem;
-  border-radius: 999px;
+  color: var(--text-muted);
+  background: var(--bg-subtle);
+  border: 1px solid var(--divider);
+  padding: 0.2rem 0.45rem;
+  border-radius: 4px;
   white-space: nowrap;
 }
 
 /* Success badge */
 .badge {
   display: inline-block;
-  padding: 0.35rem 0.5rem;
-  border-radius: 999px;
+  padding: 0.2rem 0.45rem;
+  border-radius: 4px;
   background: var(--success-bg);
   color: var(--success-text);
   border: 1px solid var(--success-border);
@@ -261,17 +227,17 @@ section[id] {
   font-size: 11px;
 }
 
-/* Progress bars: mint track, green→teal fill */
+/* Progress bars: flat track with a solid green fill */
 .track {
-  height: 12px;
+  height: 8px;
   background: var(--track-bg);
-  border-radius: 999px;
+  border-radius: 4px;
   overflow: hidden;
 }
 .fill {
   height: 100%;
-  border-radius: 999px;
-  background: linear-gradient(90deg, var(--green), var(--teal));
+  border-radius: 4px;
+  background: var(--primary);
 }
 
 .label {
@@ -286,15 +252,13 @@ section[id] {
 .font-data,
 [class~="font-data"] {
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.03em;
+  letter-spacing: 0;
 }
 
-/* Glass panel: the card treatment without padding — for list/table containers */
+/* Panel: the card look without padding, for lists and tables */
 .glass-panel {
   background: var(--card);
-  border: 1px solid rgba(255, 255, 255, 0.72);
+  border: 1px solid var(--divider);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-card);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
 }

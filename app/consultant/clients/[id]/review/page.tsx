@@ -99,7 +99,7 @@ export default async function ReviewApprovePage({ params }: { params: Promise<{ 
           </p>
         </div>
         <Link href={`/consultant/clients/${id}/ledger`} className="text-xs underline" style={{ color: "var(--text-muted)" }}>
-          Full ledger (row-level fixes) →
+          Full ledger (row-level fixes)
         </Link>
       </div>
 
@@ -118,7 +118,7 @@ export default async function ReviewApprovePage({ params }: { params: Promise<{ 
                   <strong>Flag - {c.label}:</strong> &ldquo;{c.stuckNote}&rdquo;
                 </p>
                 <Link href={`/consultant/clients/${id}`} className="mt-1 inline-block text-xs underline" style={{ color: "var(--primary)" }}>
-                  Reply from the client page →
+                  Reply from the client page
                 </Link>
               </div>
             ))}
@@ -274,11 +274,11 @@ export default async function ReviewApprovePage({ params }: { params: Promise<{ 
                   </div>
                   <div className="flex shrink-0 items-center gap-2">
                     {flagged > 0 ? (
-                      <span className="rounded-full px-2.5 py-1 font-data text-[11px] font-semibold" style={{ background: "var(--danger-tint)", color: "var(--danger)" }}>
+                      <span className="rounded px-2.5 py-1 font-data text-[11px] font-semibold" style={{ background: "var(--danger-tint)", color: "var(--danger)" }}>
                         {flagged} flagged
                       </span>
                     ) : (
-                      <span className="badge">✓ mapped</span>
+                      <span className="badge">mapped</span>
                     )}
                     <Link
                       href={`/consultant/clients/${id}/ledger?category=${encodeURIComponent(category)}${flagged > 0 ? "&status=unmapped" : ""}`}

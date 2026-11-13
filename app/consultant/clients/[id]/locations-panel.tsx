@@ -71,7 +71,7 @@ export async function LocationsPanel({ companyId }: { companyId: string }) {
                       {r.co2eKg > 0 && ` · ${fmtNum1(r.co2eKg / 1000)} tCO2e`}
                     </p>
                   </div>
-                  <span className="shrink-0 rounded-full px-2.5 py-1 font-data text-[11px] font-semibold" style={{ background: style.bg, color: style.fg }}>
+                  <span className="shrink-0 rounded px-2.5 py-1 font-data text-[11px] font-semibold" style={{ background: style.bg, color: style.fg }}>
                     {SITE_STATUS_LABEL[r.status]}
                   </span>
                 </div>

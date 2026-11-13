@@ -10,6 +10,29 @@ import { DeleteClientButton } from "./delete-client-button";
 import { UndoToast } from "@/components/undo-toast";
 import { workflowStatus, nextDueDate, completenessPercent, type WorkflowStatus } from "@/lib/client-status";
 import type { ChecklistItem } from "@/lib/portal";
+import { DeadlineStrip } from "@/components/deadline-strip";
+
+const GET_STARTED: { title: string; description: string; link?: { href: string; label: string } }[] = [
+  {
+    title: "Add your brand",
+    description: "Your logo and color go on every request, portal page and report.",
+    link: { href: "/consultant/settings", label: "Open settings" },
+  },
+  {
+    title: "Add a client",
+    description: "The company you are collecting emissions data from.",
+    link: { href: "/consultant/clients/new", label: "Add client" },
+  },
+  {
+    title: "Send a data request",
+    description: "Your client gets one link, no account needed.",
+    link: { href: "/consultant/requests/new", label: "New request" },
+  },
+  {
+    title: "Review and freeze a snapshot",
+    description: "Approve what comes back, then share a dated, read-only version.",
+  },
+];
 
 const FILTER_STATUS: Record<string, WorkflowStatus> = {
   overdue: "overdue",
@@ -93,21 +116,28 @@ export default async function ConsultantDashboard({
 
   return (
     <div className="mx-auto max-w-6xl">
-      <div className="mb-6 flex items-start justify-between">
+      <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold font-display" style={{ color: "var(--text)" }}>
-            Welcome back, {user.name.split(" ")[0]}
+            Clients
           </h1>
           <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>
             {clients.length} active client{clients.length !== 1 ? "s" : ""}
           </p>
         </div>
-        <Link href="/consultant/requests/new" className="btn btn-primary">
-          + New request
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link href="/consultant/clients/new" className="btn btn-secondary">
+            Add client
+          </Link>
+          <Link href="/consultant/requests/new" className="btn btn-primary">
+            New request
+          </Link>
+        </div>
       </div>
 
-      <div className="mb-6 grid grid-cols-3 gap-4">
+      <DeadlineStrip today={new Date().toISOString().slice(0, 10)} />
+
+      <div className="mb-6 grid gap-4 sm:grid-cols-3">
         <StatCard label="Overdue" value={counts.overdue} tone="danger" active={activeFilter === "overdue"}
           href={activeFilter === "overdue" ? "/consultant" : "/consultant?filter=overdue"} />
         <StatCard label="Ready to review" value={counts.ready} tone="primary" active={activeFilter === "ready"}
@@ -128,21 +158,33 @@ export default async function ConsultantDashboard({
       </div>
 
       {displayed.length === 0 ? (
-        <div className="card py-12 text-center" style={{ color: "var(--text-muted)" }}>
-          {activeFilter ? (
-            "No clients in this state right now."
-          ) : (
-            <>
-              No clients yet.{" "}
-              <Link href="/consultant/clients/new" className="underline" style={{ color: "var(--primary)" }}>
-                Add your first client
-              </Link>{" "}
-              to get started.
-            </>
-          )}
-        </div>
+        activeFilter ? (
+          <div className="card py-12 text-center" style={{ color: "var(--text-muted)" }}>
+            No clients in this state right now.
+          </div>
+        ) : (
+          <div className="card p-6">
+            <h2 className="text-lg font-semibold" style={{ color: "var(--text)" }}>Get started</h2>
+            <ol className="mt-4 list-none divide-y p-0" style={{ borderColor: "var(--divider)" }}>
+              {GET_STARTED.map((step, i) => (
+                <li key={step.title} className="flex items-start gap-4 py-3">
+                  <span className="font-data text-sm" style={{ color: "var(--text-muted)" }}>{i + 1}</span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>{step.title}</p>
+                    <p className="text-xs" style={{ color: "var(--text-muted)" }}>{step.description}</p>
+                  </div>
+                  {step.link && (
+                    <Link href={step.link.href} className="btn btn-secondary shrink-0 px-3 py-1 text-xs">
+                      {step.link.label}
+                    </Link>
+                  )}
+                </li>
+              ))}
+            </ol>
+          </div>
+        )
       ) : (
-        <div className="glass-panel overflow-hidden">
+        <div className="glass-panel overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr

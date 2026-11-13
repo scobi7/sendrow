@@ -67,6 +67,7 @@ export default async function ManageReports({
             <li key={label} className="flex items-center gap-3">
               <span
                 className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold"
+                aria-label={ok ? "Ready" : "Missing"}
                 style={{ background: ok ? "var(--primary-tint)" : "var(--danger-tint)", color: ok ? "var(--primary)" : "var(--danger)" }}
               >
                 {ok ? "✓" : "!"}

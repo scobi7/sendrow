@@ -161,7 +161,7 @@ export function Walkthrough({
         )}
         <div className="mt-4 flex items-center justify-between">
           <button className="text-xs underline" style={{ color: "var(--text-muted)" }} onClick={() => setReview(false)} disabled={busy}>
-            ← Back
+            Back
           </button>
           <button className="btn btn-primary text-sm" disabled={busy || rows.length === 0} onClick={() => onSubmit(rows)}>
             {busy ? "Sending…" : `Submit ${rows.length} entr${rows.length === 1 ? "y" : "ies"}`}
@@ -212,7 +212,7 @@ export function Walkthrough({
       <div className="mt-4 flex items-center justify-between">
         {stepIdx > 0 ? (
           <button className="text-xs underline" style={{ color: "var(--text-muted)" }} onClick={() => setStepIdx(stepIdx - 1)}>
-            ← Back
+            Back
           </button>
         ) : (
           <span />

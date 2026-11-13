@@ -143,11 +143,11 @@ export default async function SnapshotSharePage({
                 <a
                   key={f.key}
                   href={`/api/snapshots/${snap.id}/export?format=${f.key}`}
-                  className="rounded-full px-3.5 py-1.5 text-xs font-medium transition-colors hover:opacity-80"
+                  className="rounded px-3.5 py-1.5 text-xs font-medium transition-colors hover:opacity-80"
                   style={{ background: "var(--primary-tint)", color: "var(--primary)", border: "1px solid var(--chip-border)" }}
                   title={f.note}
                 >
-                  {f.label} ↓
+                  {f.label}
                 </a>
               ))}
             </div>
@@ -181,10 +181,10 @@ export default async function SnapshotSharePage({
                 <div key={sh.token} className="flex items-center gap-2 text-xs">
                   <ShareLinkButton token={sh.token} />
                   <span className="truncate" style={{ color: "var(--text-muted)" }}>
-                    → {sh.recipientLabel || sh.recipientEmail || "unnamed recipient"} · {fmtShortDateYear(sh.createdAt)}
+                    To {sh.recipientLabel || sh.recipientEmail || "unnamed recipient"} · {fmtShortDateYear(sh.createdAt)}
                   </span>
                   <form action={revokeShareLink.bind(null, sh.token, id)}>
-                    <button className="transition-opacity hover:opacity-70" style={{ color: "var(--text-muted)" }} title="Revoke">
+                    <button className="transition-opacity hover:opacity-70" style={{ color: "var(--text-muted)" }} title="Revoke" aria-label="Revoke link">
                       ✕
                     </button>
                   </form>

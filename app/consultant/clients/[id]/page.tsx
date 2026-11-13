@@ -99,8 +99,8 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
       <div className="mb-6 flex items-start justify-between">
         <div className="flex items-center gap-4">
           <span
-            className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl font-data text-sm font-bold text-white"
-            style={{ backgroundImage: "linear-gradient(135deg, var(--green), var(--teal))" }}
+            className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl font-data text-sm font-bold"
+            style={{ background: "var(--primary-tint)", color: "var(--primary)" }}
           >
             {initials}
           </span>
@@ -157,7 +157,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
           </p>
           {flagsOpen > 0 && (
             <Link href={`/consultant/clients/${id}/review`} className="mt-1 block text-xs underline" style={{ color: "var(--primary)" }}>
-              Resolve in review →
+              Resolve in review
             </Link>
           )}
         </div>
@@ -175,7 +175,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
                 Requests ({requests.length})
               </p>
               <span className="text-[11px]" style={{ color: "var(--text-muted)" }}>
-                current → Review & Approve · past → frozen snapshot
+                Current opens Review and approve. Past opens the frozen snapshot.
               </span>
             </div>
 
@@ -272,7 +272,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
                             className="transition-opacity hover:opacity-70"
                             style={{ background: "var(--divider)", color: "var(--text-muted)" }}
                           >
-                            {req.remindersEnabled ? "Chasing on" : "Chasing paused"} · schedule →
+                            {req.remindersEnabled ? "Chasing on" : "Chasing paused"} · schedule
                           </Pill>
                         )}
                         {expired && (
@@ -353,7 +353,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
                   ))}
                 </div>
                 <Link href={`/consultant/clients/${id}/activity`} className="mt-3 inline-block text-xs underline" style={{ color: "var(--primary)" }}>
-                  Full activity log →
+                  Full activity log
                 </Link>
               </div>
             )}
@@ -371,7 +371,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
               Open review
             </Link>
             <Link href={`/consultant/clients/${id}/ledger`} className="mt-2 block text-center text-xs underline" style={{ color: "var(--text-muted)" }}>
-              Full data ledger →
+              Full data ledger
             </Link>
           </div>
 
@@ -408,10 +408,10 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
             <h2 className="text-sm font-bold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>More</h2>
             <div className="mt-3 space-y-2 text-xs">
               <Link href={`/consultant/clients/${id}/manage`} className="block underline" style={{ color: "var(--text-muted)" }}>
-                Enter data on behalf →
+                Enter data on behalf
               </Link>
               <Link href={`/consultant/clients/${id}/activity`} className="block underline" style={{ color: "var(--text-muted)" }}>
-                Activity + CSV export →
+                Activity + CSV export
               </Link>
             </div>
           </div>

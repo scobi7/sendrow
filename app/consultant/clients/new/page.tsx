@@ -34,7 +34,7 @@ export default async function NewClientPage({
         className="mb-4 inline-block text-sm font-medium transition-opacity hover:opacity-70"
         style={{ color: "var(--primary)" }}
       >
-        ← Back to clients
+        Back to clients
       </Link>
       <PageHeader title="Add New Client" subtitle="Create a client profile - data requests and portal links go to the contact you set here." />
 

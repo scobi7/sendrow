@@ -15,7 +15,7 @@ export function PortalLinkButton({ token }: { token: string }) {
         setTimeout(() => setCopied(false), 2000);
       }}
     >
-      {copied ? "✓ Copied" : "Copy portal link"}
+      {copied ? "Copied" : "Copy portal link"}
     </button>
   );
 }

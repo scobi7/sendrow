@@ -82,7 +82,7 @@ export function ApproveBar({
       {showWarning && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          style={{ background: "rgba(18, 39, 28, 0.45)", backdropFilter: "blur(4px)" }}
+          style={{ background: "rgba(22, 29, 24, 0.4)" }}
           onClick={() => setShowWarning(false)}
         >
           <div className="card w-full max-w-md" onClick={(e) => e.stopPropagation()}>

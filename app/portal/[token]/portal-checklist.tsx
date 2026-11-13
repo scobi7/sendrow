@@ -353,7 +353,7 @@ export function PortalChecklist({
     <div className="space-y-3">
       {doneMsg && (
         <div className="rounded-xl px-4 py-3 text-sm" style={{ background: "var(--primary-tint)", color: "var(--primary)" }}>
-          ✓ {doneMsg}
+          {doneMsg}
         </div>
       )}
       {items.map((item) => {
@@ -367,7 +367,7 @@ export function PortalChecklist({
         const itemSheets = sheetChoice?.itemId === item.id ? sheetChoice : null;
         const badgeText = !hasAny
           ? "Needed"
-          : [serverReceived ? `✓ ${serverReceived} sent` : null, stagedForItem ? `${stagedForItem} staged` : null]
+          : [serverReceived ? `${serverReceived} sent` : null, stagedForItem ? `${stagedForItem} staged` : null]
               .filter(Boolean)
               .join(" · ") + (atCap ? " (max)" : "");
         return (
@@ -381,7 +381,7 @@ export function PortalChecklist({
                 <p className="mt-0.5 text-xs" style={{ color: "var(--text-muted)" }}>{item.instructions}</p>
               </div>
               <span
-                className="ml-4 shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold"
+                className="ml-4 shrink-0 rounded px-2.5 py-0.5 text-xs font-semibold"
                 style={
                   hasAny
                     ? { background: stagedForItem && !serverReceived ? "var(--warning-tint)" : "var(--primary-tint)", color: stagedForItem && !serverReceived ? "var(--warning-strong)" : "var(--primary)" }
@@ -552,7 +552,7 @@ export function PortalChecklist({
                       >
                         {draftRestored && (
                           <p className="mb-2 rounded-lg px-3 py-2 text-xs" style={{ background: "var(--primary-tint)", color: "var(--primary)" }}>
-                            ✓ Picked up where you left off - your draft was saved automatically.
+                            Picked up where you left off - your draft was saved automatically.
                           </p>
                         )}
                         {pdfNotice && evidenceStash?.itemId === item.id && (
@@ -654,7 +654,7 @@ export function PortalChecklist({
                     <div className="mt-4 pt-3" style={{ borderTop: "1px solid var(--divider)" }}>
                       {stuckSent === item.id ? (
                         <p className="text-xs" style={{ color: "var(--primary)" }}>
-                          ✓ Sent - your consultant will follow up.
+                          Sent - your consultant will follow up.
                         </p>
                       ) : stuckOpen === item.id ? (
                         <div>
@@ -677,7 +677,7 @@ export function PortalChecklist({
                         </div>
                       ) : (
                         <button className="text-xs underline" style={{ color: "var(--text-muted)" }} onClick={() => setStuckOpen(item.id)}>
-                          Stuck? Ask your consultant →
+                          Stuck? Ask your consultant
                         </button>
                       )}
                     </div>
@@ -696,7 +696,7 @@ export function PortalChecklist({
       {/* Submitted confirmation - the one and only send has happened */}
       {submitted && (
         <div className="rounded-2xl p-6 text-center" style={{ background: "var(--primary-tint)" }}>
-          <p className="text-lg font-bold" style={{ color: "var(--primary)" }}>✓ Submitted</p>
+          <p className="text-lg font-bold" style={{ color: "var(--primary)" }}>Submitted</p>
           <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>
             Your consultant has been notified and will review your data. Thank you.
           </p>

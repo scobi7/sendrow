@@ -93,7 +93,7 @@ export function MappingPanel({
         }
       >
         {source === "memory"
-          ? "✓ Same file shape as last time - mapping remembered. Quick check and you're done."
+          ? "Same file shape as last time - mapping remembered. Quick check and you're done."
           : <>Here&apos;s your file. Tell us what each column is - you know &ldquo;{filename}&rdquo; best.</>}
       </div>
 

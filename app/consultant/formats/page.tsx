@@ -6,7 +6,7 @@ import { BackLink } from "@/components/workflow";
 const BUILT_IN_FORMATS: { name: string; meta: string; exportKey: string }[] = [
   { name: "SB 253 draft template", meta: "Built-in · CARB regulatory format", exportKey: "sb253" },
   { name: "Plain Excel export", meta: "Built-in · generic spreadsheet", exportKey: "excel" },
-  { name: "Buyer questionnaire CSV", meta: "Built-in · question → answer rows", exportKey: "questionnaire" },
+  { name: "Buyer questionnaire CSV", meta: "Built-in · question and answer rows", exportKey: "questionnaire" },
   { name: "PACT V3 draft", meta: "Built-in · interoperability JSON", exportKey: "pact" },
 ];
 

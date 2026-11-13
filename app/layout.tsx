@@ -1,25 +1,26 @@
 import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata, Viewport } from "next";
-import { Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
+import { Instrument_Sans, Fraunces, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 
 // "The Ledger" type system (docs/design-direction.md):
-// serif speaks (headlines), sans works (UI/body), mono counts (every figure)
-const jakarta = Plus_Jakarta_Sans({
+// serif speaks (Fraunces, headlines), sans works (Instrument Sans, UI/body),
+// mono counts (IBM Plex Mono, every figure)
+const instrumentSans = Instrument_Sans({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
+  weight: ["400", "500", "600", "700"],
   variable: "--font-body",
   display: "swap",
 });
 
-const jakartaDisplay = Plus_Jakarta_Sans({
+const fraunces = Fraunces({
   subsets: ["latin"],
-  weight: ["700", "800"],
+  weight: ["500", "600", "700"],
   variable: "--font-display",
   display: "swap",
 });
 
-const jetbrains = JetBrains_Mono({
+const ibmPlexMono = IBM_Plex_Mono({
   subsets: ["latin"],
   weight: ["400", "500", "600"],
   variable: "--font-data",
@@ -43,7 +44,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <ClerkProvider>
-      <html lang="en" className={`${jakarta.variable} ${jakartaDisplay.variable} ${jetbrains.variable}`}>
+      <html lang="en" className={`${instrumentSans.variable} ${fraunces.variable} ${ibmPlexMono.variable}`}>
         <body>{children}</body>
       </html>
     </ClerkProvider>

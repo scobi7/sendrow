@@ -41,7 +41,7 @@ export default async function DemoPage({
           className="text-sm font-medium transition-opacity hover:opacity-70"
           style={{ color: "var(--text-muted)" }}
         >
-          Get started free →
+          Get started free
         </Link>
       </header>
 
@@ -66,11 +66,11 @@ export default async function DemoPage({
               rel="noopener noreferrer"
               className="btn btn-primary mt-6 inline-block text-sm px-6 py-2.5"
             >
-              Book a time →
+              Book a time
             </a>
             <div className="mt-4">
               <Link href="/" className="text-sm font-medium transition-opacity hover:opacity-70" style={{ color: "var(--text-muted)" }}>
-                ← Back to home
+                Back to home
               </Link>
             </div>
           </div>

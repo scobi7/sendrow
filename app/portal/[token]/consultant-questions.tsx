@@ -71,7 +71,7 @@ export function ConsultantQuestions({ token, threads }: { token: string; threads
               ))}
             </div>
             {sentIds.includes(t.lineItemId) ? (
-              <p className="mt-2 text-xs" style={{ color: "var(--primary)" }}>✓ Reply sent.</p>
+              <p className="mt-2 text-xs" style={{ color: "var(--primary)" }}>Reply sent.</p>
             ) : openId === t.lineItemId ? (
               <div className="mt-2">
                 <textarea

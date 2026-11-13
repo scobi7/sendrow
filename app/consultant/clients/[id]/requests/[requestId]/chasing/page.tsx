@@ -69,7 +69,7 @@ export default async function ChasingSchedulePage({
         {!closed && (
           <form action={toggleRequestReminders.bind(null, requestId, id)}>
             <button
-              className="rounded-full px-3 py-1.5 text-xs font-semibold transition-opacity hover:opacity-80"
+              className="rounded px-3 py-1.5 text-xs font-semibold transition-opacity hover:opacity-80"
               style={
                 req.remindersEnabled
                   ? { background: "var(--primary-tint)", color: "var(--primary)", border: "1px solid var(--chip-border)" }
@@ -105,7 +105,7 @@ export default async function ChasingSchedulePage({
                   className="font-data text-[11px]"
                   style={{ color: sentAt ? "var(--success-text)" : req.remindersEnabled && !closed ? "var(--text-muted)" : "var(--neutral-muted)" }}
                 >
-                  {sentAt ? "✓ sent" : req.remindersEnabled && !closed ? "scheduled" : "paused"}
+                  {sentAt ? "sent" :req.remindersEnabled && !closed ? "scheduled" : "paused"}
                 </span>
               </div>
             );

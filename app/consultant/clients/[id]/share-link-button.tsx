@@ -15,7 +15,7 @@ export function ShareLinkButton({ token }: { token: string }) {
         setTimeout(() => setCopied(false), 2000);
       }}
     >
-      {copied ? "✓ Copied" : "Copy results link"}
+      {copied ? "Copied" : "Copy results link"}
     </button>
   );
 }
