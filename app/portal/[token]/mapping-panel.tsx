@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { parseSheetMatrixAt } from "@/lib/ingestion/sheet-parse";
 
 /** Field choices in supplier language. */
-export const FIELD_OPTIONS: { value: string; label: string }[] = [
+const FIELD_OPTIONS: { value: string; label: string }[] = [
   { value: "", label: "Skip" },
   { value: "date", label: "Date / period" },
   { value: "activity_type", label: "Activity / fuel type" },

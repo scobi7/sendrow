@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { SITE_STATUS_LABEL, type SiteRollup } from "@/lib/locations";
+import { readJson } from "./read-json";
 
 export type SiteView = {
   id: string;
@@ -38,8 +39,8 @@ export function SiteDelegation({ token, sites, totalKg }: { token: string; sites
           message: messages[site.id] ?? "",
         }),
       });
-      const data = await res.json();
-      if (!res.ok) {
+      const data = await readJson(res, "Something went wrong - try again");
+      if (!res.ok || data.error) {
         setNotice((n) => ({ ...n, [site.id]: data.error ?? "Something went wrong - try again" }));
         return;
       }

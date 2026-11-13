@@ -20,7 +20,7 @@ export async function getBrandForCompany(companyId: string): Promise<Brand | nul
   return getBrandForConsultant(link.consultantId);
 }
 
-export async function getBrandForConsultant(consultantId: string): Promise<Brand | null> {
+async function getBrandForConsultant(consultantId: string): Promise<Brand | null> {
   const [profile, consultant] = await Promise.all([
     db.query.consultantProfiles.findFirst({ where: eq(consultantProfiles.consultantId, consultantId) }),
     db.query.userCompanies.findFirst({ where: eq(userCompanies.clerkId, consultantId) }),

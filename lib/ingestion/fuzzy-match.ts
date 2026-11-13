@@ -1,4 +1,4 @@
-export const STANDARD_FIELDS = [
+const STANDARD_FIELDS = [
   "date",
   "activity_type",
   "quantity",

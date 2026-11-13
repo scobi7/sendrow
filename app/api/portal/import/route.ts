@@ -1,17 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { eq } from "drizzle-orm";
-import { db } from "@/lib/db";
-import { dataRequests } from "@/lib/db/schema";
-import { portalTokenValid, itemFileCount, MAX_FILES_PER_CHECKLIST_ITEM } from "@/lib/portal";
+import { itemFileCount, MAX_FILES_PER_CHECKLIST_ITEM } from "@/lib/portal";
 import type { ChecklistItem } from "@/lib/portal";
 import { processImport } from "@/lib/ingestion/import-core";
 import { storeEvidence } from "@/lib/evidence";
 import { headerFingerprint } from "@/lib/ingestion/fingerprint";
 import { sendSubmissionEmail } from "@/lib/email";
-import { and, isNull } from "drizzle-orm";
-import { companies, consultantClients, userCompanies } from "@/lib/db/schema";
-import { fuzzyMatchHeaders } from "@/lib/ingestion/fuzzy-match";
-import { applyTemplate } from "@/lib/ingestion/data-type-templates";
+import { loadPortalRequest, notifyConsultant, readJsonBody, suggestMapping } from "@/lib/portal-api";
 import type { ColumnMap } from "@/lib/ingestion/ingest";
 import { checkRateLimit } from "@/lib/ratelimit";
 
@@ -69,7 +63,8 @@ async function handleImport(request: NextRequest) {
       }
     }
   } else {
-    const body = await request.json();
+    const body = await readJsonBody(request);
+    if (!body) return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
     token = body.token ?? "";
     itemId = body.itemId ?? "";
     rows = body.rows ?? [];
@@ -85,8 +80,8 @@ async function handleImport(request: NextRequest) {
   }
   if (!rows.length) return NextResponse.json({ error: "No rows provided" }, { status: 400 });
 
-  const [dataRequest] = await db.select().from(dataRequests).where(eq(dataRequests.token, token));
-  if (!dataRequest || !portalTokenValid({ token: dataRequest.token, expiresAt: dataRequest.expiresAt, status: dataRequest.status })) {
+  const dataRequest = await loadPortalRequest(token);
+  if (!dataRequest) {
     return NextResponse.json({ error: "This link has expired - ask your consultant for a new one" }, { status: 401 });
   }
 
@@ -112,8 +107,10 @@ async function handleImport(request: NextRequest) {
     mappingConfirmed = true;
   } else {
     const headers = Object.keys(rows[0] ?? {});
-    const fuzzy = fuzzyMatchHeaders(headers);
-    columnMap = applyTemplate(headers, item.dataType, fuzzy) as ColumnMap;
+    // Only the headers the template or fuzzy match actually mapped
+    columnMap = Object.fromEntries(
+      Object.entries(suggestMapping(headers, item.dataType)).filter(([, v]) => v)
+    ) as ColumnMap;
   }
   const fingerprint = source === "upload" ? headerFingerprint(Object.keys(rows[0] ?? {})) : null;
 
@@ -149,27 +146,18 @@ async function handleImport(request: NextRequest) {
   });
 
   // Response notification (U2.7): the consultant hears the moment data lands
-  (async () => {
-    const [company, link] = await Promise.all([
-      db.query.companies.findFirst({ where: eq(companies.id, dataRequest.companyId) }),
-      db.query.consultantClients.findFirst({
-        where: and(eq(consultantClients.companyId, dataRequest.companyId), isNull(consultantClients.archivedAt)),
-      }),
-    ]);
-    if (!link) return;
-    const consultant = await db.query.userCompanies.findFirst({ where: eq(userCompanies.clerkId, link.consultantId) });
-    if (!consultant?.email) return;
-    await sendSubmissionEmail(
+  notifyConsultant(dataRequest.companyId, (consultant, companyName) =>
+    sendSubmissionEmail(
       consultant.email,
-      consultant.name ?? "there",
-      company?.name ?? "A client",
+      consultant.name,
+      companyName,
       filename,
       outcome.imported,
       outcome.unmapped,
       dataRequest.companyId,
       outcome.autoApproved
-    );
-  })().catch(() => {});
+    )
+  ).catch(() => {});
 
   return NextResponse.json(outcome);
 }

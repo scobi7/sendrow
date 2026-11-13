@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { readJson } from "./read-json";
 
 export type QuestionThread = {
   lineItemId: string;
@@ -30,7 +31,7 @@ export function ConsultantQuestions({ token, threads }: { token: string; threads
         body: JSON.stringify({ token, lineItemId, message: text }),
       });
       if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
+        const data = await readJson(res, "Could not send");
         throw new Error(data.error ?? "Could not send");
       }
       setSentIds((s) => [...s, lineItemId]);

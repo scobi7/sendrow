@@ -29,38 +29,60 @@ function findFiles(dir: string, filename: string, out: string[] = []): string[] 
   return out;
 }
 
-const GUARDS = ["consultantClients", "ledgerGuard(", "ownsClient(", "asConsultantFor("];
+const GUARDS = ["consultantClients", "ledgerGuard(", "ownsClient(", "asConsultantFor(", "findOwnedLink(", "requireOwnedClient("];
 
 describe("client separation walls (#20)", () => {
   it("every exported action that takes a companyId verifies ownership", () => {
-    const src = read("lib/consultant-actions.ts");
-    const names = new Set<string>();
-    const re = /^export async function (\w+)\(/gm;
-    let m;
-    while ((m = re.exec(src))) names.add(m[1]);
-
+    // Every file that exports server actions taking a companyId. Add new action
+    // files here so they cannot dodge the scan.
+    const ACTION_FILES = ["lib/consultant-actions.ts", "lib/workflow-actions.ts", "lib/actions.ts"];
     let checked = 0;
-    for (const name of names) {
-      const body = functionBody(src, name);
-      const signature = body.slice(0, body.indexOf(")") + 1);
-      if (!/companyId\s*:\s*string/.test(signature)) continue; // not company-scoped
-      checked++;
-      expect(
-        GUARDS.some((g) => body.includes(g)),
-        `${name} takes companyId but has no ownership guard`
-      ).toBe(true);
+    for (const file of ACTION_FILES) {
+      const src = read(file);
+      const names = new Set<string>();
+      const re = /^export async function (\w+)\(/gm;
+      let m;
+      while ((m = re.exec(src))) names.add(m[1]);
+
+      for (const name of names) {
+        const body = functionBody(src, name);
+        const signature = body.slice(0, body.indexOf(")") + 1);
+        if (!/companyId\s*:\s*string/.test(signature)) continue; // not company-scoped
+        checked++;
+        expect(
+          GUARDS.some((g) => body.includes(g)),
+          `${file}: ${name} takes companyId but has no ownership guard`
+        ).toBe(true);
+      }
     }
     // Sanity: discovery must actually find company-scoped actions, so a
     // refactor that changes the export pattern can't silently zero out coverage.
     expect(checked).toBeGreaterThan(20);
 
-    // The shared guards themselves must check the link.
+    // The shared guards themselves must check the link (inline query or findOwnedLink).
+    const guardSrc = read("lib/consultant-actions.ts");
     for (const guard of ["ownsClient", "ledgerGuard", "asConsultantFor"]) {
-      expect(src).toContain(`async function ${guard}`);
+      expect(guardSrc).toContain(`async function ${guard}`);
+      const body = functionBody(guardSrc.replace(`async function ${guard}`, `export async function ${guard}`), guard);
       expect(
-        functionBody(src.replace(`async function ${guard}`, `export async function ${guard}`), guard)
-      ).toContain("consultantClients");
+        body.includes("consultantClients") || body.includes("findOwnedLink("),
+        `${guard} must check the consultantClients link`
+      ).toBe(true);
     }
+  });
+
+  it("the ownership query and page helper live in lib/guards.ts", () => {
+    const guards = read("lib/guards.ts");
+    const find = functionBody(guards, "findOwnedLink");
+    expect(find, "findOwnedLink must be an exported async function in lib/guards.ts").not.toBe("");
+    expect(find).toContain("consultantClients.consultantId");
+    expect(find).toContain("consultantClients.companyId");
+    expect(find).toContain("isNull(consultantClients.archivedAt)");
+
+    const require = functionBody(guards, "requireOwnedClient");
+    expect(require, "requireOwnedClient must be an exported async function in lib/guards.ts").not.toBe("");
+    expect(require).toContain("findOwnedLink(");
+    expect(require).toContain("notFound()");
   });
 
   it("every consultant-facing API route verifies ownership", () => {
@@ -68,6 +90,7 @@ describe("client separation walls (#20)", () => {
       "app/api/evidence/[id]/route.ts",
       "app/api/snapshots/[id]/export/route.ts",
       "app/api/events/export/route.ts",
+      "app/api/report/pdf/route.tsx",
     ]) {
       const src = read(route);
       expect(src, `${route} missing consultantClients guard`).toContain("consultantClients");
@@ -96,12 +119,16 @@ describe("client separation walls (#20)", () => {
         dir = dirname(dir);
       }
       const combined = sources.join("\n");
-      expect(combined, `${rel}: neither the page nor an ancestor layout guards this client's data`).toContain(
-        "consultantClients.consultantId"
-      );
-      expect(combined, `${rel}: neither the page nor an ancestor layout 404s an unauthorized visitor`).toContain(
-        "notFound()"
-      );
+      // Guarded = requireOwnedClient() (404s itself), or an ownership read
+      // (inline link query or findOwnedLink) plus a notFound() in the same file tree.
+      const viaHelper = combined.includes("requireOwnedClient(");
+      const viaQuery =
+        (combined.includes("consultantClients.consultantId") || combined.includes("findOwnedLink(")) &&
+        combined.includes("notFound()");
+      expect(
+        viaHelper || viaQuery,
+        `${rel}: neither the page nor an ancestor layout guards this client's data (requireOwnedClient, or findOwnedLink/inline link check plus notFound())`
+      ).toBe(true);
     }
   });
 
@@ -116,5 +143,26 @@ describe("client separation walls (#20)", () => {
       expect(src, `${route} must derive company from the token's request`).toContain("dataRequest");
       expect(src, `${route} must not read companyId from the request body`).not.toMatch(/body\.companyId/);
     }
+  });
+
+  it("portal routes resolve the token through the shared guard in lib/portal-api.ts", () => {
+    const helper = read("lib/portal-api.ts");
+    // loadPortalRequest must check validity; findPortalRequest is lookup-only
+    expect(helper, "lib/portal-api.ts loadPortalRequest must call portalTokenValid").toMatch(
+      /function loadPortalRequest[\s\S]*?portalTokenValid\(/
+    );
+    for (const route of [
+      "app/api/portal/import/route.ts",
+      "app/api/portal/mapping-preview/route.ts",
+      "app/api/portal/stuck/route.ts",
+      "app/api/portal/line-comment/route.ts",
+      "app/api/portal/delegate/route.ts",
+    ]) {
+      expect(read(route), `${route} must call loadPortalRequest`).toMatch(/\bloadPortalRequest\(/);
+    }
+    // request-new-link keeps accepting expired tokens on purpose
+    expect(read("app/api/portal/request-new-link/route.ts"), "request-new-link must call findPortalRequest").toMatch(
+      /\bfindPortalRequest\(/
+    );
   });
 });

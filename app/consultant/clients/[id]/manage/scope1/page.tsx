@@ -1,8 +1,6 @@
 import { notFound, redirect } from "next/navigation";
-import { and, eq, isNull } from "drizzle-orm";
 import { currentUser } from "@/lib/auth";
-import { db } from "@/lib/db";
-import { consultantClients } from "@/lib/db/schema";
+import { findOwnedLink } from "@/lib/guards";
 import { loadCompany } from "@/lib/store";
 import { CO2eBox, InfoTip, PageHeader } from "@/components/ui";
 import { consultantSaveFields } from "@/lib/consultant-actions";
@@ -12,9 +10,7 @@ export default async function ManageScope1({ params }: { params: Promise<{ id: s
   const user = await currentUser();
   if (!user || user.role !== "consultant") redirect("/login");
 
-  const link = await db.query.consultantClients.findFirst({
-    where: and(eq(consultantClients.consultantId, user.id), eq(consultantClients.companyId, id), isNull(consultantClients.archivedAt)),
-  });
+  const link = await findOwnedLink(user.id, id);
   if (!link) notFound();
 
   const company = await loadCompany(id);
@@ -22,7 +18,6 @@ export default async function ManageScope1({ params }: { params: Promise<{ id: s
   const calcs = company.calcs.filter((c) => c.scope === 1);
   const sub = (prefix: string) =>
     calcs.filter((c) => c.category.toLowerCase().startsWith(prefix)).reduce((s, c) => s + c.co2eTons, 0);
-  const utilityTherms = company.utilityData.reduce((s, m) => s + m.therms, 0);
   const base = `/consultant/clients/${id}/manage`;
 
   const boundSave = consultantSaveFields.bind(null, id);
@@ -63,15 +58,10 @@ export default async function ManageScope1({ params }: { params: Promise<{ id: s
 
         <details className="card" open>
           <summary className="cursor-pointer font-semibold font-display" style={{ color: "var(--text)" }}>
-            Natural Gas <InfoTip text="Pre-filled from utility connection. Enter a value to override." />
+            Natural Gas <InfoTip text="Therms from the gas bills for the reporting year, or mark not applicable." />
           </summary>
-          {utilityTherms > 0 && (
-            <p className="mt-3 rounded-lg px-3 py-2 text-sm" style={{ background: "var(--primary-tint)", color: "var(--primary)" }}>
-              Pre-filled from utility: {utilityTherms.toLocaleString()} therms
-            </p>
-          )}
           <div className="mt-3">
-            <label className="label">Override (therms/yr)</label>
+            <label className="label">Natural gas (therms/yr)</label>
             <input name="natgas_therms_override" type="number" step="any" min={0} className="input w-48" defaultValue={inp.natgas_therms_override ?? ""} />
           </div>
           <label className="mt-3 flex items-center gap-2 text-sm" style={{ color: "var(--text-muted)" }}>

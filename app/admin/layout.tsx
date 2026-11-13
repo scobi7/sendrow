@@ -1,6 +1,13 @@
 import Link from "next/link";
 import { Logo } from "@/components/ui";
 
+const ADMIN_NAV = [
+  { href: "/admin/factors", label: "Emission Factors" },
+  { href: "/admin/referrals", label: "Referral Leads" },
+  { href: "/admin/accounts", label: "Accounts" },
+  { href: "/admin/waitlist", label: "Waitlist" },
+];
+
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen" style={{ background: "var(--bg)" }}>
@@ -16,34 +23,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           Admin
         </span>
         <nav className="ml-4 flex gap-4">
-          <Link
-            href="/admin/factors"
-            className="text-sm font-medium transition-opacity hover:opacity-70"
-            style={{ color: "var(--text-muted)" }}
-          >
-            Emission Factors
-          </Link>
-          <Link
-            href="/admin/referrals"
-            className="text-sm font-medium transition-opacity hover:opacity-70"
-            style={{ color: "var(--text-muted)" }}
-          >
-            Referral Leads
-          </Link>
-          <Link
-            href="/admin/accounts"
-            className="text-sm font-medium transition-opacity hover:opacity-70"
-            style={{ color: "var(--text-muted)" }}
-          >
-            Accounts
-          </Link>
-          <Link
-            href="/admin/waitlist"
-            className="text-sm font-medium transition-opacity hover:opacity-70"
-            style={{ color: "var(--text-muted)" }}
-          >
-            Waitlist
-          </Link>
+          {ADMIN_NAV.map(({ href, label }) => (
+            <Link
+              key={href}
+              href={href}
+              className="text-sm font-medium transition-opacity hover:opacity-70"
+              style={{ color: "var(--text-muted)" }}
+            >
+              {label}
+            </Link>
+          ))}
         </nav>
       </header>
       <main className="mx-auto max-w-5xl px-8 py-10">{children}</main>

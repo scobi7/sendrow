@@ -1,5 +1,7 @@
 "use client";
 
+import { Pill } from "@/components/workflow";
+import { fmtNum3 } from "@/lib/format";
 import { useState, useTransition } from "react";
 import {
   recategorizeLineItem,
@@ -56,7 +58,6 @@ export function LedgerRow({
   const [editing, setEditing] = useState<"category" | "quantity" | "comment" | "actual" | "evidence" | null>(null);
   const [pending, startTransition] = useTransition();
   const excluded = item.status === "excluded";
-  const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 3 });
 
   return (
     <>
@@ -76,10 +77,10 @@ export function LedgerRow({
           </span>
         </td>
         <td className="px-4 py-2.5 text-right font-data text-xs" style={{ color: "var(--text)" }}>
-          {fmt(Number(item.rawValue))} {item.rawUnit}
+          {fmtNum3(Number(item.rawValue))} {item.rawUnit}
         </td>
         <td className="px-4 py-2.5 text-right font-data" style={{ color: "var(--text)" }}>
-          {item.status === "mapped" ? fmt(Number(item.co2eKg) / 1000) : " - "}
+          {item.status === "mapped" ? fmtNum3(Number(item.co2eKg) / 1000) : " - "}
         </td>
         <td className="px-4 py-2.5 text-xs" style={{ color: "var(--text-muted)" }}>
           {item.activityDate ?? item.period ?? " - "}
@@ -103,9 +104,9 @@ export function LedgerRow({
           )}
         </td>
         <td className="px-4 py-2.5">
-          <span className="rounded-full px-2 py-0.5 text-xs font-medium" style={STATUS_STYLE[item.status] ?? STATUS_STYLE.excluded}>
+          <Pill style={STATUS_STYLE[item.status] ?? STATUS_STYLE.excluded}>
             {item.status}
-          </span>
+          </Pill>
           {item.status === "mapped" && (
             <span
               className="ml-1 rounded-full px-1.5 py-0.5 text-xs"

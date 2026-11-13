@@ -15,7 +15,7 @@ export type ChecklistItem = {
   fileCount?: number;
 };
 
-export const PORTAL_TOKEN_TTL_DAYS = 30;
+const PORTAL_TOKEN_TTL_DAYS = 30;
 
 /** A supplier can submit up to this many separate files/entries per checklist
  *  item (e.g. 12 monthly bills, or electricity + gas as separate sheets). */

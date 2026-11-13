@@ -4,15 +4,13 @@ import { db } from "./db";
 import {
   companies,
   companyInputs,
-  companyConnections,
   locations,
-  qbTransactions,
-  utilityData,
   calcs,
   emissionFactors,
 } from "./db/schema";
-import { Company, EmissionFactor, Industry, HeadcountRange, Inputs } from "./types";
+import { Company, EmissionFactor, Industry, HeadcountRange, Inputs, SectionName, SectionStatus } from "./types";
 import { SEED_FACTORS } from "./factors";
+import { factorFromRow } from "./factor-engine";
 
 export function uid(prefix = ""): string {
   return prefix + Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
@@ -24,40 +22,40 @@ export function getFactor(factorId: string): EmissionFactor {
   return f;
 }
 
+/** Loads the emission factor table. A DB error throws: the caller must never
+ *  recalculate on the seed factors because of a transient read failure (those
+ *  results would be saved over the real ones). An empty table returns []. */
 export async function loadFactors(): Promise<EmissionFactor[]> {
-  try {
-    const rows = await db.select().from(emissionFactors);
-    return rows.map((r) => ({
-      factor_id: r.factorId,
-      factor_name: r.factorName,
-      category: r.category,
-      value: Number(r.value),
-      unit: r.unit,
-      source: r.source,
-      source_url: r.sourceUrl,
-      year_effective: r.yearEffective,
-      year_retired: r.yearRetired ?? null,
-    }));
-  } catch {
-    return [];
-  }
+  const rows = await db.select().from(emissionFactors).catch((err: unknown) => {
+    throw new Error(
+      `loadFactors: could not read the emission_factors table; refusing to recalculate on seed factors. ${err instanceof Error ? err.message : String(err)}`,
+      { cause: err }
+    );
+  });
+  return rows.map(factorFromRow);
+}
+
+const SECTION_NAMES: SectionName[] = ["scope1", "scope2", "scope3", "social", "governance", "reports"];
+
+/** Keeps only the current section keys, so stale rows (e.g. a retired
+ *  "connections" entry) cannot skew progress percentages. */
+function storedSectionStatus(raw: unknown): Record<SectionName, SectionStatus> {
+  const src = (raw ?? {}) as Partial<Record<SectionName, SectionStatus>>;
+  const out = {} as Record<SectionName, SectionStatus>;
+  for (const name of SECTION_NAMES) out[name] = src[name] ?? "not_started";
+  return out;
 }
 
 export const loadCompany = cache(async (companyId: string): Promise<Company> => {
-  const [companyRows, inputRows, connRows, locRows, txnRows, utilRows, calcRows] =
-    await Promise.all([
-      db.select().from(companies).where(eq(companies.id, companyId)),
-      db.select().from(companyInputs).where(eq(companyInputs.companyId, companyId)),
-      db.select().from(companyConnections).where(eq(companyConnections.companyId, companyId)),
-      db.select().from(locations).where(eq(locations.companyId, companyId)),
-      db.select().from(qbTransactions).where(eq(qbTransactions.companyId, companyId)),
-      db.select().from(utilityData).where(eq(utilityData.companyId, companyId)),
-      db.select().from(calcs).where(eq(calcs.companyId, companyId)),
-    ]);
+  const [companyRows, inputRows, locRows, calcRows] = await Promise.all([
+    db.select().from(companies).where(eq(companies.id, companyId)),
+    db.select().from(companyInputs).where(eq(companyInputs.companyId, companyId)),
+    db.select().from(locations).where(eq(locations.companyId, companyId)),
+    db.select().from(calcs).where(eq(calcs.companyId, companyId)),
+  ]);
 
   const c = companyRows[0];
   if (!c) throw new Error(`Company not found: ${companyId}`);
-  const conn = connRows[0];
 
   return {
     id: c.id,
@@ -68,34 +66,10 @@ export const loadCompany = cache(async (companyId: string): Promise<Company> => 
     reportingFramework: c.reportingFramework ?? null,
     setupComplete: c.setupComplete,
     createdAt: c.createdAt,
-    sectionStatus: (c.sectionStatus ?? {
-      connections: "not_started",
-      scope1: "not_started",
-      scope2: "not_started",
-      scope3: "not_started",
-      social: "not_started",
-      governance: "not_started",
-      reports: "not_started",
-    }) as Company["sectionStatus"],
+    sectionStatus: storedSectionStatus(c.sectionStatus),
     reportGeneratedAt: c.reportGeneratedAt ?? null,
     actionPlan: (c.actionPlan as string[] | null) ?? null,
     inputs: ((inputRows[0]?.data ?? {}) as Inputs),
-    connections: {
-      quickbooks: {
-        connected: conn?.qbConnected ?? false,
-        lastSynced: conn?.qbLastSynced ?? null,
-        accessToken: conn?.qbAccessToken ?? null,
-        refreshToken: conn?.qbRefreshToken ?? null,
-        tokenExpiresAt: conn?.qbTokenExpiresAt ?? null,
-        realmId: conn?.qbRealmId ?? null,
-      },
-      utility: {
-        connected: conn?.utilityConnected ?? false,
-        lastSynced: conn?.utilityLastSynced ?? null,
-        authUid: conn?.utilityAuthUid ?? null,
-        authEmail: conn?.utilityAuthEmail ?? null,
-      },
-    },
     locations: locRows.map((l) => ({
       id: l.id,
       address: l.address,
@@ -103,20 +77,6 @@ export const loadCompany = cache(async (companyId: string): Promise<Company> => 
       state: l.state,
       zip: l.zip,
       egridSubregion: l.egridSubregion,
-    })),
-    qbTransactions: txnRows.map((t) => ({
-      id: t.id,
-      vendor: t.vendor,
-      category: t.category,
-      amount: Number(t.amount),
-      date: t.date,
-    })),
-    utilityData: utilRows.map((u) => ({
-      id: String(u.id),
-      locationId: u.locationId,
-      month: u.month,
-      kwh: Number(u.kwh),
-      therms: Number(u.therms),
     })),
     calcs: calcRows.map((c) => ({
       id: c.id,
@@ -158,30 +118,6 @@ export async function persistCompany(company: Company): Promise<void> {
         set: { data: company.inputs as Record<string, unknown> },
       }),
 
-    db
-      .insert(companyConnections)
-      .values({
-        companyId: id,
-        qbConnected: company.connections.quickbooks.connected,
-        qbLastSynced: company.connections.quickbooks.lastSynced ?? null,
-        utilityConnected: company.connections.utility.connected,
-        utilityLastSynced: company.connections.utility.lastSynced ?? null,
-      })
-      .onConflictDoUpdate({
-        target: companyConnections.companyId,
-        set: {
-          qbConnected: company.connections.quickbooks.connected,
-          qbLastSynced: company.connections.quickbooks.lastSynced ?? null,
-          utilityConnected: company.connections.utility.connected,
-          utilityLastSynced: company.connections.utility.lastSynced ?? null,
-          utilityAuthUid: company.connections.utility.authUid ?? null,
-          utilityAuthEmail: company.connections.utility.authEmail ?? null,
-          qbAccessToken: company.connections.quickbooks.accessToken ?? null,
-          qbRefreshToken: company.connections.quickbooks.refreshToken ?? null,
-          qbRealmId: company.connections.quickbooks.realmId ?? null,
-          qbTokenExpiresAt: company.connections.quickbooks.tokenExpiresAt ?? null,
-        },
-      }),
   ]);
 
   // Replace calcs - recalculated every persist
@@ -200,15 +136,5 @@ export async function persistCompany(company: Company): Promise<void> {
         marketBasedTons: c.marketBasedTons != null ? String(c.marketBasedTons) : null,
       }))
     );
-  }
-}
-
-export async function saveLocations(
-  companyId: string,
-  locs: Company["locations"]
-): Promise<void> {
-  await db.delete(locations).where(eq(locations.companyId, companyId));
-  if (locs.length > 0) {
-    await db.insert(locations).values(locs.map((l) => ({ ...l, companyId })));
   }
 }

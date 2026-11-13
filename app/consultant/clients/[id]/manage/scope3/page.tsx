@@ -1,8 +1,6 @@
 import { notFound, redirect } from "next/navigation";
-import { and, eq, isNull } from "drizzle-orm";
 import { currentUser } from "@/lib/auth";
-import { db } from "@/lib/db";
-import { consultantClients } from "@/lib/db/schema";
+import { findOwnedLink } from "@/lib/guards";
 import { loadCompany } from "@/lib/store";
 import { CO2eBox, InfoTip, PageHeader } from "@/components/ui";
 import { consultantSaveFields, consultantSaveScope3Decision } from "@/lib/consultant-actions";
@@ -13,15 +11,12 @@ export default async function ManageScope3({ params }: { params: Promise<{ id: s
   const user = await currentUser();
   if (!user || user.role !== "consultant") redirect("/login");
 
-  const link = await db.query.consultantClients.findFirst({
-    where: and(eq(consultantClients.consultantId, user.id), eq(consultantClients.companyId, id), isNull(consultantClients.archivedAt)),
-  });
+  const link = await findOwnedLink(user.id, id);
   if (!link) notFound();
 
   const company = await loadCompany(id);
   const inp = company.inputs;
   const base = `/consultant/clients/${id}/manage`;
-  const qbConnected = company.connections.quickbooks.connected;
   const calcs = company.calcs.filter((c) => c.scope === 3);
   const find = (name: string) => calcs.find((c) => c.category.toLowerCase().includes(name))?.co2eTons ?? 0;
   const decisions = inp.scope3_other_categories ?? {};
@@ -34,37 +29,6 @@ export default async function ManageScope3({ params }: { params: Promise<{ id: s
         title="Scope 3 - Value Chain Emissions"
         subtitle={`Managing on behalf of ${company.name}.`}
       />
-
-      {qbConnected && (
-        <div className="card mb-5">
-          <h2 className="font-semibold font-display" style={{ color: "var(--text)" }}>Pre-filled from spend data</h2>
-          <div className="mt-3 space-y-2 text-sm">
-            {[
-              ["Business travel", "Airlines, hotels, and car rentals from vendor spend", find("business travel")],
-              ["Purchased goods & services", "All other vendor spend, by expense category", find("purchased goods")],
-              ["Upstream freight", "Freight and delivery vendor spend", find("upstream freight")],
-            ].map(([title, desc, tons]) => (
-              <div key={title as string} className="flex items-center justify-between rounded-lg px-4 py-3" style={{ background: "var(--bg)" }}>
-                <div>
-                  <p className="font-medium" style={{ color: "var(--text)" }}>{title}</p>
-                  <p className="text-xs" style={{ color: "var(--text-muted)" }}>{desc}</p>
-                </div>
-                <span className="font-bold font-data" style={{ color: "var(--primary)" }}>
-                  {(tons as number).toLocaleString("en-US", { maximumFractionDigits: 1 })} tCO2e
-                </span>
-              </div>
-            ))}
-          </div>
-          <form action={boundSave}>
-            <input type="hidden" name="redirect_to" value={`${base}/scope3`} />
-            <label className="mt-4 flex items-center gap-2 text-sm font-medium" style={{ color: "var(--text)" }}>
-              <input type="checkbox" name="qb_data_reviewed" value="true" defaultChecked={!!inp.qb_data_reviewed} />
-              Pre-filled data reviewed and miscategorizations corrected
-            </label>
-            <button className="btn btn-secondary mt-3 px-3 py-1.5 text-xs">Save review status</button>
-          </form>
-        </div>
-      )}
 
       <form action={boundSave} className="space-y-5">
         <input type="hidden" name="redirect_to" value={`${base}/scope3`} />

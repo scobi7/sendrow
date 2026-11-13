@@ -1,20 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { desc, eq, and } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { dataRequests, mappingProfiles } from "@/lib/db/schema";
-import { portalTokenValid } from "@/lib/portal";
+import { mappingProfiles } from "@/lib/db/schema";
 import type { ChecklistItem } from "@/lib/portal";
-import { fuzzyMatchHeaders } from "@/lib/ingestion/fuzzy-match";
-import { applyTemplate } from "@/lib/ingestion/data-type-templates";
 import { headerFingerprint } from "@/lib/ingestion/fingerprint";
 import { checkRateLimit } from "@/lib/ratelimit";
+import { loadPortalRequest, readJsonBody, suggestMapping } from "@/lib/portal-api";
 
 /** Mapping suggestions for the portal's confirm screen (Plan T2).
  *  Memory first: if this company has confirmed the same file shape before,
  *  that mapping wins outright. Otherwise template + fuzzy word bank suggests
  *  and the supplier confirms. Token is the auth. */
 export async function POST(request: NextRequest) {
-  const body = await request.json();
+  const body = await readJsonBody(request);
+  if (!body) return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
   const token: string = body.token ?? "";
   const itemId: string = body.itemId ?? "";
   const headers: string[] = Array.isArray(body.headers) ? body.headers.map(String) : [];
@@ -25,8 +24,8 @@ export async function POST(request: NextRequest) {
   }
   if (!headers.length) return NextResponse.json({ error: "No headers provided" }, { status: 400 });
 
-  const [dataRequest] = await db.select().from(dataRequests).where(eq(dataRequests.token, token));
-  if (!dataRequest || !portalTokenValid({ token: dataRequest.token, expiresAt: dataRequest.expiresAt, status: dataRequest.status })) {
+  const dataRequest = await loadPortalRequest(token);
+  if (!dataRequest) {
     return NextResponse.json({ error: "This link has expired" }, { status: 401 });
   }
 
@@ -51,9 +50,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ source: "memory", fingerprint, map });
   }
 
-  const fuzzy = fuzzyMatchHeaders(headers);
-  const templated = applyTemplate(headers, item.dataType, fuzzy) as Record<string, string | null>;
-  const map: Record<string, string | null> = {};
-  for (const h of headers) map[h] = templated[h] ?? null;
+  const map = suggestMapping(headers, item.dataType);
   return NextResponse.json({ source: "suggested", fingerprint, map });
 }

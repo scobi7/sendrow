@@ -1,23 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { eq, and } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { comments, dataRequests, emissionLineItems } from "@/lib/db/schema";
-import { portalTokenValid } from "@/lib/portal";
+import { comments, emissionLineItems } from "@/lib/db/schema";
 import { logEvent } from "@/lib/events";
 import { checkRateLimit } from "@/lib/ratelimit";
+import { uid } from "@/lib/store";
+import { loadPortalRequest, readJsonBody } from "@/lib/portal-api";
 
 /** Supplier reply to a consultant's question on a specific figure (Z2). The
  *  token is the auth - no account. The reply posts as a comment on the line
  *  item, so the consultant sees it in the ledger/review in context. */
 export async function POST(request: NextRequest) {
-  let body: { token?: string; lineItemId?: string; message?: string };
-  try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ error: "Bad request" }, { status: 400 });
-  }
-  const token = body.token ?? "";
-  const lineItemId = body.lineItemId ?? "";
+  const body = await readJsonBody(request);
+  if (!body) return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+  const token: string = body.token ?? "";
+  const lineItemId: string = body.lineItemId ?? "";
   const message = String(body.message ?? "").trim().slice(0, 2000);
 
   if (!token) return NextResponse.json({ error: "Missing link token" }, { status: 401 });
@@ -26,8 +23,8 @@ export async function POST(request: NextRequest) {
   }
   if (!message) return NextResponse.json({ error: "Write a reply first" }, { status: 400 });
 
-  const [dataRequest] = await db.select().from(dataRequests).where(eq(dataRequests.token, token));
-  if (!dataRequest || !portalTokenValid({ token: dataRequest.token, expiresAt: dataRequest.expiresAt, status: dataRequest.status })) {
+  const dataRequest = await loadPortalRequest(token);
+  if (!dataRequest) {
     return NextResponse.json({ error: "This link has expired" }, { status: 401 });
   }
 
@@ -39,7 +36,7 @@ export async function POST(request: NextRequest) {
   if (!line) return NextResponse.json({ error: "Unknown figure" }, { status: 400 });
 
   await db.insert(comments).values({
-    id: "cm_" + Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4),
+    id: uid("cm_"),
     companyId: dataRequest.companyId,
     lineItemId,
     author: `portal:${dataRequest.id}`,

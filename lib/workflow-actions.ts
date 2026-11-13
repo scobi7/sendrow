@@ -2,10 +2,11 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { and, eq, inArray, isNull } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { db } from "./db";
-import { companies, consultantClients, intakeSessions, requestTemplates } from "./db/schema";
+import { companies, intakeSessions, requestTemplates } from "./db/schema";
 import { currentUser } from "./auth";
+import { findOwnedLink } from "./guards";
 import { createDataRequest, createSnapshot, approveSession, flagSession } from "./consultant-actions";
 import { logEvent } from "./events";
 import type { DataType } from "./ingestion/data-type-templates";
@@ -28,13 +29,7 @@ export async function createRequestFromPage(formData: FormData) {
   // the magic link actually lands somewhere.
   const contactEmail = String(formData.get("contact_email") ?? "").trim();
   if (contactEmail) {
-    const link = await db.query.consultantClients.findFirst({
-      where: and(
-        eq(consultantClients.consultantId, user.id),
-        eq(consultantClients.companyId, companyId),
-        isNull(consultantClients.archivedAt)
-      ),
-    });
+    const link = await findOwnedLink(user.id, companyId);
     if (!link) return;
     await db.update(companies).set({ clientContactEmail: contactEmail }).where(eq(companies.id, companyId));
   }
@@ -72,13 +67,7 @@ export async function createRequestFromPage(formData: FormData) {
 export async function approveFreezeAndGo(companyId: string, formData: FormData) {
   const user = await currentUser();
   if (!user || user.role !== "consultant") return;
-  const link = await db.query.consultantClients.findFirst({
-    where: and(
-      eq(consultantClients.consultantId, user.id),
-      eq(consultantClients.companyId, companyId),
-      isNull(consultantClients.archivedAt)
-    ),
-  });
+  const link = await findOwnedLink(user.id, companyId);
   if (!link) return;
 
   const pending = await db
@@ -107,6 +96,8 @@ export async function approveFreezeAndGo(companyId: string, formData: FormData) 
 export async function requestChanges(companyId: string, formData: FormData) {
   const user = await currentUser();
   if (!user || user.role !== "consultant") return;
+  const link = await findOwnedLink(user.id, companyId);
+  if (!link) return;
   const note = String(formData.get("note") ?? "").trim();
   if (!note) return;
 

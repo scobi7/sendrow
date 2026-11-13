@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import * as XLSX from "xlsx";
+import type { WorkBook } from "xlsx";
 import type { ChecklistItem } from "@/lib/portal";
 import { itemFileCount, MAX_FILES_PER_CHECKLIST_ITEM } from "@/lib/portal";
 import { parsePastedRows } from "@/lib/portal-paste";
@@ -12,6 +12,7 @@ import type { DataType } from "@/lib/ingestion/data-type-templates";
 import { MappingPanel } from "./mapping-panel";
 import type { MappingSuggestion } from "./mapping-panel";
 import { Walkthrough } from "./walkthrough";
+import { readJson } from "./read-json";
 
 type EntryRow = { date: string; kind: string; quantity: string };
 
@@ -40,21 +41,6 @@ type PendingUpload = {
 /** Vercel rejects bodies over ~4.5 MB with an empty non-JSON response, so we
  *  stop oversized files client-side with a message the supplier can act on. */
 const MAX_UPLOAD_BYTES = 4 * 1024 * 1024;
-
-/** Reads a response body as JSON without ever throwing "Unexpected end of
- *  JSON input" at the supplier - non-JSON failures (413s, crashes, timeouts)
- *  become actionable messages instead. */
-async function readJson(res: Response): Promise<{ error?: string; [k: string]: unknown }> {
-  const text = await res.text();
-  try {
-    return JSON.parse(text);
-  } catch {
-    if (res.status === 413) {
-      return { error: "That file is too large to send (about 4 MB max). Export a smaller date range, or type the numbers in instead." };
-    }
-    return { error: "The upload didn't go through - please try again. If it keeps failing, use “Type it in” and we'll take it from there." };
-  }
-}
 
 type SheetChoice = {
   itemId: string;
@@ -276,8 +262,12 @@ export function PortalChecklist({
       return;
     }
     const buf = await file.arrayBuffer();
-    let wb: XLSX.WorkBook;
+    let wb: WorkBook;
+    let XLSX: typeof import("xlsx");
     try {
+      // Loaded on demand: the xlsx parser only ships to the browser once a spreadsheet is picked.
+      // A failed chunk load lands in the same catch as an unreadable file.
+      XLSX = await import("xlsx");
       // codepage 65001 = UTF-8, so CSVs with em-dashes etc. don't mojibake
       wb = XLSX.read(buf, { codepage: 65001 });
     } catch {

@@ -1,5 +1,8 @@
+import { NextRequest } from "next/server";
 import { renderToBuffer, Document } from "@react-pdf/renderer";
-import { auth } from "@clerk/nextjs/server";
+import { and, eq, isNull } from "drizzle-orm";
+import { db } from "@/lib/db";
+import { consultantClients } from "@/lib/db/schema";
 import { currentUser } from "@/lib/auth";
 import { loadCompany, loadFactors } from "@/lib/store";
 import { recContextFor } from "@/lib/calc";
@@ -10,18 +13,32 @@ import React from "react";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export async function GET() {
-  const { userId } = await auth();
-  if (!userId) return new Response("Unauthorized", { status: 401 });
-
+/** Consultant-only GHG report PDF for one client. The consultant page sends
+ *  `?companyId=` (the client's id); the consultant must hold an active
+ *  consultantClients link to that company, same guard as the client export. */
+export async function GET(request: NextRequest) {
   const user = await currentUser();
-  if (!user?.companyId) return new Response("Unauthorized", { status: 401 });
+  if (!user || user.role !== "consultant") {
+    return new Response("Unauthorized", { status: 401 });
+  }
 
-  const [company, overrides] = await Promise.all([loadCompany(user.companyId), loadFactors()]);
+  const companyId = request.nextUrl.searchParams.get("companyId") ?? "";
+  if (!companyId) return new Response("Not found", { status: 404 });
+
+  const link = await db.query.consultantClients.findFirst({
+    where: and(
+      eq(consultantClients.consultantId, user.id),
+      eq(consultantClients.companyId, companyId),
+      isNull(consultantClients.archivedAt)
+    ),
+  });
+  if (!link) return new Response("Not found", { status: 404 });
+
+  const [company, overrides] = await Promise.all([loadCompany(companyId), loadFactors()]);
   // recContextFor needs company.inputs, so this pair can't join the batch above.
   const [lineItemTotals, screeningDecisions] = await Promise.all([
-    getLineItemTotals(user.companyId, recContextFor(company)),
-    getScreeningDecisions(user.companyId),
+    getLineItemTotals(companyId, recContextFor(company), company.inputs?.scope2_market_override_tons),
+    getScreeningDecisions(companyId),
   ]);
 
   const element = React.createElement(GHGReportPDF, {

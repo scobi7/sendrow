@@ -4,7 +4,6 @@ import { NextResponse } from "next/server";
 const isPublicRoute = createRouteMatcher([
   "/",
   "/how-it-works(.*)",
-  "/for-companies(.*)",
   "/for-consultants(.*)",
   "/pricing(.*)",
   "/demo(.*)",
@@ -18,6 +17,7 @@ const isPublicRoute = createRouteMatcher([
   "/portal(.*)",      // magic-link client portal — token is the auth
   "/api/portal(.*)",  // portal submissions — token validated in the route
   "/api/track(.*)",   // homepage engagement beacon — public, rate-limited, allowlisted events
+  "/api/cron(.*)",  // Vercel cron; CRON_SECRET is checked inside the route
   "/security(.*)",
   "/dpa(.*)",
   "/get-matched(.*)",

@@ -1,19 +1,14 @@
 import { describe, it, expect } from "vitest";
 import { recalcCompany, totals, reportingPeriod } from "@/lib/calc";
 import { createCompanyRecord } from "@/lib/newcompany";
-import { generateQBTransactions, generateUtilityData } from "@/lib/mockdata";
 
-// Minimal company fixture with one location and both integrations connected
+// Minimal manual-entry company fixture with one location
 function makeCompany() {
   const c = createCompanyRecord("Test Co");
   c.industry = "Professional Services";
   c.headcountRange = "50_150";
   c.fiscalYearEndMonth = 12;
   c.locations = [{ id: "loc_1", address: "123 Main", city: "Los Angeles", state: "CA", zip: "90001", egridSubregion: "egrid.CAMX.2024" }];
-  c.connections.quickbooks = { connected: true, lastSynced: new Date().toISOString() };
-  c.connections.utility = { connected: true, lastSynced: new Date().toISOString() };
-  c.qbTransactions = generateQBTransactions(c);
-  c.utilityData = generateUtilityData(c);
   c.inputs = {
     fleet_gasoline_gal: 500,
     fleet_diesel_gal: 200,
@@ -46,36 +41,39 @@ describe("recalcCompany", () => {
     expect(gasoline!.co2eTons).toBeCloseTo(8.89, 1);
   });
 
-  it("scope 2 electricity result exists when utility is connected", () => {
+  it("natural gas manual therms override produces a scope 1 calc", () => {
     const c = makeCompany();
+    c.inputs.natgas_na = false;
+    c.inputs.natgas_therms_override = 1000;
     recalcCompany(c);
-    const s2 = c.calcs.filter((r) => r.scope === 2);
-    expect(s2.length).toBeGreaterThan(0);
-    expect(s2[0].co2eTons).toBeGreaterThan(0);
+    const gas = c.calcs.find((r) => r.category === "Natural gas");
+    expect(gas).toBeDefined();
+    expect(gas!.co2eTons).toBeGreaterThan(0);
+    expect(gas!.formula).toContain("manual entry");
   });
 
-  it("scope 2 market-based tons are populated", () => {
+  it("natural gas with no override and no entry produces no calc", () => {
     const c = makeCompany();
+    c.inputs.natgas_na = false;
     recalcCompany(c);
-    const s2 = c.calcs.filter((r) => r.scope === 2);
-    for (const r of s2) {
-      expect(r.marketBasedTons).toBeDefined();
-      expect(r.marketBasedTons).toBeGreaterThanOrEqual(0);
-    }
+    expect(c.calcs.find((r) => r.category === "Natural gas")).toBeUndefined();
   });
 
-  it("scope 3 spend-based results exist when QB connected", () => {
+  it("scope 3 commuting calc is produced from manual survey inputs", () => {
     const c = makeCompany();
+    c.inputs.commute_avg_miles = 20;
+    c.inputs.commute_mode = "Drive alone";
+    c.inputs.commute_days_in_office = 5;
     recalcCompany(c);
-    const s3 = c.calcs.filter((r) => r.scope === 3);
-    expect(s3.length).toBeGreaterThan(0);
+    const commute = c.calcs.find((r) => r.category === "Employee commuting");
+    expect(commute).toBeDefined();
+    expect(commute!.scope).toBe(3);
+    expect(commute!.co2eTons).toBeGreaterThan(0);
   });
 
   it("produces zero calcs when all NA flags set", () => {
     const c = makeCompany();
     c.inputs = { fleet_na: true, natgas_na: true, refrigerant_na: true, equipment_na: true };
-    c.connections.quickbooks = { connected: false, lastSynced: null };
-    c.connections.utility = { connected: false, lastSynced: null };
     recalcCompany(c);
     expect(c.calcs.length).toBe(0);
   });
@@ -107,6 +105,13 @@ describe("totals", () => {
     expect(t.scope2Market).toBeGreaterThanOrEqual(0);
     expect(t.scope3).toBeGreaterThanOrEqual(0);
     expect(t.total).toBeGreaterThan(0);
+  });
+
+  it("consultant scope 2 market override wins over the derived figure", () => {
+    const c = makeCompany();
+    c.inputs.scope2_market_override_tons = 12.345;
+    recalcCompany(c);
+    expect(totals(c).scope2Market).toBe(12.35);
   });
 });
 

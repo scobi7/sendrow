@@ -158,44 +158,6 @@ export function egridLabel(factorId: string): string {
   return factorId.split(".")[1] ?? factorId;
 }
 
-/** QuickBooks expense category → USEEIO sector factor id.
- *  Deliberately unmapped (would double-count other scopes): "Utilities" (Scope 2),
- *  "Fuel" (Scope 1), "Waste Removal" (Scope 3 waste, measured in tons). Spend in
- *  categories absent from this map is surfaced as flagged unmapped spend - never dropped. */
-export const QB_CATEGORY_TO_USEEIO: Record<string, { factorId: string; bucket: "travel" | "purchased" | "freight" }> = {
-  "Travel - Airfare": { factorId: "useeio.air_travel.v2", bucket: "travel" },
-  "Travel - Lodging": { factorId: "useeio.hotels.v2", bucket: "travel" },
-  "Travel - Car Rental": { factorId: "useeio.car_rental.v2", bucket: "travel" },
-  "Freight & Delivery": { factorId: "useeio.freight.v2", bucket: "freight" },
-  "Shipping & Postage": { factorId: "useeio.freight.v2", bucket: "freight" },
-  "Office Supplies": { factorId: "useeio.office_supplies.v2", bucket: "purchased" },
-  "Software & Subscriptions": { factorId: "useeio.it_services.v2", bucket: "purchased" },
-  "Professional Fees": { factorId: "useeio.prof_services.v2", bucket: "purchased" },
-  "Materials & Equipment": { factorId: "useeio.materials.v2", bucket: "purchased" },
-  "Meals & Catering": { factorId: "useeio.food.v2", bucket: "purchased" },
-  // Professional services chart of accounts
-  "Advertising & Marketing": { factorId: "useeio.advertising.v2", bucket: "purchased" },
-  "Insurance": { factorId: "useeio.insurance.v2", bucket: "purchased" },
-  "Rent & Lease": { factorId: "useeio.real_estate.v2", bucket: "purchased" },
-  "Repairs & Maintenance": { factorId: "useeio.repairs.v2", bucket: "purchased" },
-  "Legal & Accounting": { factorId: "useeio.prof_services.v2", bucket: "purchased" },
-  "Consulting Fees": { factorId: "useeio.prof_services.v2", bucket: "purchased" },
-  "Subcontractors": { factorId: "useeio.prof_services.v2", bucket: "purchased" },
-  "IT & Cloud Services": { factorId: "useeio.it_services.v2", bucket: "purchased" },
-  "Telecommunications": { factorId: "useeio.telecom.v2", bucket: "purchased" },
-  "Printing & Reproduction": { factorId: "useeio.printing.v2", bucket: "purchased" },
-  "Training & Education": { factorId: "useeio.education.v2", bucket: "purchased" },
-  "Recruiting & HR": { factorId: "useeio.admin_services.v2", bucket: "purchased" },
-  "Janitorial & Facilities": { factorId: "useeio.facilities.v2", bucket: "purchased" },
-  // Manufacturing chart of accounts
-  "Raw Materials": { factorId: "useeio.materials.v2", bucket: "purchased" },
-  "Packaging Supplies": { factorId: "useeio.packaging.v2", bucket: "purchased" },
-  "Chemicals & Solvents": { factorId: "useeio.chemicals.v2", bucket: "purchased" },
-  "Metals & Fabrication": { factorId: "useeio.metals.v2", bucket: "purchased" },
-  "Equipment Purchases": { factorId: "useeio.machinery.v2", bucket: "purchased" },
-  "Contract Manufacturing": { factorId: "useeio.contract_mfg.v2", bucket: "purchased" },
-};
-
 export const REFRIGERANT_FACTOR: Record<string, string> = {
   "R-410A": "gwp.r410a.ar6",
   "R-134a": "gwp.r134a.ar6",

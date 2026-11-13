@@ -7,14 +7,7 @@ import { and, inArray, isNull } from "drizzle-orm";
 import { saveRequestTemplate } from "@/lib/consultant-actions";
 import { BackLink } from "@/components/workflow";
 import { NewTemplateForm } from "./new-template-form";
-
-const TYPE_LABELS: Record<string, string> = {
-  utility_bills: "Electricity & gas",
-  fleet_fuel_dollar: "Fleet fuel",
-  vendor_invoices: "Spend data",
-  business_travel: "Business travel",
-  commute_survey: "Commute survey",
-};
+import { DATA_TYPE_LABELS } from "@/lib/data-type-labels";
 
 /** Engagement Templates (#23): a consultant's standard request package,
  *  reused when starting a new request for any client. */
@@ -67,7 +60,7 @@ export default async function TemplatesPage() {
                     {i === 0 && <span className="badge">Default</span>}
                   </div>
                   <p className="mt-0.5 truncate text-xs" style={{ color: "var(--text-muted)" }}>
-                    {types.length > 0 ? types.map((k) => TYPE_LABELS[k] ?? k).join(", ") : t.description}
+                    {types.length > 0 ? types.map((k) => DATA_TYPE_LABELS[k] ?? k).join(", ") : t.description}
                     {t.periodLabel && ` · ${t.periodLabel}`}
                     {t.dueInDays && ` · due in ${t.dueInDays} days`}
                   </p>

@@ -2,13 +2,10 @@ import { createHash } from "crypto";
 import { put } from "@vercel/blob";
 import { db } from "./db";
 import { evidence } from "./db/schema";
+import { uid } from "./store";
 
 export function sha256Hex(bytes: Buffer | Uint8Array): string {
   return createHash("sha256").update(bytes).digest("hex");
-}
-
-function newId() {
-  return "ev_" + Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
 }
 
 /** Stores an original source document (Plan N3). The hash and metadata are
@@ -22,7 +19,7 @@ export async function storeEvidence(params: {
   checklistItemId?: string | null;
   uploadedVia: "portal_upload" | "consultant_upload";
 }): Promise<string> {
-  const id = newId();
+  const id = uid("ev_");
 
   let blobUrl: string | null = null;
   if (process.env.BLOB_READ_WRITE_TOKEN) {

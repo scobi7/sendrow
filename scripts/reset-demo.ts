@@ -1,5 +1,5 @@
 /** Demo workspace (#49): three clients at three stages, restorable to clean
- *  state before every demo. Run: `npx tsx scripts/reset-demo.ts [consultantClerkId]`
+ *  state before every demo. Run: `npm run demo:reset -- [consultantClerkId]`
  *  Seeds into the given consultant's workspace (defaults to DEMO_CONSULTANT_ID
  *  env, else the first consultant found). Demo rows all carry the demo_ prefix
  *  so reset never touches real data. */
@@ -45,7 +45,7 @@ async function main() {
   await db.delete(schema.vendorMappings).where(like(schema.vendorMappings.id, "demo_%"));
 
   const sectionStatus = {
-    connections: "not_started", scope1: "not_started", scope2: "not_started", scope3: "not_started",
+    scope1: "not_started", scope2: "not_started", scope3: "not_started",
     social: "not_started", governance: "not_started", reports: "not_started",
   };
 

@@ -1,17 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
-import { and, eq, isNull } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { comments, companies, consultantClients, dataRequests, userCompanies } from "@/lib/db/schema";
-import { portalTokenValid } from "@/lib/portal";
+import { comments, dataRequests } from "@/lib/db/schema";
 import type { ChecklistItem } from "@/lib/portal";
 import { sendClientStuckEmail } from "@/lib/email";
 import { logEvent } from "@/lib/events";
 import { checkRateLimit } from "@/lib/ratelimit";
+import { uid } from "@/lib/store";
+import { loadPortalRequest, notifyConsultant, readJsonBody } from "@/lib/portal-api";
 
 /** "I'm stuck - ask my consultant" (Plan T5.2): turns silent abandonment into
  *  an actionable flag. Token is the auth. */
 export async function POST(request: NextRequest) {
-  const body = await request.json();
+  const body = await readJsonBody(request);
+  if (!body) return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
   const token: string = body.token ?? "";
   const itemId: string = body.itemId ?? "";
   const message: string = String(body.message ?? "").trim().slice(0, 1000);
@@ -22,8 +24,8 @@ export async function POST(request: NextRequest) {
   }
   if (!message) return NextResponse.json({ error: "Tell us what's tripping you up" }, { status: 400 });
 
-  const [dataRequest] = await db.select().from(dataRequests).where(eq(dataRequests.token, token));
-  if (!dataRequest || !portalTokenValid({ token: dataRequest.token, expiresAt: dataRequest.expiresAt, status: dataRequest.status })) {
+  const dataRequest = await loadPortalRequest(token);
+  if (!dataRequest) {
     return NextResponse.json({ error: "This link has expired" }, { status: 401 });
   }
 
@@ -37,7 +39,7 @@ export async function POST(request: NextRequest) {
   // The message also lands in the item's thread (X2) so the supplier sees
   // what they sent and the consultant's reply shows up right under it.
   await db.insert(comments).values({
-    id: "cm_" + Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4),
+    id: uid("cm_"),
     companyId: dataRequest.companyId,
     lineItemId: null,
     dataRequestId: dataRequest.id,
@@ -48,26 +50,17 @@ export async function POST(request: NextRequest) {
     createdAt: new Date().toISOString(),
   });
 
-  // Notify the consultant who manages this client
-  const [company, link] = await Promise.all([
-    db.query.companies.findFirst({ where: eq(companies.id, dataRequest.companyId) }),
-    db.query.consultantClients.findFirst({
-      where: and(eq(consultantClients.companyId, dataRequest.companyId), isNull(consultantClients.archivedAt)),
-    }),
-  ]);
-  if (link) {
-    const consultant = await db.query.userCompanies.findFirst({ where: eq(userCompanies.clerkId, link.consultantId) });
-    if (consultant?.email) {
-      sendClientStuckEmail(
-        consultant.email,
-        consultant.name ?? "there",
-        company?.name ?? "A client",
-        item.label,
-        message,
-        dataRequest.companyId
-      ).catch(() => {});
-    }
-  }
+  // Notify the consultant who manages this client (lookups awaited, email not)
+  await notifyConsultant(dataRequest.companyId, (consultant, companyName) =>
+    sendClientStuckEmail(
+      consultant.email,
+      consultant.name,
+      companyName,
+      item.label,
+      message,
+      dataRequest.companyId
+    )
+  );
 
   logEvent({ companyId: dataRequest.companyId, actor: `portal:${dataRequest.id}`, actorType: "supplier", verb: "client.stuck", subject: item.label, subjectId: itemId, meta: { message } });
   return NextResponse.json({ ok: true });

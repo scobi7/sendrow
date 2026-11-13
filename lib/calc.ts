@@ -1,7 +1,6 @@
 import { CalcResult, Company, EmissionFactor } from "./types";
 import { getFactor, uid } from "./store";
-import { COMMUTE_FACTOR, QB_CATEGORY_TO_USEEIO, REFRIGERANT_FACTOR } from "./factors";
-import { matchVendor } from "./vendor-mappings";
+import { COMMUTE_FACTOR, REFRIGERANT_FACTOR } from "./factors";
 import type { VendorMapping } from "./vendor-mappings";
 
 /**
@@ -46,19 +45,20 @@ export function reportingPeriod(fiscalYearEndMonth: number): {
   };
 }
 
+/**
+ * Recalculates the manual-entry calcs (fleet, natural gas override, refrigerants,
+ * equipment, commuting, waste, industry-average placeholders). Electricity and
+ * spend-based figures arrive as imported line items and are combined in
+ * combinedTotals, not here. `_vendorMappings` is accepted for caller
+ * compatibility only: vendor-mapped spend resolves in the ingestion pipeline.
+ */
 export function recalcCompany(
   company: Company,
   factorOverrides: EmissionFactor[] = [],
-  vendorMappings: VendorMapping[] = []
+  _vendorMappings: VendorMapping[] = []
 ): void {
   const results: CalcResult[] = [];
   const inp = company.inputs;
-
-  // Filter all data to the 12-month reporting period
-  const period = reportingPeriod(company.fiscalYearEndMonth ?? 12);
-  const inPeriod = (yyyyMM: string) => yyyyMM >= period.start && yyyyMM <= period.end;
-  const filteredTxns = company.qbTransactions.filter((t) => inPeriod(t.date.substring(0, 7)));
-  const filteredUtility = company.utilityData.filter((u) => inPeriod(u.month));
 
   const getF = (id: string): EmissionFactor => {
     const override = factorOverrides.find((f) => f.factor_id === id);
@@ -93,13 +93,11 @@ export function recalcCompany(
     }
   }
   if (!inp.natgas_na) {
-    const utilityTherms = filteredUtility.reduce((s, m) => s + m.therms, 0);
-    const therms = inp.natgas_therms_override ?? (utilityTherms > 0 ? utilityTherms : null);
+    const therms = inp.natgas_therms_override;
     if (therms && therms > 0) {
       const f = getF("natgas.therm.2025");
-      const src = inp.natgas_therms_override != null ? "manual entry" : "utility connection";
       add(1, "Natural gas", therms * f.value, f.factor_id,
-        `${fmt(therms)} therms (${src}) × ${f.value} ${f.unit} = ${fmt(r2(therms * f.value))} tCO2e`);
+        `${fmt(therms)} therms (manual entry) × ${f.value} ${f.unit} = ${fmt(r2(therms * f.value))} tCO2e`);
     }
   }
   if (!inp.refrigerant_na && inp.refrigerant_kg && inp.refrigerant_kg > 0 && inp.refrigerant_type) {
@@ -118,83 +116,7 @@ export function recalcCompany(
       `${fmt(inp.equipment_gal)} gal × ${f.value} ${f.unit} = ${fmt(r2(inp.equipment_gal * f.value))} tCO2e`);
   }
 
-  // ───────────── Scope 2 ─────────────
-  if (company.connections.utility.connected && filteredUtility.length > 0) {
-    const residual = getF("residual.WECC.2024");
-    const recPct = inp.has_recs ? Math.min(Math.max(inp.rec_coverage_pct ?? 0, 0), 100) : 0;
-    for (const loc of company.locations) {
-      const kwh = filteredUtility.filter((m) => m.locationId === loc.id).reduce((s, m) => s + m.kwh, 0);
-      if (kwh <= 0) continue;
-      const f = getF(loc.egridSubregion);
-      const locBased = kwh * f.value;
-      const mktBased = kwh * residual.value * (1 - recPct / 100);
-      add(2, `Electricity - ${loc.city || loc.address}`, locBased, f.factor_id,
-        `${fmt(kwh)} kWh × ${f.value} ${f.unit} (${f.factor_name}) = ${fmt(r2(locBased))} tCO2e location-based; ` +
-        `market-based ${fmt(kwh)} kWh × ${residual.value} (residual mix)${recPct ? ` × ${100 - recPct}% non-REC` : ""} = ${fmt(r2(mktBased))} tCO2e`,
-        "measured", mktBased);
-    }
-  }
-
   // ───────────── Scope 3 ─────────────
-  if (company.connections.quickbooks.connected && filteredTxns.length > 0) {
-    const byCategory: Record<string, number> = {};
-    for (const t of filteredTxns) byCategory[t.category] = (byCategory[t.category] ?? 0) + t.amount;
-    const buckets: Record<string, { tons: number; spend: number; parts: string[] }> = {
-      travel: { tons: 0, spend: 0, parts: [] },
-      purchased: { tons: 0, spend: 0, parts: [] },
-      freight: { tons: 0, spend: 0, parts: [] },
-    };
-    const bucketFor = (category: string): "travel" | "purchased" | "freight" =>
-      category === "business_travel" ? "travel" : category === "upstream_freight" ? "freight" : "purchased";
-
-    const unmapped: { cat: string; spend: number }[] = [];
-    for (const [cat, spend] of Object.entries(byCategory)) {
-      const map = QB_CATEGORY_TO_USEEIO[cat];
-      if (!map) {
-        // Vendor memory: spend in unmapped QB categories resolves per-vendor
-        // when a human has confirmed that vendor (cross-client, Plan J)
-        let unresolved = 0;
-        for (const t of filteredTxns.filter((t) => t.category === cat)) {
-          const vm = matchVendor(t.vendor, vendorMappings);
-          if (vm?.factorId) {
-            const f = getF(vm.factorId);
-            const b = buckets[bucketFor(vm.category)];
-            b.tons += t.amount * f.value;
-            b.spend += t.amount;
-            b.parts.push(`$${fmt(t.amount)} ${t.vendor} (vendor mapping ${vm.id}) × ${f.value} ${f.unit}`);
-          } else {
-            unresolved += t.amount;
-          }
-        }
-        if (unresolved > 0) unmapped.push({ cat, spend: unresolved });
-        continue;
-      }
-      const f = getF(map.factorId);
-      const tons = spend * f.value;
-      const b = buckets[map.bucket];
-      b.tons += tons;
-      b.spend += spend;
-      b.parts.push(`$${fmt(spend)} ${cat} × ${f.value} ${f.unit}`);
-    }
-    if (buckets.travel.tons > 0)
-      add(3, "Business travel", buckets.travel.tons, "useeio.air_travel.v2",
-        `Spend-based (USEEIO): ${buckets.travel.parts.join(" + ")} = ${fmt(r2(buckets.travel.tons))} tCO2e`, "spend_based");
-    if (buckets.purchased.tons > 0)
-      add(3, "Purchased goods & services", buckets.purchased.tons, "useeio.materials.v2",
-        `Spend-based (USEEIO): ${buckets.purchased.parts.join(" + ")} = ${fmt(r2(buckets.purchased.tons))} tCO2e`, "spend_based");
-    if (buckets.freight.tons > 0)
-      add(3, "Upstream freight", buckets.freight.tons, "useeio.freight.v2",
-        `Spend-based (USEEIO): ${buckets.freight.parts.join(" + ")} = ${fmt(r2(buckets.freight.tons))} tCO2e`, "spend_based");
-    // Contracts invariant: unmapped spend is flagged, never silently dropped.
-    // Zero tons so totals are unaffected, but the gap is visible in the audit trail.
-    if (unmapped.length > 0) {
-      const totalUnmapped = unmapped.reduce((s, u) => s + u.spend, 0);
-      add(3, "Unmapped spend - needs categorization", 0, null,
-        `FLAGGED: $${fmt(totalUnmapped)} across ${unmapped.length} expense categor${unmapped.length === 1 ? "y" : "ies"} has no USEEIO mapping and is NOT included in totals: ${unmapped.map((u) => `${u.cat} ($${fmt(u.spend)})`).join(", ")}`,
-        "estimated");
-    }
-  }
-
   if (inp.commute_avg_miles && inp.commute_mode && inp.commute_days_in_office != null) {
     const fid = COMMUTE_FACTOR[inp.commute_mode];
     if (fid) {
@@ -257,6 +179,26 @@ export function recContextFor(company: Company): RecContext {
   };
 }
 
+/** The one REC/residual-mix rule for market-based Scope 2. Returns the market-based
+ *  tons for a kWh electricity line item, or null when the row keeps its
+ *  location-based tons (no rec context, or not a kWh electricity row with a value).
+ *  Used by lineItemTotals here and by getLineItemTotals in lib/report-totals.ts. */
+export function recAdjustedKwhTons(
+  item: { category?: string; rawUnit?: string | null; rawValue?: string | number | null },
+  rec?: RecContext
+): number | null {
+  if (!rec || item.category !== "electricity" || item.rawUnit !== "kWh" || item.rawValue == null) return null;
+  // residualFactorValue is tCO2e/kWh (same unit as egrid factors), so this is already tons.
+  return Number(item.rawValue) * rec.residualFactorValue * (1 - (rec.hasRecs ? rec.recCoveragePct : 0) / 100);
+}
+
+/** The one consultant-override rule for market-based Scope 2
+ *  (company.inputs.scope2_market_override_tons, X3.4). An override wins over the
+ *  derived figure and is rounded to 2dp; with no override the derived figure is returned unchanged. */
+export function applyScope2MarketOverride(derivedTons: number, override: number | null | undefined): number {
+  return override !== null && override !== undefined ? r2(override) : derivedTons;
+}
+
 /** Tons of CO2e from imported line items (the portal pipeline). Only mapped
  *  rows count - unmapped/excluded carry zero.
  *
@@ -284,19 +226,13 @@ export function lineItemTotals(
     if (i.scope === 1) { s1 += tons; continue; }
     if (i.scope === 3) { s3 += tons; continue; }
     s2Location += tons;
-    if (rec && i.category === "electricity" && i.rawUnit === "kWh" && i.rawValue != null) {
-      const kwh = Number(i.rawValue);
-      // residualFactorValue is tCO2e/kWh (same unit as egrid factors) - this is
-      // already tons, unlike co2eKg above which is kg. Do not divide by 1000.
-      s2Market += kwh * rec.residualFactorValue * (1 - (rec.hasRecs ? rec.recCoveragePct : 0) / 100);
-    } else {
-      s2Market += tons;
-    }
+    // Already tons, unlike co2eKg above which is kg.
+    s2Market += recAdjustedKwhTons(i, rec) ?? tons;
   }
   return { scope1: r2(s1), scope2Location: r2(s2Location), scope2Market: r2(s2Market), scope3: r2(s3), total: r2(s1 + s2Location + s3) };
 }
 
-/** The company's full picture: inputs-based calcs (manage-on-behalf, connections)
+/** The company's full picture: inputs-based calcs (manage-on-behalf)
  *  PLUS imported line items (portal). Duplicates are the consultant's call -  *  the ledger's exclude exists for exactly that. */
 export function combinedTotals(
   company: Company,
@@ -324,12 +260,10 @@ export function totals(company: Company): Totals {
   const s = (n: number[]) => r2(n.reduce((a, b) => a + b, 0));
   const scope1 = s(company.calcs.filter((c) => c.scope === 1).map((c) => c.co2eTons));
   const scope2Location = s(company.calcs.filter((c) => c.scope === 2).map((c) => c.co2eTons));
-  // Consultant override (X3.4) wins over the derived market-based figure -   // set on the Scope 2 page, audit-logged via logChange.
-  const override = company.inputs?.scope2_market_override_tons;
-  const scope2Market =
-    override !== null && override !== undefined
-      ? r2(override)
-      : s(company.calcs.filter((c) => c.scope === 2).map((c) => c.marketBasedTons ?? c.co2eTons));
+  const scope2Market = applyScope2MarketOverride(
+    s(company.calcs.filter((c) => c.scope === 2).map((c) => c.marketBasedTons ?? c.co2eTons)),
+    company.inputs?.scope2_market_override_tons
+  );
   const scope3 = s(company.calcs.filter((c) => c.scope === 3).map((c) => c.co2eTons));
   return { scope1, scope2Location, scope2Market, scope3, total: r2(scope1 + scope2Location + scope3) };
 }

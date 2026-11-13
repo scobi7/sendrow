@@ -1,14 +1,14 @@
 import { eq, isNull, and } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { companies, emissionLineItems, shareLinks, snapshots } from "@/lib/db/schema";
+import { companies, shareLinks, snapshots } from "@/lib/db/schema";
 import { getBrandForCompany } from "@/lib/branding";
 import { periodTotals, yoyDelta } from "@/lib/period";
-import { loadCompany } from "@/lib/store";
-import { totals, combinedTotals } from "@/lib/calc";
+import { totals } from "@/lib/calc";
 
 /** Read-only, consultant-branded results page (Plan N5). This is how a company
- *  "sees their dashboard": a link their consultant shares - no login, and no
- *  Sendrow branding anywhere (contracts/ §11). */
+ *  "sees their dashboard": a link their consultant shares - no login. Only frozen
+ *  snapshots are ever shown (contracts/ §13). The page is consultant-branded and
+ *  carries a small "Powered by Sendrow" footer (contracts/ §11). */
 export default async function SharedResultsPage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
 
@@ -16,47 +16,21 @@ export default async function SharedResultsPage({ params }: { params: Promise<{ 
     where: and(eq(shareLinks.token, token), isNull(shareLinks.revokedAt)),
   });
 
-  if (!link) {
-    return (
-      <main className="mx-auto flex min-h-screen max-w-lg flex-col items-center justify-center px-6 text-center" style={{ background: "var(--bg)" }}>
-        <h1 className="text-xl font-bold font-display" style={{ color: "var(--text)" }}>
-          This link is no longer active
-        </h1>
-        <p className="mt-2 text-sm" style={{ color: "var(--text-muted)" }}>
-          Please ask your consultant for a current results link.
-        </p>
-      </main>
-    );
-  }
+  if (!link || !link.snapshotId) return <InactiveLink />;
 
-  const snapshot = link.snapshotId
-    ? await db.query.snapshots.findFirst({ where: eq(snapshots.id, link.snapshotId) })
-    : null;
+  const snapshot = await db.query.snapshots.findFirst({ where: eq(snapshots.id, link.snapshotId) });
+  if (!snapshot || snapshot.companyId !== link.companyId) return <InactiveLink />;
 
-  const [companyRow, brand, fullCompany, periodItems] = await Promise.all([
+  const [companyRow, brand] = await Promise.all([
     db.query.companies.findFirst({ where: eq(companies.id, link.companyId) }),
     getBrandForCompany(link.companyId),
-    loadCompany(link.companyId).catch(() => null),
-    db
-      .select({
-        period: emissionLineItems.period,
-        scope: emissionLineItems.scope,
-        co2eKg: emissionLineItems.co2eKg,
-        status: emissionLineItems.status,
-      })
-      .from(emissionLineItems)
-      .where(eq(emissionLineItems.companyId, link.companyId)),
   ]);
-  if (!companyRow || !fullCompany) return null;
+  if (!companyRow) return <InactiveLink />;
 
-  // A snapshot link shows the frozen version - never the live workspace (§13)
+  // Frozen snapshot only - never the live workspace (§13)
   type FrozenItem = { period: string | null; scope: number; co2eKg: string; status?: string };
-  const t = snapshot
-    ? (snapshot.totals as ReturnType<typeof totals>)
-    : combinedTotals(fullCompany, periodItems.map((i) => ({ ...i, co2eKg: Number(i.co2eKg) })));
-  const sourceItems = snapshot
-    ? (snapshot.lineItems as FrozenItem[]).map((i) => ({ ...i, status: "mapped" }))
-    : periodItems;
+  const t = snapshot.totals as ReturnType<typeof totals>;
+  const sourceItems = (snapshot.lineItems as FrozenItem[]).map((i) => ({ ...i, status: "mapped" }));
   const byPeriod = periodTotals(sourceItems.map((i) => ({ period: i.period, scope: i.scope, status: i.status ?? "mapped", co2eKg: Number(i.co2eKg) })));
   const yoy = yoyDelta(byPeriod);
   const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 2 });
@@ -86,11 +60,9 @@ export default async function SharedResultsPage({ params }: { params: Promise<{ 
       <h1 className="mt-1 text-2xl font-extrabold font-display" style={{ color: "var(--text)" }}>
         {companyRow.name}
       </h1>
-      {snapshot && (
-        <p className="mt-2 inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium" style={{ background: "var(--primary-tint)", color: "var(--primary)" }}>
-          {snapshot.label} - frozen {new Date(snapshot.createdAt).toLocaleDateString()} · this version can never silently change
-        </p>
-      )}
+      <p className="mt-2 inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium" style={{ background: "var(--primary-tint)", color: "var(--primary)" }}>
+        {snapshot.label} - frozen {new Date(snapshot.createdAt).toLocaleDateString()} · this version can never silently change
+      </p>
 
       <div className="card mt-8">
         <dl className="space-y-3 text-sm">
@@ -146,12 +118,23 @@ export default async function SharedResultsPage({ params }: { params: Promise<{ 
 
       <p className="mt-8 text-xs" style={{ color: "var(--text-muted)" }}>
         Prepared by {brand?.brandName ?? "your consultant"}.{" "}
-        {snapshot
-          ? `Frozen snapshot ${snapshot.sha256.slice(0, 12)}… - corrections are issued as new versions with change notices.`
-          : "Figures reflect data received and reviewed to date."}
+        Frozen snapshot {snapshot.sha256.slice(0, 12)}… - corrections are issued as new versions with change notices.
       </p>
       <p className="mt-12 border-t pt-4 text-center text-xs" style={{ borderColor: "var(--divider)", color: "var(--text-muted)", opacity: 0.7 }}>
         Powered by Sendrow
+      </p>
+    </main>
+  );
+}
+
+function InactiveLink() {
+  return (
+    <main className="mx-auto flex min-h-screen max-w-lg flex-col items-center justify-center px-6 text-center" style={{ background: "var(--bg)" }}>
+      <h1 className="text-xl font-bold font-display" style={{ color: "var(--text)" }}>
+        This link is no longer active
+      </h1>
+      <p className="mt-2 text-sm" style={{ color: "var(--text-muted)" }}>
+        Please ask your consultant for a current results link.
       </p>
     </main>
   );

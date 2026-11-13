@@ -1,9 +1,10 @@
+import { fmtNum1, fmtShortDate } from "@/lib/format";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { and, desc, eq, isNull } from "drizzle-orm";
-import { currentUser } from "@/lib/auth";
+import { desc, eq } from "drizzle-orm";
+import { requireOwnedClient } from "@/lib/guards";
 import { db } from "@/lib/db";
-import { companies, comments, consultantClients, dataRequests, emissionLineItems, intakeSessions, locations } from "@/lib/db/schema";
+import { companies, comments, dataRequests, emissionLineItems, intakeSessions, locations } from "@/lib/db/schema";
 import { siteLabel } from "@/lib/site-requests";
 import { egridLabel } from "@/lib/factors";
 import { convertDollarFuel, addLineItemComment } from "@/lib/consultant-actions";
@@ -18,16 +19,9 @@ import type { ChecklistItem } from "@/lib/portal";
  *  with their receipts and threads; approving freezes a snapshot and lands on
  *  Snapshot & Share - one continuous action, not two. */
 export default async function ReviewApprovePage({ params }: { params: Promise<{ id: string }> }) {
-  const [{ id }, user] = await Promise.all([params, currentUser()]);
+  const { id } = await params;
 
-  const link = await db.query.consultantClients.findFirst({
-    where: and(
-      eq(consultantClients.consultantId, user!.id),
-      eq(consultantClients.companyId, id),
-      isNull(consultantClients.archivedAt)
-    ),
-  });
-  if (!link) notFound();
+  await requireOwnedClient(id);
 
   const [company, items, sessions, allComments, requests, sites] = await Promise.all([
     db.query.companies.findFirst({ where: eq(companies.id, id) }),
@@ -93,8 +87,6 @@ export default async function ReviewApprovePage({ params }: { params: Promise<{ 
     groups.set(key, g);
   }
 
-  const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 1 });
-  const fmtDate = (iso: string) => new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
 
   return (
     <div className="mx-auto max-w-4xl">
@@ -149,7 +141,7 @@ export default async function ReviewApprovePage({ params }: { params: Promise<{ 
                   <div>
                     <p className="text-sm font-medium" style={{ color: "var(--text)" }}>{s.filename}</p>
                     <p className="mt-0.5 text-xs" style={{ color: "var(--text-muted)" }}>
-                      {s.dataType} · {s.rowCount} rows · {fmtDate(s.createdAt)}
+                      {s.dataType} · {s.rowCount} rows · {fmtShortDate(s.createdAt)}
                       {s.evidenceId && (
                         <>
                           {" · "}
@@ -189,13 +181,13 @@ export default async function ReviewApprovePage({ params }: { params: Promise<{ 
                     {b.region ? `${b.region} grid · ` : ""}{b.rows} row{b.rows !== 1 ? "s" : ""}
                   </span>
                 </p>
-                <p className="font-data font-semibold" style={{ color: "var(--text)" }}>{fmt(b.co2eT)} tCO2e</p>
+                <p className="font-data font-semibold" style={{ color: "var(--text)" }}>{fmtNum1(b.co2eT)} tCO2e</p>
               </div>
             ))}
             <div className="flex items-center justify-between px-5 py-2.5 text-sm">
               <p className="font-semibold" style={{ color: "var(--text)" }}>Total</p>
               <p className="font-data font-bold" style={{ color: "var(--text)" }}>
-                {fmt(byLocation.reduce((s, b) => s + b.co2eT, 0))} tCO2e
+                {fmtNum1(byLocation.reduce((s, b) => s + b.co2eT, 0))} tCO2e
               </p>
             </div>
           </div>
@@ -272,7 +264,7 @@ export default async function ReviewApprovePage({ params }: { params: Promise<{ 
                   <div>
                     <p className="font-semibold" style={{ color: "var(--text)" }}>{prettyCategory(category)}</p>
                     <p className="mt-0.5 font-data text-lg font-bold" style={{ color: "var(--text)" }}>
-                      {rawTotal !== null ? `${fmt(rawTotal)} ${units[0]}` : `${fmt(co2eT)} tCO2e`}
+                      {rawTotal !== null ? `${fmtNum1(rawTotal)} ${units[0]}` : `${fmtNum1(co2eT)} tCO2e`}
                     </p>
                     <p className="mt-0.5 text-xs" style={{ color: "var(--text-muted)" }}>
                       {groupItems.length} row{groupItems.length !== 1 ? "s" : ""}
@@ -303,7 +295,7 @@ export default async function ReviewApprovePage({ params }: { params: Promise<{ 
                     {groupComments.map((c) => (
                       <p key={c.id} className="text-xs" style={{ color: "var(--text)" }}>
                         <span className="font-semibold">{c.authorType === "consultant" ? "You" : company.name}:</span> {c.body}
-                        <span className="ml-1" style={{ color: "var(--text-muted)" }}>· {fmtDate(c.createdAt)}</span>
+                        <span className="ml-1" style={{ color: "var(--text-muted)" }}>· {fmtShortDate(c.createdAt)}</span>
                       </p>
                     ))}
                   </div>

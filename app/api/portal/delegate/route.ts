@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { dataRequests, locations } from "@/lib/db/schema";
-import { portalTokenValid } from "@/lib/portal";
+import { locations } from "@/lib/db/schema";
+import { loadPortalRequest, readJsonBody } from "@/lib/portal-api";
 import { sendSiteLink, siteLabel } from "@/lib/site-requests";
 import { checkRateLimit } from "@/lib/ratelimit";
 
@@ -10,7 +10,8 @@ import { checkRateLimit } from "@/lib/ratelimit";
  *  site's contact their own location-scoped upload link. The parent portal
  *  token is the auth - no account needed to coordinate. */
 export async function POST(request: NextRequest) {
-  const body = await request.json();
+  const body = await readJsonBody(request);
+  if (!body) return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
   const token: string = body.token ?? "";
   const locationId: string = body.locationId ?? "";
   const contactName = String(body.contactName ?? "").trim();
@@ -22,8 +23,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Too many site links sent - try again later" }, { status: 429 });
   }
 
-  const [parent] = await db.select().from(dataRequests).where(eq(dataRequests.token, token));
-  if (!parent || !portalTokenValid({ token: parent.token, expiresAt: parent.expiresAt, status: parent.status })) {
+  const parent = await loadPortalRequest(token);
+  if (!parent) {
     return NextResponse.json({ error: "This link has expired" }, { status: 401 });
   }
   // Only a company-wide request can delegate - site links don't fan out further

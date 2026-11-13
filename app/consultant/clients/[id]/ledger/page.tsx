@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { and, desc, eq, isNull } from "drizzle-orm";
-import { currentUser } from "@/lib/auth";
+import { desc, eq } from "drizzle-orm";
+import { requireOwnedClient } from "@/lib/guards";
 import { db } from "@/lib/db";
-import { companies, comments, consultantClients, emissionLineItems, intakeSessions, locations } from "@/lib/db/schema";
+import { companies, comments, emissionLineItems, intakeSessions, locations } from "@/lib/db/schema";
 import { siteLabel } from "@/lib/site-requests";
 import { LedgerRow } from "./ledger-row";
 
@@ -18,20 +18,12 @@ export default async function LedgerPage({
   params: Promise<{ id: string }>;
   searchParams: Promise<{ status?: string; upload?: string; category?: string }>;
 }) {
-  const [{ id }, { status: statusFilter, upload: uploadFilter, category: categoryFilter }, user] = await Promise.all([
+  const [{ id }, { status: statusFilter, upload: uploadFilter, category: categoryFilter }] = await Promise.all([
     params,
     searchParams,
-    currentUser(),
   ]);
 
-  const link = await db.query.consultantClients.findFirst({
-    where: and(
-      eq(consultantClients.consultantId, user!.id),
-      eq(consultantClients.companyId, id),
-      isNull(consultantClients.archivedAt)
-    ),
-  });
-  if (!link) notFound();
+  await requireOwnedClient(id);
 
   const [company, items, sessions, allComments, sites] = await Promise.all([
     db.query.companies.findFirst({ where: eq(companies.id, id) }),

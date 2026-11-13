@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { BackLink } from "@/components/workflow";
 
 /** Format Library (#35, list view): every shape data can leave Sendrow in.

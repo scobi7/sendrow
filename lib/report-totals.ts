@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
 import { db } from "./db";
 import { emissionLineItems, scope3Screening } from "./db/schema";
+import { recAdjustedKwhTons, applyScope2MarketOverride } from "./calc";
 import type { RecContext } from "./calc";
 
 export type ReportTotals = {
@@ -18,8 +19,15 @@ export type ReportTotals = {
  *  Returns null if no line items have been imported yet (caller falls back to gt_calcs).
  *  Pass `rec` (see `recContextFor` in `lib/calc.ts`) so market-based scope 2
  *  gets the same REC/residual-mix adjustment the manual-entry path applies -
- *  without it, electricity line items fall back to location-based for both. */
-export async function getLineItemTotals(companyId: string, rec?: RecContext): Promise<ReportTotals | null> {
+ *  without it, electricity line items fall back to location-based for both.
+ *  Pass `scope2MarketOverrideTons` (`company.inputs.scope2_market_override_tons`)
+ *  so a consultant override wins over the derived market figure, same rule as
+ *  `totals()` in `lib/calc.ts`. */
+export async function getLineItemTotals(
+  companyId: string,
+  rec?: RecContext,
+  scope2MarketOverrideTons?: number | null
+): Promise<ReportTotals | null> {
   const items = await db
     .select()
     .from(emissionLineItems)
@@ -46,18 +54,14 @@ export async function getLineItemTotals(companyId: string, rec?: RecContext): Pr
 
   let scope2Market = scope2Location;
   if (rec) {
-    let marketKg = 0;
+    let marketTons = 0;
     for (const item of items) {
       if (item.scope !== 2) continue;
-      if (item.category === "electricity" && item.rawUnit === "kWh") {
-        const kwh = Number(item.rawValue);
-        marketKg += kwh * rec.residualFactorValue * (1 - (rec.hasRecs ? rec.recCoveragePct : 0) / 100) * 1000;
-      } else {
-        marketKg += Number(item.co2eKg);
-      }
+      marketTons += recAdjustedKwhTons(item, rec) ?? Number(item.co2eKg) / 1000;
     }
-    scope2Market = marketKg / 1000;
+    scope2Market = marketTons;
   }
+  scope2Market = applyScope2MarketOverride(scope2Market, scope2MarketOverrideTons);
 
   return {
     scope1,

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { SEED_FACTORS, egridForState, QB_CATEGORY_TO_USEEIO, REFRIGERANT_FACTOR, COMMUTE_FACTOR, SCOPE3_OTHER_CATEGORIES } from "@/lib/factors";
+import { SEED_FACTORS, egridForState, REFRIGERANT_FACTOR, COMMUTE_FACTOR, SCOPE3_OTHER_CATEGORIES } from "@/lib/factors";
 import { getFactor } from "@/lib/store";
 
 describe("SEED_FACTORS integrity", () => {
@@ -63,22 +63,6 @@ describe("egridForState", () => {
   it("maps NY to NYCW (largest load center)", () => expect(egridForState("NY")).toBe("egrid.NYCW.2024"));
   it("unknown state codes default to USAVG", () => expect(egridForState("XX")).toBe("egrid.USAVG.2024"));
   it("handles lowercase input", () => expect(egridForState("ca")).toBe("egrid.CAMX.2024"));
-});
-
-describe("QB_CATEGORY_TO_USEEIO", () => {
-  it("all mapped factor IDs exist in SEED_FACTORS", () => {
-    const factorIds = SEED_FACTORS.map((f) => f.factor_id);
-    for (const [, map] of Object.entries(QB_CATEGORY_TO_USEEIO)) {
-      expect(factorIds).toContain(map.factorId);
-    }
-  });
-
-  it("all bucket values are valid", () => {
-    const valid = new Set(["travel", "purchased", "freight"]);
-    for (const [, map] of Object.entries(QB_CATEGORY_TO_USEEIO)) {
-      expect(valid.has(map.bucket)).toBe(true);
-    }
-  });
 });
 
 describe("REFRIGERANT_FACTOR", () => {

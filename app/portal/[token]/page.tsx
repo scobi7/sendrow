@@ -1,7 +1,8 @@
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { comments, dataRequests, companies, emissionLineItems, locations } from "@/lib/db/schema";
-import { desc, and, isNotNull } from "drizzle-orm";
+import { desc, and, inArray, isNotNull } from "drizzle-orm";
+import { alias } from "drizzle-orm/pg-core";
 import { portalTokenValid } from "@/lib/portal";
 import type { ChecklistItem } from "@/lib/portal";
 import { PortalChecklist } from "./portal-checklist";
@@ -34,6 +35,21 @@ export default async function PortalPage({ params }: { params: Promise<{ token: 
     );
   }
 
+  // Line items the consultant has asked about (any message from the consultant on
+  // the item). Only these threads and their labels are rendered below, so the two
+  // queries that feed them are scoped to this set instead of the company's full history.
+  const questionComments = alias(comments, "question_comments");
+  const questionLineIds = db
+    .select({ lineItemId: questionComments.lineItemId })
+    .from(questionComments)
+    .where(
+      and(
+        eq(questionComments.companyId, request.companyId),
+        eq(questionComments.authorType, "consultant"),
+        isNotNull(questionComments.lineItemId)
+      )
+    );
+
   const [[company], brand, threadRows, priorRows, lineComments, lineLabels, sites, siteRequests, taggedItems] = await Promise.all([
     db.select({ name: companies.name }).from(companies).where(eq(companies.id, request.companyId)),
     getBrandForCompany(request.companyId),
@@ -64,19 +80,19 @@ export default async function PortalPage({ params }: { params: Promise<{ token: 
     db
       .select({ lineItemId: comments.lineItemId, authorType: comments.authorType, body: comments.body, createdAt: comments.createdAt })
       .from(comments)
-      .where(and(eq(comments.companyId, request.companyId), isNotNull(comments.lineItemId))),
+      .where(and(eq(comments.companyId, request.companyId), isNotNull(comments.lineItemId), inArray(comments.lineItemId, questionLineIds))),
     // Line-item labels so each question shows which figure it's about
     db
       .select({ id: emissionLineItems.id, sourceRef: emissionLineItems.sourceRef, category: emissionLineItems.category, rawValue: emissionLineItems.rawValue, rawUnit: emissionLineItems.rawUnit, activityDate: emissionLineItems.activityDate })
       .from(emissionLineItems)
-      .where(eq(emissionLineItems.companyId, request.companyId)),
+      .where(and(eq(emissionLineItems.companyId, request.companyId), inArray(emissionLineItems.id, questionLineIds))),
     // Multi-office (Plan MO): sites + their delegation state for the CFO rollup
     db.select().from(locations).where(eq(locations.companyId, request.companyId)),
     db.select().from(dataRequests).where(and(eq(dataRequests.companyId, request.companyId), isNotNull(dataRequests.locationId))),
     db
       .select({ locationId: emissionLineItems.locationId, co2eKg: emissionLineItems.co2eKg, status: emissionLineItems.status })
       .from(emissionLineItems)
-      .where(eq(emissionLineItems.companyId, request.companyId)),
+      .where(and(eq(emissionLineItems.companyId, request.companyId), eq(emissionLineItems.status, "mapped"))),
   ]);
   const prefill = priorRows.map((r) => ({
     date: r.activityDate ?? "",
@@ -132,7 +148,7 @@ export default async function PortalPage({ params }: { params: Promise<{ token: 
         ...(brand?.accentColor ? ({ "--primary": brand.accentColor } as React.CSSProperties) : {}),
       }}
     >
-      {/* White-label surface: consultant branding, never Sendrow (contracts/ §11) */}
+      {/* Consultant branding comes first; a small "Powered by Sendrow" footer sits at the bottom (contracts/ §11) */}
       <div className="mb-10">
         {brand && (
           <div className="mb-6 flex items-center gap-3">

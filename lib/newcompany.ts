@@ -13,16 +13,9 @@ export function createCompanyRecord(name: string): Company {
     reportingFramework: null,
     setupComplete: false,
     createdAt: new Date().toISOString(),
-    connections: {
-      quickbooks: { connected: false, lastSynced: null },
-      utility: { connected: false, lastSynced: null },
-    },
-    qbTransactions: [],
-    utilityData: [],
     inputs: {},
     calcs: [],
     sectionStatus: {
-      connections: "not_started",
       scope1: "not_started",
       scope2: "not_started",
       scope3: "not_started",

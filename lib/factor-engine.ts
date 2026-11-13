@@ -82,6 +82,35 @@ export function applyFactor(
   return { co2e_kg, calc_log };
 }
 
+/** A row of the emission_factors table as Drizzle returns it (numeric comes back as a string). */
+export type EmissionFactorRow = {
+  factorId: string;
+  factorName: string;
+  category: string;
+  value: string | number;
+  unit: string;
+  source: string;
+  sourceUrl: string;
+  yearEffective: number;
+  yearRetired: number | null;
+};
+
+/** The one DB-row-to-EmissionFactor mapper. Shared by loadFactors (lib/store.ts)
+ *  and getFactorsFromDb below, so both read the table the same way. */
+export function factorFromRow(r: EmissionFactorRow): EmissionFactor {
+  return {
+    factor_id: r.factorId,
+    factor_name: r.factorName,
+    category: r.category,
+    value: Number(r.value),
+    unit: r.unit,
+    source: r.source,
+    source_url: r.sourceUrl,
+    year_effective: r.yearEffective,
+    year_retired: r.yearRetired ?? null,
+  };
+}
+
 /** DB-backed loader - returns all non-retired factors from gt_emission_factors.
  *  Falls back to SEED_FACTORS if the DB has no rows (useful in dev before seeding). */
 export async function getFactorsFromDb(): Promise<EmissionFactor[]> {
@@ -96,15 +125,5 @@ export async function getFactorsFromDb(): Promise<EmissionFactor[]> {
 
   if (rows.length === 0) return SEED_FACTORS;
 
-  return rows.map((r) => ({
-    factor_id: r.factorId,
-    factor_name: r.factorName,
-    category: r.category,
-    value: Number(r.value),
-    unit: r.unit,
-    source: r.source,
-    source_url: r.sourceUrl,
-    year_effective: r.yearEffective,
-    year_retired: r.yearRetired ?? null,
-  }));
+  return rows.map(factorFromRow);
 }

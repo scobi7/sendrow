@@ -1,9 +1,10 @@
+import { fmtNum1, fmtShortDateYear } from "@/lib/format";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { and, desc, eq, isNull } from "drizzle-orm";
-import { currentUser } from "@/lib/auth";
+import { requireOwnedClient } from "@/lib/guards";
 import { db } from "@/lib/db";
-import { companies, consultantClients, evidence, locations, shareLinks, snapshots, userCompanies } from "@/lib/db/schema";
+import { companies, evidence, locations, shareLinks, snapshots, userCompanies } from "@/lib/db/schema";
 import { siteLabel } from "@/lib/site-requests";
 import { shareSnapshot, revokeShareLink } from "@/lib/consultant-actions";
 import { BackLink } from "@/components/workflow";
@@ -18,16 +19,9 @@ export default async function SnapshotSharePage({
 }: {
   params: Promise<{ id: string; snapshotId: string }>;
 }) {
-  const [{ id, snapshotId }, user] = await Promise.all([params, currentUser()]);
+  const { id, snapshotId } = await params;
 
-  const link = await db.query.consultantClients.findFirst({
-    where: and(
-      eq(consultantClients.consultantId, user!.id),
-      eq(consultantClients.companyId, id),
-      isNull(consultantClients.archivedAt)
-    ),
-  });
-  if (!link) notFound();
+  await requireOwnedClient(id);
 
   const [company, snap] = await Promise.all([
     db.query.companies.findFirst({ where: eq(companies.id, id) }),
@@ -64,9 +58,6 @@ export default async function SnapshotSharePage({
     .sort((a, b) => b.co2eT - a.co2eT);
   const hasSiteData = byLocation.some((b) => b.key !== "company");
   const isLatest = newerSnapshots[0]?.id === snap.id;
-  const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 1 });
-  const fmtDate = (iso: string) =>
-    new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 
   const FORMATS: { key: string; label: string; note: string }[] = [
     { key: "sb253", label: "SB 253", note: "CARB draft format" },
@@ -89,7 +80,7 @@ export default async function SnapshotSharePage({
             {!isLatest && " · superseded by a newer snapshot"}
           </p>
         </div>
-        <span className="chip">Locked · {fmtDate(snap.createdAt)}</span>
+        <span className="chip">Locked · {fmtShortDateYear(snap.createdAt)}</span>
       </div>
 
       {/* Scope cards */}
@@ -102,7 +93,7 @@ export default async function SnapshotSharePage({
           <div key={label as string} className="card-inner text-center">
             <p className="eyebrow">{label}</p>
             <p className="mt-2 font-data text-2xl font-bold" style={{ color: "var(--text)" }}>
-              {fmt(val as number)} <span className="text-sm font-semibold" style={{ color: "var(--text-muted)" }}>tCO2e</span>
+              {fmtNum1(val as number)} <span className="text-sm font-semibold" style={{ color: "var(--text-muted)" }}>tCO2e</span>
             </p>
           </div>
         ))}
@@ -116,7 +107,7 @@ export default async function SnapshotSharePage({
             {byLocation.map((b) => (
               <div key={b.key} className="flex items-center justify-between py-2 text-sm">
                 <p style={{ color: "var(--text)" }}>{b.label}</p>
-                <p className="font-data font-semibold" style={{ color: "var(--text)" }}>{fmt(b.co2eT)} tCO2e</p>
+                <p className="font-data font-semibold" style={{ color: "var(--text)" }}>{fmtNum1(b.co2eT)} tCO2e</p>
               </div>
             ))}
           </div>
@@ -128,12 +119,12 @@ export default async function SnapshotSharePage({
 
       <p className="mb-2 text-xs" style={{ color: "var(--text-muted)" }}>
         Calculated from approved line items (see Review &amp; Approve) using stored methodology + emission factors ·
-        total <span className="font-data font-semibold" style={{ color: "var(--text)" }}>{fmt(totals.total)} tCO2e</span>
-        {totals.scope2Market > 0 && ` · Scope 2 market-based ${fmt(totals.scope2Market)} t`}
+        total <span className="font-data font-semibold" style={{ color: "var(--text)" }}>{fmtNum1(totals.total)} tCO2e</span>
+        {totals.scope2Market > 0 && ` · Scope 2 market-based ${fmtNum1(totals.scope2Market)} t`}
       </p>
       <p className="mb-6 text-xs" style={{ color: "var(--text-muted)" }}>
         Evidence on file ({evidenceRows.length} file{evidenceRows.length !== 1 ? "s" : ""}) · {snap.itemCount} frozen line items ·
-        approved by {approver?.name ?? "you"} on {fmtDate(snap.createdAt)} ·{" "}
+        approved by {approver?.name ?? "you"} on {fmtShortDateYear(snap.createdAt)} ·{" "}
         <span className="font-data">sha256 {snap.sha256.slice(0, 12)}…</span>
       </p>
 
@@ -189,7 +180,7 @@ export default async function SnapshotSharePage({
                 <div key={sh.token} className="flex items-center gap-2 text-xs">
                   <ShareLinkButton token={sh.token} />
                   <span className="truncate" style={{ color: "var(--text-muted)" }}>
-                    → {sh.recipientLabel || sh.recipientEmail || "unnamed recipient"} · {fmtDate(sh.createdAt)}
+                    → {sh.recipientLabel || sh.recipientEmail || "unnamed recipient"} · {fmtShortDateYear(sh.createdAt)}
                   </span>
                   <form action={revokeShareLink.bind(null, sh.token, id)}>
                     <button className="transition-opacity hover:opacity-70" style={{ color: "var(--text-muted)" }} title="Revoke">

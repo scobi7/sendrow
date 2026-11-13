@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { and, desc, eq, isNull } from "drizzle-orm";
-import { currentUser } from "@/lib/auth";
+import { desc, eq } from "drizzle-orm";
+import { requireOwnedClient } from "@/lib/guards";
 import { db } from "@/lib/db";
-import { companies, consultantClients, events } from "@/lib/db/schema";
+import { companies, events } from "@/lib/db/schema";
 
 const VERB_LABEL: Record<string, string> = {
   "request.created": "Data request sent",
@@ -38,16 +38,9 @@ const VERB_LABEL: Record<string, string> = {
 
 /** The immutable activity log (U1.3 / Ground Rule 3): who did what, when -  *  the diary that IS the product when auditors show up. */
 export default async function ActivityPage({ params }: { params: Promise<{ id: string }> }) {
-  const [{ id }, user] = await Promise.all([params, currentUser()]);
+  const { id } = await params;
 
-  const link = await db.query.consultantClients.findFirst({
-    where: and(
-      eq(consultantClients.consultantId, user!.id),
-      eq(consultantClients.companyId, id),
-      isNull(consultantClients.archivedAt)
-    ),
-  });
-  if (!link) notFound();
+  await requireOwnedClient(id);
 
   const [company, rows] = await Promise.all([
     db.query.companies.findFirst({ where: eq(companies.id, id) }),

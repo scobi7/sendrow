@@ -7,7 +7,7 @@ import { emissionFactors as factorsTable } from "@/lib/db/schema";
 import { SEED_FACTORS } from "@/lib/factors";
 import { EmissionFactor } from "@/lib/types";
 
-const MIGRATION_SQL = `CREATE TABLE IF NOT EXISTS gt_emission_factors (
+const MIGRATION_SQL = `CREATE TABLE IF NOT EXISTS emission_factors (
   factor_id text PRIMARY KEY,
   factor_name text NOT NULL,
   category text NOT NULL,

@@ -1,9 +1,52 @@
 import Link from "next/link";
 import { Logo } from "./ui";
 
-export function LandingFooter() {
+/** "default": light footer with the full product and legal link set (marketing pages).
+ *  "ink": the dark homepage band - tagline, short link row, no margin above. */
+export function LandingFooter({ variant = "default" }: { variant?: "default" | "ink" }) {
   const year = new Date().getFullYear();
   const support = process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "contact@sendrow.app";
+
+  if (variant === "ink") {
+    return (
+      <footer className="px-6 py-14" style={{ background: "var(--ink-band)" }}>
+        <div className="mx-auto max-w-4xl">
+          <p className="font-display text-xl font-semibold leading-snug" style={{ color: "var(--ink-band-text)" }}>
+            One audited inventory in.
+            <br />
+            Every buyer and regulator format out.
+          </p>
+          <div
+            className="mt-8 flex flex-wrap items-center justify-between gap-6"
+            style={{ borderTop: "1px solid rgba(233,239,233,0.15)", paddingTop: "1.5rem" }}
+          >
+            <span className="font-display text-base font-bold" style={{ color: "var(--ink-band-text)" }}>
+              Sendrow
+            </span>
+            <p className="text-xs" style={{ color: "rgba(233,239,233,0.45)" }}>
+              &copy; {year} Sendrow. Built in California.
+            </p>
+            <div className="flex gap-6">
+              {[
+                ["Sign in", "/login"],
+                ["Request demo", "/demo"],
+                ["Security", "/security"],
+              ].map(([label, href]) => (
+                <Link
+                  key={href}
+                  href={href}
+                  className="text-xs transition-opacity hover:opacity-80"
+                  style={{ color: "rgba(233,239,233,0.6)" }}
+                >
+                  {label}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      </footer>
+    );
+  }
 
   return (
     <footer

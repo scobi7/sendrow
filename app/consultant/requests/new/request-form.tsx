@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { createRequestFromPage } from "@/lib/workflow-actions";
 import { SubmitButton } from "@/components/submit-button";
+import { DATA_TYPE_OPTIONS } from "@/lib/data-type-labels";
 
 /** Common reporting windows - same pick-don't-type pattern as the due date. */
 const PERIOD_PRESETS = [
@@ -12,14 +13,6 @@ const PERIOD_PRESETS = [
   "Last 12 months",
   "Q1 2026",
   "Q2 2026",
-];
-
-const DATA_TYPE_CHIPS: { key: string; label: string }[] = [
-  { key: "utility_bills", label: "Electricity & gas" },
-  { key: "fleet_fuel_dollar", label: "Fleet fuel" },
-  { key: "vendor_invoices", label: "Spend data" },
-  { key: "business_travel", label: "Business travel" },
-  { key: "commute_survey", label: "Commute survey" },
 ];
 
 type TemplateOption = {
@@ -127,7 +120,7 @@ export function NewRequestForm({
       <div>
         <label className="label">Data types requested</label>
         <div className="flex flex-wrap gap-2">
-          {DATA_TYPE_CHIPS.map(({ key, label }) => {
+          {DATA_TYPE_OPTIONS.map(({ key, label }) => {
             const active = selectedTypes.includes(key);
             return (
               <button

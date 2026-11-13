@@ -10,34 +10,29 @@ const answered = (v: unknown) => v !== undefined && v !== null && v !== "";
 
 export function evaluateSections(company: Company): Record<SectionName, SectionStatus> {
   const inp = company.inputs;
-  const conn = company.connections;
 
   const status = (done: boolean, touched: boolean): SectionStatus =>
     done ? "complete" : touched ? "in_progress" : "not_started";
 
-  // Connections
-  const connDone = conn.quickbooks.connected && conn.utility.connected;
-  const connTouched = conn.quickbooks.connected || conn.utility.connected;
-
   // Scope 1 - each of 4 subsections answered or NA
   const fleetDone = !!inp.fleet_na || [inp.fleet_gasoline_gal, inp.fleet_diesel_gal, inp.fleet_propane_gal].some(answered);
-  const gasDone = !!inp.natgas_na || answered(inp.natgas_therms_override) || (conn.utility.connected && company.utilityData.some((m) => m.therms > 0));
+  const gasDone = !!inp.natgas_na || answered(inp.natgas_therms_override);
   const refDone = !!inp.refrigerant_na || (answered(inp.refrigerant_kg) && answered(inp.refrigerant_type));
   const eqDone = !!inp.equipment_na || (answered(inp.equipment_gal) && answered(inp.equipment_fuel_type));
   const s1Done = fleetDone && gasDone && refDone && eqDone;
   const s1Touched = [fleetDone, gasDone, refDone, eqDone].some(Boolean) ||
     [inp.fleet_gasoline_gal, inp.refrigerant_kg, inp.equipment_gal].some(answered);
 
-  // Scope 2 - utility connected and reviewed
-  const s2Done = conn.utility.connected && !!inp.scope2_reviewed;
-  const s2Touched = conn.utility.connected || !!inp.has_recs;
+  // Scope 2 - consultant has reviewed the electricity data and REC position
+  const s2Done = !!inp.scope2_reviewed;
+  const s2Touched = !!inp.has_recs;
 
-  // Scope 3 - QB reviewed, commuting + waste entered, all other categories decided
+  // Scope 3 - commuting + waste entered, all other categories decided
   const commuteDone = answered(inp.commute_avg_miles) && answered(inp.commute_mode) && answered(inp.commute_days_in_office);
   const wasteDone = [inp.waste_landfill_tons, inp.waste_recycled_tons, inp.waste_composted_tons].some(answered);
   const othersDone = SCOPE3_OTHER_CATEGORIES.every((c) => (inp.scope3_other_categories ?? {})[c]);
-  const s3Done = !!inp.qb_data_reviewed && commuteDone && wasteDone && othersDone;
-  const s3Touched = !!inp.qb_data_reviewed || commuteDone || wasteDone || Object.keys(inp.scope3_other_categories ?? {}).length > 0;
+  const s3Done = commuteDone && wasteDone && othersDone;
+  const s3Touched = commuteDone || wasteDone || Object.keys(inp.scope3_other_categories ?? {}).length > 0;
 
   // Social
   const socialDone = [inp.social_total_employees, inp.social_new_hires, inp.social_departures,
@@ -56,7 +51,6 @@ export function evaluateSections(company: Company): Record<SectionName, SectionS
   const reportsDone = !!company.reportGeneratedAt;
 
   return {
-    connections: status(connDone, connTouched),
     scope1: status(s1Done, s1Touched),
     scope2: status(s2Done, s2Touched),
     scope3: status(s3Done, s3Touched),
@@ -77,7 +71,7 @@ export function progressPercent(company: Company): number {
 
 export function canGenerateReport(company: Company): boolean {
   const s = company.sectionStatus;
-  return s.connections === "complete" && s.scope1 === "complete" && s.scope2 === "complete";
+  return s.scope1 === "complete" && s.scope2 === "complete";
 }
 
 export interface Gap {

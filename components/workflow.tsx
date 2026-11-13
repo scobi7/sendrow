@@ -22,6 +22,26 @@ export function StatusBadge({ status }: { status: WorkflowStatus }) {
   );
 }
 
+/** Shared base for small rounded labels and chips. */
+const PILL_BASE = "rounded-full px-2 py-0.5 text-xs font-medium";
+
+/** Pill: the common shape for status labels and small action buttons. Callers
+ *  pass colors through `style` and any extra classes through `className`.
+ *  `as` swaps the element (e.g. `as="button"` or `as={Link}`). */
+export function Pill({ as: Tag = "span", className, style, children, ...rest }: {
+  as?: React.ElementType;
+  className?: string;
+  style?: React.CSSProperties;
+  children?: React.ReactNode;
+  [prop: string]: unknown;
+}) {
+  return (
+    <Tag className={className ? `${PILL_BASE} ${className}` : PILL_BASE} style={style} {...rest}>
+      {children}
+    </Tag>
+  );
+}
+
 /** Completeness meter (6.7) - reused on dashboard, client detail, and digest. */
 export function CompletenessMeter({ percent, label, compact = false }: { percent: number; label?: string; compact?: boolean }) {
   const clamped = Math.max(0, Math.min(100, percent));

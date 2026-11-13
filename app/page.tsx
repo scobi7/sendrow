@@ -1,10 +1,10 @@
-import Link from "next/link";
 import { currentUser } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { Logo } from "@/components/ui";
 import { TrackedLink } from "@/components/tracked-link";
 import { PageViewTracker } from "@/components/page-view-tracker";
 import { WaitlistForm } from "@/components/waitlist-form";
+import { LandingFooter } from "@/components/landing-footer";
 
 export default async function Home() {
   const user = await currentUser();
@@ -152,42 +152,7 @@ export default async function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="px-6 py-14" style={{ background: "var(--ink-band)" }}>
-        <div className="mx-auto max-w-4xl">
-          <p className="font-display text-xl font-semibold leading-snug" style={{ color: "var(--ink-band-text)" }}>
-            One audited inventory in.
-            <br />
-            Every buyer and regulator format out.
-          </p>
-          <div
-            className="mt-8 flex flex-wrap items-center justify-between gap-6"
-            style={{ borderTop: "1px solid rgba(233,239,233,0.15)", paddingTop: "1.5rem" }}
-          >
-            <span className="font-display text-base font-bold" style={{ color: "var(--ink-band-text)" }}>
-              Sendrow
-            </span>
-            <p className="text-xs" style={{ color: "rgba(233,239,233,0.45)" }}>
-              &copy; {new Date().getFullYear()} Sendrow. Built in California.
-            </p>
-            <div className="flex gap-6">
-              {[
-                ["Sign in", "/login"],
-                ["Request demo", "/demo"],
-                ["Security", "/security"],
-              ].map(([label, href]) => (
-                <Link
-                  key={href}
-                  href={href}
-                  className="text-xs transition-opacity hover:opacity-80"
-                  style={{ color: "rgba(233,239,233,0.6)" }}
-                >
-                  {label}
-                </Link>
-              ))}
-            </div>
-          </div>
-        </div>
-      </footer>
+      <LandingFooter variant="ink" />
     </main>
   );
 }

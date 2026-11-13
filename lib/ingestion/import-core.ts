@@ -6,6 +6,7 @@ import { vendorMappings as vendorMappingsTable } from "@/lib/db/schema";
 import { applyProfile, rowToLineItem, fleetFuelToLineItems } from "./ingest";
 import { getVendorMappingsFromDb } from "@/lib/vendor-mappings";
 import { getFactorsFromDb } from "@/lib/factor-engine";
+import { uid } from "@/lib/store";
 import { fuzzyMatchHeaders } from "./fuzzy-match";
 import { scoreSession } from "./session-score";
 import { checklistComplete } from "@/lib/portal";
@@ -15,10 +16,6 @@ import { companies } from "@/lib/db/schema";
 import type { ChecklistItem } from "@/lib/portal";
 import type { ColumnMap, FuelPrices } from "./ingest";
 import type { DataType } from "./data-type-templates";
-
-function newId(prefix: string) {
-  return prefix + "_" + Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
-}
 
 export type ImportInput = {
   companyId: string;
@@ -77,7 +74,7 @@ export async function processImport(input: ImportInput): Promise<ImportOutcome> 
   const { score } = scored;
   let { autoApproved, reasons } = scored;
 
-  const profileId = newId("mp");
+  const profileId = uid("mp_");
   await db.insert(mappingProfiles).values({
     id: profileId,
     companyId,
@@ -151,7 +148,7 @@ export async function processImport(input: ImportInput): Promise<ImportOutcome> 
     await db.insert(emissionLineItems).values(inserts);
   }
 
-  const sessionId = newId("is");
+  const sessionId = uid("is_");
   await db.insert(intakeSessions).values({
     id: sessionId,
     companyId,

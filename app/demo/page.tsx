@@ -60,7 +60,7 @@ export default async function DemoPage({
               We&rsquo;ll be in touch shortly. Or pick a time right now:
             </p>
             <a
-              href="{CALENDLY_URL}"
+              href={CALENDLY_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="btn btn-primary mt-6 inline-block text-sm px-6 py-2.5"
@@ -99,7 +99,7 @@ export default async function DemoPage({
             <p className="mt-4 text-center text-xs" style={{ color: "var(--text-muted)" }}>
               Prefer to pick a time directly?{" "}
               <a
-                href="{CALENDLY_URL}"
+                href={CALENDLY_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="underline transition-opacity hover:opacity-70"

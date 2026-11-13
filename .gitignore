@@ -13,3 +13,6 @@ build
 .vercel
 .env*
 *.swp
+
+# build cache
+tsconfig.tsbuildinfo

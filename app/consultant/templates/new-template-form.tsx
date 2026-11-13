@@ -2,14 +2,7 @@
 
 import { useState } from "react";
 import { SubmitButton } from "@/components/submit-button";
-
-const DATA_TYPE_CHIPS: { key: string; label: string }[] = [
-  { key: "utility_bills", label: "Electricity & gas" },
-  { key: "fleet_fuel_dollar", label: "Fleet fuel" },
-  { key: "vendor_invoices", label: "Spend data" },
-  { key: "business_travel", label: "Business travel" },
-  { key: "commute_survey", label: "Commute survey" },
-];
+import { DATA_TYPE_OPTIONS } from "@/lib/data-type-labels";
 
 export function NewTemplateForm({ action }: { action: (formData: FormData) => Promise<void> }) {
   const [open, setOpen] = useState(false);
@@ -45,7 +38,7 @@ export function NewTemplateForm({ action }: { action: (formData: FormData) => Pr
       <div>
         <label className="label">Data types</label>
         <div className="flex flex-wrap gap-2">
-          {DATA_TYPE_CHIPS.map(({ key, label }) => {
+          {DATA_TYPE_OPTIONS.map(({ key, label }) => {
             const active = selected.includes(key);
             return (
               <button

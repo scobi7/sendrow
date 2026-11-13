@@ -1,6 +1,7 @@
 import { lookupFactor, applyFactor } from "@/lib/factor-engine";
 import { normalizeQuantity } from "./units";
 import { matchVendor } from "@/lib/vendor-mappings";
+import { uid } from "@/lib/store";
 import type { VendorMapping } from "@/lib/vendor-mappings";
 import type { EmissionFactor, CalcLog } from "@/lib/factor-engine";
 import type { StandardField } from "./fuzzy-match";
@@ -174,7 +175,7 @@ export function fleetFuelToLineItems(
     };
 
     results.push({
-      id: newId(),
+      id: uid("li_"),
       companyId,
       sourceRef: row.source_ref ?? row.date ?? "",
       scope: 1,
@@ -193,18 +194,13 @@ export function fleetFuelToLineItems(
   return results;
 }
 
-let _idCounter = 0;
-function newId(): string {
-  return `li_${Date.now()}_${++_idCounter}`;
-}
-
 /**
  * Builds a flagged zero-emission line item for a row that could not be mapped.
  * Contracts invariant: no data is ever silently dropped - every input row
  * becomes a line item, and unmappable ones surface in the workpaper and
  * review queue with the reason recorded.
  */
-export function unmappedLineItem(
+function unmappedLineItem(
   row: NormalizedRow,
   reason: string,
   companyId: string,
@@ -223,7 +219,7 @@ export function unmappedLineItem(
   };
 
   return {
-    id: newId(),
+    id: uid("li_"),
     companyId,
     sourceRef: row.source_ref ?? row.date ?? "",
     scope: scopeInfo.scope,
@@ -271,7 +267,7 @@ export function rowToLineItem(
     if (factor) {
       const { co2e_kg, calc_log } = applyFactor(qty, row.unit ?? "", factor);
       return {
-        id: newId(),
+        id: uid("li_"),
         companyId,
         sourceRef: row.source_ref ?? "",
         scope: vendorMatch.scope,
@@ -309,7 +305,7 @@ export function rowToLineItem(
   const finalLog = norm.conversion ? { ...calc_log, unit_conversion: norm.conversion } : calc_log;
 
   return {
-    id: newId(),
+    id: uid("li_"),
     companyId,
     sourceRef: row.source_ref ?? "",
     scope: scopeInfo.scope,

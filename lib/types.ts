@@ -19,7 +19,6 @@ export interface Location {
 }
 
 export type SectionName =
-  | "connections"
   | "scope1"
   | "scope2"
   | "scope3"
@@ -29,21 +28,6 @@ export type SectionName =
 
 export type SectionStatus = "not_started" | "in_progress" | "complete";
 
-export interface QBTransaction {
-  id: string;
-  vendor: string;
-  category: string; // QuickBooks expense category
-  amount: number; // USD
-  date: string; // ISO
-}
-
-export interface UtilityMonth {
-  locationId: string;
-  month: string; // YYYY-MM
-  kwh: number;
-  therms: number;
-}
-
 /** Manual + reviewed data inputs, keyed by field name */
 export interface Inputs {
   // Scope 1
@@ -51,7 +35,7 @@ export interface Inputs {
   fleet_diesel_gal?: number | null;
   fleet_propane_gal?: number | null;
   fleet_na?: boolean;
-  natgas_therms_override?: number | null; // pre-filled from utility otherwise
+  natgas_therms_override?: number | null; // therms/yr entered by hand (or by the consultant)
   natgas_na?: boolean;
   refrigerant_type?: string;
   refrigerant_kg?: number | null;
@@ -69,7 +53,6 @@ export interface Inputs {
   scope2_market_override_tons?: number | null;
   scope2_market_override_reason?: string;
   // Scope 3
-  qb_data_reviewed?: boolean;
   commute_avg_miles?: number | null; // round trip daily miles
   commute_mode?: string;
   commute_days_in_office?: number | null;
@@ -116,12 +99,6 @@ export interface Company {
   reportingFramework: string | null;
   setupComplete: boolean;
   createdAt: string;
-  connections: {
-    quickbooks: { connected: boolean; lastSynced: string | null; accessToken?: string | null; refreshToken?: string | null; tokenExpiresAt?: string | null; realmId?: string | null };
-    utility: { connected: boolean; lastSynced: string | null; authUid?: string | null; authEmail?: string | null };
-  };
-  qbTransactions: QBTransaction[];
-  utilityData: UtilityMonth[];
   inputs: Inputs;
   calcs: CalcResult[];
   sectionStatus: Record<SectionName, SectionStatus>;

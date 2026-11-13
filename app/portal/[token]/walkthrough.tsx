@@ -7,7 +7,7 @@ import type { DataType } from "@/lib/ingestion/data-type-templates";
  *  but scoped to ONE request - plain questions, one activity per step, skip
  *  anything you don't have. Minutes, not an onboarding journey. */
 
-export type WalkStep = {
+type WalkStep = {
   key: string;
   question: string;
   help: string;
@@ -16,7 +16,7 @@ export type WalkStep = {
   unitLabel: string;
 };
 
-export const WALKTHROUGH_STEPS: Partial<Record<DataType, WalkStep[]>> = {
+const WALKTHROUGH_STEPS: Partial<Record<DataType, WalkStep[]>> = {
   utility_bills: [
     {
       key: "electricity",

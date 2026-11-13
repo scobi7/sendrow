@@ -1,9 +1,8 @@
+import { fmtNum1 } from "@/lib/format";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { and, eq, isNull } from "drizzle-orm";
 import { currentUser } from "@/lib/auth";
-import { db } from "@/lib/db";
-import { consultantClients } from "@/lib/db/schema";
+import { findOwnedLink } from "@/lib/guards";
 import { loadCompany } from "@/lib/store";
 import { totals } from "@/lib/calc";
 import { canGenerateReport, progressPercent } from "@/lib/progress";
@@ -22,9 +21,7 @@ export default async function ManageReports({
   const user = await currentUser();
   if (!user || user.role !== "consultant") redirect("/login");
 
-  const link = await db.query.consultantClients.findFirst({
-    where: and(eq(consultantClients.consultantId, user.id), eq(consultantClients.companyId, id), isNull(consultantClients.archivedAt)),
-  });
+  const link = await findOwnedLink(user.id, id);
   if (!link) notFound();
 
   const company = await loadCompany(id);
@@ -32,7 +29,6 @@ export default async function ManageReports({
   const ready = canGenerateReport(company);
   const pct = progressPercent(company);
   const s = company.sectionStatus;
-  const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 1 });
   const format = rawFormat && QUESTIONNAIRE_FORMATS.includes(rawFormat) ? rawFormat : null;
   const mapping = format ? questionnaireMapping(company, format) : null;
   const base = `/consultant/clients/${id}/manage`;
@@ -40,7 +36,6 @@ export default async function ManageReports({
   const boundGenerate = consultantGenerateReport.bind(null, id);
 
   const checks: [string, boolean, string][] = [
-    ["Connections complete", s.connections === "complete", "Spend and utility data on file"],
     ["Scope 1 complete", s.scope1 === "complete", "All subsections answered or N/A"],
     ["Scope 2 complete", s.scope2 === "complete", "Utility data reviewed"],
     ["Scope 3 complete (recommended)", s.scope3 === "complete", "Required for CDP/EcoVadis completeness"],
@@ -58,7 +53,7 @@ export default async function ManageReports({
           <div key={label as string}>
             <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>{label}</p>
             <p className="mt-1 text-xl font-bold font-data" style={{ color: label === "Total" ? "var(--primary)" : "var(--text)" }}>
-              {fmt(v as number)}
+              {fmtNum1(v as number)}
             </p>
             <p className="text-xs" style={{ color: "var(--text-muted)" }}>tCO2e</p>
           </div>

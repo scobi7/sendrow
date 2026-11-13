@@ -1,3 +1,4 @@
+import { fmtShortDateYear } from "@/lib/format";
 import Link from "next/link";
 import { and, eq, inArray, isNull } from "drizzle-orm";
 import { currentUser } from "@/lib/auth";
@@ -39,7 +40,7 @@ export default async function ComplianceCalendarPage() {
     .filter((r) => r.dueDate)
     .map((r) => ({
       date: r.dueDate!,
-      dateLabel: new Date(r.dueDate! + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+      dateLabel: fmtShortDateYear(new Date(r.dueDate! + "T12:00:00")),
       title: `${nameOf.get(r.companyId) ?? "Client"} - ${r.description}`,
       note: "Set by consultant",
       companyId: r.companyId,

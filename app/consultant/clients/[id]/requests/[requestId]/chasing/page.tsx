@@ -1,8 +1,9 @@
+import { fmtShortDate, fmtShortDateYear } from "@/lib/format";
 import { notFound } from "next/navigation";
-import { and, eq, isNull } from "drizzle-orm";
-import { currentUser } from "@/lib/auth";
+import { eq } from "drizzle-orm";
+import { requireOwnedClient } from "@/lib/guards";
 import { db } from "@/lib/db";
-import { companies, consultantClients, dataRequests } from "@/lib/db/schema";
+import { companies, dataRequests } from "@/lib/db/schema";
 import { toggleRequestReminders } from "@/lib/consultant-actions";
 import { BackLink } from "@/components/workflow";
 
@@ -14,16 +15,9 @@ export default async function ChasingSchedulePage({
 }: {
   params: Promise<{ id: string; requestId: string }>;
 }) {
-  const [{ id, requestId }, user] = await Promise.all([params, currentUser()]);
+  const { id, requestId } = await params;
 
-  const link = await db.query.consultantClients.findFirst({
-    where: and(
-      eq(consultantClients.consultantId, user!.id),
-      eq(consultantClients.companyId, id),
-      isNull(consultantClients.archivedAt)
-    ),
-  });
-  if (!link) notFound();
+  await requireOwnedClient(id);
 
   const [company, req] = await Promise.all([
     db.query.companies.findFirst({ where: eq(companies.id, id) }),
@@ -32,9 +26,6 @@ export default async function ChasingSchedulePage({
   if (!company || !req || req.companyId !== id) notFound();
 
   const sent = (req.remindersSentAt as Record<string, string> | null) ?? {};
-  const fmtDate = (d: Date) => d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-  const fmtFull = (iso: string) =>
-    new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 
   type Touch = { key: string; label: string; detail: string };
   let schedule: Touch[];
@@ -46,9 +37,9 @@ export default async function ChasingSchedulePage({
       return d;
     };
     schedule = [
-      { key: "due-7", label: "7 days before due", detail: `Scheduled - ${fmtDate(offset(7))}` },
-      { key: "due-2", label: "2 days before due", detail: `Scheduled - ${fmtDate(offset(2))}` },
-      { key: "due-0", label: "Day of deadline", detail: `Scheduled - ${fmtDate(due)}` },
+      { key: "due-7", label: "7 days before due", detail: `Scheduled - ${fmtShortDate(offset(7))}` },
+      { key: "due-2", label: "2 days before due", detail: `Scheduled - ${fmtShortDate(offset(2))}` },
+      { key: "due-0", label: "Day of deadline", detail: `Scheduled - ${fmtShortDate(due)}` },
       { key: "overdue", label: "If overdue", detail: "3 days after due - you're CC'd" },
     ];
   } else {
@@ -72,7 +63,7 @@ export default async function ChasingSchedulePage({
           </h1>
           <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>
             {req.description}
-            {req.dueDate && ` · due ${fmtFull(req.dueDate + "T12:00:00")}`}
+            {req.dueDate && ` · due ${fmtShortDateYear(req.dueDate + "T12:00:00")}`}
           </p>
         </div>
         {!closed && (
@@ -107,7 +98,7 @@ export default async function ChasingSchedulePage({
                 <div>
                   <p className="text-sm font-medium" style={{ color: "var(--text)" }}>{t.label}</p>
                   <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-                    {sentAt ? `Sent - ${fmtFull(sentAt)}` : t.detail}
+                    {sentAt ? `Sent - ${fmtShortDateYear(sentAt)}` : t.detail}
                   </p>
                 </div>
                 <span
@@ -134,7 +125,7 @@ export default async function ChasingSchedulePage({
           <div className="space-y-2">
             {log.map(([tier, ts]) => (
               <p key={tier} className="text-sm" style={{ color: "var(--text)" }}>
-                <span className="font-data text-xs" style={{ color: "var(--text-muted)" }}>{fmtFull(ts)}</span> - reminder
+                <span className="font-data text-xs" style={{ color: "var(--text-muted)" }}>{fmtShortDateYear(ts)}</span> - reminder
                 sent ({tierLabel(tier)}) · polite tone, includes the direct magic link
               </p>
             ))}

@@ -1,3 +1,5 @@
+import { Pill } from "@/components/workflow";
+import { fmtNum1 } from "@/lib/format";
 import { and, eq, isNotNull } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { dataRequests, emissionLineItems, locations } from "@/lib/db/schema";
@@ -30,7 +32,6 @@ export async function LocationsPanel({ companyId }: { companyId: string }) {
   const rollups = siteRollups(sites.map((s) => s.id), siteRequests, taggedItems);
   const byId = new Map(rollups.map((r) => [r.locationId, r]));
   const totalT = rollups.reduce((s, r) => s + r.co2eKg, 0) / 1000;
-  const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 1 });
 
   return (
     <div className="glass-panel">
@@ -66,7 +67,7 @@ export async function LocationsPanel({ companyId }: { companyId: string }) {
                     <p className="mt-0.5 text-xs" style={{ color: "var(--text-muted)" }}>
                       {site.contactEmail ? `${site.contactName ? `${site.contactName} · ` : ""}${site.contactEmail}` : "No site contact yet"}
                       {r.itemsTotal > 0 && ` · ${r.itemsReceived}/${r.itemsTotal} items in`}
-                      {r.co2eKg > 0 && ` · ${fmt(r.co2eKg / 1000)} tCO2e`}
+                      {r.co2eKg > 0 && ` · ${fmtNum1(r.co2eKg / 1000)} tCO2e`}
                     </p>
                   </div>
                   <span className="shrink-0 rounded-full px-2.5 py-1 font-data text-[11px] font-semibold" style={{ background: style.bg, color: style.fg }}>
@@ -92,9 +93,9 @@ export async function LocationsPanel({ companyId }: { companyId: string }) {
                       className="input px-2 py-1 text-xs"
                       style={{ width: "14rem" }}
                     />
-                    <button className="rounded-full px-2 py-0.5 text-xs font-medium transition-opacity hover:opacity-70" style={{ background: "var(--primary-tint)", color: "var(--primary)" }}>
+                    <Pill as="button" className="transition-opacity hover:opacity-70" style={{ background: "var(--primary-tint)", color: "var(--primary)" }}>
                       {r.status === "no_link" ? "Send site link" : "Resend site link"}
-                    </button>
+                    </Pill>
                   </form>
                   {r.token && <PortalLinkButton token={r.token} />}
                   {!referenced && (
@@ -108,7 +109,7 @@ export async function LocationsPanel({ companyId }: { companyId: string }) {
           })}
           <div className="flex items-center justify-between px-5 py-3">
             <p className="text-xs font-semibold" style={{ color: "var(--text-muted)" }}>All sites combined</p>
-            <p className="font-data text-sm font-bold" style={{ color: "var(--text)" }}>{fmt(totalT)} tCO2e</p>
+            <p className="font-data text-sm font-bold" style={{ color: "var(--text)" }}>{fmtNum1(totalT)} tCO2e</p>
           </div>
         </div>
       )}

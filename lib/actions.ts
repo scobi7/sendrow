@@ -1,51 +1,23 @@
 "use server";
 
-import crypto from "crypto";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { auth, currentUser as getClerkUser } from "@clerk/nextjs/server";
-import { and, eq, isNull } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { db } from "./db";
-import { companies, userCompanies, consultantClients, inviteTokens, scope3Screening, referralLeads } from "./db/schema";
-import {
-  loadCompany,
-  loadFactors,
-  persistCompany,
-  saveLocations,
-  uid,
-} from "./store";
+import { companies, userCompanies, consultantClients, referralLeads } from "./db/schema";
+import { uid } from "./store";
 import { currentUser } from "./auth";
-import { Company, HeadcountRange, Industry, User } from "./types";
-import { egridForState } from "./factors";
-import { getVendorMappingsFromDb } from "./vendor-mappings";
-import { recalcCompany } from "./calc";
-import { refreshSectionStatus } from "./progress";
-import { logChange } from "./audit";
+import { findOwnedLink } from "./guards";
+import { HeadcountRange, Industry, User } from "./types";
 import { createCompanyRecord } from "./newcompany";
 import { clientIp, checkRateLimit } from "./ratelimit";
 import { sendWelcomeEmail, sendReferralLeadEmail } from "./email";
-
-async function requireUser(): Promise<{ user: User; company: Company }> {
-  const user = await currentUser();
-  if (!user) redirect("/login");
-  if (!user.companyId) redirect("/onboarding");
-  const company = await loadCompany(user.companyId);
-  return { user, company };
-}
 
 async function requireConsultant(): Promise<User> {
   const user = await currentUser();
   if (!user || user.role !== "consultant") redirect("/login");
   return user;
-}
-
-async function persist(company: Company) {
-  const overrides = await loadFactors();
-  const vendorMaps = await getVendorMappingsFromDb(company.id);
-  recalcCompany(company, overrides, vendorMaps);
-  refreshSectionStatus(company);
-  await persistCompany(company);
-  revalidatePath("/", "layout");
 }
 
 // ─────────── Onboarding (after Clerk signup) ───────────
@@ -76,15 +48,6 @@ export async function onboardAsConsultant() {
   if (email) sendWelcomeEmail(name, email).catch(() => {});
   redirect("/consultant");
 }
-
-// ─────────── Setup wizard ───────────
-
-
-// ─────────── Reports ───────────
-
-
-// ─────────── Settings ───────────
-
 
 // ─────────── Consultant platform ───────────
 
@@ -129,13 +92,7 @@ export async function consultantAddClient(formData: FormData) {
 
 export async function updateClientContact(companyId: string, formData: FormData) {
   const consultant = await requireConsultant();
-  const link = await db.query.consultantClients.findFirst({
-    where: and(
-      eq(consultantClients.consultantId, consultant.id),
-      eq(consultantClients.companyId, companyId),
-      isNull(consultantClients.archivedAt)
-    ),
-  });
+  const link = await findOwnedLink(consultant.id, companyId);
   if (!link) return;
 
   const contactName = String(formData.get("contact_name") ?? "").trim();
@@ -207,6 +164,4 @@ export async function submitReferralLead(formData: FormData) {
   sendReferralLeadEmail({ name, email, company, trigger }).catch(() => {});
   redirect("/get-matched?submitted=1");
 }
-
-// ─────────── Scope 3 Materiality Screening ───────────
 

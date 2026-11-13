@@ -1,9 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { and, eq, isNull } from "drizzle-orm";
 import { currentUser } from "@/lib/auth";
-import { db } from "@/lib/db";
-import { consultantClients } from "@/lib/db/schema";
+import { findOwnedLink } from "@/lib/guards";
 import { loadCompany } from "@/lib/store";
 import { progressPercent } from "@/lib/progress";
 
@@ -25,13 +23,7 @@ export default async function ManageLayout({
   const user = await currentUser();
   if (!user || user.role !== "consultant") redirect("/login");
 
-  const link = await db.query.consultantClients.findFirst({
-    where: and(
-      eq(consultantClients.consultantId, user.id),
-      eq(consultantClients.companyId, id),
-      isNull(consultantClients.archivedAt)
-    ),
-  });
+  const link = await findOwnedLink(user.id, id);
   if (!link) notFound();
 
   const company = await loadCompany(id);

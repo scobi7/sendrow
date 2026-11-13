@@ -1,53 +1,43 @@
 import { NextRequest, NextResponse } from "next/server";
-import { and, eq, isNull } from "drizzle-orm";
-import { db } from "@/lib/db";
-import { companies, consultantClients, dataRequests, userCompanies } from "@/lib/db/schema";
-import { logEvent } from "@/lib/events";
 import { sendNewLinkRequestEmail } from "@/lib/email";
+import { logEvent } from "@/lib/events";
 import { checkRateLimit } from "@/lib/ratelimit";
+import { findPortalRequest, notifyConsultant, readJsonBody } from "@/lib/portal-api";
 
 /** The expired page's "request a new link" (U1.2): an expired token can't do
  *  anything EXCEPT ask the consultant for a fresh one. No dead ends. */
 export async function POST(request: NextRequest) {
-  const body = await request.json();
+  const body = await readJsonBody(request);
+  if (!body) return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
   const token: string = body.token ?? "";
   if (!token) return NextResponse.json({ error: "Missing token" }, { status: 400 });
   if (!checkRateLimit(`portal:request-new-link:${token}`, 5, 60 * 60 * 1000)) {
     return NextResponse.json({ error: "Already asked recently - check your email or wait a bit" }, { status: 429 });
   }
 
-  const [req] = await db.select().from(dataRequests).where(eq(dataRequests.token, token));
-  if (!req || req.status === "cancelled") {
+  // findPortalRequest, not loadPortalRequest: this route must accept expired tokens
+  const dataRequest = await findPortalRequest(token);
+  if (!dataRequest || dataRequest.status === "cancelled") {
     return NextResponse.json({ error: "This request is no longer active" }, { status: 404 });
   }
 
-  const [company, link] = await Promise.all([
-    db.query.companies.findFirst({ where: eq(companies.id, req.companyId) }),
-    db.query.consultantClients.findFirst({
-      where: and(eq(consultantClients.companyId, req.companyId), isNull(consultantClients.archivedAt)),
-    }),
-  ]);
-
-  if (link) {
-    const consultant = await db.query.userCompanies.findFirst({ where: eq(userCompanies.clerkId, link.consultantId) });
-    if (consultant?.email) {
-      sendNewLinkRequestEmail(
-        consultant.email,
-        consultant.name ?? "there",
-        company?.name ?? "A client",
-        req.description,
-        req.companyId
-      ).catch(() => {});
-    }
-  }
+  await notifyConsultant(dataRequest.companyId, (consultant, companyName) =>
+    sendNewLinkRequestEmail(
+      consultant.email,
+      consultant.name,
+      companyName,
+      dataRequest.description,
+      dataRequest.companyId
+    )
+  );
 
   logEvent({
-    companyId: req.companyId,
-    actor: `portal:${req.id}`,
+    companyId: dataRequest.companyId,
+    actor: `portal:${dataRequest.id}`,
     actorType: "supplier",
     verb: "request.link_requested",
-    subject: req.description,
-    subjectId: req.id,
+    subject: dataRequest.description,
+    subjectId: dataRequest.id,
   });
 
   return NextResponse.json({ ok: true });

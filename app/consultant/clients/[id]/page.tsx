@@ -1,13 +1,14 @@
+import { fmtShortDateYear } from "@/lib/format";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { and, desc, eq, inArray, isNull } from "drizzle-orm";
-import { currentUser } from "@/lib/auth";
+import { and, desc, eq } from "drizzle-orm";
+import { requireOwnedClient } from "@/lib/guards";
 import { db } from "@/lib/db";
-import { companies, comments, consultantClients, dataRequests, emissionLineItems, evidence, events, intakeSessions, snapshots } from "@/lib/db/schema";
+import { companies, comments, dataRequests, emissionLineItems, evidence, events, intakeSessions, snapshots } from "@/lib/db/schema";
 import { archiveClient, deleteClient, updateClientContact } from "@/lib/actions";
 import { DeleteClientButton } from "../../delete-client-button";
 import { resendPortalEmail, renewPortalLink, replyToFlag, resolveFlag } from "@/lib/consultant-actions";
-import { BackLink, StatusBadge, CompletenessMeter } from "@/components/workflow";
+import { BackLink, StatusBadge, CompletenessMeter, Pill } from "@/components/workflow";
 import { workflowStatus, nextDueDate, completenessPercent, STATUS_META } from "@/lib/client-status";
 import { PortalLinkButton } from "./portal-link-button";
 import { LocationsPanel } from "./locations-panel";
@@ -16,16 +17,9 @@ import type { ChecklistItem } from "@/lib/portal";
 /** Client Detail View (#19 #6 #13): clicking into a client from the dashboard
  *  table. Requests → Review & Approve (current) or the frozen snapshot (past). */
 export default async function ClientDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const [{ id }, user] = await Promise.all([params, currentUser()]);
+  const { id } = await params;
 
-  const link = await db.query.consultantClients.findFirst({
-    where: and(
-      eq(consultantClients.consultantId, user!.id),
-      eq(consultantClients.companyId, id),
-      isNull(consultantClients.archivedAt)
-    ),
-  });
-  if (!link) notFound();
+  await requireOwnedClient(id);
 
   const [companyRow, requests, sessions, snapshotList, evidenceRows, timeline, commentRows, flaggedItems] = await Promise.all([
     db.select().from(companies).where(eq(companies.id, id)).then((r) => r[0]),
@@ -98,9 +92,6 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
   for (const t of flagThreads.values()) t.sort((a, b) => a.createdAt.localeCompare(b.createdAt));
   const threadList = [...threads.entries()].slice(0, 4);
 
-  const fmtDate = (iso: string) =>
-    new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-
   return (
     <div className="mx-auto max-w-5xl">
       <BackLink />
@@ -119,7 +110,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
               {companyRow.industry ?? "Industry not set"} ·{" "}
               {companyRow.headcountRange ? `${companyRow.headcountRange.replace(/_/g, "–")} employees` : "headcount not set"} ·{" "}
               {STATUS_META[status].label}
-              {due && ` · due ${fmtDate(due + "T12:00:00")}`}
+              {due && ` · due ${fmtShortDateYear(due + "T12:00:00")}`}
             </p>
           </div>
         </div>
@@ -227,7 +218,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
                           <p className="truncate text-sm font-medium" style={{ color: "var(--text)" }}>{req.description}</p>
                           <p className="mt-0.5 text-xs" style={{ color: "var(--text-muted)" }}>
                             {req.periodLabel ? `${req.periodLabel} · ` : ""}
-                            {req.dueDate ? `due ${fmtDate(req.dueDate + "T12:00:00")} · ` : ""}
+                            {req.dueDate ? `due ${fmtShortDateYear(req.dueDate + "T12:00:00")} · ` : ""}
                             {checklist.filter((c) => c.status === "received").length}/{checklist.length} items in
                             {expired && <span style={{ color: "var(--danger)" }}> · link expired</span>}
                           </p>
@@ -251,7 +242,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
                             <p key={m.id} className="mt-1.5 text-xs" style={{ color: "var(--text)" }}>
                               <span className="font-semibold" style={{ color: "var(--primary)" }}>You replied:</span>{" "}
                               {m.body}
-                              <span className="ml-1" style={{ color: "var(--text-muted)" }}>· {fmtDate(m.createdAt)}</span>
+                              <span className="ml-1" style={{ color: "var(--text-muted)" }}>· {fmtShortDateYear(m.createdAt)}</span>
                             </p>
                           ))}
                           {/* Reply lands on the portal thread + goes out by email (X2) */}
@@ -276,26 +267,26 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
                       <div className="mt-2 flex flex-wrap items-center gap-1.5">
                         {req.token && <PortalLinkButton token={req.token} />}
                         {isOpen && (
-                          <Link
+                          <Pill as={Link}
                             href={`/consultant/clients/${id}/requests/${req.id}/chasing`}
-                            className="rounded-full px-2 py-0.5 text-xs font-medium transition-opacity hover:opacity-70"
+                            className="transition-opacity hover:opacity-70"
                             style={{ background: "var(--divider)", color: "var(--text-muted)" }}
                           >
                             {req.remindersEnabled ? "Chasing on" : "Chasing paused"} · schedule →
-                          </Link>
+                          </Pill>
                         )}
                         {expired && (
                           <form action={renewPortalLink.bind(null, req.id, id)}>
-                            <button className="rounded-full px-2 py-0.5 text-xs font-medium transition-opacity hover:opacity-70" style={{ background: "var(--danger-tint)", color: "var(--danger)" }}>
+                            <Pill as="button" className="transition-opacity hover:opacity-70" style={{ background: "var(--danger-tint)", color: "var(--danger)" }}>
                               ↻ Renew link (30 days)
-                            </button>
+                            </Pill>
                           </form>
                         )}
                         {req.token && isOpen && companyRow.clientContactEmail && (
                           <form action={resendPortalEmail.bind(null, req.id, id)}>
-                            <button className="rounded-full px-2 py-0.5 text-xs font-medium transition-opacity hover:opacity-70" style={{ background: "var(--primary-tint)", color: "var(--primary)" }}>
+                            <Pill as="button" className="transition-opacity hover:opacity-70" style={{ background: "var(--primary-tint)", color: "var(--primary)" }}>
                               ↻ Resend email
-                            </button>
+                            </Pill>
                           </form>
                         )}
                       </div>
@@ -355,7 +346,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
                     <div key={e.id} className="flex items-start gap-3 text-sm">
                       <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full" style={{ background: "var(--emerald)" }} />
                       <p style={{ color: "var(--text)" }}>
-                        <span className="font-data text-xs" style={{ color: "var(--text-muted)" }}>{fmtDate(e.ts)}</span>{" "}
+                        <span className="font-data text-xs" style={{ color: "var(--text-muted)" }}>{fmtShortDateYear(e.ts)}</span>{" "}
  - {eventLabel(e.verb, e.subject)}
                       </p>
                     </div>

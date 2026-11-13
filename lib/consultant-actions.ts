@@ -4,17 +4,18 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { and, eq, isNull } from "drizzle-orm";
 import { db } from "./db";
-import { companies, comments, requestTemplates, consultantClients, consultantProfiles, shareLinks, snapshots, userCompanies, intakeSessions, dataRequests, pipelineStatus, vendorMappings, emissionLineItems } from "./db/schema";
+import { companies, comments, requestTemplates, consultantProfiles, shareLinks, snapshots, intakeSessions, dataRequests, pipelineStatus, vendorMappings, emissionLineItems } from "./db/schema";
 import { normalizeVendor, matchVendor, VENDOR_CONFIRM_OPTIONS, getVendorMappingsFromDb } from "./vendor-mappings";
 import { rowToLineItem } from "./ingestion/ingest";
 import { recomputeLineItem, excludeLineItem, convertDollarFuelItem, isDollarFuelRow } from "./ledger";
 import { lookupFactor } from "./factor-engine";
 import { getFactorsFromDb } from "./factor-engine";
 import type { UnmappedLog } from "./ingestion/ingest";
-import { loadCompany, loadFactors, persistCompany } from "./store";
+import { loadCompany, loadFactors, persistCompany, uid } from "./store";
+import { findOwnedLink } from "./guards";
 import { currentUser } from "./auth";
 import { recalcCompany } from "./calc";
-import { refreshSectionStatus } from "./progress";
+import { refreshSectionStatus, canGenerateReport } from "./progress";
 import { logChange } from "./audit";
 import { Company, User } from "./types";
 import { sendDataRequestEmail } from "./email";
@@ -37,7 +38,7 @@ const FIELD_SECTIONS: Record<string, string> = {
   equipment_fuel_type: "scope1", equipment_gal: "scope1", equipment_na: "scope1",
   scope2_reviewed: "scope2", has_recs: "scope2", rec_coverage_pct: "scope2", rec_certificate_name: "scope2",
   scope2_market_override_tons: "scope2", scope2_market_override_reason: "scope2",
-  qb_data_reviewed: "scope3", commute_avg_miles: "scope3", commute_mode: "scope3", commute_days_in_office: "scope3",
+  commute_avg_miles: "scope3", commute_mode: "scope3", commute_days_in_office: "scope3",
   waste_landfill_tons: "scope3", waste_recycled_tons: "scope3", waste_composted_tons: "scope3",
   social_total_employees: "social", social_new_hires: "social", social_departures: "social",
   social_lost_time_injuries: "social", social_osha_recordables: "social", social_near_misses: "social",
@@ -55,7 +56,7 @@ const NUMBER_FIELDS = new Set([
 
 const BOOL_FIELDS = new Set([
   "fleet_na", "natgas_na", "refrigerant_na", "equipment_na", "scope2_reviewed", "has_recs",
-  "qb_data_reviewed", "social_demographics_uploaded",
+  "social_demographics_uploaded",
   "gov_ccpa_compliant", "gov_public_privacy_policy", "gov_data_breaches",
 ]);
 
@@ -65,13 +66,7 @@ async function asConsultantFor(companyId: string): Promise<{ user: User; company
   const user = await currentUser();
   if (!user || user.role !== "consultant") redirect("/login");
 
-  const link = await db.query.consultantClients.findFirst({
-    where: and(
-      eq(consultantClients.consultantId, user.id),
-      eq(consultantClients.companyId, companyId),
-      isNull(consultantClients.archivedAt)
-    ),
-  });
+  const link = await findOwnedLink(user.id, companyId);
   if (!link) redirect("/consultant");
 
   const company = await loadCompany(companyId);
@@ -131,8 +126,7 @@ export async function consultantSaveScope3Decision(companyId: string, category: 
 
 export async function consultantGenerateReport(companyId: string) {
   const { user, company } = await asConsultantFor(companyId);
-  const s = company.sectionStatus;
-  if (!(s.connections === "complete" && s.scope1 === "complete" && s.scope2 === "complete")) return;
+  if (!canGenerateReport(company)) return;
   company.reportGeneratedAt = new Date().toISOString();
   await logChange({ user, companyId: company.id, section: "reports", field: "ghg_inventory_report", prev: " - ", next: `generated ${company.reportGeneratedAt}` });
   await persist(company);
@@ -141,28 +135,20 @@ export async function consultantGenerateReport(companyId: string) {
 
 // ── Intake session review actions ─────────────────────────────────────────
 
-function newId(prefix: string) {
-  return prefix + "_" + Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
-}
-
 /** The separation wall (#20): every consultant action passes through here.
  *  Returns the user only when they own an active link to this company. */
 async function ownsClient(companyId: string): Promise<User | null> {
   const user = await currentUser();
   if (!user || user.role !== "consultant") return null;
-  const link = await db.query.consultantClients.findFirst({
-    where: and(
-      eq(consultantClients.consultantId, user.id),
-      eq(consultantClients.companyId, companyId),
-      isNull(consultantClients.archivedAt)
-    ),
-  });
+  const link = await findOwnedLink(user.id, companyId);
   return link ? user : null;
 }
 
 export async function approveSession(sessionId: string, companyId: string) {
   const user = await ownsClient(companyId);
   if (!user) return;
+  const session = await db.query.intakeSessions.findFirst({ where: eq(intakeSessions.id, sessionId) });
+  if (!session || session.companyId !== companyId) return;
   await db.update(intakeSessions).set({ status: "approved", reviewedAt: new Date().toISOString() }).where(eq(intakeSessions.id, sessionId));
   logEvent({ companyId, actor: user.id, actorType: "consultant", verb: "session.approved", subject: sessionId, subjectId: sessionId });
   await db
@@ -179,6 +165,8 @@ export async function approveSession(sessionId: string, companyId: string) {
 export async function flagSession(sessionId: string, companyId: string, notes: string) {
   const user = await ownsClient(companyId);
   if (!user) return;
+  const session = await db.query.intakeSessions.findFirst({ where: eq(intakeSessions.id, sessionId) });
+  if (!session || session.companyId !== companyId) return;
   await db
     .update(intakeSessions)
     .set({ status: "needs_info", reviewerNotes: notes, reviewedAt: new Date().toISOString() })
@@ -227,7 +215,7 @@ export async function createDataRequest(
   if (!description.trim()) return;
 
   const token = generatePortalToken();
-  const requestId = newId("dr");
+  const requestId = uid("dr_");
   await db.insert(dataRequests).values({
     id: requestId,
     companyId,
@@ -302,7 +290,7 @@ export async function replyToFlag(companyId: string, requestId: string, itemId: 
   const item = ((req.checklist as { id: string; label: string }[] | null) ?? []).find((i) => i.id === itemId);
 
   await db.insert(comments).values({
-    id: "cm_" + Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4),
+    id: uid("cm_"),
     companyId,
     lineItemId: null,
     dataRequestId: requestId,
@@ -374,13 +362,7 @@ export async function renewPortalLink(requestId: string, companyId: string) {
 export async function confirmVendorMapping(companyId: string, vendorRaw: string, optionKey: string, scopeChoice: "client" | "global" = "client") {
   const user = await currentUser();
   if (!user || user.role !== "consultant") return;
-  const link = await db.query.consultantClients.findFirst({
-    where: and(
-      eq(consultantClients.consultantId, user.id),
-      eq(consultantClients.companyId, companyId),
-      isNull(consultantClients.archivedAt)
-    ),
-  });
+  const link = await findOwnedLink(user.id, companyId);
   if (!link) return;
 
   const option = VENDOR_CONFIRM_OPTIONS.find((o) => o.key === optionKey);
@@ -408,7 +390,7 @@ export async function confirmVendorMapping(companyId: string, vendorRaw: string,
       })
       .where(eq(vendorMappings.id, existing.id));
   } else {
-    mappingId = newId("vm");
+    mappingId = uid("vm_");
     await db.insert(vendorMappings).values({
       id: mappingId,
       vendorPattern: pattern,
@@ -525,13 +507,7 @@ export async function revokeShareLink(token: string, companyId: string) {
 async function ledgerGuard(companyId: string, itemId: string) {
   const user = await currentUser();
   if (!user || user.role !== "consultant") return null;
-  const link = await db.query.consultantClients.findFirst({
-    where: and(
-      eq(consultantClients.consultantId, user.id),
-      eq(consultantClients.companyId, companyId),
-      isNull(consultantClients.archivedAt)
-    ),
-  });
+  const link = await findOwnedLink(user.id, companyId);
   if (!link) return null;
   const item = await db.query.emissionLineItems.findFirst({ where: eq(emissionLineItems.id, itemId) });
   if (!item || item.companyId !== companyId) return null;
@@ -622,13 +598,7 @@ function snapId() {
 export async function createSnapshot(companyId: string, formData: FormData) {
   const user = await currentUser();
   if (!user || user.role !== "consultant") return;
-  const link = await db.query.consultantClients.findFirst({
-    where: and(
-      eq(consultantClients.consultantId, user.id),
-      eq(consultantClients.companyId, companyId),
-      isNull(consultantClients.archivedAt)
-    ),
-  });
+  const link = await findOwnedLink(user.id, companyId);
   if (!link) return;
 
   const label = String(formData.get("label") ?? "").trim() || `Snapshot ${new Date().toISOString().slice(0, 10)}`;
@@ -779,7 +749,7 @@ export async function addLineItemComment(companyId: string, itemId: string, form
   if (!body) return;
 
   await db.insert(comments).values({
-    id: newId("cm"),
+    id: uid("cm_"),
     companyId,
     lineItemId: itemId,
     author: ctx.user.id,
@@ -879,7 +849,7 @@ export async function saveRequestTemplate(formData: FormData) {
   const dueInDays = parseInt(String(formData.get("due_in_days") ?? ""), 10);
 
   await db.insert(requestTemplates).values({
-    id: newId("rt"),
+    id: uid("rt_"),
     consultantId: user.id,
     name,
     description,
@@ -905,7 +875,7 @@ export async function addLocation(companyId: string, formData: FormData) {
 
   const { locations } = await import("./db/schema");
   await db.insert(locations).values({
-    id: newId("loc"),
+    id: uid("loc_"),
     companyId,
     name,
     address: String(formData.get("address") ?? "").trim(),
