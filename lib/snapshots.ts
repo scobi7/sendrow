@@ -1,4 +1,5 @@
 import { createHash } from "crypto";
+import type { CalcResult } from "./types";
 
 /** Pure snapshot helpers (Plan T3). A snapshot freezes totals + line items;
  *  its sha256 proves the content never changed after freezing (§13). */
@@ -36,4 +37,23 @@ export function restatementDiff(previous: SnapshotTotals, current: SnapshotTotal
       current: curr,
       pct: prev !== 0 ? ((curr - prev) / prev) * 100 : null,
     }));
+}
+
+/** Manual-entry calcs (company.calcs) frozen as line-item rows, so the
+ *  snapshot's line items add up to its totals (§1: co2e is never written
+ *  here, only carried over from the calc that already produced it). */
+export function freezeManualCalcs(calcs: CalcResult[]) {
+  return calcs.map((c) => ({
+    origin: "manual" as const,
+    sourceRef: "Manual entry",
+    scope: c.scope,
+    category: c.category,
+    rawValue: "",
+    rawUnit: "",
+    co2eKg: String(Math.round(c.co2eTons * 1000 * 10000) / 10000),
+    period: null,
+    factorId: c.factorId,
+    calcLog: { formula: c.formula, basis: c.basis, marketBasedTons: c.marketBasedTons ?? null },
+    locationId: null,
+  }));
 }

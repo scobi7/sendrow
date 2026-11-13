@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { snapshotHash, restatementDiff } from "@/lib/snapshots";
+import { snapshotHash, restatementDiff, freezeManualCalcs } from "@/lib/snapshots";
 import type { SnapshotTotals } from "@/lib/snapshots";
 
 const T = (total: number, scope2 = 10): SnapshotTotals => ({
@@ -32,5 +32,25 @@ describe("snapshots (Plan T3, invariant §13)", () => {
 
   it("identical snapshots produce no restatement", () => {
     expect(restatementDiff(T(100), T(100))).toEqual([]);
+  });
+
+  it("manual calcs freeze as origin 'manual' rows with co2eKg = tons * 1000", () => {
+    const rows = freezeManualCalcs([
+      { id: "c1", scope: 1, category: "Fleet fuel - diesel", co2eTons: 2.5, factorId: "epa.diesel", formula: "100 gal x 0.0100 t/gal", basis: "measured" },
+    ]);
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({
+      origin: "manual",
+      sourceRef: "Manual entry",
+      scope: 1,
+      category: "Fleet fuel - diesel",
+      rawValue: "",
+      rawUnit: "",
+      co2eKg: "2500",
+      period: null,
+      factorId: "epa.diesel",
+      locationId: null,
+      calcLog: { formula: "100 gal x 0.0100 t/gal", basis: "measured", marketBasedTons: null },
+    });
   });
 });

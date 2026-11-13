@@ -2,9 +2,9 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { and, eq, isNull } from "drizzle-orm";
+import { and, eq, inArray, isNull } from "drizzle-orm";
 import { db } from "./db";
-import { companies, comments, requestTemplates, consultantProfiles, shareLinks, snapshots, intakeSessions, dataRequests, pipelineStatus, vendorMappings, emissionLineItems } from "./db/schema";
+import { companies, comments, requestTemplates, consultantProfiles, shareLinks, snapshots, intakeSessions, dataRequests, pipelineStatus, vendorMappings, emissionLineItems, emissionFactors, locations } from "./db/schema";
 import { normalizeVendor, matchVendor, VENDOR_CONFIRM_OPTIONS, getVendorMappingsFromDb } from "./vendor-mappings";
 import { rowToLineItem } from "./ingestion/ingest";
 import { recomputeLineItem, excludeLineItem, convertDollarFuelItem, isDollarFuelRow } from "./ledger";
@@ -21,7 +21,8 @@ import { Company, User } from "./types";
 import { sendDataRequestEmail } from "./email";
 import { getBrandForCompany } from "./branding";
 import { logEvent } from "./events";
-import { snapshotHash, restatementDiff } from "./snapshots";
+import { snapshotHash, restatementDiff, freezeManualCalcs } from "./snapshots";
+import { siteLabel } from "./site-requests";
 import type { SnapshotTotals } from "./snapshots";
 import { sendRestatementEmail, sendCommentEmail, sendFlagReplyEmail } from "./email";
 import { combinedTotals as computeTotals } from "./calc";
@@ -603,13 +604,27 @@ export async function createSnapshot(companyId: string, formData: FormData) {
 
   const label = String(formData.get("label") ?? "").trim() || `Snapshot ${new Date().toISOString().slice(0, 10)}`;
 
-  const [company, items] = await Promise.all([
+  const [company, items, sessions, companyLocations] = await Promise.all([
     loadCompany(companyId),
     db
       .select()
       .from(emissionLineItems)
       .where(and(eq(emissionLineItems.companyId, companyId), eq(emissionLineItems.status, "mapped"))),
+    db
+      .select()
+      .from(intakeSessions)
+      .where(eq(intakeSessions.companyId, companyId))
+      .orderBy(desc(intakeSessions.createdAt)),
+    db.select().from(locations).where(eq(locations.companyId, companyId)),
   ]);
+
+  const factorIds = [...new Set([...items.map((i) => i.factorId), ...company.calcs.map((c) => c.factorId)].filter((f): f is string => Boolean(f)))];
+  const factorRows = factorIds.length
+    ? await db.select().from(emissionFactors).where(inArray(emissionFactors.factorId, factorIds))
+    : [];
+  const factorById = new Map(factorRows.map((f) => [f.factorId, f]));
+  const sessionByProfile = new Map(sessions.filter((s) => s.mappingProfileId).map((s) => [s.mappingProfileId!, s]));
+  const locationNameById = new Map(companyLocations.map((l) => [l.id, siteLabel(l)]));
 
   const t = computeTotals(company, items.map((i) => ({ scope: i.scope, category: i.category, co2eKg: Number(i.co2eKg), rawValue: i.rawValue, rawUnit: i.rawUnit, status: i.status })));
   const frozenTotals: SnapshotTotals = {
@@ -619,18 +634,31 @@ export async function createSnapshot(companyId: string, formData: FormData) {
     scope3: t.scope3,
     total: t.total,
   };
-  const frozenItems = items.map((i) => ({
-    sourceRef: i.sourceRef,
-    scope: i.scope,
-    category: i.category,
-    rawValue: i.rawValue,
-    rawUnit: i.rawUnit,
-    co2eKg: i.co2eKg,
-    period: i.period,
-    factorId: i.factorId,
-    calcLog: i.calcLog,
-    locationId: i.locationId,
-  }));
+  const importedRows = items.map((i) => {
+    const factor = i.factorId ? factorById.get(i.factorId) : undefined;
+    return {
+      origin: "line_item" as const,
+      sourceRef: i.sourceRef,
+      scope: i.scope,
+      category: i.category,
+      rawValue: i.rawValue,
+      rawUnit: i.rawUnit,
+      co2eKg: i.co2eKg,
+      period: i.period,
+      factorId: i.factorId,
+      calcLog: i.calcLog,
+      locationId: i.locationId,
+      factorSource: factor?.source ?? "",
+      factorSourceUrl: factor?.sourceUrl ?? "",
+      locationName: i.locationId ? (locationNameById.get(i.locationId) ?? null) : null,
+      evidenceFilename: i.mappingProfileId ? (sessionByProfile.get(i.mappingProfileId)?.filename ?? null) : null,
+    };
+  });
+  const manualRows = freezeManualCalcs(company.calcs).map((r) => {
+    const factor = r.factorId ? factorById.get(r.factorId) : undefined;
+    return { ...r, factorSource: factor?.source ?? "", factorSourceUrl: factor?.sourceUrl ?? "", locationName: null, evidenceFilename: null };
+  });
+  const frozenItems = [...importedRows, ...manualRows];
 
   const id = snapId();
   await db.insert(snapshots).values({

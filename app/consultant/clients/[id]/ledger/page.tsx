@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, inArray } from "drizzle-orm";
 import { requireOwnedClient } from "@/lib/guards";
 import { db } from "@/lib/db";
-import { companies, comments, emissionLineItems, intakeSessions, locations } from "@/lib/db/schema";
+import { companies, comments, emissionFactors, emissionLineItems, intakeSessions, locations } from "@/lib/db/schema";
 import { siteLabel } from "@/lib/site-requests";
+import { buildTrace } from "@/lib/trace";
 import { LedgerRow } from "./ledger-row";
 
 const FILTERS = ["all", "mapped", "unmapped", "excluded"] as const;
@@ -50,6 +51,15 @@ export default async function LedgerPage({
   if (uploadFilter) displayed = displayed.filter((i) => i.mappingProfileId === uploadFilter);
   if (categoryFilter) displayed = displayed.filter((i) => i.category === categoryFilter);
 
+  const factorIds = [...new Set(displayed.map((i) => i.factorId).filter((f): f is string => !!f))];
+  const factorRows = factorIds.length
+    ? await db
+        .select({ factorId: emissionFactors.factorId, source: emissionFactors.source, sourceUrl: emissionFactors.sourceUrl })
+        .from(emissionFactors)
+        .where(inArray(emissionFactors.factorId, factorIds))
+    : [];
+  const factorById = new Map(factorRows.map((f) => [f.factorId, f]));
+
   const counts = {
     all: items.length,
     mapped: items.filter((i) => i.status === "mapped").length,
@@ -67,7 +77,7 @@ export default async function LedgerPage({
         className="mb-4 inline-block text-sm font-medium transition-opacity hover:opacity-70"
         style={{ color: "var(--primary)" }}
       >
-        ← Back to {company.name}
+        Back to {company.name}
       </Link>
 
       <div className="mb-5 flex items-end justify-between">
@@ -91,7 +101,7 @@ export default async function LedgerPage({
           <Link
             key={f}
             href={`/consultant/clients/${id}/ledger${f === "all" ? "" : `?status=${f}`}`}
-            className="rounded-full px-3 py-1 text-xs font-medium capitalize transition-colors hover:opacity-80"
+            className="rounded px-3 py-1 text-xs font-medium capitalize transition-colors hover:opacity-80"
             style={
               (statusFilter ?? "all") === f && !uploadFilter
                 ? { background: "var(--primary)", color: "#fff" }
@@ -104,7 +114,8 @@ export default async function LedgerPage({
         {uploadFilter && (
           <Link
             href={`/consultant/clients/${id}/ledger`}
-            className="rounded-full px-3 py-1 text-xs font-medium"
+            aria-label="Clear upload filter"
+            className="rounded px-3 py-1 text-xs font-medium"
             style={{ background: "var(--warning-tint)", color: "var(--warning-strong)" }}
           >
             Upload: {sessionByProfile.get(uploadFilter)?.filename ?? "unknown"} ✕
@@ -113,7 +124,8 @@ export default async function LedgerPage({
         {categoryFilter && (
           <Link
             href={`/consultant/clients/${id}/ledger`}
-            className="rounded-full px-3 py-1 text-xs font-medium"
+            aria-label="Clear category filter"
+            className="rounded px-3 py-1 text-xs font-medium"
             style={{ background: "var(--warning-tint)", color: "var(--warning-strong)" }}
           >
             Category: {categoryFilter} ✕
@@ -147,6 +159,7 @@ export default async function LedgerPage({
               {displayed.map((item) => {
                 const session = item.mappingProfileId ? sessionByProfile.get(item.mappingProfileId) : undefined;
                 const log = item.calcLog as { evidence_id?: string; reason?: string; extra_evidence?: string[] } | null;
+                const locationName = item.locationId ? siteNameById.get(item.locationId) ?? null : null;
                 const itemComments = allComments
                   .filter((c) => c.lineItemId === item.id)
                   .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
@@ -168,8 +181,20 @@ export default async function LedgerPage({
                       period: item.period,
                       confidence: item.confidence,
                       flagReason: log?.reason ?? null,
-                      locationName: item.locationId ? siteNameById.get(item.locationId) ?? null : null,
+                      locationName,
                     }}
+                    trace={buildTrace(
+                      {
+                        rawValue: item.rawValue,
+                        rawUnit: item.rawUnit,
+                        factorId: item.factorId,
+                        calcLog: item.calcLog,
+                        confidence: item.confidence,
+                        period: item.period,
+                        locationName,
+                      },
+                      item.factorId ? factorById.get(item.factorId) ?? null : null
+                    )}
                     comments={itemComments}
                     extraEvidence={log?.extra_evidence ?? []}
                     evidenceId={log?.evidence_id ?? session?.evidenceId ?? null}

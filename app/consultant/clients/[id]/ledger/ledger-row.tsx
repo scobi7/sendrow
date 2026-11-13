@@ -2,7 +2,7 @@
 
 import { Pill } from "@/components/workflow";
 import { fmtNum3 } from "@/lib/format";
-import { useOptimistic, useState, useTransition } from "react";
+import { useOptimistic, useState, useTransition, type ReactNode } from "react";
 import {
   recategorizeLineItem,
   editLineItemQuantity,
@@ -13,6 +13,7 @@ import {
   attachEvidenceToItem,
 } from "@/lib/consultant-actions";
 import { VENDOR_CONFIRM_OPTIONS } from "@/lib/vendor-mappings";
+import type { Trace } from "@/lib/trace";
 
 type Item = {
   id: string;
@@ -38,6 +39,15 @@ const STATUS_STYLE: Record<string, { background: string; color: string }> = {
   excluded: { background: "var(--divider)", color: "var(--text-muted)" },
 };
 
+function TraceField({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div className="py-0.5">
+      <dt className="text-xs" style={{ color: "var(--text-muted)" }}>{label}</dt>
+      <dd className="text-xs" style={{ color: "var(--text)" }}>{children}</dd>
+    </div>
+  );
+}
+
 export function LedgerRow({
   companyId,
   item,
@@ -46,6 +56,7 @@ export function LedgerRow({
   uploadHref,
   comments = [],
   extraEvidence = [],
+  trace,
 }: {
   companyId: string;
   item: Item;
@@ -54,8 +65,9 @@ export function LedgerRow({
   uploadHref: string | null;
   comments?: Comment[];
   extraEvidence?: string[];
+  trace: Trace;
 }) {
-  const [editing, setEditing] = useState<"category" | "quantity" | "comment" | "actual" | "evidence" | null>(null);
+  const [editing, setEditing] = useState<"category" | "quantity" | "comment" | "actual" | "evidence" | "trace" | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   // Optimistic copies of the server state. When a transition ends, React drops
@@ -114,8 +126,14 @@ export function LedgerRow({
                 <span style={{ color: "var(--text-muted)" }}>{uploadName}</span>
               )}
               {evidenceId && (
-                <a href={`/api/evidence/${evidenceId}`} className="underline" style={{ color: "var(--primary)" }} title="Download source file">
-                  ↓
+                <a
+                  href={`/api/evidence/${evidenceId}`}
+                  className="underline"
+                  style={{ color: "var(--primary)" }}
+                  title="Download source file"
+                  aria-label="Download source file"
+                >
+                  file
                 </a>
               )}
             </span>
@@ -129,7 +147,7 @@ export function LedgerRow({
           </Pill>
           {item.status === "mapped" && (
             <span
-              className="ml-1 rounded-full px-1.5 py-0.5 text-xs"
+              className="ml-1 rounded px-1.5 py-0.5 text-xs"
               title={item.confidence === "actual" || item.confidence === "measured" ? "Actual / measured value" : "Estimated value - replace with the real number when it arrives"}
               style={
                 item.confidence === "actual" || item.confidence === "measured"
@@ -143,6 +161,14 @@ export function LedgerRow({
         </td>
         <td className="px-4 py-2.5 text-right">
           <div className="flex items-center justify-end gap-2 text-xs">
+            <button
+              disabled={pending}
+              onClick={() => setEditing(editing === "trace" ? null : "trace")}
+              className="underline"
+              style={{ color: "var(--primary)" }}
+            >
+              How calculated
+            </button>
             {excluded ? (
               <button
                 disabled={pending}
@@ -220,7 +246,60 @@ export function LedgerRow({
       {editing && (
         <tr style={{ borderBottom: "1px solid var(--divider)", background: "var(--bg)" }}>
           <td colSpan={8} className="px-4 py-3">
-            {editing === "category" ? (
+            {editing === "trace" ? (
+              <div>
+                <dl className="grid gap-x-6 gap-y-1 sm:grid-cols-2">
+                  <TraceField label="Activity">{trace.activity}</TraceField>
+                  <TraceField label="Factor">
+                    {trace.factorName ?? "Not recorded"}
+                    <span className="block font-data" style={{ color: "var(--text-muted)" }}>
+                      ID {trace.factorId ?? "Not recorded"}
+                    </span>
+                  </TraceField>
+                  <TraceField label="Factor value">
+                    <span className="font-data">
+                      {trace.factorValue ?? "Not recorded"}
+                      {trace.factorUnit ? ` ${trace.factorUnit}` : ""}
+                    </span>
+                  </TraceField>
+                  <TraceField label="Factor year">{trace.factorYear ?? "Not recorded"}</TraceField>
+                  <TraceField label="Source">
+                    {trace.sourceUrl ? (
+                      <a
+                        href={trace.sourceUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="underline"
+                        style={{ color: "var(--primary)" }}
+                      >
+                        {trace.source ?? trace.sourceUrl}
+                      </a>
+                    ) : (
+                      trace.source ?? "Not recorded"
+                    )}
+                  </TraceField>
+                  <TraceField label="Method">{trace.method}</TraceField>
+                  <TraceField label="Formula">
+                    <span className="font-data">{trace.formula ?? "Not recorded"}</span>
+                  </TraceField>
+                  <TraceField label="Calculated at">
+                    {trace.computedAt ? new Date(trace.computedAt).toLocaleString() : "Not recorded"}
+                  </TraceField>
+                </dl>
+                <div className="mt-3">
+                  <p className="text-xs" style={{ color: "var(--text-muted)" }}>Assumptions</p>
+                  {trace.assumptions.length > 0 ? (
+                    <ul className="mt-1 list-disc pl-4 text-xs" style={{ color: "var(--text)" }}>
+                      {trace.assumptions.map((a) => (
+                        <li key={a}>{a}</li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="mt-1 text-xs" style={{ color: "var(--text)" }}>Not recorded</p>
+                  )}
+                </div>
+              </div>
+            ) : editing === "category" ? (
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>Recategorize as:</span>
                 <select
