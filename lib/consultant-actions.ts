@@ -8,6 +8,7 @@ import { companies, comments, requestTemplates, consultantProfiles, shareLinks, 
 import { normalizeVendor, matchVendor, VENDOR_CONFIRM_OPTIONS, getVendorMappingsFromDb } from "./vendor-mappings";
 import { rowToLineItem } from "./ingestion/ingest";
 import { recomputeLineItem, excludeLineItem, convertDollarFuelItem, isDollarFuelRow } from "./ledger";
+import { isSupplierCalculated } from "./ingestion/supplier-calculated";
 import { lookupFactor } from "./factor-engine";
 import { getFactorsFromDb } from "./factor-engine";
 import type { UnmappedLog } from "./ingestion/ingest";
@@ -419,6 +420,7 @@ export async function confirmVendorMapping(companyId: string, vendorRaw: string,
   const mapping = [{ id: mappingId, vendorPattern: pattern, scope: option.scope, category: option.category, factorId: option.factorId }];
 
   for (const item of flagged) {
+    if (isSupplierCalculated(item.calcLog)) continue; // never apply our factor to a supplier's figure (contracts/ §1)
     const log = item.calcLog as UnmappedLog;
     const row = {
       quantity: log.raw_value ?? undefined,
@@ -520,6 +522,7 @@ async function ledgerGuard(companyId: string, itemId: string) {
 export async function recategorizeLineItem(companyId: string, itemId: string, optionKey: string) {
   const ctx = await ledgerGuard(companyId, itemId);
   if (!ctx) return;
+  if (isSupplierCalculated(ctx.item.calcLog)) throw new Error("Supplier-calculated rows keep the supplier's figure. Exclude the row instead.");
   const option = VENDOR_CONFIRM_OPTIONS.find((o) => o.key === optionKey);
   if (!option) return;
 
@@ -541,6 +544,7 @@ export async function recategorizeLineItem(companyId: string, itemId: string, op
 export async function editLineItemQuantity(companyId: string, itemId: string, formData: FormData) {
   const ctx = await ledgerGuard(companyId, itemId);
   if (!ctx) return;
+  if (isSupplierCalculated(ctx.item.calcLog)) throw new Error("Supplier-calculated rows keep the supplier's figure. Exclude the row instead.");
   const quantity = parseFloat(String(formData.get("quantity") ?? ""));
   if (isNaN(quantity) || quantity < 0) return;
   if (!ctx.item.factorId) return; // unmapped rows get a category first, not a quantity edit
@@ -757,6 +761,7 @@ export async function convertDollarFuel(companyId: string, formData: FormData) {
 
   for (const item of flagged) {
     const withLog = { ...item, calcLog: (item.calcLog as Record<string, unknown>) ?? {} };
+    if (isSupplierCalculated(withLog.calcLog)) continue; // bulk action: skip, never re-factor
     if (!isDollarFuelRow(withLog)) continue;
     const patch = convertDollarFuelItem(withLog, prices, factors, user.id);
     if (!patch) continue;
@@ -811,6 +816,7 @@ export async function addLineItemComment(companyId: string, itemId: string, form
 export async function markLineItemActual(companyId: string, itemId: string, formData: FormData) {
   const ctx = await ledgerGuard(companyId, itemId);
   if (!ctx) return;
+  if (isSupplierCalculated(ctx.item.calcLog)) throw new Error("Supplier-calculated rows keep the supplier's figure. Exclude the row instead.");
   const raw = String(formData.get("quantity") ?? "").trim();
   const quantity = raw ? parseFloat(raw) : null;
 

@@ -6,6 +6,8 @@ export const DATA_TYPE_OPTIONS: { key: string; label: string }[] = [
   { key: "vendor_invoices", label: "Spend data" },
   { key: "business_travel", label: "Business travel" },
   { key: "commute_survey", label: "Commute survey" },
+  // existing_inventory (supplier-calculated) is selectable only once its rows are
+  // labeled on the ledger, review page and exports (contracts/ §1).
 ];
 
 export const DATA_TYPE_LABELS: Record<string, string> = Object.fromEntries(

@@ -4,6 +4,7 @@ import { mappingProfiles, emissionLineItems, intakeSessions, pipelineStatus, dat
 import { sql, inArray } from "drizzle-orm";
 import { vendorMappings as vendorMappingsTable } from "@/lib/db/schema";
 import { applyProfile, rowToLineItem, fleetFuelToLineItems } from "./ingest";
+import { matchSupplierHeaders, supplierRowToLineItem } from "./supplier-calculated";
 import { getVendorMappingsFromDb } from "@/lib/vendor-mappings";
 import { getFactorsFromDb } from "@/lib/factor-engine";
 import { uid } from "@/lib/store";
@@ -15,6 +16,7 @@ import { logEvent } from "@/lib/events";
 import { companies } from "@/lib/db/schema";
 import type { ChecklistItem } from "@/lib/portal";
 import type { ColumnMap, FuelPrices } from "./ingest";
+import { DATA_TYPE_CONFIGS } from "./data-type-templates";
 import type { DataType } from "./data-type-templates";
 
 export type ImportInput = {
@@ -101,7 +103,13 @@ export async function processImport(input: ImportInput): Promise<ImportOutcome> 
 
   // Every row becomes a line item - unmappable rows are flagged, never dropped
   let inserts;
-  if (dataType === "fleet_fuel_dollar" && fuelPrices) {
+  if (DATA_TYPE_CONFIGS[dataType].rowKind === "supplier_calculated") {
+    // The supplier's own CO2e figure is kept as given; no factor is applied and columnMap does not apply
+    const supplierHeaders = matchSupplierHeaders(headers);
+    inserts = rows.map((row) =>
+      supplierRowToLineItem(row, supplierHeaders, { companyId, mappingProfileId: profileId, evidenceId: input.evidenceId ?? null })
+    );
+  } else if (dataType === "fleet_fuel_dollar" && fuelPrices) {
     inserts = fleetFuelToLineItems(normalized, factors, fuelPrices, companyId, profileId);
   } else {
     // 1:1 with normalized rows, so each item can be period-tagged from its row date
@@ -137,6 +145,11 @@ export async function processImport(input: ImportInput): Promise<ImportOutcome> 
       .where(inArray(vendorMappingsTable.id, usedMappingIds));
   }
 
+  // Supplier-calculated figures always go to the consultant, even on a locked pipeline
+  if (DATA_TYPE_CONFIGS[dataType].rowKind === "supplier_calculated") {
+    autoApproved = false;
+    reasons = [...reasons, "supplier-calculated figures need consultant review"];
+  }
   // Flagged rows always get human review - even on a locked pipeline
   if (unmappedCount > 0 && autoApproved) {
     autoApproved = false;

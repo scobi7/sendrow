@@ -6,6 +6,7 @@ export type DataType =
   | "vendor_invoices"
   | "commute_survey"
   | "business_travel"
+  | "existing_inventory"
   | "custom";
 
 export type DataTypeConfig = {
@@ -13,6 +14,8 @@ export type DataTypeConfig = {
   description: string;
   columnTemplate: Record<string, StandardField>;
   requiresFuelPrices?: boolean;
+  /** "supplier_calculated" rows keep the supplier's own CO2e figure; no factor is applied. */
+  rowKind?: "activity" | "supplier_calculated";
 };
 
 export const DATA_TYPE_CONFIGS: Record<DataType, DataTypeConfig> = {
@@ -77,6 +80,12 @@ export const DATA_TYPE_CONFIGS: Record<DataType, DataTypeConfig> = {
       "Round Trip?": "notes",
     },
   },
+  existing_inventory: {
+    label: "Existing inventory or prior calculation",
+    description: "CO2e already calculated by the supplier, one row per emission source, kept as the supplier stated it and never re-factored",
+    columnTemplate: {},
+    rowKind: "supplier_calculated",
+  },
   custom: {
     label: "Other / custom",
     description: "Anything else - map columns manually",
@@ -109,6 +118,9 @@ export function applyTemplate(
  *  auto-map perfectly, with example rows per data type. Always optional -  *  any file shape still works through the confirm-mapping screen. */
 export const TEMPLATE_HEADERS = ["Date", "Activity Type", "Quantity", "Unit", "Vendor / Reference", "Notes"] as const;
 
+/** Template for supplier-calculated emissions (existing_inventory). */
+export const SUPPLIER_TEMPLATE_HEADERS = ["Scope", "Category", "Description", "Emissions", "Unit", "Method", "Emission factor source", "Reporting year"] as const;
+
 const TEMPLATE_EXAMPLES: Record<DataType, string[][]> = {
   utility_bills: [
     ["2026-01", "electricity", "1240", "kWh", "PG&E acct 4402", ""],
@@ -129,6 +141,10 @@ const TEMPLATE_EXAMPLES: Record<DataType, string[][]> = {
     ["2026-03", "air travel", "2400", "USD", "Delta / corporate card", ""],
     ["2026-03", "hotels", "980", "USD", "Marriott", ""],
   ],
+  existing_inventory: [
+    ["1", "Stationary combustion", "Natural gas, main boiler", "12.4", "tCO2e", "Activity-based, EPA factors", "EPA GHG Emission Factors Hub 2025", "2025"],
+    ["2", "Purchased electricity", "All sites, location-based", "48.9", "tCO2e", "Location-based, eGRID", "EPA eGRID2023", "2025"],
+  ],
   custom: [
     ["2026-01", "describe the activity", "100", "unit (kWh, gallons, USD…)", "who it came from", ""],
   ],
@@ -136,5 +152,6 @@ const TEMPLATE_EXAMPLES: Record<DataType, string[][]> = {
 
 export function templateCsv(dataType: DataType): string {
   const rows = TEMPLATE_EXAMPLES[dataType] ?? TEMPLATE_EXAMPLES.custom;
-  return [TEMPLATE_HEADERS.join(","), ...rows.map((r) => r.map((c) => (c.includes(",") ? `"${c}"` : c)).join(","))].join("\n");
+  const headers = dataType === "existing_inventory" ? SUPPLIER_TEMPLATE_HEADERS : TEMPLATE_HEADERS;
+  return [headers.join(","), ...rows.map((r) => r.map((c) => (c.includes(",") ? `"${c}"` : c)).join(","))].join("\n");
 }

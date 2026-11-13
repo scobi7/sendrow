@@ -1,5 +1,6 @@
 import { applyFactor, lookupFactor } from "./factor-engine";
 import type { EmissionFactor } from "./types";
+import { isSupplierCalculated } from "./ingestion/supplier-calculated";
 
 /** Pure line-item corrections for the Data Ledger (Plan T1). Every correction
  *  produces a full new calc log that records what changed and why - the audit
@@ -31,6 +32,7 @@ export function recomputeLineItem(
   factor: EmissionFactor,
   opts: { quantity?: number; scope?: number; category?: string; editedBy: string; reason: string }
 ): LedgerPatch {
+  if (isSupplierCalculated(item.calcLog)) throw new Error("Supplier-calculated rows keep the supplier's figure. Exclude the row instead.");
   const quantity = opts.quantity ?? Number(item.rawValue);
   const { co2e_kg, calc_log } = applyFactor(quantity, item.rawUnit, factor);
   return {
@@ -101,6 +103,7 @@ export function convertDollarFuelItem(
   factors: import("./types").EmissionFactor[],
   editedBy: string
 ): (LedgerPatch & { rawUnit: string }) | null {
+  if (isSupplierCalculated(item.calcLog)) throw new Error("Supplier-calculated rows keep the supplier's figure. Exclude the row instead.");
   const kind = fuelKindOf(item);
   if (!kind) return null;
   const price = prices[kind];

@@ -50,6 +50,7 @@ const ITEM_INSTRUCTIONS: Record<DataType, string> = {
   vendor_invoices: "Upload an accounts-payable or expense export from your accounting system (vendor, category, amount, date).",
   commute_survey: "Upload your employee commute survey results (mode of travel and one-way miles per employee).",
   business_travel: "Upload your travel expense report or a list of flights taken (origin, destination, traveler).",
+  existing_inventory: "Upload your existing emissions inventory or a prior calculation as a spreadsheet, one row per emission source: scope, category, description, emissions, unit (tCO2e or kgCO2e), method, emission factor source and reporting year. Download the template to see the columns.",
   custom: "Upload the file described in the request, or enter the values directly.",
 };
 
