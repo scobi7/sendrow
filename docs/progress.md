@@ -29,8 +29,9 @@ P1:
 - Shared-store rate limiting (see known-issues).
 
 UI plan follow-ups (docs/plan-ui.md):
-- Phase 1.3 onboarding choice (consultant / corporate / third party): needs decision 1.
-- Phase 2 data in: supporting documents on any checklist item, manual Scope 2 kWh entry, supplier-calculated imports (decision 4), one link per client (decision 3).
+- Homepage deadline line: recommended a static sourced line under the hero (no ticker, no countdown); awaiting Malachi.
+- Regulatory dates: add Nov 10 2027 (SB 253 is annual per Watershed; confirm), CARB fee notices, CDP 2027 once confirmed.
+- Phase 2 data in: supporting documents on any checklist item, manual Scope 2 kWh entry, supplier-calculated imports (approved in principle 2026-11-13; plan awaiting OK). One link per client: decided no.
 - Split the client overview page into its tabs' content; consolidate type sizes and inline styles; the /for-consultants marketing pass (mock dashboard, hover shadows).
 - Add CARB fee notices (~Dec 10 2026), CDP 2027 and EcoVadis to `lib/regulatory-dates.ts` once confirmed.
 
@@ -39,7 +40,7 @@ Deferred tech debt (from the 2026-11-13 audit, not yet approved or decided):
 - `lib/ratelimit.ts` never prunes expired keys.
 - `reportingPeriod()` (`lib/calc.ts`) is off by a month on machines ahead of UTC; two fiscal-period definitions (`calc.ts` vs `period.ts`).
 - Big files to split when next touched: `portal-checklist.tsx` (750 lines), `clients/[id]/page.tsx`, `for-consultants/page.tsx`, `review/page.tsx`, `ledger-row.tsx`.
-- Product calls: Scope 2 "complete" is now just a checkbox (no data gate); no manual kWh input; keep or drop `gapAnalysis`; do ✓/✕ glyphs and spaced hyphens break house style; drop the old qb/utility/invite tables (needs explicit OK).
+- Product calls still open: keep or drop `gapAnalysis` (recommended: drop); do spaced hyphens (" - ") break house style. Settled 2026-11-13: Scope 2 stays a checkbox; glyphs break house style; legacy tables drop after main runs v3.
 
 ## Untested (never walked end to end)
 - The 2026-11-13 UI work on the preview: Cmd+K, Archive then Undo, ledger Exclude/Restore rollback, "How calculated", phone menu, client tabs, branded PDF download, Excel export of a new snapshot with manual entries (Line items sum = Total).

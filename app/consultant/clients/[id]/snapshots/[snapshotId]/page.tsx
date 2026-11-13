@@ -182,7 +182,7 @@ export default async function SnapshotSharePage({
                   </span>
                   <form action={revokeShareLink.bind(null, sh.token, id)}>
                     <button className="transition-opacity hover:opacity-70" style={{ color: "var(--text-muted)" }} title="Revoke" aria-label="Revoke link">
-                      ✕
+                      Revoke
                     </button>
                   </form>
                 </div>

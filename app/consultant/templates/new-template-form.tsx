@@ -46,14 +46,14 @@ export function NewTemplateForm({ action }: { action: (formData: FormData) => Pr
                 type="button"
                 aria-pressed={active}
                 onClick={() => setSelected((p) => (active ? p.filter((k) => k !== key) : [...p, key]))}
-                className="rounded px-3.5 py-1.5 text-xs font-medium transition-colors"
+                className={`rounded px-3.5 py-1.5 text-xs transition-colors ${active ? "font-semibold" : "font-medium"}`}
                 style={
                   active
                     ? { background: "var(--primary-tint)", color: "var(--primary)", border: "1px solid var(--primary)" }
                     : { background: "var(--card-strong)", color: "var(--text-muted)", border: "1px solid var(--chip-border)" }
                 }
               >
-                {active ? "✓ " : ""}{label}
+                {label}
               </button>
             );
           })}

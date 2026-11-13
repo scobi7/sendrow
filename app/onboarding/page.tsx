@@ -30,7 +30,7 @@ export default async function OnboardingPage({
           Welcome to Sendrow
         </h1>
         <p className="mt-2" style={{ color: "var(--text-muted)" }}>
-          Set up your consultant workspace.
+          How will you use Sendrow?
         </p>
 
         {error && (
@@ -43,7 +43,7 @@ export default async function OnboardingPage({
         )}
 
         <div className="card mt-6">
-          <h2 className="font-bold font-display" style={{ color: "var(--text)" }}>I am a climate consultant</h2>
+          <h2 className="font-bold font-display" style={{ color: "var(--text)" }}>I&rsquo;m a climate consultant</h2>
           <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>
             Manage client companies, request data through secure portals, and produce
             audit-ready inventories under your own brand.
@@ -53,12 +53,18 @@ export default async function OnboardingPage({
           </form>
         </div>
 
-        <p className="mt-6 text-center text-sm" style={{ color: "var(--text-muted)" }}>
-          Represent a company?{" "}
-          <Link href="/get-matched" className="font-medium underline" style={{ color: "var(--primary)" }}>
-            Get matched with a climate consultant
+        <div className="card mt-4">
+          <h2 className="font-bold font-display" style={{ color: "var(--text)" }}>I&rsquo;m a company, supplier or other third party</h2>
+          <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>
+            You don&rsquo;t need an account. When your consultant needs data from you, they send you a secure link for that request, and you upload or type everything there.
+          </p>
+          <p className="mt-3 text-sm" style={{ color: "var(--text-muted)" }}>
+            Lost your link? Ask your consultant to resend it.
+          </p>
+          <Link href="/get-matched" className="btn btn-secondary mt-5 w-full">
+            Don&rsquo;t have a consultant? Get matched
           </Link>
-        </p>
+        </div>
       </div>
     </main>
   );

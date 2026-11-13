@@ -66,11 +66,10 @@ export default async function ManageReports({
           {checks.map(([label, ok, detail]) => (
             <li key={label} className="flex items-center gap-3">
               <span
-                className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold"
-                aria-label={ok ? "Ready" : "Missing"}
+                className="flex shrink-0 items-center rounded px-1.5 py-0.5 text-xs font-bold"
                 style={{ background: ok ? "var(--primary-tint)" : "var(--danger-tint)", color: ok ? "var(--primary)" : "var(--danger)" }}
               >
-                {ok ? "✓" : "!"}
+                {ok ? "Ready" : "Missing"}
               </span>
               <span className="font-medium" style={{ color: "var(--text)" }}>{label}</span>
               <span className="text-xs" style={{ color: "var(--text-muted)" }}> - {detail}</span>

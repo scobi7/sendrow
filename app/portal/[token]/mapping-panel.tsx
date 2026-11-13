@@ -142,7 +142,7 @@ export function MappingPanel({
             {/* The header row itself, highlighted */}
             <tr style={{ background: "var(--primary-tint)", borderBottom: "2px solid var(--primary)" }}>
               <td className="px-2 py-1.5 text-center text-xs" title="Detected header row" style={{ color: "var(--primary)" }}>
-                ▸
+                Header
               </td>
               {headers.map((h) => (
                 <td key={h} className="truncate px-2 py-1.5 font-bold" style={{ color: "var(--text)", maxWidth: "10rem" }}>

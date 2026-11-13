@@ -16,7 +16,6 @@ export default async function GetMatchedPage({
 
       {submitted ? (
         <div className="card text-center">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full text-xl font-bold" style={{ background: "var(--primary-tint)", color: "var(--primary)" }}>✓</div>
           <h1 className="text-xl font-bold font-display" style={{ color: "var(--text)" }}>Request received</h1>
           <p className="mt-2 text-sm" style={{ color: "var(--text-muted)" }}>
             We&rsquo;ll introduce you to a vetted climate consultant who fits your industry and timeline - usually within two business days.

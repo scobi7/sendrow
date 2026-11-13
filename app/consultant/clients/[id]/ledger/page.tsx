@@ -110,7 +110,7 @@ export default async function LedgerPage({
             className="rounded px-3 py-1 text-xs font-medium"
             style={{ background: "var(--warning-tint)", color: "var(--warning-strong)" }}
           >
-            Upload: {sessionByProfile.get(uploadFilter)?.filename ?? "unknown"} ✕
+            Upload: {sessionByProfile.get(uploadFilter)?.filename ?? "unknown"} Clear
           </Link>
         )}
         {categoryFilter && (
@@ -120,7 +120,7 @@ export default async function LedgerPage({
             className="rounded px-3 py-1 text-xs font-medium"
             style={{ background: "var(--warning-tint)", color: "var(--warning-strong)" }}
           >
-            Category: {categoryFilter} ✕
+            Category: {categoryFilter} Clear
           </Link>
         )}
       </div>

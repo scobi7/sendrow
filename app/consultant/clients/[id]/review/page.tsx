@@ -144,7 +144,7 @@ export default async function ReviewApprovePage({ params }: { params: Promise<{ 
                         <>
                           {" · "}
                           <a href={`/api/evidence/${s.evidenceId}`} className="underline" style={{ color: "var(--primary)" }}>
-                            source file ↓
+                            source file
                           </a>
                         </>
                       )}

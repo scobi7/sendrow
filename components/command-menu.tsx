@@ -197,7 +197,7 @@ export function CommandMenu({ items }: { items: Item[] }) {
             className="px-4 py-2 text-xs"
             style={{ borderTop: "1px solid var(--divider)", color: "var(--text-muted)" }}
           >
-            <Kbd>↑↓</Kbd> to move, <Kbd>Enter</Kbd> to open, <Kbd>Esc</Kbd> to close
+            <Kbd>Up</Kbd> <Kbd>Down</Kbd> to move, <Kbd>Enter</Kbd> to open, <Kbd>Esc</Kbd> to close
           </p>
         </div>
       </dialog>

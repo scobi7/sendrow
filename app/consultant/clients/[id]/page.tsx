@@ -277,14 +277,14 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
                         {expired && (
                           <form action={renewPortalLink.bind(null, req.id, id)}>
                             <Pill as="button" className="transition-opacity hover:opacity-70" style={{ background: "var(--danger-tint)", color: "var(--danger)" }}>
-                              ↻ Renew link (30 days)
+                              Renew link (30 days)
                             </Pill>
                           </form>
                         )}
                         {req.token && isOpen && companyRow.clientContactEmail && (
                           <form action={resendPortalEmail.bind(null, req.id, id)}>
                             <Pill as="button" className="transition-opacity hover:opacity-70" style={{ background: "var(--primary-tint)", color: "var(--primary)" }}>
-                              ↻ Resend email
+                              Resend email
                             </Pill>
                           </form>
                         )}
