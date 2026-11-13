@@ -7,7 +7,6 @@ import { db } from "@/lib/db";
 import { companies, evidence, locations, shareLinks, snapshots, userCompanies } from "@/lib/db/schema";
 import { siteLabel } from "@/lib/site-requests";
 import { shareSnapshot, revokeShareLink } from "@/lib/consultant-actions";
-import { BackLink } from "@/components/workflow";
 import { SubmitButton } from "@/components/submit-button";
 import { ShareLinkButton } from "../../share-link-button";
 import type { SnapshotTotals } from "@/lib/snapshots";
@@ -69,8 +68,6 @@ export default async function SnapshotSharePage({
 
   return (
     <div className="mx-auto max-w-4xl">
-      <BackLink href={`/consultant/clients/${id}`} label={company.name} />
-
       <div className="mb-6 flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-bold font-display" style={{ color: "var(--text)" }}>

@@ -72,14 +72,6 @@ export default async function LedgerPage({
 
   return (
     <div className="mx-auto max-w-6xl">
-      <Link
-        href={`/consultant/clients/${id}`}
-        className="mb-4 inline-block text-sm font-medium transition-opacity hover:opacity-70"
-        style={{ color: "var(--primary)" }}
-      >
-        Back to {company.name}
-      </Link>
-
       <div className="mb-5 flex items-end justify-between">
         <div>
           <h1 className="text-2xl font-bold font-display" style={{ color: "var(--text)" }}>Data Ledger</h1>

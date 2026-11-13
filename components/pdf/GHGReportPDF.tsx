@@ -1,27 +1,29 @@
+import React from "react";
 import { fmtNum2 } from "@/lib/format";
-import { Document, Page, View, Text, StyleSheet } from "@react-pdf/renderer";
+import { Document, Page, View, Text, Image, StyleSheet } from "@react-pdf/renderer";
 import { Company, EmissionFactor } from "@/lib/types";
-import { totals } from "@/lib/calc";
+import type { Totals } from "@/lib/calc";
 import { fiscalPeriodLabel } from "@/lib/mapping";
 import { SEED_FACTORS } from "@/lib/factors";
-import type { ReportTotals, ScreeningDecision } from "@/lib/report-totals";
+import type { ScreeningDecision } from "@/lib/report-totals";
 
 function lookupFactor(id: string, overrides: EmissionFactor[]): EmissionFactor | undefined {
   return overrides.find((f) => f.factor_id === id) ?? SEED_FACTORS.find((f) => f.factor_id === id);
 }
 
-const green = "#059669";
+const DEFAULT_ACCENT = "#1D5A36";
 const slate900 = "#0f172a";
 const slate600 = "#475569";
 const slate400 = "#94a3b8";
 
 const s = StyleSheet.create({
   page: { paddingHorizontal: 50, paddingVertical: 45, fontFamily: "Helvetica", fontSize: 10, color: slate600, lineHeight: 1.6 },
-  badge: { fontSize: 8, fontFamily: "Helvetica-Bold", color: green, letterSpacing: 1.5, marginBottom: 8 },
+  logo: { height: 32, maxWidth: 180, objectFit: "contain", marginBottom: 8 },
+  badge: { fontSize: 8, fontFamily: "Helvetica-Bold", letterSpacing: 1.5, marginBottom: 8 },
   h1: { fontSize: 22, fontFamily: "Helvetica-Bold", color: slate900, marginBottom: 4 },
   meta: { fontSize: 10, color: slate600, marginBottom: 2 },
   metaSmall: { fontSize: 8, color: slate400 },
-  headerRule: { borderBottomWidth: 3, borderBottomColor: green, borderBottomStyle: "solid", paddingBottom: 12, marginBottom: 18 },
+  headerRule: { borderBottomWidth: 3, borderBottomStyle: "solid", paddingBottom: 12, marginBottom: 18 },
   section: { marginTop: 18 },
   h2: { fontSize: 12, fontFamily: "Helvetica-Bold", color: slate900, marginBottom: 8, borderBottomWidth: 1, borderBottomColor: "#e2e8f0", borderBottomStyle: "solid", paddingBottom: 4 },
   h3: { fontSize: 10, fontFamily: "Helvetica-Bold", color: slate900, marginTop: 10, marginBottom: 4 },
@@ -33,7 +35,7 @@ const s = StyleSheet.create({
   cellRight: { width: 80, fontSize: 10, fontFamily: "Helvetica-Bold", color: slate900, textAlign: "right" },
   totalRow: { flexDirection: "row", paddingTop: 8, marginTop: 2 },
   totalLabel: { flex: 1, fontFamily: "Helvetica-Bold", fontSize: 11, color: slate900 },
-  totalValue: { width: 80, fontFamily: "Helvetica-Bold", fontSize: 12, color: green, textAlign: "right" },
+  totalValue: { width: 80, fontFamily: "Helvetica-Bold", fontSize: 12, textAlign: "right" },
   para: { fontSize: 10, color: slate600, lineHeight: 1.7, marginTop: 4 },
   bullet: { fontSize: 9, color: slate400, marginTop: 3, lineHeight: 1.5 },
   empty: { fontSize: 9, color: slate400, marginTop: 4, fontStyle: "italic" },
@@ -43,14 +45,27 @@ const s = StyleSheet.create({
 export interface GHGReportPDFProps {
   company: Company;
   factorOverrides?: EmissionFactor[];
-  lineItemTotals?: ReportTotals | null;
+  /** Shared totals from combinedTotals() (same as the snapshot). */
+  totals: Totals;
+  /** Count of mapped line items included in `totals`. */
+  lineItemCount?: number;
+  /** Factor ids used by the mapped line items (resolved alongside company.calcs). */
+  lineItemFactorIds?: string[];
   screeningDecisions?: ScreeningDecision[];
+  brand?: { name: string; accent: string; logo: { data: Buffer; format: "png" | "jpg" } | null } | null;
 }
 
-export function GHGReportPDF({ company, factorOverrides = [], lineItemTotals, screeningDecisions = [] }: GHGReportPDFProps) {
-  const legacyTotals = totals(company);
-  const t = lineItemTotals ?? legacyTotals;
-  const dataSource = lineItemTotals ? "line_items" : "calcs";
+export function GHGReportPDF({
+  company,
+  factorOverrides = [],
+  totals: t,
+  lineItemCount = 0,
+  lineItemFactorIds = [],
+  screeningDecisions = [],
+  brand = null,
+}: GHGReportPDFProps) {
+  const accent = brand?.accent ?? DEFAULT_ACCENT;
+  const dataSource = lineItemCount > 0 ? "line_items" : "calcs";
   const period = fiscalPeriodLabel(company);
   const genDate = company.reportGeneratedAt
     ? new Date(company.reportGeneratedAt).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })
@@ -60,7 +75,9 @@ export function GHGReportPDF({ company, factorOverrides = [], lineItemTotals, sc
   const s2 = company.calcs.filter((c) => c.scope === 2);
   const s3 = company.calcs.filter((c) => c.scope === 3);
   const estimates = company.calcs.filter((c) => c.basis !== "measured");
-  const factorIds = Array.from(new Set(company.calcs.map((c) => c.factorId).filter(Boolean))) as string[];
+  const factorIds = Array.from(
+    new Set([...company.calcs.map((c) => c.factorId), ...lineItemFactorIds].filter((f): f is string => Boolean(f)))
+  ).sort();
 
   const scopeSections: [string, typeof s1, boolean][] = [
     ["SCOPE 1 - DIRECT EMISSIONS BY SOURCE", s1, false],
@@ -72,14 +89,18 @@ export function GHGReportPDF({ company, factorOverrides = [], lineItemTotals, sc
     <Document title={`GHG Inventory - ${company.name}`}>
       <Page size="LETTER" style={s.page}>
         {/* Header */}
-        <View style={s.headerRule}>
-          <Text style={s.badge}>GREENHOUSE GAS INVENTORY REPORT</Text>
+        <View style={[s.headerRule, { borderBottomColor: accent }]}>
+          {brand?.logo && (
+            <Image src={brand.logo} style={s.logo} />
+          )}
+          <Text style={[s.badge, { color: accent }]}>GREENHOUSE GAS INVENTORY REPORT</Text>
           <Text style={s.h1}>{company.name}</Text>
+          {brand && <Text style={s.meta}>Prepared by {brand.name}</Text>}
           <Text style={s.meta}>Reporting period: {period}  ·  Industry: {company.industry ?? " - "}</Text>
           <Text style={s.metaSmall}>
-            Powered by Sendrow  ·  Generated {genDate}
+            Generated {genDate}
             {company.reportingFramework ? `  ·  Purpose: ${company.reportingFramework.replace(/_/g, " ")}` : ""}
-            {lineItemTotals ? `  ·  ${lineItemTotals.lineItemCount} imported line items` : ""}
+            {lineItemCount > 0 ? `  ·  ${lineItemCount} imported line items` : ""}
           </Text>
         </View>
 
@@ -101,7 +122,7 @@ export function GHGReportPDF({ company, factorOverrides = [], lineItemTotals, sc
           ))}
           <View style={s.totalRow}>
             <Text style={s.totalLabel}>Total (Scope 1 + 2 location-based + 3)</Text>
-            <Text style={s.totalValue}>{fmtNum2(t.total)} tCO2e</Text>
+            <Text style={[s.totalValue, { color: accent }]}>{fmtNum2(t.total)} tCO2e</Text>
           </View>
         </View>
 

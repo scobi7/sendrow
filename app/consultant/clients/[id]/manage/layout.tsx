@@ -53,13 +53,6 @@ export default async function ManageLayout({
             </p>
           </div>
         </div>
-        <Link
-          href={`/consultant/clients/${id}`}
-          className="text-xs font-medium transition-opacity hover:opacity-70"
-          style={{ color: "var(--text-muted)" }}
-        >
-          Back to client
-        </Link>
       </div>
 
       {/* Section tabs */}

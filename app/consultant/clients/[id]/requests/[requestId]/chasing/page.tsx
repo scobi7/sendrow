@@ -5,7 +5,6 @@ import { requireOwnedClient } from "@/lib/guards";
 import { db } from "@/lib/db";
 import { companies, dataRequests } from "@/lib/db/schema";
 import { toggleRequestReminders } from "@/lib/consultant-actions";
-import { BackLink } from "@/components/workflow";
 
 /** Automatic Chasing (#21): configured per-request, runs automatically after.
  *  Cadence is deadline-relative (7 / 2 / day-of / overdue); requests without
@@ -55,7 +54,6 @@ export default async function ChasingSchedulePage({
 
   return (
     <div className="mx-auto max-w-2xl">
-      <BackLink href={`/consultant/clients/${id}`} label={company.name} />
       <div className="mb-6 flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-bold font-display" style={{ color: "var(--text)" }}>

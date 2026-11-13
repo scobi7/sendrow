@@ -170,7 +170,7 @@ export type RecContext = { hasRecs: boolean; recCoveragePct: number; residualFac
  *  (`residual.WECC.2024`) the manual-entry path uses in recalcCompany above.
  *  Shared so every consumer of imported line items applies the identical
  *  market-based adjustment instead of each reimplementing it (or skipping it). */
-export function recContextFor(company: Company): RecContext {
+function recContextFor(company: Company): RecContext {
   const inp = company.inputs;
   return {
     hasRecs: !!inp?.has_recs,
@@ -182,7 +182,7 @@ export function recContextFor(company: Company): RecContext {
 /** The one REC/residual-mix rule for market-based Scope 2. Returns the market-based
  *  tons for a kWh electricity line item, or null when the row keeps its
  *  location-based tons (no rec context, or not a kWh electricity row with a value).
- *  Used by lineItemTotals here and by getLineItemTotals in lib/report-totals.ts. */
+ *  Used by lineItemTotals here. */
 export function recAdjustedKwhTons(
   item: { category?: string; rawUnit?: string | null; rawValue?: string | number | null },
   rec?: RecContext

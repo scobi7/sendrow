@@ -10,6 +10,9 @@ Traps that cost time, with the fix or workaround. Add one when something bites; 
 - The PACT JSON export is a self-labeled draft, not conformance-tested.
 - QuickBooks/utility code is gone (2026-11-13) but its DB columns and tables remain (`qb_*`, `utility_*` on company connections, `qb_transactions`, `utility_data`, `invite_tokens`). Never remove them from `lib/db/schema.ts` casually: the build's `drizzle-kit push --force` would drop them in prod. The client export (`app/api/clients/[id]/export`) still includes `qb_transactions`/`utility_data`.
 - Scope 2 has no manual kWh input. Electricity reaches totals only through imported line items.
+- The ledger "How calculated" panel reads each row's `calcLog`. Rows imported before factor fields were logged show "Not recorded" for them, and manual-entry calcs (`CalcResult`) carry only a formula and basis, no factor name, value or unit. The gaps are shown on purpose.
+- Excel exports of snapshots frozen before 2026-11-13 fill factor source and site name from today's tables (those snapshots never stored them), and have no evidence file column values.
+- Regulatory dates (`lib/regulatory-dates.ts`) are compliance facts shown to consultants. Check each against its source before changing it; the dashboard strip hides dated entries once they pass.
 
 ## Database and deploy
 - **Preview and Production share ONE `DATABASE_URL`** (Vercel env, checked 2026-11-13). Every preview build (any branch, e.g. `sendrow-v3`) runs `drizzle-kit push --force` against the production database. A schema change on a branch hits prod immediately, while `main` may still run code that needs the old schema. Only additive changes are safe on a branch; removals wait until `main` runs code that no longer needs them.
@@ -28,6 +31,11 @@ Traps that cost time, with the fix or workaround. Add one when something bites; 
 
 - Ownership checks go through `lib/guards.ts` (`findOwnedLink`, `requireOwnedClient`). `test/separation.test.ts` is a static source check over `ACTION_FILES` (consultant-actions, workflow-actions, actions): a new server-action file must be added to that list or it isn't covered. Any action taking a companyId plus another entity id must also check the entity belongs to that company (flagSession/approveSession lacked this until 2026-11-13).
 - `lib/guards.ts` imports `server-only`, so a vitest test can't import it (or anything importing it) without mocking.
+
+## UI
+- The look lives in the `:root` tokens and shared classes in `app/globals.css` (`card`, `glass-panel`, `btn`, `chip`, `badge`, `input`). Change those before touching pages; class names like `glass-panel` are kept for compatibility even though nothing is glass any more.
+- The Cmd+K command menu sits in the desktop sidebar, which is hidden below 640px, so it doesn't open on phones. Phones use the Menu button instead.
+- `useOptimistic` comes from Next's bundled React (package.json says React 18); `@types/react` canary types make it type-check. Don't "fix" it by upgrading React alone.
 
 ## Tooling
 - `lib/format.ts` is display formatters; `lib/formats.ts` is the export-format engine. Easy to mix up.

@@ -8,7 +8,7 @@ import { companies, comments, dataRequests, emissionLineItems, evidence, events,
 import { archiveClient, deleteClient, updateClientContact } from "@/lib/actions";
 import { DeleteClientButton } from "../../delete-client-button";
 import { resendPortalEmail, renewPortalLink, replyToFlag, resolveFlag } from "@/lib/consultant-actions";
-import { BackLink, StatusBadge, CompletenessMeter, Pill } from "@/components/workflow";
+import { StatusBadge, CompletenessMeter, Pill } from "@/components/workflow";
 import { workflowStatus, nextDueDate, completenessPercent, STATUS_META } from "@/lib/client-status";
 import { PortalLinkButton } from "./portal-link-button";
 import { LocationsPanel } from "./locations-panel";
@@ -94,7 +94,6 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
 
   return (
     <div className="mx-auto max-w-5xl">
-      <BackLink />
 
       <div className="mb-6 flex items-start justify-between">
         <div className="flex items-center gap-4">

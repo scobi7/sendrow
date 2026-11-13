@@ -9,7 +9,6 @@ import { siteLabel } from "@/lib/site-requests";
 import { egridLabel } from "@/lib/factors";
 import { convertDollarFuel, addLineItemComment } from "@/lib/consultant-actions";
 import { isDollarFuelRow, fuelKindOf } from "@/lib/ledger";
-import { BackLink } from "@/components/workflow";
 import { VendorConfirm } from "../vendor-confirm";
 import { SessionActions } from "../session-actions";
 import { ApproveBar } from "./approve-bar";
@@ -90,7 +89,6 @@ export default async function ReviewApprovePage({ params }: { params: Promise<{ 
 
   return (
     <div className="mx-auto max-w-4xl">
-      <BackLink />
       <div className="mb-6 flex items-end justify-between">
         <div>
           <h1 className="text-2xl font-bold font-display" style={{ color: "var(--text)" }}>Review - {company.name}</h1>

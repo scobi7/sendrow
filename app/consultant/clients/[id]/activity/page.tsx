@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { desc, eq } from "drizzle-orm";
 import { requireOwnedClient } from "@/lib/guards";
@@ -50,14 +49,6 @@ export default async function ActivityPage({ params }: { params: Promise<{ id: s
 
   return (
     <div className="mx-auto max-w-3xl">
-      <Link
-        href={`/consultant/clients/${id}`}
-        className="mb-4 inline-block text-sm font-medium transition-opacity hover:opacity-70"
-        style={{ color: "var(--primary)" }}
-      >
-        Back to {company.name}
-      </Link>
-
       <div className="mb-5 flex items-end justify-between">
         <div>
           <h1 className="text-2xl font-bold font-display" style={{ color: "var(--text)" }}>Activity</h1>
