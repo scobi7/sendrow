@@ -4,6 +4,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
 import { Logo } from "@/components/ui";
+import { SubmitButton } from "@/components/submit-button";
 import { currentUser } from "@/lib/auth";
 import { onboardAsConsultant } from "@/lib/actions";
 
@@ -48,7 +49,7 @@ export default async function OnboardingPage({
             audit-ready inventories under your own brand.
           </p>
           <form action={onboardAsConsultant} className="mt-5">
-            <button type="submit" className="btn btn-primary w-full">Set up Consultant Account</button>
+            <SubmitButton className="btn btn-primary w-full" pendingText="Setting up...">Set up Consultant Account</SubmitButton>
           </form>
         </div>
 

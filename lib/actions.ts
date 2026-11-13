@@ -103,7 +103,6 @@ export async function updateClientContact(companyId: string, formData: FormData)
     .where(eq(companies.id, companyId));
 
   revalidatePath(`/consultant/clients/${companyId}`);
-  revalidatePath(`/consultant/clients/${companyId}`);
 }
 
 export async function archiveClient(companyId: string) {
@@ -117,7 +116,21 @@ export async function archiveClient(companyId: string) {
         eq(consultantClients.companyId, companyId)
       )
     );
-  redirect("/consultant");
+  redirect(`/consultant?archived=${encodeURIComponent(companyId)}`);
+}
+
+export async function unarchiveClient(companyId: string) {
+  const consultant = await requireConsultant();
+  await db
+    .update(consultantClients)
+    .set({ archivedAt: null })
+    .where(
+      and(
+        eq(consultantClients.consultantId, consultant.id),
+        eq(consultantClients.companyId, companyId)
+      )
+    );
+  revalidatePath("/consultant");
 }
 
 export async function deleteClient(companyId: string) {

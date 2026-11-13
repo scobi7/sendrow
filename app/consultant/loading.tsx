@@ -2,7 +2,7 @@
  *  "is it frozen?" gap on cold loads. Generic enough for board, lists, forms. */
 export default function Loading() {
   return (
-    <div className="mx-auto max-w-[1600px]" aria-busy="true" aria-label="Loading">
+    <div className="mx-auto max-w-[1600px] delayed-reveal" aria-busy="true" aria-label="Loading">
       <div className="mb-6 h-8 w-56 animate-pulse rounded" style={{ background: "var(--divider)" }} />
       <div className="space-y-3">
         {[0, 1, 2, 3].map((i) => (

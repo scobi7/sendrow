@@ -1,4 +1,5 @@
 import { Pill } from "@/components/workflow";
+import { SubmitButton } from "@/components/submit-button";
 import { fmtNum1 } from "@/lib/format";
 import { and, eq, isNotNull } from "drizzle-orm";
 import { db } from "@/lib/db";
@@ -126,7 +127,7 @@ export async function LocationsPanel({ companyId }: { companyId: string }) {
           ))}
         </select>
         <input name="contact_email" type="text" placeholder="Site contact email(s), optional - comma-separated" className="input text-xs" style={{ width: "16rem" }} />
-        <button className="btn btn-secondary shrink-0 px-3 py-1.5 text-xs">Add site</button>
+        <SubmitButton className="btn btn-secondary shrink-0 px-3 py-1.5 text-xs" pendingText="Adding...">Add site</SubmitButton>
       </form>
     </div>
   );

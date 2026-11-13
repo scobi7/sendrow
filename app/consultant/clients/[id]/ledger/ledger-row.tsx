@@ -2,7 +2,7 @@
 
 import { Pill } from "@/components/workflow";
 import { fmtNum3 } from "@/lib/format";
-import { useState, useTransition } from "react";
+import { useOptimistic, useState, useTransition } from "react";
 import {
   recategorizeLineItem,
   editLineItemQuantity,
@@ -56,8 +56,28 @@ export function LedgerRow({
   extraEvidence?: string[];
 }) {
   const [editing, setEditing] = useState<"category" | "quantity" | "comment" | "actual" | "evidence" | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
-  const excluded = item.status === "excluded";
+  // Optimistic copies of the server state. When a transition ends, React drops
+  // these and falls back to the `item` prop, so a failed action rolls back.
+  const [optimisticExcluded, setOptimisticExcluded] = useOptimistic(item.status === "excluded");
+  const [optimisticCategory, setOptimisticCategory] = useOptimistic({ scope: item.scope, category: item.category });
+  const excluded = optimisticExcluded;
+  const restoring = !optimisticExcluded && item.status === "excluded";
+  const displayStatus = excluded ? "excluded" : restoring ? "restoring…" : item.status;
+
+  // Runs one small ledger change: apply the optimistic state, then the server action.
+  const runChange = (apply: () => void, action: () => Promise<void>) => {
+    setError(null);
+    startTransition(async () => {
+      apply();
+      try {
+        await action();
+      } catch {
+        setError("Not saved. The row has been reverted - try again.");
+      }
+    });
+  };
 
   return (
     <>
@@ -73,7 +93,7 @@ export function LedgerRow({
         </td>
         <td className="px-4 py-2.5">
           <span className="text-xs" style={{ color: "var(--text)" }}>
-            S{item.scope} · {item.category.replace(/_/g, " ")}
+            S{optimisticCategory.scope} · {optimisticCategory.category.replace(/_/g, " ")}
           </span>
         </td>
         <td className="px-4 py-2.5 text-right font-data text-xs" style={{ color: "var(--text)" }}>
@@ -104,8 +124,8 @@ export function LedgerRow({
           )}
         </td>
         <td className="px-4 py-2.5">
-          <Pill style={STATUS_STYLE[item.status] ?? STATUS_STYLE.excluded}>
-            {item.status}
+          <Pill style={STATUS_STYLE[displayStatus] ?? STATUS_STYLE.excluded}>
+            {displayStatus}
           </Pill>
           {item.status === "mapped" && (
             <span
@@ -126,7 +146,7 @@ export function LedgerRow({
             {excluded ? (
               <button
                 disabled={pending}
-                onClick={() => startTransition(() => restoreLineItem(companyId, item.id))}
+                onClick={() => runChange(() => setOptimisticExcluded(false), () => restoreLineItem(companyId, item.id))}
                 className="underline"
                 style={{ color: "var(--primary)" }}
               >
@@ -181,7 +201,7 @@ export function LedgerRow({
                 </button>
                 <button
                   disabled={pending}
-                  onClick={() => startTransition(() => excludeLineItemAction(companyId, item.id))}
+                  onClick={() => runChange(() => setOptimisticExcluded(true), () => excludeLineItemAction(companyId, item.id))}
                   className="underline"
                   style={{ color: "var(--text-muted)" }}
                 >
@@ -190,6 +210,11 @@ export function LedgerRow({
               </>
             )}
           </div>
+          {error && (
+            <p role="alert" className="mt-1 text-right text-xs" style={{ color: "var(--warning-strong)" }}>
+              {error}
+            </p>
+          )}
         </td>
       </tr>
       {editing && (
@@ -205,11 +230,15 @@ export function LedgerRow({
                   disabled={pending}
                   onChange={(e) => {
                     const key = e.target.value;
-                    if (!key) return;
-                    startTransition(async () => {
-                      await recategorizeLineItem(companyId, item.id, key);
-                      setEditing(null);
-                    });
+                    const option = VENDOR_CONFIRM_OPTIONS.find((o) => o.key === key);
+                    if (!option) return;
+                    runChange(
+                      () => setOptimisticCategory({ scope: option.scope, category: option.category }),
+                      async () => {
+                        await recategorizeLineItem(companyId, item.id, key);
+                        setEditing(null);
+                      }
+                    );
                   }}
                 >
                   <option value="" disabled>Pick a category…</option>

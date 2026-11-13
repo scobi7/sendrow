@@ -1,5 +1,5 @@
 import { ClerkProvider } from "@clerk/nextjs";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -32,6 +32,12 @@ export const metadata: Metadata = {
   title: "Sendrow - The practice platform for climate consultants",
   description:
     "Turn a client's messy data into one audited emissions inventory, then answer every buyer and regulator format from it - under your brand.",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

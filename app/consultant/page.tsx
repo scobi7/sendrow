@@ -7,6 +7,7 @@ import { and, desc, eq, inArray, isNull } from "drizzle-orm";
 import { StatCard, StatusBadge, CompletenessMeter } from "@/components/workflow";
 import { archiveClient, deleteClient } from "@/lib/actions";
 import { DeleteClientButton } from "./delete-client-button";
+import { UndoToast } from "@/components/undo-toast";
 import { workflowStatus, nextDueDate, completenessPercent, type WorkflowStatus } from "@/lib/client-status";
 import type { ChecklistItem } from "@/lib/portal";
 
@@ -20,10 +21,23 @@ const FILTER_STATUS: Record<string, WorkflowStatus> = {
 export default async function ConsultantDashboard({
   searchParams,
 }: {
-  searchParams: Promise<{ filter?: string }>;
+  searchParams: Promise<{ filter?: string; archived?: string }>;
 }) {
-  const [{ filter: rawFilter }, rawUser] = await Promise.all([searchParams, currentUser()]);
+  const [{ filter: rawFilter, archived: rawArchived }, rawUser] = await Promise.all([searchParams, currentUser()]);
   const user = rawUser!;
+
+  // Name for the Undo toast. Looked up only through this consultant's own link
+  // (archived rows included), so another consultant's client name never shows.
+  const undoTarget = rawArchived
+    ? (
+        await db
+          .select({ companyId: companies.id, name: companies.name })
+          .from(consultantClients)
+          .innerJoin(companies, eq(companies.id, consultantClients.companyId))
+          .where(and(eq(consultantClients.consultantId, user.id), eq(consultantClients.companyId, rawArchived)))
+          .limit(1)
+      )[0]
+    : undefined;
 
   const links = await db
     .select()
@@ -181,6 +195,8 @@ export default async function ConsultantDashboard({
           </table>
         </div>
       )}
+
+      {undoTarget && <UndoToast companyId={undoTarget.companyId} name={undoTarget.name} />}
     </div>
   );
 }

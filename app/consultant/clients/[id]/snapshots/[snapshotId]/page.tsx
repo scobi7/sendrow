@@ -8,6 +8,7 @@ import { companies, evidence, locations, shareLinks, snapshots, userCompanies } 
 import { siteLabel } from "@/lib/site-requests";
 import { shareSnapshot, revokeShareLink } from "@/lib/consultant-actions";
 import { BackLink } from "@/components/workflow";
+import { SubmitButton } from "@/components/submit-button";
 import { ShareLinkButton } from "../../share-link-button";
 import type { SnapshotTotals } from "@/lib/snapshots";
 
@@ -164,7 +165,7 @@ export default async function SnapshotSharePage({
             <form action={shareSnapshot.bind(null, id, snap.id)} className="space-y-2">
               <input name="recipient_label" placeholder="Recipient - e.g. Elena Ruiz, Northgate Retail" className="input text-xs" />
               <input name="recipient_email" type="email" placeholder="their@email.com" className="input text-xs" />
-              <button className="btn btn-primary w-full text-sm">Confirm &amp; share</button>
+              <SubmitButton className="btn btn-primary w-full text-sm" pendingText="Sharing...">Confirm &amp; share</SubmitButton>
             </form>
             <p className="mt-2 text-xs" style={{ color: "var(--text-muted)" }}>
               Recipients see this frozen version only - never live data.

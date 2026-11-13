@@ -706,7 +706,7 @@ export function PortalChecklist({
       {/* Sticky "Submit all" bar - nothing above reached the server until this */}
       {!submitted && staged.length > 0 && (
         <div
-          className="sticky bottom-4 z-10 rounded-2xl p-4 shadow-lg"
+          className="sticky bottom-[max(1rem,env(safe-area-inset-bottom))] z-10 rounded-2xl p-4 shadow-lg"
           style={{ background: "var(--card)", border: "1px solid var(--primary)" }}
         >
           <p className="mb-2 text-sm font-semibold" style={{ color: "var(--text)" }}>

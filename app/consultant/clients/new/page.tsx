@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { consultantAddClient } from "@/lib/actions";
 import { PageHeader } from "@/components/ui";
+import { SubmitButton } from "@/components/submit-button";
 import { NAICS_SECTORS } from "@/lib/naics";
 
 const INDUSTRIES = [
@@ -94,7 +95,7 @@ export default async function NewClientPage({
         </p>
         <div className="flex justify-end gap-3">
           <Link href="/consultant" className="btn btn-secondary">Cancel</Link>
-          <button type="submit" className="btn btn-primary">Add Client</button>
+          <SubmitButton className="btn btn-primary" pendingText="Adding...">Add Client</SubmitButton>
         </div>
       </form>
     </div>

@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Logo } from "@/components/ui";
+import { SubmitButton } from "@/components/submit-button";
 import { LandingFooter } from "@/components/landing-footer";
 import { sendDemoRequest } from "@/lib/email";
 import { clientIp, checkRateLimit } from "@/lib/ratelimit";
@@ -92,9 +93,9 @@ export default async function DemoPage({
                 <label className="label">Company name</label>
                 <input name="company" required className="input" placeholder="Pacific Coast Logistics" />
               </div>
-              <button type="submit" className="btn btn-primary w-full py-3 mt-2">
+              <SubmitButton className="btn btn-primary w-full py-3 mt-2" pendingText="Sending...">
                 Request demo
-              </button>
+              </SubmitButton>
             </form>
             <p className="mt-4 text-center text-xs" style={{ color: "var(--text-muted)" }}>
               Prefer to pick a time directly?{" "}

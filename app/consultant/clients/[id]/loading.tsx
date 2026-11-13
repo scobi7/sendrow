@@ -2,7 +2,7 @@
  *  loads (BUG-4); this skeleton covers all of them so none flash blank (BUG-3). */
 export default function Loading() {
   return (
-    <div className="mx-auto max-w-5xl" aria-busy="true" aria-label="Loading">
+    <div className="mx-auto max-w-5xl delayed-reveal" aria-busy="true" aria-label="Loading">
       <div className="mb-4 h-4 w-24 animate-pulse rounded" style={{ background: "var(--divider)" }} />
       <div className="mb-6 flex items-center gap-4">
         <div className="h-12 w-12 animate-pulse rounded-2xl" style={{ background: "var(--divider)" }} />
