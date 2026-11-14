@@ -34,12 +34,17 @@ Traps that cost time, with the fix or workaround. Add one when something bites; 
 - `lib/guards.ts` imports `server-only`, so a vitest test can't import it (or anything importing it) without mocking.
 
 ## UI
-- The look lives in the `:root` tokens and shared classes in `app/globals.css` (`card`, `glass-panel`, `btn`, `chip`, `badge`, `input`). Change those before touching pages; class names like `glass-panel` are kept for compatibility even though nothing is glass any more.
+- The look lives in the `:root` tokens and shared classes in `app/globals.css` (`card`, `glass-panel`, `btn`, `chip`, `badge`, `input`). Change those before touching pages; class names like `glass-panel` are kept for compatibility even though nothing is glass any more. Token names predate the 4c theme (`--primary`, `--text-muted`), so their values, not their names, carry the look; the client portal overrides `--primary` with the consultant's brand color.
+- Green text on the tint: the mockup's accent #0B7A4B on #DCEAE1 is 4.33:1 and fails AA for small chips, so the site uses #0A7346 (4.76:1). Check contrast before changing either.
+- The homepage's styles are a CSS module (`app/home.module.css`). CSS modules reject bare attribute selectors such as `[data-scroll-x]` ("not pure selector", the whole site 500s in dev); put a class on the element instead.
 - The Cmd+K command menu sits in the desktop sidebar, which is hidden below 640px, so it doesn't open on phones. Phones use the Menu button instead.
 - `useOptimistic` comes from Next's bundled React (package.json says React 18); `@types/react` canary types make it type-check. Don't "fix" it by upgrading React alone.
 
 ## Tooling
 - In zsh, `F="a b c"; grep ... $F` passes one filename with spaces in it, so grep fails and a "no hits" check passes falsely (a dash-sweep builder reported clean while 3 dashes remained, 2026-11-13). Run multi-file greps under `bash -c` with an array, or list the files inline, and check that grep didn't print "No such file".
+- `process.env.X ?? "fallback"` keeps an empty string: `.env.local` sets `NEXT_PUBLIC_SUPPORT_EMAIL=""` and `FROM_EMAIL=""`, so `??` rendered a blank contact address. Use `||` for env fallbacks.
+- Local `next dev` runs Clerk in keyless mode, so only public pages can be screenshotted locally; `/login` never reaches "networkidle" (wait for "load"). A dev-only Clerk box covers the lower right of screenshots. When several builders share one dev server, one builder's half-saved file can 500 every page for a minute.
+- In zsh, `echo =====` fails (`=word` is filename expansion); quote it.
 - `lib/format.ts` is display formatters; `lib/formats.ts` is the export-format engine. Easy to mix up.
 - `npm run knip` reports 5 items kept on purpose: `components/pricing-calculator.tsx`, `PRICE_IDS`, `gapAnalysis`, `Gap`, `Location`. (`gapAnalysis`/`Gap`: leftover from the company self-serve product, shown nowhere; recommended for deletion, awaiting Malachi.)
 - CI (`.github/workflows/ci.yml`) runs tsc twice (`npm run lint` is tsc) and never runs `npm test`. It uses Node 20, which is deprecated.
