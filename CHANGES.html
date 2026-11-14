@@ -74,16 +74,16 @@
 <main>
 
 <header>
-  <h1>Changes, 13 November 2026</h1>
+  <h1>Changes, 13 and 14 November 2026</h1>
   <p class="meta">Branch <code>sendrow-v3</code>. Nothing pushed to <code>main</code>.</p>
-  <p>This run did two things. It put the 4c design on every page: marketing, legal, the consultant app, the client portal, the shared snapshot page, the PDF report and the emails. Then it tested every route and feature in a real browser against a copy of the database. That testing found 17 bugs. 16 are fixed and covered by a test; 1 needs your decision.</p>
+  <p>This run did two things. It put the 4c design on every page: marketing, legal, the consultant app, the client portal, the shared snapshot page, the PDF report and the emails. Then it tested every route and feature in a real browser against a copy of the database. That testing found 18 bugs. All 18 are fixed, each covered by a test.</p>
 </header>
 
 <section class="stats" aria-label="Summary figures">
-  <div class="stat"><b>17</b><span>bugs found in testing</span></div>
-  <div class="stat"><b>16</b><span>fixed, each with a test</span></div>
-  <div class="stat"><b>161</b><span>browser tests passing, plus 1 open and 1 skipped</span></div>
-  <div class="stat"><b>316</b><span>unit tests, up from 283</span></div>
+  <div class="stat"><b>18</b><span>bugs found in testing</span></div>
+  <div class="stat"><b>18</b><span>fixed, each with a test</span></div>
+  <div class="stat"><b>163</b><span>browser tests passing, 1 skipped</span></div>
+  <div class="stat"><b>321</b><span>unit tests, up from 283</span></div>
 </section>
 
 <section class="sheet">
@@ -102,7 +102,7 @@
   <h2>2. How it was tested</h2>
   <p>Playwright drives Chrome through the app as real users would. The tests live in the repo under <code>e2e/</code>, so they can be rerun any time with <code>npm run e2e</code>.</p>
   <ul>
-    <li><b>Never the real database.</b> Tests run on a Neon branch, <code>qa-2026-11-13</code>, a copy of production taken today. <code>e2e/env.ts</code> refuses to start if pointed at the production host.</li>
+    <li><b>Never the real database.</b> Tests run on a Neon branch, a copy of production made for the run and deleted after it. <code>e2e/env.ts</code> refuses to start if pointed at the production host.</li>
     <li><b>A production build</b> on port 3200, not the dev server. The page-update bug below only happens in production builds.</li>
     <li><b>Email, file storage and Stripe are off</b> on the test server, so no real email went out. Tests check what the app records about each send instead.</li>
     <li><b>Two consultants.</b> A owns the demo clients and is the admin; B owns nothing. Every "B is blocked" check also confirms A can open the same page, so a broken page can't pass as a blocked one.</li>
@@ -112,7 +112,7 @@
   <table>
     <thead><tr><th>Suite</th><th>What it covers</th><th>Result</th></tr></thead>
     <tbody>
-      <tr><td>public</td><td>Every marketing and legal page, every link on them, the referral, demo and agency quote forms, public API routes, signed-out redirects, 404 pages, fake portal and share tokens.</td><td>32 pass, 1 marked open</td></tr>
+      <tr><td>public</td><td>Every marketing and legal page, every link on them, the referral, demo and agency quote forms, public API routes, signed-out redirects, 404 pages, fake portal and share tokens.</td><td>34 pass</td></tr>
       <tr><td>access</td><td>Tenant isolation: B against each of A's client pages, snapshots, exports, evidence and API routes, and the admin gate.</td><td>56 pass, 1 skipped</td></tr>
       <tr><td>consultant</td><td>Dashboard, add client, contact edit, archive, Undo, restore, delete, branding reaching the portal, templates, formats, calendar, Cmd+K, phone menu, sign-out, onboarding.</td><td>15 pass</td></tr>
       <tr><td>portal</td><td>The full request loop: send, client uploads a CSV, an Excel file and typed-in fuel, multi-site delegation, chasing, renew link, consultant sees it fulfilled.</td><td>22 pass</td></tr>
@@ -145,25 +145,28 @@
       <tr><td>Consultant PDF download failed with a server error on every client.</td><td>The PDF library loaded React 18 while the app built React 19 elements.</td><td>React upgraded to 19.2.0 to match Next.</td></tr>
       <tr><td>PDF scope tables said "No emissions recorded" under non-zero totals for portal-fed clients.</td><td>Tables listed manual entries only.</td><td>Tables come from the same rows as the totals.</td></tr>
       <tr><td>PDF methodology claimed "accounting system exports".</td><td>Left over from the removed QuickBooks import.</td><td>Removed.</td></tr>
+      <tr><td>A signed-out visitor to a mistyped address landed on the sign-in screen.</td><td>The middleware required sign-in on every path not on a public list, before Next could tell the page didn't exist.</td><td>Sign-in is required only on the app's sections; unknown paths get the 404 page. Fixed 14 November, your call.</td></tr>
+      <tr><td>The Scope 2 market-based override was added to the billed electricity instead of replacing it. 10 t from bills with a 2 t override reported 12 t market-based in the PDF, snapshots, shared page and CDP answers.</td><td>The override was applied to manual entries only, then the line items' market figure was added on top.</td><td>The override replaces the whole market figure. Found 14 November while adding the figure to the Reports page.</td></tr>
     </tbody>
   </table>
   </div>
 </section>
 
-<section class="sheet open">
-  <h2>4. Open: needs your decision</h2>
+<section class="sheet">
+  <h2>4. Your decisions, 14 November</h2>
   <ul>
-    <li><b>Signed-out visitors to an unknown URL land on sign-in, not a 404 page.</b> <code>middleware.ts</code> protects every path that isn't on the public list before Next knows the page doesn't exist. Signed-in users get the 404. Fixing it means listing app routes in the middleware instead. A test marks it open (<code>e2e/public.e2e.ts</code>). Keep it, or show a 404?</li>
-    <li><b>Loading skeleton.</b> Consultant pages now show nothing new while loading instead of a grey skeleton. Upgrading to Next 16.3 would allow it back. Live with it for now, or plan the upgrade?</li>
-    <li><b>The Scope 2 market-based override</b> saves and reloads, but no consultant total displays it; the reports card shows location-based only. Intended?</li>
-    <li><b>The Neon test branch <code>qa-2026-11-13</code></b> stays so the tests can be rerun. Keep it, or delete it?</li>
+    <li><b>Signed-out visitors to an unknown URL now get the 404 page.</b> <code>middleware.ts</code> requires sign-in only on <code>/consultant</code>, <code>/admin</code>, <code>/checkout</code> and <code>/api</code>. Everything else is public, so a mistyped address shows "Page not found" instead of the sign-in screen. A new unit test (<code>test/middleware-routes.test.ts</code>) fails if someone adds a top-level page folder without marking it public or protected, so nothing becomes public by accident. A browser test checks a protected API route still refuses signed-out callers.</li>
+    <li><b>Loading skeleton:</b> left out until the Next 16.3 upgrade, which is now planned as its own job.</li>
+    <li><b>Scope 2 market-based</b> now shows on the Reports page under the location-based figure. The total stays location-based.</li>
+    <li><b>The Neon test branch is deleted.</b> For a rerun, make a fresh copy first; the command is in <code>docs/known-issues.md</code>. The 14 November rerun used a fresh branch, deleted afterward.</li>
   </ul>
   <h3>Also worth knowing</h3>
   <ul>
+    <li>Snapshots frozen before the market-based fix keep the figure they were frozen with. A client that had both an override and billed electricity needs a corrected snapshot.</li>
     <li>One access test is skipped: B trying to download one of A's evidence files. File storage is off on the test server, so the test database holds no evidence file to try. It runs once one exists.</li>
     <li>No real email was sent during testing. A live smoke test on sendrow.app is still on the list.</li>
-    <li>You offered the Neon agent skill and MCP server. I didn't install them; the <code>neonctl</code> login you ran was enough to create the branch.</li>
-    <li>Old snapshots keep their original hash. Only snapshots frozen from today can be re-verified from the stored row.</li>
+    <li>You offered the Neon agent skill and MCP server. I didn't install them; the <code>neonctl</code> login you ran was enough.</li>
+    <li>Old snapshots keep their original hash. Only snapshots frozen from 13 November on can be re-verified from the stored row.</li>
   </ul>
 </section>
 

@@ -121,4 +121,20 @@ describe("line items feed the headline totals (the 'approve changed nothing' bug
     expect(t.scope2Market).toBe(2.14);
     expect(t.scope2Market).not.toBe(t.scope2Location);
   });
+
+  it("a market-based override replaces the whole market figure, line items included", async () => {
+    const { combinedTotals } = await import("@/lib/calc");
+    const items = [
+      { scope: 2, category: "electricity", co2eKg: 2090, rawValue: 10000, rawUnit: "kWh", status: "mapped" },
+    ];
+    const company = {
+      calcs: [],
+      inputs: { scope2_market_override_tons: 0.5 },
+    } as unknown as import("@/lib/types").Company;
+    const t = combinedTotals(company, items);
+    // Before the fix the override was added to the line items' market figure (0.5 + 2.09).
+    expect(t.scope2Market).toBe(0.5);
+    expect(t.scope2Location).toBe(2.09);
+    expect(t.total).toBe(2.09);
+  });
 });

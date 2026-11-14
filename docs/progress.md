@@ -8,7 +8,7 @@ Update at the end of every session. Keep it current, not historical: git holds t
 - Also today: homepage turned into self-serve onboarding (deadline bar and sourced deadlines section, supplier "no account needed" box, design-partner pitch and waitlist removed); dashes swept from consultant, admin, marketing, legal, portal and email copy; supplier-calculated core logic (hidden from the request form until its rows are labeled).
 - UI: direction 4c approved and built on v3 (theme tokens, Archivo, one radius, homepage, shared nav and footer); `DESIGN.md` holds the theme. Site copy went through /no-ai-slop.
 - Checks: `npm run lint` clean, `npm test` 316/316, `npm run e2e` all passing on 2026-11-13 (Playwright, a production build against a Neon test branch, since deleted; make a new one before the next run, see docs/known-issues.md). knip last showed only the 5 known items.
-- E2E found 17 bugs on 2026-11-13; 16 fixed with tests (see CHANGES.html). Open: signed-out unknown paths redirect to sign-in instead of a 404 (`test.fail` in e2e/public.e2e.ts).
+- E2E found 17 bugs on 2026-11-13; 16 fixed with tests (see CHANGES.html). All found bugs are fixed as of 2026-11-14.
 - Phases: W3 format engine still blocked on a real buyer questionnaire. UI plan: Phase 0, most of 1, 3.1 and the Phase 4 foundation are built; the rest waits on Malachi's decisions (below).
 - Current goal (set 2026-07-21): get real consultants using it and collect their feedback.
 
@@ -25,6 +25,7 @@ P0, before a design partner touches real client data:
 - Apply the `userCompanies.stripeCustomerId` column (nullable; applies on the next deploy's schema push).
 
 P1:
+- Upgrade Next to 16.3+ as its own job (fixes the server action stall upstream; then restore the consultant loading skeleton). Then: preview builds on their own Neon branch with migrations instead of `push --force`, and the `neon-serverless` driver for transactions (see the stack write-up, 2026-11-14).
 - W3 format engine: replace the hardcoded CDP/EcoVadis/Walmart branches in `lib/mapping.ts` with config (invariant §14a).
 - Supplier-response work (Y3/Z4): reminder 48 to 72h after send, checklist and time estimate in the request email, per-item progress on the portal, named-buyer "why" framing. The homepage's response-rate claim depends on this.
 - Tenant isolation: add one real two-tenant integration test (seed two consultants, assert cross-access 404s).
@@ -56,9 +57,6 @@ Deferred tech debt (from the 2026-11-13 audit, not yet approved or decided):
 |---|---|
 | Confirm `BLOB_READ_WRITE_TOKEN` in prod | Vercel |
 | Look over the 4c site on the preview, signed in | preview |
-| Signed-out unknown path: keep the sign-in redirect or show a 404? | CHANGES.html |
-| Consultant pages lost their loading skeleton (Next stall fix); OK until a Next 16.3 upgrade? | CHANGES.html |
-| Scope 2 market-based override saves but no total shows it; intended? | CHANGES.html |
 | Drop `gapAnalysis`? (dead code from the company self-serve product) | this session |
 | Reflect proposals 1-5 from the tech-debt pass, plus today's | this session |
 | Real eGRID2024 / USEEIO v2.5 factor values | `/admin/factors` |
@@ -69,6 +67,7 @@ Deferred tech debt (from the 2026-11-13 audit, not yet approved or decided):
 | Possibly stale (from 2026-09-02, check): Clerk prod Google OAuth, attorney ToS (tool, not advice), Calendly links to a business account | ops |
 
 ## Log
+- 2026-11-14: Malachi's calls on the open items: signed-out unknown paths now 404 (middleware protects only app sections, guarded by test/middleware-routes.test.ts); no loading skeleton until Next 16.3; Reports page shows Scope 2 market-based. Found and fixed: the market-based override was added to the line items' market figure instead of replacing it. Neon test branch deleted; a fresh one made and deleted for the rerun.
 - 2026-11-13 (overnight): 4c on every page (marketing, legal, app, portal, shared page, PDF, emails). Playwright e2e in the repo (6 suites) on a Neon branch and a production build. Found 17 bugs, fixed 16: the server action stall (`loading.tsx`, React #35399), soft 404, no archived-client restore, share email never sent, restatement and delegation sends unrecorded or misreported, reports and questionnaire totals missing line items, irreproducible snapshot hash, kWh header unit, request changes never reaching the client, flag and approve logging, factor source fallback, consultant PDF 500 (React 18 vs 19). Haiku builders' checks rerun by the orchestrator; caught a claimed console allowance that wasn't in the file, and a request link that missed typed-in entries. 283 to 316 unit tests. CHANGES.html added.
 - 2026-11-13 (late night): Homepage directions: 5 prototypes, then 3 layered versions of "worked examples"; Malachi picked 4c (one green, layered sheets, still 3D stack) with upright headings. Built it: theme tokens, Archivo, one radius, homepage rebuild, shared nav and footer on every marketing and legal page, labels above headings removed. Installed /no-ai-slop and ran a site-wide wording pass (36 files: dashes, arrows, slop, unsourced stats and time promises, one contact address). Every Haiku builder's check rerun by the orchestrator; it caught invented example numbers, a dropped set of footer links, a "Built in California" claim, and an accent that failed contrast. 283 tests.
 - 2026-11-13 (night): Homepage made self-serve, with a sourced deadline bar and deadlines section (Ninth Circuit ruling: SB 253 Scope 3 and SB 261 on hold). Dash sweep over consultant, admin, marketing, legal, portal and email copy. Supplier-calculated core logic with factor guards on every recompute path (orchestrator added the vendor-remap guard the builder missed). DESIGN.md adopted. 263 to 283 tests.

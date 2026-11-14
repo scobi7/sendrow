@@ -114,16 +114,21 @@ test.describe("unknown path, signed in", () => {
   });
 });
 
-// BUG: a signed-out visitor to an unknown path is sent to Clerk's sign-in page instead of the
-// 404 page. Expected: 404 page with "Page not found" (the signed-out 404 the brief asks for).
-// Actual: middleware.ts runs auth.protect() on every path that is not in isPublicRoute, before
-// Next.js resolves the route, so /this-does-not-exist redirects to choice-sloth-54.accounts.dev/sign-in
-// (status 200 after redirect). Checked 2026-11-13. Decide whether a 404 page is wanted here.
-test.fail("BUG: signed-out unknown path shows the 404 page", async ({ page, allowErrors }) => {
-  allowErrors(/script-src/);
+// Fixed 2026-11-14 (Malachi's call): middleware.ts requires sign-in only on /consultant, /admin,
+// /checkout and /api, so a signed-out visitor to an unknown path gets the 404 page. Before, every
+// unlisted path redirected to Clerk's sign-in page.
+test("signed out: an unknown path shows the 404 page", async ({ page, allowErrors }) => {
+  allowErrors(/status of 404 \(Not Found\)/);
   const response = await page.goto("/this-does-not-exist");
   expect(response!.status()).toBe(404);
   await expect(page.getByRole("heading", { name: "Page not found" })).toBeVisible();
+  await expect(page).toHaveURL(/\/this-does-not-exist$/);
+});
+
+test("signed out: a protected API route is still refused", async ({ request }) => {
+  const res = await request.get("/api/clients/demo_bayb/export", { maxRedirects: 0 });
+  expect(res.status(), "not served to a signed-out caller").not.toBe(200);
+  expect(await res.text()).not.toContain("Bayshore Bottling");
 });
 
 test("a fake portal token shows a friendly message", async ({ page }) => {

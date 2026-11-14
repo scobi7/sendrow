@@ -247,23 +247,29 @@ export function combinedTotals(
 ): Totals {
   const a = totals(company);
   const b = lineItemTotals(items, recContextFor(company));
+  // The consultant's market-based override replaces the whole derived figure (manual calcs AND line
+  // items), as the Scope 2 form says. totals() alone only knows the manual part.
+  const override = company.inputs?.scope2_market_override_tons;
+  const derivedMarket = r2(s2MarketDerived(company) + b.scope2Market);
   return {
     scope1: r2(a.scope1 + b.scope1),
     scope2Location: r2(a.scope2Location + b.scope2Location),
-    scope2Market: r2(a.scope2Market + b.scope2Market),
+    scope2Market: applyScope2MarketOverride(derivedMarket, override),
     scope3: r2(a.scope3 + b.scope3),
     total: r2(a.total + b.total),
   };
+}
+
+/** Market-based Scope 2 from manual calcs, before any consultant override. */
+function s2MarketDerived(company: Company): number {
+  return r2(company.calcs.filter((c) => c.scope === 2).reduce((sum, c) => sum + (c.marketBasedTons ?? c.co2eTons), 0));
 }
 
 export function totals(company: Company): Totals {
   const s = (n: number[]) => r2(n.reduce((a, b) => a + b, 0));
   const scope1 = s(company.calcs.filter((c) => c.scope === 1).map((c) => c.co2eTons));
   const scope2Location = s(company.calcs.filter((c) => c.scope === 2).map((c) => c.co2eTons));
-  const scope2Market = applyScope2MarketOverride(
-    s(company.calcs.filter((c) => c.scope === 2).map((c) => c.marketBasedTons ?? c.co2eTons)),
-    company.inputs?.scope2_market_override_tons
-  );
+  const scope2Market = applyScope2MarketOverride(s2MarketDerived(company), company.inputs?.scope2_market_override_tons);
   const scope3 = s(company.calcs.filter((c) => c.scope === 3).map((c) => c.co2eTons));
   return { scope1, scope2Location, scope2Market, scope3, total: r2(scope1 + scope2Location + scope3) };
 }

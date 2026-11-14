@@ -1,27 +1,22 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
-const isPublicRoute = createRouteMatcher([
-  "/",
-  "/how-it-works(.*)",
-  "/for-consultants(.*)",
-  "/pricing(.*)",
-  "/demo(.*)",
-  "/login(.*)",
-  "/signup(.*)",
-  "/sso-callback(.*)",
-  "/onboarding(.*)",
-  "/api/webhooks/stripe(.*)",
-  "/terms(.*)",
-  "/privacy(.*)",
-  "/portal(.*)",      // magic-link client portal — token is the auth
-  "/api/portal(.*)",  // portal submissions — token validated in the route
-  "/api/track(.*)",   // homepage engagement beacon — public, rate-limited, allowlisted events
-  "/api/cron(.*)",  // Vercel cron; CRON_SECRET is checked inside the route
-  "/security(.*)",
-  "/dpa(.*)",
-  "/get-matched(.*)",
-  "/shared(.*)",   // read-only branded results — token is the auth
+/** Sign-in is required only on the app's own sections. Every other path is public, so an unknown
+ *  address reaches Next's 404 page instead of a sign-in redirect. A new top-level folder in app/
+ *  must be classified in test/middleware-routes.test.ts, which fails until it is. */
+const isProtectedRoute = createRouteMatcher([
+  "/consultant(.*)",
+  "/admin(.*)",
+  "/checkout(.*)",
+  "/api(.*)",
+]);
+
+/** API routes that carry their own auth. */
+const isPublicApi = createRouteMatcher([
+  "/api/webhooks/stripe(.*)", // Stripe signature checked in the route
+  "/api/portal(.*)",  // portal submissions: token validated in the route
+  "/api/track(.*)",   // homepage engagement beacon: public, rate-limited, allowlisted events
+  "/api/cron(.*)",    // Vercel cron; CRON_SECRET is checked inside the route
 ]);
 
 const isAdminRoute = createRouteMatcher(["/admin(.*)"]);
@@ -31,7 +26,7 @@ const isAppRoute = createRouteMatcher([
 ]);
 
 export default clerkMiddleware(async (auth, request) => {
-  if (!isPublicRoute(request)) {
+  if (isProtectedRoute(request) && !isPublicApi(request)) {
     await auth.protect();
   }
 

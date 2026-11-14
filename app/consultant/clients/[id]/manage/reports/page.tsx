@@ -66,7 +66,13 @@ export default async function ManageReports({
             <p className="mt-1 text-xl font-bold font-data" style={{ color: label === "Total" ? "var(--primary)" : "var(--text)" }}>
               {fmtNum1(v as number)}
             </p>
-            <p className="text-xs" style={{ color: "var(--text-muted)" }}>tCO2e</p>
+            <p className="text-xs" style={{ color: "var(--text-muted)" }}>{label === "Scope 2" ? "tCO2e location-based" : "tCO2e"}</p>
+            {/* Dual reporting: the PDF, snapshots and CDP answers carry the market-based figure too. */}
+            {label === "Scope 2" && (
+              <p className="mt-1 text-xs font-data" style={{ color: "var(--text-muted)" }}>
+                Market-based {fmtNum1(t.scope2Market)}
+              </p>
+            )}
           </div>
         ))}
       </div>

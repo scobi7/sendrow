@@ -646,8 +646,10 @@ test.describe("manual entry and totals", () => {
     expect(await page.getByText("Total", { exact: true }).locator("xpath=following-sibling::p[1]").first().innerText()).toBe("10.2");
   });
 
-  test("a Scope 2 market-based override is saved and kept on reload", async ({ page }) => {
-    const c = await seedClient("scope2");
+  test("a Scope 2 market-based override is saved, kept on reload, and replaces the market figure", async ({ page }) => {
+    // Billed electricity (a line item) plus an override: the market-based figure must be the override
+    // alone. Before 2026-11-14 combinedTotals added the line items' market figure on top of it.
+    const c = await seedClient("scope2", { rows: [elec("E2E meter M2", 5000)] });
     await page.goto(`${base(c.id)}/manage/scope2`);
     await page.locator('input[name="scope2_market_override_tons"]').fill("12.5");
     await page.locator('input[name="scope2_market_override_reason"]').fill("E2E supplier-specific factor");
@@ -657,6 +659,10 @@ test.describe("manual entry and totals", () => {
     await page.goto(`${base(c.id)}/manage/scope2`);
     await expect(page.locator('input[name="scope2_market_override_tons"]')).toHaveValue("12.5");
     await expect(page.locator('input[name="scope2_market_override_reason"]')).toHaveValue("E2E supplier-specific factor");
+
+    await page.goto(`${base(c.id)}/manage/reports`);
+    await expect(page.getByText("tCO2e location-based").first()).toBeVisible();
+    await expect(page.getByText("Market-based 12.5", { exact: true }).first()).toBeVisible();
   });
 
   test("a Scope 3 industry-average estimate is saved, adds to Scope 3, and undoing it removes it", async ({ page }) => {
