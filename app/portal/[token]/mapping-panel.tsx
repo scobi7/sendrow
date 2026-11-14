@@ -85,7 +85,7 @@ export function MappingPanel({
   return (
     <div>
       <div
-        className="mb-3 rounded-lg px-3 py-2 text-sm"
+        className="mb-3 rounded px-3 py-2 text-sm"
         style={
           source === "memory"
             ? { background: "var(--primary-tint)", color: "var(--primary)" }
@@ -97,7 +97,7 @@ export function MappingPanel({
           : <>Here&apos;s your file. Tell us what each column is. You know &ldquo;{filename}&rdquo; best.</>}
       </div>
 
-      <div className="overflow-x-auto rounded-lg" style={{ border: "1px solid var(--divider)" }}>
+      <div className="overflow-x-auto rounded" style={{ border: "1px solid var(--divider)" }}>
         <table className="w-full text-xs" style={{ borderCollapse: "collapse" }}>
           <thead>
             {/* Assignment row: what each column MEANS */}
@@ -188,7 +188,7 @@ export function MappingPanel({
       </div>
 
       {unnamedCount >= 2 ? (
-        <p className="mt-2 rounded-lg px-3 py-2 text-xs font-medium" style={{ background: "var(--warning-tint)", color: "var(--warning-strong)" }}>
+        <p className="mt-2 rounded px-3 py-2 text-xs font-medium" style={{ background: "var(--warning-tint)", color: "var(--warning-strong)" }}>
           Most columns came through unnamed. That usually means we grabbed the wrong header row.
           If you can see your real column names in the grid below (like &ldquo;Month&rdquo; or &ldquo;Total&rdquo;), <strong>click that row</strong> and everything fixes itself.
         </p>
@@ -200,7 +200,7 @@ export function MappingPanel({
       )}
 
       {dollarHints.length > 0 && (
-        <p className="mt-2 rounded-lg px-3 py-2 text-xs" style={{ background: "var(--warning-tint)", color: "var(--warning-strong)" }}>
+        <p className="mt-2 rounded px-3 py-2 text-xs" style={{ background: "var(--warning-tint)", color: "var(--warning-strong)" }}>
           &ldquo;{dollarHints.join("”, “")}&rdquo; looks like dollar amounts. That&apos;s fine. Your consultant
           converts money to physical amounts; those rows will be marked for their review.
         </p>

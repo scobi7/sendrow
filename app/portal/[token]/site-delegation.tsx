@@ -57,9 +57,9 @@ export function SiteDelegation({ token, sites, totalKg }: { token: string; sites
   const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 1 });
 
   return (
-    <div className="mb-8 rounded-2xl" style={{ background: "var(--card)" }}>
+    <div className="mb-8 rounded" style={{ background: "var(--card)" }}>
       <div className="px-5 pt-4 pb-3" style={{ borderBottom: "1px solid var(--divider)" }}>
-        <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>Your locations</p>
+        <h2 className="text-lg font-bold" style={{ color: "var(--text)" }}>Your locations</h2>
         <p className="mt-1 text-xs" style={{ color: "var(--text-muted)" }}>
           You don&apos;t have to gather every site&apos;s data yourself. Send each office or plant its own secure upload link.
         </p>
@@ -82,7 +82,7 @@ export function SiteDelegation({ token, sites, totalKg }: { token: string; sites
                   </p>
                 </div>
                 {r.status === "complete" && (
-                  <span className="shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold" style={{ background: "var(--primary-tint)", color: "var(--primary)" }}>
+                  <span className="shrink-0 rounded px-2.5 py-1 text-xs font-semibold" style={{ background: "var(--primary-tint)", color: "var(--primary)" }}>
                     Done
                   </span>
                 )}
@@ -93,7 +93,7 @@ export function SiteDelegation({ token, sites, totalKg }: { token: string; sites
                   placeholder="Site contact email(s), separate with commas for more than one"
                   value={emails[site.id] ?? ""}
                   onChange={(e) => setEmails((m) => ({ ...m, [site.id]: e.target.value }))}
-                  className="rounded-lg px-2.5 py-1.5 text-xs"
+                  className="rounded px-2.5 py-1.5 text-xs"
                   style={{ background: "var(--bg)", border: "1px solid var(--divider)", color: "var(--text)", width: "20rem" }}
                 />
                 <input
@@ -102,14 +102,13 @@ export function SiteDelegation({ token, sites, totalKg }: { token: string; sites
                   value={messages[site.id] ?? ""}
                   onChange={(e) => setMessages((m) => ({ ...m, [site.id]: e.target.value }))}
                   maxLength={500}
-                  className="rounded-lg px-2.5 py-1.5 text-xs"
+                  className="rounded px-2.5 py-1.5 text-xs"
                   style={{ background: "var(--bg)", border: "1px solid var(--divider)", color: "var(--text)", width: "16rem" }}
                 />
                 <button
                   onClick={() => sendLink(site)}
                   disabled={busy === site.id || !(emails[site.id] ?? "").includes("@")}
-                  className="rounded-full px-3 py-1 text-xs font-semibold transition-opacity hover:opacity-80 disabled:opacity-40"
-                  style={{ background: "var(--primary)", color: "white" }}
+                  className="btn btn-secondary px-3 py-1 text-xs"
                 >
                   {busy === site.id ? "Sending…" : r.status === "no_link" ? "Send upload link" : "Re-send link"}
                 </button>

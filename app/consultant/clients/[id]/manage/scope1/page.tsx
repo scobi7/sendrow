@@ -34,9 +34,9 @@ export default async function ManageScope1({ params }: { params: Promise<{ id: s
 
         <details className="card" open>
           <summary className="cursor-pointer font-semibold font-display" style={{ color: "var(--text)" }}>
-            Fleet Fuel <InfoTip text="Fuel burned in vehicles the company owns or leases." />
+            Fleet fuel <InfoTip text="Fuel burned in vehicles the company owns or leases." />
           </summary>
-          <div className="mt-4 grid grid-cols-3 gap-4">
+          <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
             <div>
               <label className="label">Gasoline (gal/yr)</label>
               <input name="fleet_gasoline_gal" type="number" step="any" min={0} className="input" defaultValue={inp.fleet_gasoline_gal ?? ""} />
@@ -58,7 +58,7 @@ export default async function ManageScope1({ params }: { params: Promise<{ id: s
 
         <details className="card" open>
           <summary className="cursor-pointer font-semibold font-display" style={{ color: "var(--text)" }}>
-            Natural Gas <InfoTip text="Therms from the gas bills for the reporting year, or mark not applicable." />
+            Natural gas <InfoTip text="Therms from the gas bills for the reporting year, or mark not applicable." />
           </summary>
           <div className="mt-3">
             <label className="label">Natural gas (therms/yr)</label>
@@ -74,7 +74,7 @@ export default async function ManageScope1({ params }: { params: Promise<{ id: s
           <summary className="cursor-pointer font-semibold font-display" style={{ color: "var(--text)" }}>
             Refrigerants <InfoTip text="Refrigerant gases topped up in HVAC or refrigeration this year." />
           </summary>
-          <div className="mt-4 grid grid-cols-2 gap-4">
+          <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label className="label">Refrigerant type</label>
               <select name="refrigerant_type" className="input" defaultValue={inp.refrigerant_type ?? ""}>
@@ -95,9 +95,9 @@ export default async function ManageScope1({ params }: { params: Promise<{ id: s
 
         <details className="card" open>
           <summary className="cursor-pointer font-semibold font-display" style={{ color: "var(--text)" }}>
-            On-Site Equipment <InfoTip text="Generators, forklifts, and other fuel-burning equipment." />
+            On-site equipment <InfoTip text="Generators, forklifts, and other fuel-burning equipment." />
           </summary>
-          <div className="mt-4 grid grid-cols-2 gap-4">
+          <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label className="label">Fuel type</label>
               <select name="equipment_fuel_type" className="input" defaultValue={inp.equipment_fuel_type ?? ""}>

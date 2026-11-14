@@ -352,7 +352,7 @@ export function PortalChecklist({
   return (
     <div className="space-y-3">
       {doneMsg && (
-        <div className="rounded-xl px-4 py-3 text-sm" style={{ background: "var(--primary-tint)", color: "var(--primary)" }}>
+        <div className="rounded px-4 py-3 text-sm" style={{ background: "var(--primary-tint)", color: "var(--primary)" }}>
           {doneMsg}
         </div>
       )}
@@ -371,7 +371,7 @@ export function PortalChecklist({
               .filter(Boolean)
               .join(" · ") + (atCap ? " (max)" : "");
         return (
-          <div key={item.id} className="rounded-2xl" style={{ background: "var(--card)", border: isOpen ? "1px solid var(--primary)" : "1px solid var(--divider)" }}>
+          <div key={item.id} className="rounded" style={{ background: "var(--card)", border: isOpen ? "1px solid var(--primary)" : "1px solid var(--divider)" }}>
             <button
               className="flex w-full items-center justify-between px-5 py-4 text-left"
               onClick={() => !atCap && setOpenItem(isOpen ? null : item.id)}
@@ -397,10 +397,10 @@ export function PortalChecklist({
               <div className="px-5 pb-4">
                 <button
                   onClick={() => setOpenItem(item.id)}
-                  className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold transition-colors"
+                  className="flex items-center gap-1.5 rounded px-3 py-2 text-xs font-semibold transition-colors"
                   style={{ background: "var(--primary-tint)", color: "var(--primary)", border: "1px solid var(--chip-border)" }}
                 >
-                  + Add another file
+                  Add another file
                   <span className="font-normal" style={{ color: "var(--text-muted)" }}>
                     ({fileCount} of {MAX_FILES_PER_CHECKLIST_ITEM} added)
                   </span>
@@ -410,7 +410,7 @@ export function PortalChecklist({
 
             {/* Conversation on this item (X2): what you sent, what they answered */}
             {(threads[item.id]?.length ?? 0) > 0 && (
-              <div className="mx-5 mb-3 space-y-2 rounded-xl px-4 py-3" style={{ background: "var(--bg)", border: "1px solid var(--divider)" }}>
+              <div className="mx-5 mb-3 space-y-2 rounded px-4 py-3" style={{ background: "var(--bg)", border: "1px solid var(--divider)" }}>
                 {threads[item.id].map((t, i) => (
                   <p key={i} className="text-xs leading-relaxed" style={{ color: "var(--text)" }}>
                     <span className="font-semibold" style={{ color: t.authorType === "supplier" ? "var(--text-muted)" : "var(--primary)" }}>
@@ -426,14 +426,14 @@ export function PortalChecklist({
             {isOpen && !atCap && (
               <div className="px-5 pb-5">
                 {hasAny && (
-                  <p className="mb-3 rounded-lg px-3 py-2 text-xs" style={{ background: "var(--primary-tint)", color: "var(--primary)" }}>
+                  <p className="mb-3 rounded px-3 py-2 text-xs" style={{ background: "var(--primary-tint)", color: "var(--primary)" }}>
                     {fileCount} file{fileCount === 1 ? "" : "s"} added so far. Add another below, up to {MAX_FILES_PER_CHECKLIST_ITEM} total (e.g. separate electricity and gas sheets, or one per month).
                   </p>
                 )}
                 {itemSheets ? (
                   /* ── Sheet picker: multi-tab workbooks ── */
                   <div>
-                    <div className="mb-3 rounded-lg px-3 py-2 text-sm" style={{ background: "var(--warning-tint)", color: "var(--warning-strong)" }}>
+                    <div className="mb-3 rounded px-3 py-2 text-sm" style={{ background: "var(--warning-tint)", color: "var(--warning-strong)" }}>
                       &ldquo;{itemSheets.filename}&rdquo; has {itemSheets.sheets.length} tabs. Which one holds this data?
                     </div>
                     <div className="space-y-2">
@@ -441,7 +441,7 @@ export function PortalChecklist({
                         <button
                           key={sh.name}
                           disabled={busy}
-                          className="flex w-full items-center justify-between rounded-lg px-4 py-3 text-left text-sm transition-colors hover:opacity-80"
+                          className="flex w-full items-center justify-between rounded px-4 py-3 text-left text-sm transition-colors hover:opacity-80"
                           style={{ border: "1px solid var(--divider)", background: "var(--bg)" }}
                           onClick={() => startMapping(item, itemSheets.file, `${itemSheets.filename}: ${sh.name}`, sh.matrix)}
                         >
@@ -478,7 +478,12 @@ export function PortalChecklist({
                   />
                 ) : (
                   <>
-                    <div className="mb-4 flex flex-wrap gap-2">
+                    <div
+                      role="group"
+                      aria-label="How to add data"
+                      className="mb-4 inline-flex flex-wrap gap-1 rounded p-1"
+                      style={{ background: "var(--bg-subtle)", border: "1px solid var(--divider)" }}
+                    >
                       {([
                         ["upload", "Upload a file"],
                         ["entry", "Type it in"],
@@ -486,7 +491,13 @@ export function PortalChecklist({
                       ] as const).map(([m, label]) => (
                         <button
                           key={m}
-                          className={mode === m ? "btn btn-primary text-xs px-3 py-1.5" : "btn btn-secondary text-xs px-3 py-1.5"}
+                          aria-pressed={mode === m}
+                          className="rounded px-3 py-1.5 text-xs font-semibold transition-colors"
+                          style={
+                            mode === m
+                              ? { background: "var(--surface)", color: "var(--text)", boxShadow: "var(--shadow-card)" }
+                              : { background: "transparent", color: "var(--text-muted)" }
+                          }
                           onClick={() => setMode(m)}
                         >
                           {label}
@@ -497,7 +508,7 @@ export function PortalChecklist({
                     {mode === "upload" ? (
                       <>
                         <label
-                          className="block cursor-pointer rounded-xl p-8 text-center text-sm"
+                          className="block cursor-pointer rounded p-8 text-center text-sm"
                           style={{ border: "2px dashed var(--divider)", color: "var(--text-muted)" }}
                         >
                           {busy ? "Reading…" : "Click to choose a CSV or Excel file"}
@@ -551,17 +562,17 @@ export function PortalChecklist({
                         }}
                       >
                         {draftRestored && (
-                          <p className="mb-2 rounded-lg px-3 py-2 text-xs" style={{ background: "var(--primary-tint)", color: "var(--primary)" }}>
+                          <p className="mb-2 rounded px-3 py-2 text-xs" style={{ background: "var(--primary-tint)", color: "var(--primary)" }}>
                             Picked up where you left off. Your draft was saved automatically.
                           </p>
                         )}
                         {pdfNotice && evidenceStash?.itemId === item.id && (
-                          <p className="mb-2 rounded-lg px-3 py-2 text-xs" style={{ background: "var(--warning-tint)", color: "var(--warning-strong)" }}>
+                          <p className="mb-2 rounded px-3 py-2 text-xs" style={{ background: "var(--warning-tint)", color: "var(--warning-strong)" }}>
                             {pdfNotice}
                           </p>
                         )}
                         {prefill.length > 0 && !prefillUsed && (
-                          <div className="mb-2 flex items-center justify-between rounded-lg px-3 py-2" style={{ background: "var(--warning-tint)" }}>
+                          <div className="mb-2 flex items-center justify-between rounded px-3 py-2" style={{ background: "var(--warning-tint)" }}>
                             <p className="text-xs" style={{ color: "var(--warning-strong)" }}>
                               You submitted {prefill.length} entries last time{prefill[0]?.period ? ` (${prefill[0].period})` : ""}.
                               Start from those and update what changed.
@@ -584,7 +595,7 @@ export function PortalChecklist({
                           </div>
                         )}
                         {prefillUsed && (
-                          <p className="mb-2 rounded-lg px-3 py-2 text-xs" style={{ background: "var(--warning-tint)", color: "var(--warning-strong)" }}>
+                          <p className="mb-2 rounded px-3 py-2 text-xs" style={{ background: "var(--warning-tint)", color: "var(--warning-strong)" }}>
                             These are from your last submission. <strong>Confirm or update</strong> each number before submitting.
                           </p>
                         )}
@@ -625,10 +636,10 @@ export function PortalChecklist({
                             style={{ color: "var(--text-muted)" }}
                             onClick={() => setRows((rs) => [...rs, { date: "", kind: rs[rs.length - 1]?.kind ?? "electricity", quantity: "" }])}
                           >
-                            + Add row
+                            Add row
                           </button>
                           <button
-                            className="btn btn-primary text-sm"
+                            className="btn btn-secondary text-sm"
                             disabled={busy || entryToRows().length === 0}
                             onClick={() => {
                               const stash = evidenceStash?.itemId === item.id ? evidenceStash : null;
@@ -695,7 +706,7 @@ export function PortalChecklist({
 
       {/* Submitted confirmation - the one and only send has happened */}
       {submitted && (
-        <div className="rounded-2xl p-6 text-center" style={{ background: "var(--primary-tint)" }}>
+        <div className="rounded p-6 text-center" style={{ background: "var(--primary-tint)" }}>
           <p className="text-lg font-bold" style={{ color: "var(--primary)" }}>Submitted</p>
           <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>
             Your consultant has been notified and will review your data. Thank you.
@@ -706,7 +717,7 @@ export function PortalChecklist({
       {/* Sticky "Submit all" bar - nothing above reached the server until this */}
       {!submitted && staged.length > 0 && (
         <div
-          className="sticky bottom-[max(1rem,env(safe-area-inset-bottom))] z-10 rounded-2xl p-4"
+          className="sticky bottom-[max(1rem,env(safe-area-inset-bottom))] z-10 rounded p-4"
           style={{ background: "var(--card)", border: "1px solid var(--primary)", boxShadow: "var(--shadow-raised)" }}
         >
           <p className="mb-2 text-sm font-semibold" style={{ color: "var(--text)" }}>

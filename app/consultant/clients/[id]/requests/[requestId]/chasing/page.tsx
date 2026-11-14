@@ -54,7 +54,7 @@ export default async function ChasingSchedulePage({
 
   return (
     <div className="mx-auto max-w-2xl">
-      <div className="mb-6 flex items-start justify-between">
+      <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold font-display" style={{ color: "var(--text)" }}>
             Reminder schedule: {company.name}
@@ -87,7 +87,7 @@ export default async function ChasingSchedulePage({
       )}
 
       <div className="card mb-6">
-        <p className="eyebrow mb-3">Cadence</p>
+        <h2 className="mb-3 text-lg font-bold" style={{ color: "var(--text)" }}>Cadence</h2>
         <div className="divide-y" style={{ borderColor: "var(--divider)" }}>
           {schedule.map((t) => {
             const sentAt = sent[t.key];
@@ -100,10 +100,10 @@ export default async function ChasingSchedulePage({
                   </p>
                 </div>
                 <span
-                  className="font-data text-[11px]"
+                  className="font-data text-xs"
                   style={{ color: sentAt ? "var(--success-text)" : req.remindersEnabled && !closed ? "var(--text-muted)" : "var(--neutral-muted)" }}
                 >
-                  {sentAt ? "sent" :req.remindersEnabled && !closed ? "scheduled" : "paused"}
+                  {sentAt ? "sent" : req.remindersEnabled && !closed ? "scheduled" : "paused"}
                 </span>
               </div>
             );
@@ -116,7 +116,7 @@ export default async function ChasingSchedulePage({
       </div>
 
       <div className="card">
-        <p className="eyebrow mb-3">Reminder log</p>
+        <h2 className="mb-3 text-lg font-bold" style={{ color: "var(--text)" }}>Reminder log</h2>
         {log.length === 0 ? (
           <p className="text-sm" style={{ color: "var(--text-muted)" }}>No reminders sent yet.</p>
         ) : (

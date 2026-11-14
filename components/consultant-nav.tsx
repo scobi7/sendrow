@@ -30,7 +30,7 @@ function NavLinks({ items, pathname, onNavigate }: { items: ConsultantNavItem[];
           >
             {item.label}
             {item.hint && (
-              <span className="mt-0.5 block font-data text-[10px] tracking-wide" style={{ color: "var(--neutral-muted)" }}>
+              <span className="mt-0.5 block font-data text-xs" style={{ color: "var(--neutral-muted)" }}>
                 {item.hint}
               </span>
             )}
@@ -95,7 +95,7 @@ export function MobileNav({ items }: { items: ConsultantNavItem[] }) {
             <NavLinks items={items} pathname={pathname} onNavigate={() => setOpen(false)} />
           </nav>
           <div className="flex flex-col gap-2">
-            <Link href="/consultant/requests/new" className="btn btn-primary w-full" onClick={() => setOpen(false)}>
+            <Link href="/consultant/requests/new" className="btn btn-secondary w-full" onClick={() => setOpen(false)}>
               New request
             </Link>
             <Link href="/consultant/clients/new" className="btn btn-secondary w-full" onClick={() => setOpen(false)}>

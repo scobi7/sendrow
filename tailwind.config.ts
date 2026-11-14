@@ -39,6 +39,8 @@ const config: Config = {
         },
       },
       borderRadius: {
+        // One radius site-wide (DESIGN.md): bare `rounded` too.
+        DEFAULT: "10px",
         lg: "10px",
         xl: "10px",
         "2xl": "10px",

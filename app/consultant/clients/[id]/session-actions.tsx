@@ -18,7 +18,7 @@ export function SessionActions({ sessionId, companyId }: { sessionId: string; co
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
         />
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <button
             className="btn btn-primary text-xs px-3 py-1.5"
             disabled={isPending || !notes.trim()}
@@ -33,9 +33,9 @@ export function SessionActions({ sessionId, companyId }: { sessionId: string; co
   }
 
   return (
-    <div className="mt-3 flex gap-2">
+    <div className="mt-3 flex flex-wrap gap-2">
       <button
-        className="btn btn-primary text-xs px-3 py-1.5"
+        className="btn btn-secondary text-xs px-3 py-1.5"
         disabled={isPending}
         onClick={() => startTransition(() => approveSession(sessionId, companyId))}
       >
@@ -51,7 +51,7 @@ export function SessionActions({ sessionId, companyId }: { sessionId: string; co
         className="btn btn-secondary text-xs px-3 py-1.5"
         disabled={isPending}
         onClick={() => startTransition(() => rejectSession(sessionId, companyId))}
-        style={{ color: "var(--danger, var(--danger))" }}
+        style={{ color: "var(--danger)" }}
       >
         Reject
       </button>

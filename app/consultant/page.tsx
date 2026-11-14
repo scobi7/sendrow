@@ -138,16 +138,16 @@ export default async function ConsultantDashboard({
       <DeadlineStrip today={new Date().toISOString().slice(0, 10)} />
 
       <div className="mb-6 grid gap-4 sm:grid-cols-3">
-        <StatCard label="Overdue" value={counts.overdue} tone="danger" active={activeFilter === "overdue"}
+        <StatCard label="Overdue" value={counts.overdue} tone="warning" active={activeFilter === "overdue"}
           href={activeFilter === "overdue" ? "/consultant" : "/consultant?filter=overdue"} />
         <StatCard label="Ready to review" value={counts.ready} tone="primary" active={activeFilter === "ready"}
           href={activeFilter === "ready" ? "/consultant" : "/consultant?filter=ready"} />
-        <StatCard label="Awaiting response" value={counts.awaiting} tone="warning" active={activeFilter === "awaiting"}
+        <StatCard label="Awaiting response" value={counts.awaiting} tone="neutral" active={activeFilter === "awaiting"}
           href={activeFilter === "awaiting" ? "/consultant" : "/consultant?filter=awaiting"} />
       </div>
 
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-sm font-bold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
+        <h2 className="text-lg font-bold" style={{ color: "var(--text)" }}>
           Your clients
         </h2>
         {activeFilter && (
@@ -185,10 +185,10 @@ export default async function ConsultantDashboard({
         )
       ) : (
         <div className="glass-panel overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
+          <table className="block w-full text-sm sm:table">
+            <thead className="hidden sm:table-header-group">
               <tr
-                className="text-left text-xs font-semibold uppercase tracking-wide"
+                className="text-left text-[13px] font-semibold"
                 style={{ borderBottom: "1px solid var(--divider)", color: "var(--text-muted)" }}
               >
                 <th className="px-4 py-3">Client</th>
@@ -198,10 +198,10 @@ export default async function ConsultantDashboard({
                 <th className="px-4 py-3" />
               </tr>
             </thead>
-            <tbody>
+            <tbody className="block sm:table-row-group">
               {displayed.map(({ row, status, due, completeness }) => (
-                <tr key={row.id} style={{ borderBottom: "1px solid var(--divider)" }}>
-                  <td className="px-4 py-3.5">
+                <tr key={row.id} className="block px-4 py-3 sm:table-row sm:px-0 sm:py-0" style={{ borderBottom: "1px solid var(--divider)" }}>
+                  <td className="block py-1.5 sm:table-cell sm:px-4 sm:py-3.5">
                     <Link href={`/consultant/clients/${row.id}`} className="block transition-opacity hover:opacity-70">
                       <p className="font-medium" style={{ color: "var(--text)" }}>{row.name}</p>
                       <p className="text-xs" style={{ color: "var(--text-muted)" }}>
@@ -209,17 +209,17 @@ export default async function ConsultantDashboard({
                       </p>
                     </Link>
                   </td>
-                  <td className="px-4 py-3.5">
+                  <td className="block py-1.5 sm:table-cell sm:px-4 sm:py-3.5">
                     <StatusBadge status={status} />
                   </td>
-                  <td className="px-4 py-3.5 font-data text-xs" style={{ color: due && new Date(due + "T23:59:59") < new Date() ? "var(--danger)" : "var(--text)" }}>
+                  <td className="block py-1.5 font-data text-xs sm:table-cell sm:px-4 sm:py-3.5" style={{ color: due && new Date(due + "T23:59:59") < new Date() ? "var(--warning)" : "var(--text)" }}>
                     {fmtDue(due)}
                   </td>
-                  <td className="px-4 py-3.5">
+                  <td className="block py-1.5 sm:table-cell sm:px-4 sm:py-3.5">
                     <CompletenessMeter percent={completeness} compact />
                   </td>
-                  <td className="px-4 py-3.5 text-right">
-                    <div className="flex items-center justify-end gap-2">
+                  <td className="block pt-2 text-left sm:table-cell sm:px-4 sm:py-3.5 sm:text-right">
+                    <div className="flex flex-wrap items-center gap-2 sm:justify-end">
                       <Link href={`/consultant/clients/${row.id}`} className="btn btn-secondary px-3 py-1 text-xs">
                         Open
                       </Link>

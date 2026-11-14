@@ -22,7 +22,7 @@ export default async function ManageScope2({ params }: { params: Promise<{ id: s
   return (
     <div>
       <PageHeader
-        title="Scope 2: Electricity Emissions"
+        title="Scope 2: Electricity emissions"
         subtitle={`Renewable energy and market-based adjustments for ${company.name}.`}
       />
 
@@ -33,8 +33,8 @@ export default async function ManageScope2({ params }: { params: Promise<{ id: s
 
       <form action={boundSave} className="card">
         <input type="hidden" name="redirect_to" value={`${base}/scope2`} />
-        <h2 className="font-semibold font-display" style={{ color: "var(--text)" }}>Renewable Energy Credits</h2>
-        <div className="mt-3 flex gap-4 text-sm">
+        <h2 className="font-semibold font-display" style={{ color: "var(--text)" }}>Renewable energy credits</h2>
+        <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-sm">
           <label className="flex items-center gap-2">
             <input type="radio" name="has_recs" value="yes" defaultChecked={inp.has_recs === true} /> Yes, on a green tariff or purchases RECs
           </label>
@@ -42,7 +42,7 @@ export default async function ManageScope2({ params }: { params: Promise<{ id: s
             <input type="radio" name="has_recs" value="no" defaultChecked={inp.has_recs === false} /> No / not sure
           </label>
         </div>
-        <div className="mt-4 grid grid-cols-2 gap-4">
+        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <label className="label">% of electricity covered</label>
             <input name="rec_coverage_pct" type="number" min={0} max={100} className="input" defaultValue={inp.rec_coverage_pct ?? ""} />
@@ -58,7 +58,7 @@ export default async function ManageScope2({ params }: { params: Promise<{ id: s
             Replaces the derived market-based figure in totals and exports. Leave blank to use the calculated
             value. Every change is audit-logged with your reason.
           </p>
-          <div className="mt-3 grid grid-cols-2 gap-4">
+          <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label className="label">Market-based Scope 2 (tCO2e)</label>
               <input

@@ -264,7 +264,7 @@ async function notifyClientOfDataRequest(companyId: string, description: string,
     verb: sent ? "email.sent" : "email.failed",
     subject: sent
       ? `Portal link emailed to ${company.clientContactEmail}`
-      : `Email to ${company.clientContactEmail} did not send - copy the portal link and share it directly`,
+      : `Email to ${company.clientContactEmail} did not send. Copy the portal link and share it directly.`,
   });
 }
 
@@ -323,7 +323,7 @@ export async function replyToFlag(companyId: string, requestId: string, itemId: 
         actor: "system",
         actorType: "system",
         verb: "email.failed",
-        subject: `Reply email to ${company.clientContactEmail} did not send - the reply is still on their portal page`,
+        subject: `Reply email to ${company.clientContactEmail} did not send. The reply is still on their portal page.`,
       });
     }
   }

@@ -86,21 +86,13 @@ export function ApproveBar({
           onClick={() => setShowWarning(false)}
         >
           <div className="card w-full max-w-md" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-start gap-3">
-              <span
-                className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-lg font-bold"
-                style={{ background: "var(--warning-tint)", color: "var(--warning-strong)", border: "1px solid var(--warning-border)" }}
-              >
-                !
-              </span>
-              <div>
+            <div>
                 <h2 className="text-lg font-bold font-display" style={{ color: "var(--text)" }}>
                   {openFlags} item{openFlags !== 1 ? "s are" : " is"} still flagged
                 </h2>
                 <p className="mt-2 text-sm" style={{ color: "var(--text-muted)" }}>
                   {flagSummary}. You can still approve and freeze this snapshot with the flag{openFlags !== 1 ? "s" : ""} open. They stay visible on the record.
                 </p>
-              </div>
             </div>
             <div className="mt-5 flex justify-end gap-2">
               <button onClick={() => setShowWarning(false)} className="btn btn-secondary text-sm">

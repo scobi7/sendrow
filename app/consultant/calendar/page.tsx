@@ -111,7 +111,7 @@ export default async function ComplianceCalendarPage() {
                 )}
               </div>
               {past && (
-                <span className="shrink-0 font-data text-[11px]" style={{ color: "var(--danger)" }}>past</span>
+                <span className="shrink-0 font-data text-xs" style={{ color: "var(--warning)" }}>past</span>
               )}
             </div>
           );

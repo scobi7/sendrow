@@ -68,7 +68,7 @@ export default async function SnapshotSharePage({
 
   return (
     <div className="mx-auto max-w-4xl">
-      <div className="mb-6 flex items-start justify-between">
+      <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold font-display" style={{ color: "var(--text)" }}>
             Snapshot: {company.name}
@@ -82,7 +82,7 @@ export default async function SnapshotSharePage({
       </div>
 
       {/* Scope cards */}
-      <div className="mb-4 grid grid-cols-3 gap-4">
+      <div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
         {[
           ["Scope 1", totals.scope1],
           ["Scope 2", totals.scope2Location],
@@ -100,7 +100,7 @@ export default async function SnapshotSharePage({
       {/* Per-location breakdown (Plan MO4): per-site factor, then sum */}
       {hasSiteData && (
         <div className="card mb-4">
-          <p className="eyebrow">By location</p>
+          <h2 className="text-lg font-bold" style={{ color: "var(--text)" }}>By location</h2>
           <div className="mt-2 divide-y" style={{ borderColor: "var(--divider)" }}>
             {byLocation.map((b) => (
               <div key={b.key} className="flex items-center justify-between py-2 text-sm">
@@ -128,9 +128,7 @@ export default async function SnapshotSharePage({
 
       {/* Share panel */}
       <div className="card mb-6">
-        <h2 className="text-sm font-bold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
-          Share this snapshot
-        </h2>
+        <h2 className="text-lg font-bold" style={{ color: "var(--text)" }}>Share this snapshot</h2>
 
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
           <div>

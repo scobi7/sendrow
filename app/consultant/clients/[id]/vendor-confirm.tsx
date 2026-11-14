@@ -28,11 +28,9 @@ export function VendorConfirm({ companyId, vendors }: { companyId: string; vendo
   if (vendors.length === 0) return null;
 
   return (
-    <div className="rounded-2xl" style={{ background: "var(--card)", border: "1px solid var(--danger-border)" }}>
+    <div className="rounded-2xl" style={{ background: "var(--card)", border: "1px solid var(--warning-border)" }}>
       <div className="px-5 pt-4 pb-3" style={{ borderBottom: "1px solid var(--divider)" }}>
-        <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "var(--danger)" }}>
-          Flagged rows, grouped by reference ({vendors.length})
-        </p>
+        <h2 className="text-lg font-bold" style={{ color: "var(--warning-strong)" }}>Flagged rows, grouped by reference ({vendors.length})</h2>
         <p className="mt-1 text-xs" style={{ color: "var(--text-muted)" }}>
           These rows couldn&apos;t be mapped to an emission factor. If the reference is a <strong>vendor</strong>,
           categorize it here and the rows recalculate immediately. If it&apos;s not a vendor (a truck ID, an
@@ -62,7 +60,7 @@ export function VendorConfirm({ companyId, vendors }: { companyId: string; vendo
                 ))}
               </select>
               <button
-                className="btn btn-primary text-xs px-3 py-1.5"
+                className="btn btn-secondary text-xs px-3 py-1.5"
                 disabled={!choices[name] || pending}
                 onClick={() => confirm(name)}
               >

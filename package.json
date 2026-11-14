@@ -10,7 +10,9 @@
     "lint": "tsc --noEmit",
     "test": "vitest run",
     "knip": "knip",
-    "demo:reset": "tsx scripts/reset-demo.ts"
+    "demo:reset": "tsx scripts/reset-demo.ts",
+    "e2e": "playwright test",
+    "e2e:serve": "tsx e2e/serve.ts"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.39.5",
@@ -20,13 +22,14 @@
     "drizzle-orm": "^0.45.2",
     "jszip": "^3.10.2",
     "next": "^15.5.19",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
     "server-only": "^0.0.1",
     "stripe": "^22.3.0",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
+    "@playwright/test": "^1.51.1",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",

@@ -48,7 +48,7 @@ export default async function CheckoutPage({
           <Link
             href="/checkout?plan=consultant"
             className="card block hover:border-[var(--primary)] transition-colors"
-            style={{ border: "2px solid var(--primary)" }}
+            style={{ border: "1px solid var(--divider)" }}
           >
             <h2 className="font-bold font-display" style={{ color: "var(--text)" }}>Consultant</h2>
             <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>

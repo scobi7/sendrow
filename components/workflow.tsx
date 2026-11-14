@@ -14,7 +14,7 @@ export function StatusBadge({ status }: { status: WorkflowStatus }) {
   const meta = STATUS_META[status];
   return (
     <span
-      className="inline-block whitespace-nowrap rounded px-2.5 py-1 text-[11px] font-semibold"
+      className="inline-block whitespace-nowrap rounded px-2.5 py-1 text-xs font-semibold"
       style={{ ...TONE_STYLE[meta.tone], fontFamily: "var(--font-data), monospace" }}
     >
       {meta.label}

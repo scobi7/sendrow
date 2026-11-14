@@ -12,7 +12,7 @@ const STATUSES = ["new", "routed", "converted", "dead"] as const;
 const STATUS_STYLE: Record<string, { background: string; color: string }> = {
   new: { background: "var(--warning-tint)", color: "var(--warning-strong)" },
   routed: { background: "var(--primary-tint)", color: "var(--primary)" },
-  converted: { background: "var(--primary)", color: "#fff" },
+  converted: { background: "var(--primary)", color: "var(--surface)" },
   dead: { background: "var(--divider)", color: "var(--text-muted)" },
 };
 
@@ -27,7 +27,7 @@ async function setLeadStatus(id: string, status: string, formData: FormData) {
 }
 
 /** Referral routing ops (Plan N7): every inbound company is a lead we place
- *  with a partner consultant - this board tracks placement and conversion. */
+ *  with a partner consultant; this board tracks placement and conversion. */
 export default async function AdminReferralsPage() {
   const leads = await db.select().from(referralLeads).orderBy(desc(referralLeads.createdAt));
   const converted = leads.filter((l) => l.status === "converted").length;
@@ -35,8 +35,8 @@ export default async function AdminReferralsPage() {
   return (
     <div className="mx-auto max-w-4xl">
       <PageHeader
-        title="Referral Leads"
-        subtitle={`${leads.length} lead${leads.length !== 1 ? "s" : ""} · ${converted} converted`}
+        title="Referral leads"
+        subtitle={`${leads.length} lead${leads.length !== 1 ? "s" : ""}, ${converted} converted`}
       />
 
       {leads.length === 0 ? (
@@ -44,11 +44,11 @@ export default async function AdminReferralsPage() {
           No leads yet. They arrive from /get-matched.
         </div>
       ) : (
-        <div className="glass-panel overflow-hidden">
+        <div className="glass-panel overflow-x-auto" data-scroll-x>
           <table className="w-full text-sm">
             <thead>
               <tr
-                className="text-left text-xs font-semibold uppercase tracking-wide"
+                className="text-left text-[13px] font-semibold"
                 style={{ borderBottom: "1px solid var(--divider)", color: "var(--text-muted)" }}
               >
                 <th className="px-4 py-3">Company</th>
@@ -77,7 +77,7 @@ export default async function AdminReferralsPage() {
                       {STATUSES.map((s) => (
                         <form key={s} action={setLeadStatus.bind(null, lead.id, s)}>
                           <button
-                            className="rounded-full px-2 py-0.5 text-xs font-medium transition-opacity hover:opacity-80"
+                            className="rounded px-2 py-0.5 text-xs font-medium transition-opacity hover:opacity-80"
                             style={
                               lead.status === s
                                 ? STATUS_STYLE[s]

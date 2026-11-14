@@ -33,10 +33,7 @@ export default function CheckoutSuccessPage() {
     <main className="flex min-h-screen flex-col items-center justify-center px-6" style={{ background: "var(--bg)" }}>
       <div className="text-center">
         {status === "verifying" && (
-          <>
-            <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-4 border-[var(--primary)] border-t-transparent" />
-            <p style={{ color: "var(--text-muted)" }}>Confirming your payment…</p>
-          </>
+          <p style={{ color: "var(--text-muted)" }}>Confirming your payment…</p>
         )}
         {status === "success" && (
           <p style={{ color: "var(--text-muted)" }}>Payment confirmed! Redirecting…</p>
@@ -46,7 +43,7 @@ export default function CheckoutSuccessPage() {
             <p className="font-semibold" style={{ color: "var(--text)" }}>Something went wrong</p>
             <p className="mt-2 text-sm" style={{ color: "var(--text-muted)" }}>
               Your payment was received but we couldn&apos;t confirm it automatically.
-              Please contact <a href="mailto:contact@sendrow.app" style={{ color: "var(--primary)" }}>contact@sendrow.app</a> and we&apos;ll fix it within the hour.
+              Please contact <a href="mailto:contact@sendrow.app" style={{ color: "var(--primary)" }}>contact@sendrow.app</a> and we&apos;ll sort it out.
             </p>
           </>
         )}

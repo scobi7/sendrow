@@ -41,7 +41,7 @@ export function reportingPeriod(fiscalYearEndMonth: number): {
   return {
     start: startDate.toISOString().substring(0, 7),
     end: endDate.toISOString().substring(0, 7),
-    label: `${fmt(startDate)} – ${fmt(endDate)}`,
+    label: `${fmt(startDate)} to ${fmt(endDate)}`,
   };
 }
 
@@ -149,7 +149,7 @@ export function recalcCompany(
       const s3 = results.filter((r) => r.scope === 3).reduce((s, r) => s + r.co2eTons, 0);
       const est = r2(Math.max(s3 * 0.01, 5));
       add(3, `${cat} (industry average estimate)`, est, null,
-        `Estimated with industry average - flagged low-confidence in audit trail`, "estimated");
+        `Estimated with industry average, flagged low-confidence in the audit trail`, "estimated");
     }
   }
 
@@ -170,7 +170,7 @@ export type RecContext = { hasRecs: boolean; recCoveragePct: number; residualFac
  *  (`residual.WECC.2024`) the manual-entry path uses in recalcCompany above.
  *  Shared so every consumer of imported line items applies the identical
  *  market-based adjustment instead of each reimplementing it (or skipping it). */
-function recContextFor(company: Company): RecContext {
+export function recContextFor(company: Company): RecContext {
   const inp = company.inputs;
   return {
     hasRecs: !!inp?.has_recs,

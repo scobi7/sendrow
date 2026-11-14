@@ -13,7 +13,7 @@ const TYPING_TAGS = new Set(["INPUT", "TEXTAREA", "SELECT"]);
 function Kbd({ children }: { children: React.ReactNode }) {
   return (
     <kbd
-      className="rounded px-1.5 py-0.5 font-data text-[10px] tracking-wide"
+      className="rounded px-1.5 py-0.5 font-data text-xs"
       style={{ background: "var(--card-strong)", border: "1px solid var(--chip-border)", color: "var(--text-muted)" }}
     >
       {children}
@@ -130,8 +130,8 @@ export function CommandMenu({ items }: { items: Item[] }) {
   const groupHeading = (text: string) => (
     <li
       role="presentation"
-      className="px-3 pb-1 pt-3 font-data text-[10px] uppercase tracking-wide"
-      style={{ color: "var(--neutral-muted)" }}
+      className="px-3 pb-1 pt-3 text-xs font-semibold"
+      style={{ color: "var(--text-muted)" }}
     >
       {text}
     </li>
@@ -155,7 +155,7 @@ export function CommandMenu({ items }: { items: Item[] }) {
         onClick={(e) => {
           if (e.target === e.currentTarget) dialogRef.current?.close();
         }}
-        className="card w-[min(560px,calc(100vw-2rem))] overflow-hidden backdrop:bg-black/40"
+        className="card w-[min(560px,calc(100vw-2rem))] overflow-hidden backdrop:bg-[color-mix(in_srgb,var(--text)_40%,transparent)]"
         style={{ padding: 0 }}
       >
         <div className="flex flex-col">

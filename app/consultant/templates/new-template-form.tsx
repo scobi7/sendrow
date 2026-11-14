@@ -11,7 +11,7 @@ export function NewTemplateForm({ action }: { action: (formData: FormData) => Pr
   if (!open) {
     return (
       <button onClick={() => setOpen(true)} className="btn btn-secondary w-full">
-        + New template
+        New template
       </button>
     );
   }
@@ -25,7 +25,7 @@ export function NewTemplateForm({ action }: { action: (formData: FormData) => Pr
       }}
       className="card space-y-4"
     >
-      <h2 className="text-sm font-bold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>New template</h2>
+      <h2 className="text-lg font-bold" style={{ color: "var(--text)" }}>New template</h2>
       <input type="hidden" name="data_types" value={JSON.stringify(selected)} />
       <div>
         <label className="label">Name</label>

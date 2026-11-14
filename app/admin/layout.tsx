@@ -2,8 +2,8 @@ import Link from "next/link";
 import { Logo } from "@/components/ui";
 
 const ADMIN_NAV = [
-  { href: "/admin/factors", label: "Emission Factors" },
-  { href: "/admin/referrals", label: "Referral Leads" },
+  { href: "/admin/factors", label: "Emission factors" },
+  { href: "/admin/referrals", label: "Referral leads" },
   { href: "/admin/accounts", label: "Accounts" },
   { href: "/admin/waitlist", label: "Waitlist" },
 ];
@@ -12,17 +12,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <div className="min-h-screen" style={{ background: "var(--bg)" }}>
       <header
-        className="flex items-center gap-6 px-8 py-4"
+        className="flex flex-wrap items-center gap-x-6 gap-y-3 px-4 py-4 sm:px-8"
         style={{ background: "var(--surface)", borderBottom: "1px solid var(--divider)" }}
       >
         <Logo />
-        <span
-          className="text-xs font-semibold uppercase tracking-widest"
-          style={{ color: "var(--text-muted)" }}
-        >
+        <span className="text-sm font-semibold" style={{ color: "var(--text-muted)" }}>
           Admin
         </span>
-        <nav className="ml-4 flex gap-4">
+        <nav className="flex flex-wrap gap-x-4 gap-y-2 sm:ml-4">
           {ADMIN_NAV.map(({ href, label }) => (
             <Link
               key={href}
@@ -35,7 +32,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           ))}
         </nav>
       </header>
-      <main className="mx-auto max-w-5xl px-8 py-10">{children}</main>
+      <main className="mx-auto max-w-5xl px-4 py-8 sm:px-8 sm:py-10">{children}</main>
     </div>
   );
 }

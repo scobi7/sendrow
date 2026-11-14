@@ -36,7 +36,7 @@ export default async function NewClientPage({
       >
         Back to clients
       </Link>
-      <PageHeader title="Add New Client" subtitle="Create a client profile. Data requests and portal links go to the contact you set here." />
+      <PageHeader title="Add a client" subtitle="Create a client profile. Data requests and portal links go to the contact you set here." />
 
       {error && (
         <p
@@ -95,7 +95,7 @@ export default async function NewClientPage({
         </p>
         <div className="flex justify-end gap-3">
           <Link href="/consultant" className="btn btn-secondary">Cancel</Link>
-          <SubmitButton className="btn btn-primary" pendingText="Adding...">Add Client</SubmitButton>
+          <SubmitButton className="btn btn-primary" pendingText="Adding…">Add client</SubmitButton>
         </div>
       </form>
     </div>

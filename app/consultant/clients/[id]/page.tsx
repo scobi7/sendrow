@@ -95,7 +95,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
   return (
     <div className="mx-auto max-w-5xl">
 
-      <div className="mb-6 flex items-start justify-between">
+      <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div className="flex items-center gap-4">
           <span
             className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl font-data text-sm font-bold"
@@ -113,9 +113,9 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-3">
-          <Link href={`/consultant/requests/new?client=${id}`} className="btn btn-primary text-sm">
-            + New request
+        <div className="flex flex-wrap items-center gap-3">
+          <Link href={`/consultant/requests/new?client=${id}`} className="btn btn-secondary text-sm">
+            New request
           </Link>
           <a
             href={`/api/clients/${id}/export`}
@@ -134,7 +134,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
       </div>
 
       {/* Stats row: data received & review status */}
-      <div className="mb-6 grid grid-cols-3 gap-4">
+      <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
         <div className="card-inner">
           <p className="eyebrow">Completeness</p>
           <p className="mt-2 font-data text-2xl font-bold" style={{ color: "var(--text)" }}>{completeness}%</p>
@@ -151,7 +151,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
         </div>
         <div className="card-inner">
           <p className="eyebrow">Flags open</p>
-          <p className="mt-2 font-data text-2xl font-bold" style={{ color: flagsOpen > 0 ? "var(--danger)" : "var(--text)" }}>
+          <p className="mt-2 font-data text-2xl font-bold" style={{ color: flagsOpen > 0 ? "var(--warning-strong)" : "var(--text)" }}>
             {flagsOpen}
           </p>
           {flagsOpen > 0 && (
@@ -163,17 +163,17 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
-        <div className="space-y-6 lg:col-span-2">
+        <div className="min-w-0 space-y-6 lg:col-span-2">
           {/* Locations - per-site delegation + rollup (Plan MO) */}
           <LocationsPanel companyId={id} />
 
           {/* Requests */}
           <div className="glass-panel">
-            <div className="flex items-center justify-between px-5 pt-4 pb-3" style={{ borderBottom: "1px solid var(--divider)" }}>
-              <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
+            <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 px-5 pt-4 pb-3" style={{ borderBottom: "1px solid var(--divider)" }}>
+              <h2 className="text-lg font-bold" style={{ color: "var(--text)" }}>
                 Requests ({requests.length})
-              </p>
-              <span className="text-[11px]" style={{ color: "var(--text-muted)" }}>
+              </h2>
+              <span className="text-xs" style={{ color: "var(--text-muted)" }}>
                 Current opens Review and approve. Past opens the frozen snapshot.
               </span>
             </div>
@@ -212,14 +212,14 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
                   const expired = req.expiresAt && new Date(req.expiresAt) < new Date() && isOpen;
                   return (
                     <div key={req.id} className="px-5 py-3.5">
-                      <div className="flex items-center justify-between gap-3">
+                      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
                         <Link href={target} className="min-w-0 flex-1 transition-opacity hover:opacity-70">
                           <p className="truncate text-sm font-medium" style={{ color: "var(--text)" }}>{req.description}</p>
                           <p className="mt-0.5 text-xs" style={{ color: "var(--text-muted)" }}>
                             {req.periodLabel ? `${req.periodLabel} · ` : ""}
                             {req.dueDate ? `due ${fmtShortDateYear(req.dueDate + "T12:00:00")} · ` : ""}
                             {checklist.filter((c) => c.status === "received").length}/{checklist.length} items in
-                            {expired && <span style={{ color: "var(--danger)" }}> · link expired</span>}
+                            {expired && <span style={{ color: "var(--warning-strong)" }}> · link expired</span>}
                           </p>
                         </Link>
                         <StatusBadge
@@ -232,8 +232,8 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
                         />
                       </div>
                       {checklist.filter((c) => c.stuckNote && c.status !== "received").map((c) => (
-                        <div key={c.id} className="mt-2 rounded-lg px-3 py-2.5" style={{ background: "var(--danger-tint)" }}>
-                          <p className="text-xs" style={{ color: "var(--danger)" }}>
+                        <div key={c.id} className="mt-2 rounded-lg px-3 py-2.5" style={{ background: "var(--warning-tint)" }}>
+                          <p className="text-xs" style={{ color: "var(--warning-strong)" }}>
                             <strong>Flag on {c.label}:</strong> &ldquo;{c.stuckNote}&rdquo;
                           </p>
                           {/* Reply history (BUG-8) so the consultant sees what they already sent */}
@@ -254,7 +254,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
                               className="min-h-[34px] flex-1 rounded-lg px-2.5 py-1.5 text-xs"
                               style={{ background: "var(--card)", border: "1px solid var(--divider)", color: "var(--text)" }}
                             />
-                            <button className="btn btn-primary px-3 py-1.5 text-xs">Reply</button>
+                            <button className="btn btn-secondary px-3 py-1.5 text-xs">Reply</button>
                           </form>
                           <form action={resolveFlag.bind(null, id, req.id, c.id)} className="mt-1.5">
                             <button className="text-xs underline" style={{ color: "var(--text-muted)" }} title="Clears the flag and keeps the thread">
@@ -276,7 +276,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
                         )}
                         {expired && (
                           <form action={renewPortalLink.bind(null, req.id, id)}>
-                            <Pill as="button" className="transition-opacity hover:opacity-70" style={{ background: "var(--danger-tint)", color: "var(--danger)" }}>
+                            <Pill as="button" className="transition-opacity hover:opacity-70" style={{ background: "var(--warning-tint)", color: "var(--warning-strong)" }}>
                               Renew link (30 days)
                             </Pill>
                           </form>
@@ -299,7 +299,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
           {/* Comment threads (#6) */}
           <div className="glass-panel">
             <div className="px-5 pt-4 pb-3" style={{ borderBottom: "1px solid var(--divider)" }}>
-              <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>Comment threads</p>
+              <h2 className="text-lg font-bold" style={{ color: "var(--text)" }}>Comment threads</h2>
             </div>
             {threadList.length === 0 ? (
               <p className="px-5 py-4 text-sm" style={{ color: "var(--text-muted)" }}>
@@ -334,7 +334,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
           {/* Activity timeline (#13) */}
           <div className="glass-panel">
             <div className="px-5 pt-4 pb-3" style={{ borderBottom: "1px solid var(--divider)" }}>
-              <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>Activity timeline</p>
+              <h2 className="text-lg font-bold" style={{ color: "var(--text)" }}>Activity timeline</h2>
             </div>
             {timeline.length === 0 ? (
               <p className="px-5 py-4 text-sm" style={{ color: "var(--text-muted)" }}>Nothing yet.</p>
@@ -360,9 +360,9 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
         </div>
 
         {/* Sidebar */}
-        <div className="space-y-6">
+        <div className="min-w-0 space-y-6">
           <div className="card h-fit">
-            <h2 className="text-sm font-bold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>Review & Approve</h2>
+            <h2 className="text-lg font-bold" style={{ color: "var(--text)" }}>Review & approve</h2>
             <p className="mt-2 text-xs" style={{ color: "var(--text-muted)" }}>
               Every submitted number, its receipt, and its math. Approve to freeze a snapshot.
             </p>
@@ -375,7 +375,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
           </div>
 
           <div className="card h-fit">
-            <h2 className="text-sm font-bold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>Snapshots</h2>
+            <h2 className="text-lg font-bold" style={{ color: "var(--text)" }}>Snapshots</h2>
             <p className="mt-2 text-xs" style={{ color: "var(--text-muted)" }}>
               Frozen, dated versions. They are the only thing that ever gets shared.
             </p>
@@ -389,7 +389,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
                     <Link
                       key={snap.id}
                       href={`/consultant/clients/${id}/snapshots/${snap.id}`}
-                      className="flex items-center justify-between rounded-lg px-3 py-2 transition-colors hover:bg-white/40"
+                      className="flex items-center justify-between rounded-lg px-3 py-2 transition-colors hover:bg-[var(--primary-tint)]"
                       style={{ border: "1px solid var(--divider)" }}
                     >
                       <span className="truncate text-xs font-semibold" style={{ color: "var(--text)" }}>{snap.label}</span>
@@ -404,7 +404,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
           </div>
 
           <div className="card h-fit">
-            <h2 className="text-sm font-bold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>More</h2>
+            <h2 className="text-lg font-bold" style={{ color: "var(--text)" }}>More</h2>
             <div className="mt-3 space-y-2 text-xs">
               <Link href={`/consultant/clients/${id}/manage`} className="block underline" style={{ color: "var(--text-muted)" }}>
                 Enter data on behalf

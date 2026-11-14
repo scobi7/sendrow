@@ -67,13 +67,13 @@ export function InfoTip({ text }: { text: string }) {
   return (
     <span className="group relative ml-1 inline-flex cursor-help" tabIndex={0} aria-label={text}>
       <span
-        className="flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-bold"
+        className="flex h-4 w-4 items-center justify-center rounded-full text-xs font-bold"
         style={{ background: "var(--track-bg)", color: "var(--text-muted)" }}
       >
         i
       </span>
-      <span className="invisible absolute bottom-5 left-1/2 z-10 w-64 -translate-x-1/2 rounded-canopy-sm p-3 text-xs text-white group-hover:visible group-focus:visible"
-        style={{ background: "var(--text)", boxShadow: "var(--shadow-raised)" }}>
+      <span className="invisible absolute bottom-5 left-1/2 z-10 w-64 -translate-x-1/2 rounded-canopy-sm p-3 text-xs group-hover:visible group-focus:visible"
+        style={{ background: "var(--text)", color: "var(--surface)", boxShadow: "var(--shadow-raised)" }}>
         {text}
       </span>
     </span>

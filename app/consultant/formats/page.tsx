@@ -36,7 +36,7 @@ export default function FormatLibraryPage() {
 
       {/* The mapping builder is W3 (#35 builder) - until then the honest path */}
       <div className="card" style={{ border: "1px dashed var(--chip-border)" }}>
-        <p className="font-semibold" style={{ color: "var(--text)" }}>+ Add a new format</p>
+        <p className="font-semibold" style={{ color: "var(--text)" }}>Add a new format</p>
         <p className="mt-1.5 text-sm" style={{ color: "var(--text-muted)" }}>
           Got a buyer&apos;s custom questionnaire (PDF/Excel)? Email it over and it gets added as a config for your
           practice. The self-serve builder lets you upload it, connect each question to a data field

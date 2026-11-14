@@ -16,3 +16,8 @@ build
 
 # build cache
 tsconfig.tsbuildinfo
+
+# end-to-end tests (sessions, results, report)
+e2e/.auth/
+e2e/results/
+e2e/report/

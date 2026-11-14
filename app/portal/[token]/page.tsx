@@ -160,11 +160,8 @@ export default async function PortalPage({ params }: { params: Promise<{ token: 
             )}
           </div>
         )}
-        <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
-          Data request for
-        </p>
-        <h1 className="mt-1 text-2xl font-extrabold font-display" style={{ color: "var(--text)" }}>
-          {company?.name ?? "your company"}
+        <h1 className="text-2xl font-extrabold font-display" style={{ color: "var(--text)" }}>
+          Data request for {company?.name ?? "your company"}
           {currentSite && <span style={{ color: "var(--text-muted)" }}>, {siteLabel(currentSite)}</span>}
         </h1>
         <p className="mt-2 text-sm" style={{ color: "var(--text-muted)" }}>{request.description}</p>
@@ -174,7 +171,13 @@ export default async function PortalPage({ params }: { params: Promise<{ token: 
           </p>
         )}
         {request.dueDate && (
-          <p className="mt-1 text-sm font-medium" style={{ color: "var(--warning)" }}>Due {request.dueDate}</p>
+          // Overdue is a warning (amber); a plain due date is ink (DESIGN.md colour jobs)
+          <p
+            className="mt-1 text-sm font-medium"
+            style={{ color: new Date(request.dueDate + "T23:59:59") < new Date() ? "var(--warning)" : "var(--text-muted)" }}
+          >
+            Due {request.dueDate}
+          </p>
         )}
       </div>
 
@@ -187,7 +190,7 @@ export default async function PortalPage({ params }: { params: Promise<{ token: 
       )}
 
       {request.status === "fulfilled" ? (
-        <div className="rounded-2xl p-8 text-center" style={{ background: "var(--card)" }}>
+        <div className="rounded p-8 text-center" style={{ background: "var(--card)" }}>
           <p className="text-lg font-bold" style={{ color: "var(--primary)" }}>All done</p>
           <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>
             Everything requested has been received. Your consultant will review it and be in touch.

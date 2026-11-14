@@ -44,14 +44,14 @@ export default async function ManageReports({
   return (
     <div>
       <PageHeader
-        title={company.reportGeneratedAt ? "Report Ready" : "Generate Report"}
+        title={company.reportGeneratedAt ? "Report ready" : "Generate report"}
         subtitle={`${pct}% complete for ${company.name}. ${ready ? "Ready to generate." : "Complete required sections first."}`}
       />
 
       <div className="card mb-6 grid grid-cols-2 gap-4 text-center sm:grid-cols-4">
         {[["Scope 1", t.scope1], ["Scope 2", t.scope2Location], ["Scope 3", t.scope3], ["Total", t.total]].map(([label, v]) => (
           <div key={label as string}>
-            <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>{label}</p>
+            <p className="eyebrow">{label}</p>
             <p className="mt-1 text-xl font-bold font-data" style={{ color: label === "Total" ? "var(--primary)" : "var(--text)" }}>
               {fmtNum1(v as number)}
             </p>
@@ -67,7 +67,7 @@ export default async function ManageReports({
             <li key={label} className="flex items-center gap-3">
               <span
                 className="flex shrink-0 items-center rounded px-1.5 py-0.5 text-xs font-bold"
-                style={{ background: ok ? "var(--primary-tint)" : "var(--danger-tint)", color: ok ? "var(--primary)" : "var(--danger)" }}
+                style={{ background: ok ? "var(--primary-tint)" : "var(--warning-tint)", color: ok ? "var(--primary)" : "var(--warning-strong)" }}
               >
                 {ok ? "Ready" : "Missing"}
               </span>
@@ -79,11 +79,11 @@ export default async function ManageReports({
       </div>
 
       <div className="space-y-4">
-        <div className="card flex items-center justify-between">
+        <div className="card flex flex-wrap items-center justify-between gap-4">
           <div>
             <h3 className="font-semibold font-display" style={{ color: "var(--text)" }}>GHG Inventory Report</h3>
             <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>
-              Audit-ready PDF for {company.name}: Scope 1, 2 (dual), 3, methodology, data quality notes.
+              PDF report for {company.name}: Scope 1, 2 (dual), 3, methodology, data quality notes.
             </p>
           </div>
           {company.reportGeneratedAt ? (
@@ -98,7 +98,7 @@ export default async function ManageReports({
         </div>
 
         <div className="card">
-          <h3 className="font-semibold font-display" style={{ color: "var(--text)" }}>Questionnaire Helper</h3>
+          <h3 className="font-semibold font-display" style={{ color: "var(--text)" }}>Questionnaire helper</h3>
           <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>
             Select the customer&rsquo;s questionnaire format to map {company.name}&rsquo;s numbers to specific questions.
           </p>
@@ -115,9 +115,9 @@ export default async function ManageReports({
             ))}
           </div>
           {mapping && (
-            <table className="mt-4 w-full text-sm">
+            <div className="mt-4 overflow-x-auto"><table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-xs uppercase tracking-wide" style={{ borderBottom: "1px solid var(--divider)", color: "var(--text-muted)" }}>
+                <tr className="text-left text-[13px] font-semibold" style={{ borderBottom: "1px solid var(--divider)", color: "var(--text-muted)" }}>
                   <th className="pb-2 pr-2">Question</th>
                   <th className="pb-2">Their field</th>
                   <th className="pb-2 text-right">Answer</th>
@@ -135,13 +135,13 @@ export default async function ManageReports({
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           )}
         </div>
 
-        <div className="card flex items-center justify-between">
+        <div className="card flex flex-wrap items-center justify-between gap-4">
           <div>
-            <h3 className="font-semibold font-display" style={{ color: "var(--text)" }}>Audit Trail</h3>
+            <h3 className="font-semibold font-display" style={{ color: "var(--text)" }}>Audit trail</h3>
             <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>
               Every data point, its source, the emission factor used, and who entered it.
             </p>

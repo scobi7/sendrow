@@ -89,7 +89,7 @@ export default async function ReviewApprovePage({ params }: { params: Promise<{ 
 
   return (
     <div className="mx-auto max-w-4xl">
-      <div className="mb-6 flex items-end justify-between">
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold font-display" style={{ color: "var(--text)" }}>Review: {company.name}</h1>
           <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>
@@ -105,9 +105,7 @@ export default async function ReviewApprovePage({ params }: { params: Promise<{ 
       {stuckNotes.length > 0 && (
         <div className="glass-panel mb-6">
           <div className="px-5 pt-4 pb-3" style={{ borderBottom: "1px solid var(--divider)" }}>
-            <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "var(--danger)" }}>
-              Client is stuck ({stuckNotes.length})
-            </p>
+            <h2 className="text-lg font-bold" style={{ color: "var(--warning-strong)" }}>Client is stuck ({stuckNotes.length})</h2>
           </div>
           <div className="divide-y" style={{ borderColor: "var(--divider)" }}>
             {stuckNotes.map((c) => (
@@ -128,9 +126,7 @@ export default async function ReviewApprovePage({ params }: { params: Promise<{ 
       {pendingSessions.length > 0 && (
         <div className="glass-panel mb-6">
           <div className="px-5 pt-4 pb-3" style={{ borderBottom: "1px solid var(--divider)" }}>
-            <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
-              Submitted uploads ({pendingSessions.length})
-            </p>
+            <h2 className="text-lg font-bold" style={{ color: "var(--text)" }}>Submitted uploads ({pendingSessions.length})</h2>
           </div>
           <div className="divide-y" style={{ borderColor: "var(--divider)" }}>
             {pendingSessions.map((s) => (
@@ -165,7 +161,7 @@ export default async function ReviewApprovePage({ params }: { params: Promise<{ 
       {hasSiteData && (
         <div className="glass-panel mb-6">
           <div className="px-5 pt-4 pb-3" style={{ borderBottom: "1px solid var(--divider)" }}>
-            <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>By location</p>
+            <h2 className="text-lg font-bold" style={{ color: "var(--text)" }}>By location</h2>
             <p className="mt-1 text-xs" style={{ color: "var(--text-muted)" }}>
               Each site calculated with its own eGRID subregion factor; the company total is the sum of sites.
             </p>
@@ -182,7 +178,7 @@ export default async function ReviewApprovePage({ params }: { params: Promise<{ 
                 <p className="font-data font-semibold" style={{ color: "var(--text)" }}>{fmtNum1(b.co2eT)} tCO2e</p>
               </div>
             ))}
-            <div className="flex items-center justify-between px-5 py-2.5 text-sm">
+            <div className="flex items-center justify-between gap-3 px-5 py-2.5 text-sm">
               <p className="font-semibold" style={{ color: "var(--text)" }}>Total</p>
               <p className="font-data font-bold" style={{ color: "var(--text)" }}>
                 {fmtNum1(byLocation.reduce((s, b) => s + b.co2eT, 0))} tCO2e
@@ -203,9 +199,7 @@ export default async function ReviewApprovePage({ params }: { params: Promise<{ 
       {dollarFuel.length > 0 && (
         <div className="glass-panel mb-6" style={{ border: "1px solid var(--warning-border)" }}>
           <div className="px-5 pt-4 pb-3" style={{ borderBottom: "1px solid var(--divider)" }}>
-            <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "var(--warning-strong)" }}>
-              Dollar-based fuel ({dollarFuel.length} rows)
-            </p>
+            <h2 className="text-lg font-bold" style={{ color: "var(--warning-strong)" }}>Dollar-based fuel ({dollarFuel.length} rows)</h2>
             <p className="mt-1 text-xs" style={{ color: "var(--text-muted)" }}>
               Set the price you&apos;re applying ($/gallon). Every row converts to gallons multiplied by the EPA factor, with the price and your name in each calc log.
             </p>
@@ -229,7 +223,7 @@ export default async function ReviewApprovePage({ params }: { params: Promise<{ 
                 <input name="propane_price" type="number" step="0.01" min="0.5" placeholder="2.80" className="input w-28 text-sm" />
               </div>
             )}
-            <button className="btn btn-primary text-sm">Convert rows</button>
+            <button className="btn btn-secondary text-sm">Convert rows</button>
           </form>
         </div>
       )}
@@ -272,7 +266,7 @@ export default async function ReviewApprovePage({ params }: { params: Promise<{ 
                   </div>
                   <div className="flex shrink-0 items-center gap-2">
                     {flagged > 0 ? (
-                      <span className="rounded px-2.5 py-1 font-data text-[11px] font-semibold" style={{ background: "var(--danger-tint)", color: "var(--danger)" }}>
+                      <span className="rounded px-2.5 py-1 font-data text-xs font-semibold" style={{ background: "var(--warning-tint)", color: "var(--warning-strong)" }}>
                         {flagged} flagged
                       </span>
                     ) : (

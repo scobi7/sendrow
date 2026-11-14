@@ -48,7 +48,7 @@ export function ConsultantQuestions({ token, threads }: { token: string; threads
   if (threads.length === 0) return null;
 
   return (
-    <div className="mb-8 rounded-2xl p-5" style={{ background: "var(--warning-tint)", border: "1px solid var(--warning-border, var(--divider))" }}>
+    <div className="mb-8 rounded p-5" style={{ background: "var(--warning-tint)", border: "1px solid var(--warning-border, var(--divider))" }}>
       <p className="text-sm font-bold" style={{ color: "var(--warning-strong)" }}>
         Questions from your consultant
       </p>
@@ -57,7 +57,7 @@ export function ConsultantQuestions({ token, threads }: { token: string; threads
       </p>
       <div className="mt-4 space-y-3">
         {threads.map((t) => (
-          <div key={t.lineItemId} className="rounded-xl p-3" style={{ background: "var(--card)", border: "1px solid var(--divider)" }}>
+          <div key={t.lineItemId} className="rounded p-3" style={{ background: "var(--card)", border: "1px solid var(--divider)" }}>
             <p className="text-xs font-semibold" style={{ color: "var(--text)" }}>{t.figure}</p>
             <div className="mt-2 space-y-1.5">
               {t.messages.map((m, i) => (
@@ -83,7 +83,7 @@ export function ConsultantQuestions({ token, threads }: { token: string; threads
                   autoFocus
                 />
                 <div className="mt-1.5 flex items-center gap-3">
-                  <button className="btn btn-primary px-3 py-1 text-xs" disabled={busy || !text.trim()} onClick={() => reply(t.lineItemId)}>
+                  <button className="btn btn-secondary px-3 py-1 text-xs" disabled={busy || !text.trim()} onClick={() => reply(t.lineItemId)}>
                     {busy ? "Sending…" : "Send reply"}
                   </button>
                   <button className="text-xs underline" style={{ color: "var(--text-muted)" }} onClick={() => { setOpenId(null); setText(""); }}>
@@ -92,7 +92,7 @@ export function ConsultantQuestions({ token, threads }: { token: string; threads
                 </div>
               </div>
             ) : (
-              <button className="mt-2 text-xs font-semibold underline" style={{ color: "var(--primary)" }} onClick={() => { setOpenId(t.lineItemId); setText(""); }}>
+              <button className="btn btn-secondary mt-2 px-3 py-1 text-xs" onClick={() => { setOpenId(t.lineItemId); setText(""); }}>
                 Reply
               </button>
             )}

@@ -5,9 +5,9 @@ import type { ChecklistItem } from "./portal";
 export type WorkflowStatus = "awaiting_reply" | "ready_for_review" | "overdue" | "approved" | "none";
 
 export const STATUS_META: Record<WorkflowStatus, { label: string; tone: "warning" | "primary" | "danger" | "success" | "neutral" }> = {
-  awaiting_reply: { label: "Awaiting reply", tone: "warning" },
+  awaiting_reply: { label: "Awaiting reply", tone: "neutral" },
   ready_for_review: { label: "Ready for review", tone: "primary" },
-  overdue: { label: "Overdue", tone: "danger" },
+  overdue: { label: "Overdue", tone: "warning" },
   approved: { label: "Approved", tone: "success" },
   none: { label: "No requests", tone: "neutral" },
 };

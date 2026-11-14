@@ -104,7 +104,7 @@ export async function sendSiteLink(opts: {
       verb: sent ? "email.sent" : "email.failed",
       subject: sent
         ? `Site link emailed to ${location.contactEmail} (${label})`
-        : `Email to ${location.contactEmail} (${label}) did not send - copy the site link and share it directly`,
+        : `Email to ${location.contactEmail} (${label}) did not send. Copy the site link and share it directly.`,
       subjectId: requestId,
     });
   }

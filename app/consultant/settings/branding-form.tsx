@@ -79,17 +79,17 @@ export function BrandingForm({
 
       {/* Live preview - the request email as the supplier receives it */}
       <div>
-        <p className="eyebrow mb-2">Preview: request email</p>
+        <h2 className="mb-2 text-lg font-bold" style={{ color: "var(--text)" }}>Request email preview</h2>
         <div className="card" style={{ padding: "1.25rem" }}>
-          <div className="rounded-xl bg-white px-6 py-6" style={{ border: "1px solid var(--divider)" }}>
+          <div className="rounded px-6 py-6" style={{ background: "var(--surface)", border: "1px solid var(--divider)" }}>
             <div className="flex items-center gap-2.5">
               {initial.logoUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={initial.logoUrl} alt="" className="h-7 w-auto" />
               ) : (
                 <span
-                  className="grid h-7 w-7 place-items-center rounded-lg text-xs font-bold text-white"
-                  style={{ background: accent }}
+                  className="grid h-7 w-7 place-items-center rounded text-xs font-bold"
+                  style={{ background: accent, color: "var(--surface)" }}
                 >
                   {displayName[0]?.toUpperCase() ?? "S"}
                 </span>
@@ -103,8 +103,8 @@ export function BrandingForm({
               </p>
               <p>
                 <span
-                  className="inline-block rounded px-4 py-2 text-xs font-semibold text-white"
-                  style={{ background: accent }}
+                  className="inline-block rounded px-4 py-2 text-xs font-semibold"
+                  style={{ background: accent, color: "var(--surface)" }}
                 >
                   Answer now
                 </span>
@@ -113,8 +113,8 @@ export function BrandingForm({
                 No account or password needed. The link is unique to you.
               </p>
             </div>
-            <p className="mt-6 border-t pt-3 text-[11px]" style={{ borderColor: "var(--divider)", color: "var(--neutral-muted)" }}>
-              Powered by sendrow: a secure way to share data with your customers
+            <p className="mt-6 border-t pt-3 text-xs" style={{ borderColor: "var(--divider)", color: "var(--neutral-muted)" }}>
+              Powered by Sendrow: a secure way to share data with your customers
             </p>
           </div>
         </div>

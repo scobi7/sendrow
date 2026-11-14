@@ -64,7 +64,7 @@ export default async function TemplatesPage() {
                     {t.periodLabel && ` · ${t.periodLabel}`}
                     {t.dueInDays && ` · due in ${t.dueInDays} days`}
                   </p>
-                  <p className="mt-1 font-data text-[11px]" style={{ color: "var(--neutral-muted)" }}>
+                  <p className="mt-1 font-data text-xs" style={{ color: "var(--neutral-muted)" }}>
                     Used on {clients} client{clients !== 1 ? "s" : ""}
                   </p>
                 </div>

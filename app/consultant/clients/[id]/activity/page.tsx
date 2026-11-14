@@ -49,7 +49,7 @@ export default async function ActivityPage({ params }: { params: Promise<{ id: s
 
   return (
     <div className="mx-auto max-w-3xl">
-      <div className="mb-5 flex items-end justify-between">
+      <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold font-display" style={{ color: "var(--text)" }}>Activity</h1>
           <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>

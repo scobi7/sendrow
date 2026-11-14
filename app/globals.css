@@ -95,7 +95,6 @@ section[id] {
 :focus-visible {
   outline: 2px solid var(--primary);
   outline-offset: 2px;
-  border-radius: 4px;
 }
 
 /* Skeletons stay hidden for 300ms so fast loads never flash one */
@@ -197,12 +196,12 @@ section[id] {
   padding: 1.125rem;
 }
 
-/* Mono eyebrow: section openers, a short uppercase label above a heading */
+/* Small label (stat names, field groups). Sentence case: the 4c theme has no small-caps labels. */
 .eyebrow {
-  font-family: var(--font-data), monospace;
-  font-size: 11px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  font-family: var(--font-body), sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0;
   color: var(--text-muted);
   font-variant-numeric: tabular-nums;
 }
@@ -214,8 +213,8 @@ section[id] {
   color: var(--text-muted);
   background: var(--bg-subtle);
   border: 1px solid var(--divider);
-  padding: 0.2rem 0.45rem;
-  border-radius: 4px;
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--radius-sm);
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
@@ -223,8 +222,8 @@ section[id] {
 /* Success badge */
 .badge {
   display: inline-block;
-  padding: 0.2rem 0.45rem;
-  border-radius: 4px;
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--radius-sm);
   background: var(--success-bg);
   color: var(--success-text);
   border: 1px solid var(--success-border);
@@ -237,12 +236,12 @@ section[id] {
 .track {
   height: 8px;
   background: var(--track-bg);
-  border-radius: 4px;
+  border-radius: 999px;
   overflow: hidden;
 }
 .fill {
   height: 100%;
-  border-radius: 4px;
+  border-radius: 999px;
   background: var(--primary);
 }
 

@@ -105,7 +105,7 @@ export default async function AdminFactorsPage() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-2xl font-bold font-display" style={{ color: "var(--text)" }}>Emission Factors</h1>
+        <h1 className="text-2xl font-bold font-display" style={{ color: "var(--text)" }}>Emission factors</h1>
         <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>
           Override the default hardcoded factor values. Changes take effect on the next calculation run.
           {dbOverrides.length > 0 && (
@@ -118,14 +118,14 @@ export default async function AdminFactorsPage() {
 
       {!tableReady && (
         <div
-          className="mb-8 rounded-xl p-6"
+          className="mb-8 rounded p-6"
           style={{ border: "1px solid var(--warning)", background: "var(--warning-tint)" }}
         >
           <p className="font-semibold" style={{ color: "var(--warning)" }}>Database table required</p>
           <p className="mt-1 text-sm" style={{ color: "var(--warning)" }}>
             Run this SQL in the Neon console to enable factor overrides:
           </p>
-          <pre className="mt-3 rounded-lg p-4 text-xs overflow-x-auto whitespace-pre-wrap" style={{ background: "var(--text)", color: "#fff" }}>
+          <pre className="mt-3 rounded p-4 text-xs overflow-x-auto whitespace-pre-wrap" style={{ background: "var(--text)", color: "var(--surface)" }}>
             {MIGRATION_SQL}
           </pre>
         </div>
@@ -134,13 +134,13 @@ export default async function AdminFactorsPage() {
       <div className="space-y-10">
         {Object.entries(grouped).map(([category, factors]) => (
           <div key={category}>
-            <h2 className="mb-3 text-xs font-bold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
+            <h2 className="mb-3 text-lg font-bold" style={{ color: "var(--text)" }}>
               {CATEGORY_LABELS[category] ?? category}
             </h2>
-            <div className="overflow-hidden" style={{ borderRadius: "var(--radius-sm)", background: "var(--card)" }}>
+            <div className="overflow-x-auto" data-scroll-x style={{ borderRadius: "var(--radius-sm)", background: "var(--card)" }}>
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="text-left text-xs uppercase tracking-wide" style={{ borderBottom: "1px solid var(--divider)", color: "var(--text-muted)" }}>
+                  <tr className="text-left text-[13px] font-semibold" style={{ borderBottom: "1px solid var(--divider)", color: "var(--text-muted)" }}>
                     <th className="px-4 py-3 font-semibold">Factor</th>
                     <th className="px-4 py-3 font-semibold">Default value</th>
                     <th className="px-4 py-3 font-semibold">Unit</th>
@@ -172,7 +172,7 @@ export default async function AdminFactorsPage() {
                                 defaultValue={override?.value ?? factor.value}
                                 className="w-32 input text-sm font-mono"
                               />
-                              <button type="submit" className="btn btn-primary px-3 py-1.5 text-xs">Save</button>
+                              <button type="submit" className="btn btn-secondary px-3 py-1.5 text-xs">Save</button>
                             </form>
                           )}
                         </td>
@@ -180,8 +180,8 @@ export default async function AdminFactorsPage() {
                           {tableReady && override && (
                             <div className="flex flex-col gap-1.5">
                               <span
-                                className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold"
-                                style={{ background: "var(--warning-tint)", color: "var(--warning)" }}
+                                className="inline-flex items-center rounded px-2 py-0.5 text-xs font-semibold"
+                                style={{ background: "var(--primary-tint)", color: "var(--primary)" }}
                               >
                                 Overridden
                               </span>
@@ -205,12 +205,12 @@ export default async function AdminFactorsPage() {
       </div>
 
       <div
-        className="mt-10 rounded-xl p-6"
+        className="mt-10 rounded p-6"
         style={{ border: "1px solid var(--divider)", background: "var(--primary-tint)" }}
       >
         <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>SQL migration</p>
         <p className="mt-1 text-xs" style={{ color: "var(--text-muted)" }}>If this is a new environment, run this in the Neon SQL editor:</p>
-        <pre className="mt-3 rounded-lg p-4 text-xs overflow-x-auto whitespace-pre-wrap" style={{ background: "var(--text)", color: "#fff" }}>
+        <pre className="mt-3 rounded p-4 text-xs overflow-x-auto whitespace-pre-wrap" style={{ background: "var(--text)", color: "var(--surface)" }}>
           {MIGRATION_SQL}
         </pre>
       </div>

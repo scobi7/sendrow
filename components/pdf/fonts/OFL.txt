@@ -1,0 +1,3 @@
+Archivo (Google Fonts), SIL Open Font License 1.1. Copyright 2017 The Archivo Project Authors.
+Full license text: https://openfontlicense.org
+Fetched from https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700 on 2026-11-13.

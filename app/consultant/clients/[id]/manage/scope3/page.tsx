@@ -35,9 +35,9 @@ export default async function ManageScope3({ params }: { params: Promise<{ id: s
 
         <div className="card">
           <h2 className="font-semibold font-display" style={{ color: "var(--text)" }}>
-            Employee Commuting <InfoTip text="Uses EPA per-mile factors and 235 working days, adjusted for office days per week." />
+            Employee commuting <InfoTip text="Uses EPA per-mile factors and 235 working days, adjusted for office days per week." />
           </h2>
-          <div className="mt-4 grid grid-cols-3 gap-4">
+          <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
             <div>
               <label className="label">Avg daily round trip (miles)</label>
               <input name="commute_avg_miles" type="number" step="any" min={0} className="input" defaultValue={inp.commute_avg_miles ?? ""} />
@@ -59,9 +59,9 @@ export default async function ManageScope3({ params }: { params: Promise<{ id: s
 
         <div className="card">
           <h2 className="font-semibold font-display" style={{ color: "var(--text)" }}>
-            Waste Disposal <InfoTip text="Annual tons by disposal method. Waste hauler invoice has this." />
+            Waste disposal <InfoTip text="Annual tons by disposal method. Waste hauler invoice has this." />
           </h2>
-          <div className="mt-4 grid grid-cols-3 gap-4">
+          <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
             <div>
               <label className="label">Landfilled (tons/yr)</label>
               <input name="waste_landfill_tons" type="number" step="any" min={0} className="input" defaultValue={inp.waste_landfill_tons ?? ""} />
@@ -84,7 +84,7 @@ export default async function ManageScope3({ params }: { params: Promise<{ id: s
       </form>
 
       <div className="card mt-5">
-        <h2 className="font-semibold font-display" style={{ color: "var(--text)" }}>Remaining Categories</h2>
+        <h2 className="font-semibold font-display" style={{ color: "var(--text)" }}>Remaining categories</h2>
         <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>
           First-time reporters typically skip these with documented justification (accepted by CDP and EcoVadis).
         </p>
@@ -92,7 +92,7 @@ export default async function ManageScope3({ params }: { params: Promise<{ id: s
           {SCOPE3_OTHER_CATEGORIES.map((cat) => {
             const d = decisions[cat];
             return (
-              <div key={cat} className="flex items-center justify-between rounded-lg px-4 py-2.5 text-sm" style={{ border: "1px solid var(--divider)" }}>
+              <div key={cat} className="flex flex-wrap items-center justify-between gap-2 rounded-lg px-4 py-2.5 text-sm" style={{ border: "1px solid var(--divider)" }}>
                 <span className="font-medium" style={{ color: "var(--text)" }}>{cat}</span>
                 {d ? (
                   <span className="flex items-center gap-2">
@@ -112,7 +112,7 @@ export default async function ManageScope3({ params }: { params: Promise<{ id: s
                     </form>
                   </span>
                 ) : (
-                  <span className="flex gap-2">
+                  <span className="flex flex-wrap gap-2">
                     <form action={consultantSaveScope3Decision.bind(null, id, cat, "na")}>
                       <button className="btn btn-secondary px-2.5 py-1 text-xs">Not applicable</button>
                     </form>

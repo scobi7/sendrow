@@ -48,7 +48,7 @@ export default async function ConsultantLayout({ children }: { children: React.R
         <Logo />
         <CommandMenu items={items} />
         <div className="mt-3 flex flex-col gap-2">
-          <Link href="/consultant/requests/new" className="btn btn-primary w-full">
+          <Link href="/consultant/requests/new" className="btn btn-secondary w-full">
             New request
           </Link>
           <Link href="/consultant/clients/new" className="btn btn-secondary w-full">

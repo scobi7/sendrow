@@ -152,7 +152,7 @@ export async function deleteClient(companyId: string) {
 export async function submitReferralLead(formData: FormData) {
   const ip = await clientIp();
   if (!checkRateLimit(`referral:${ip}`)) {
-    redirect("/get-matched?error=" + encodeURIComponent("Too many requests - please try again later."));
+    redirect("/get-matched?error=" + encodeURIComponent("Too many requests. Please try again later."));
   }
 
   const name = String(formData.get("name") ?? "").trim();

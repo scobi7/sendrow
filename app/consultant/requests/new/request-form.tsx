@@ -214,7 +214,7 @@ export function NewRequestForm({
       </div>
 
       <label className="flex items-center gap-2 text-sm" style={{ color: "var(--text)" }}>
-        <input type="checkbox" name="save_as_template" className="h-4 w-4 accent-emerald-600" />
+        <input type="checkbox" name="save_as_template" className="h-4 w-4" style={{ accentColor: "var(--primary)" }} />
         Save this setup as a template
       </label>
 

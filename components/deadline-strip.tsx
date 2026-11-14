@@ -9,7 +9,7 @@ export function DeadlineStrip({ today }: { today: string }) {
   return (
     <section className="glass-panel mb-6 p-4">
       <div className="mb-3 flex items-center justify-between gap-3">
-        <h2 className="text-[11px] font-bold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
+        <h2 className="text-lg font-bold" style={{ color: "var(--text)" }}>
           Upcoming deadlines
         </h2>
         <Link href="/consultant/calendar" className="text-xs underline" style={{ color: "var(--primary)" }}>
@@ -24,7 +24,7 @@ export function DeadlineStrip({ today }: { today: string }) {
               {r.regulation}: {r.title}
             </p>
             {r.status !== "confirmed" && (
-              <p className="text-xs" style={{ color: "var(--warning)" }}>{STATUS_LABEL[r.status]}</p>
+              <p className="text-xs" style={{ color: "var(--text-muted)" }}>{STATUS_LABEL[r.status]}</p>
             )}
           </div>
         ))}

@@ -54,13 +54,10 @@ export default async function SharedResultsPage({ params }: { params: Promise<{ 
         </div>
       )}
 
-      <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
-        Emissions summary for
-      </p>
-      <h1 className="mt-1 text-2xl font-extrabold font-display" style={{ color: "var(--text)" }}>
-        {companyRow.name}
+      <h1 className="text-2xl font-extrabold font-display" style={{ color: "var(--text)" }}>
+        Emissions summary for {companyRow.name}
       </h1>
-      <p className="mt-2 inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium" style={{ background: "var(--primary-tint)", color: "var(--primary)" }}>
+      <p className="mt-2 inline-flex items-center gap-2 rounded px-3 py-1 text-xs font-medium" style={{ background: "var(--primary-tint)", color: "var(--primary)" }}>
         {snapshot.label}, frozen {new Date(snapshot.createdAt).toLocaleDateString()} · this version can never silently change
       </p>
 
@@ -86,19 +83,21 @@ export default async function SharedResultsPage({ params }: { params: Promise<{ 
 
       {byPeriod.filter((p) => p.period !== "untagged").length > 0 && (
         <div className="card mt-6">
-          <h2 className="text-sm font-bold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
+          <h2 className="text-lg font-bold" style={{ color: "var(--text)" }}>
             By reporting period
           </h2>
           {yoy && (
             <p
-              className="mt-3 rounded-lg px-3 py-2 text-sm font-semibold"
+              className="mt-3 rounded px-3 py-2 text-sm font-semibold"
               style={
                 yoy.pct <= 0
                   ? { background: "var(--primary-tint)", color: "var(--primary)" }
                   : { background: "var(--warning-tint)", color: "var(--warning-strong)" }
               }
             >
-              {yoy.pct <= 0 ? "▼" : "▲"} {Math.abs(yoy.pct).toFixed(1)}% vs {yoy.previous}
+              {yoy.pct === 0
+                ? `Unchanged from ${yoy.previous}`
+                : `${yoy.pct < 0 ? "Down" : "Up"} ${Math.abs(yoy.pct).toFixed(1)}% from ${yoy.previous}`}
             </p>
           )}
           <dl className="mt-3 space-y-2 text-sm">

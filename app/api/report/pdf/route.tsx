@@ -5,9 +5,10 @@ import { db } from "@/lib/db";
 import { consultantClients, emissionLineItems } from "@/lib/db/schema";
 import { currentUser } from "@/lib/auth";
 import { loadCompany, loadFactors } from "@/lib/store";
-import { combinedTotals } from "@/lib/calc";
+import { combinedTotals, recContextFor } from "@/lib/calc";
 import { GHGReportPDF } from "@/components/pdf/GHGReportPDF";
 import { getScreeningDecisions } from "@/lib/report-totals";
+import { buildReportBreakdown } from "@/lib/report-breakdown";
 import { getBrandForCompany } from "@/lib/branding";
 import React from "react";
 
@@ -82,6 +83,9 @@ export async function GET(request: NextRequest) {
     mappedItems.map((i) => ({ scope: i.scope, category: i.category, co2eKg: i.co2eKg, rawValue: i.rawValue, rawUnit: i.rawUnit, status: i.status }))
   );
   const lineItemFactorIds = [...new Set(mappedItems.map((i) => i.factorId).filter((f): f is string => Boolean(f)))];
+  // Same rows as the totals above (manual calcs + mapped line items), grouped for the scope tables.
+  const spendFactorIds = new Set(overrides.filter((f) => f.category === "spend_based").map((f) => f.factor_id));
+  const breakdown = buildReportBreakdown(company, mappedItems, { rec: recContextFor(company), spendFactorIds });
 
   const [screeningDecisions, logo] = await Promise.all([
     getScreeningDecisions(companyId),
@@ -94,6 +98,7 @@ export async function GET(request: NextRequest) {
     company,
     factorOverrides: overrides,
     totals,
+    breakdown,
     lineItemCount: mappedItems.length,
     lineItemFactorIds,
     screeningDecisions,

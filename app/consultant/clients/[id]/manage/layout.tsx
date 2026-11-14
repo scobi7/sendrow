@@ -33,26 +33,13 @@ export default async function ManageLayout({
   return (
     <div className="mx-auto max-w-4xl">
       {/* Banner */}
-      <div
-        className="mb-6 flex items-center justify-between rounded-xl px-5 py-3"
-        style={{ background: "var(--primary-tint)", border: "1px solid var(--divider)" }}
-      >
-        <div className="flex items-center gap-3">
-          <div
-            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-black"
-            style={{ background: "var(--primary)", color: "#fff" }}
-          >
-            M
-          </div>
-          <div>
-            <p className="text-sm font-semibold" style={{ color: "var(--primary)" }}>
-              Managing as {company.name}
-            </p>
-            <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-              {pct}% complete. Changes here are visible to the client
-            </p>
-          </div>
-        </div>
+      <div className="mb-6 rounded-xl px-5 py-3" style={{ background: "var(--primary-tint)", border: "1px solid var(--divider)" }}>
+        <p className="text-sm font-semibold" style={{ color: "var(--primary)" }}>
+          Managing as {company.name}
+        </p>
+        <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+          {pct}% complete. Changes here are visible to the client
+        </p>
       </div>
 
       {/* Section tabs */}
@@ -67,7 +54,7 @@ export default async function ManageLayout({
             <Link
               key={href}
               href={`${base}/${href}`}
-              className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors hover:bg-white"
+              className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors hover:bg-[var(--primary-tint)]"
               style={{ color: "var(--text-muted)" }}
             >
               {label}

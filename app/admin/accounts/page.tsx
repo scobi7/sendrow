@@ -44,7 +44,7 @@ const STATUS_STYLE: Record<PlanStatus, { background: string; color: string; labe
   none: { background: "var(--warning-tint)", color: "var(--warning-strong)", label: "Never paid" },
 };
 
-/** Admin: grant/revoke free access (Plan MO follow-up) — lets Malachi comp a
+/** Admin: grant/revoke free access (Plan MO follow-up): lets Malachi comp a
  *  consultant's account (e.g. a demo prospect) the same way the Stripe webhook
  *  would after a real payment, without them going through /checkout. */
 export default async function AdminAccountsPage() {
@@ -76,19 +76,19 @@ export default async function AdminAccountsPage() {
     <div className="mx-auto max-w-4xl">
       <PageHeader
         title="Accounts"
-        subtitle={`${rows.length} account${rows.length !== 1 ? "s" : ""} · ${compedCount} comped free · billing gate is currently disabled site-wide, so this only matters once it's re-enabled`}
+        subtitle={`${rows.length} account${rows.length !== 1 ? "s" : ""}, ${compedCount} comped free. Billing gate is currently disabled site-wide, so this only matters once it's re-enabled`}
       />
 
       {rows.length === 0 ? (
         <div className="card py-12 text-center" style={{ color: "var(--text-muted)" }}>
-          No accounts yet - they appear after someone signs up and completes onboarding.
+          No accounts yet. They appear after someone signs up and completes onboarding.
         </div>
       ) : (
-        <div className="glass-panel overflow-hidden">
+        <div className="glass-panel overflow-x-auto" data-scroll-x>
           <table className="w-full text-sm">
             <thead>
               <tr
-                className="text-left text-xs font-semibold uppercase tracking-wide"
+                className="text-left text-[13px] font-semibold"
                 style={{ borderBottom: "1px solid var(--divider)", color: "var(--text-muted)" }}
               >
                 <th className="px-4 py-3">Name</th>
@@ -111,15 +111,15 @@ export default async function AdminAccountsPage() {
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap items-center gap-1.5">
                       <span
-                        className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold"
+                        className="inline-flex items-center rounded px-2 py-0.5 text-xs font-semibold"
                         style={STATUS_STYLE[account.planStatus]}
                       >
                         {STATUS_STYLE[account.planStatus].label}
                       </span>
                       {account.comped && (
                         <span
-                          className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold"
-                          style={{ background: "var(--primary)", color: "#fff" }}
+                          className="inline-flex items-center rounded px-2 py-0.5 text-xs font-semibold"
+                          style={{ background: "var(--primary)", color: "var(--surface)" }}
                         >
                           Comped
                         </span>
@@ -141,7 +141,7 @@ export default async function AdminAccountsPage() {
                         </form>
                       ) : (
                         <form action={grantFreeAccess.bind(null, account.clerkId)}>
-                          <button className="btn btn-primary px-3 py-1.5 text-xs">Grant free access</button>
+                          <button className="btn btn-secondary px-3 py-1.5 text-xs">Grant free access</button>
                         </form>
                       )
                     )}

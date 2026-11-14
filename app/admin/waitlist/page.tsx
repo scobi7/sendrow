@@ -9,7 +9,7 @@ const EVENT_LABELS: Record<string, string> = {
   nav_signin_click: "Clicked “Sign in”",
 };
 
-/** Admin: homepage waitlist + engagement (Plan L) - the "how many signups,
+/** Admin: homepage waitlist + engagement (Plan L): the "how many signups,
  *  how many clicked through" measurement Malachi asked for, without a
  *  third-party analytics tool. */
 export default async function AdminWaitlistPage() {
@@ -21,8 +21,8 @@ export default async function AdminWaitlistPage() {
     <div className="mx-auto max-w-4xl">
       <PageHeader
         title="Waitlist"
-        subtitle={`${total} signup${total !== 1 ? "s" : ""} · ${designPartners} interested in a design partner seat${
-          conversionRate !== null ? ` · ${conversionRate}% of visitors signed up` : ""
+        subtitle={`${total} signup${total !== 1 ? "s" : ""}, ${designPartners} interested in a design partner seat${
+          conversionRate !== null ? `, ${conversionRate}% of visitors signed up` : ""
         }`}
       />
 
@@ -41,13 +41,13 @@ export default async function AdminWaitlistPage() {
         </div>
       </div>
 
-      <h2 className="mb-3 text-sm font-bold" style={{ color: "var(--text)" }}>Engagement</h2>
+      <h2 className="mb-3 text-lg font-bold" style={{ color: "var(--text)" }}>Engagement</h2>
       {eventCounts.length === 0 ? (
         <div className="card mb-8 py-8 text-center text-sm" style={{ color: "var(--text-muted)" }}>
           No visits recorded yet.
         </div>
       ) : (
-        <div className="glass-panel mb-8 overflow-hidden">
+        <div className="glass-panel mb-8 overflow-x-auto" data-scroll-x>
           <table className="w-full text-sm">
             <tbody>
               {eventCounts.map(({ eventName, count }) => (
@@ -65,17 +65,17 @@ export default async function AdminWaitlistPage() {
         </div>
       )}
 
-      <h2 className="mb-3 text-sm font-bold" style={{ color: "var(--text)" }}>Signups</h2>
+      <h2 className="mb-3 text-lg font-bold" style={{ color: "var(--text)" }}>Signups</h2>
       {signups.length === 0 ? (
         <div className="card py-12 text-center" style={{ color: "var(--text-muted)" }}>
-          No signups yet - they appear here as soon as someone submits the homepage form.
+          No signups yet. They appear here as soon as someone submits the homepage form.
         </div>
       ) : (
-        <div className="glass-panel overflow-hidden">
+        <div className="glass-panel overflow-x-auto" data-scroll-x>
           <table className="w-full text-sm">
             <thead>
               <tr
-                className="text-left text-xs font-semibold uppercase tracking-wide"
+                className="text-left text-[13px] font-semibold"
                 style={{ borderBottom: "1px solid var(--divider)", color: "var(--text-muted)" }}
               >
                 <th className="px-4 py-3">Email</th>

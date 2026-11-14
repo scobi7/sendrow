@@ -33,7 +33,21 @@ const archivoAliases = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <ClerkProvider>
+    <ClerkProvider
+      appearance={{
+        // Clerk takes literal colors, so these mirror the 4c tokens in app/globals.css.
+        variables: {
+          colorPrimary: "#0A7346",
+          colorText: "#0D2A1E",
+          colorTextSecondary: "#3D5A4C",
+          colorBackground: "#FFFFFF",
+          colorInputBackground: "#FFFFFF",
+          colorInputText: "#0D2A1E",
+          borderRadius: "10px",
+          fontFamily: "var(--font-body), Archivo, sans-serif",
+        },
+      }}
+    >
       <html lang="en" className={archivo.variable} style={archivoAliases}>
         <body>{children}</body>
       </html>

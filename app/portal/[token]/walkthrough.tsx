@@ -173,7 +173,7 @@ export function Walkthrough({
 
   return (
     <div>
-      <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
+      <p className="text-xs font-semibold" style={{ color: "var(--text-muted)" }}>
         Step {stepIdx + 1} of {steps.length}
       </p>
       <p className="mt-1 text-sm font-semibold" style={{ color: "var(--text)" }}>{step.question}</p>
@@ -206,7 +206,7 @@ export function Walkthrough({
         style={{ color: "var(--text-muted)" }}
         onClick={() => setCurrent([...current, { date: "", amount: "" }])}
       >
-        + Add another month
+        Add another month
       </button>
 
       <div className="mt-4 flex items-center justify-between">

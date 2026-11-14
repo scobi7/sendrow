@@ -36,11 +36,11 @@ export async function LocationsPanel({ companyId }: { companyId: string }) {
 
   return (
     <div className="glass-panel">
-      <div className="flex items-center justify-between px-5 pt-4 pb-3" style={{ borderBottom: "1px solid var(--divider)" }}>
-        <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 px-5 pt-4 pb-3" style={{ borderBottom: "1px solid var(--divider)" }}>
+        <h2 className="text-lg font-bold" style={{ color: "var(--text)" }}>
           Locations ({sites.length})
-        </p>
-        <span className="text-[11px]" style={{ color: "var(--text-muted)" }}>
+        </h2>
+        <span className="text-xs" style={{ color: "var(--text-muted)" }}>
           each site calculates with its own grid factor, then sums
         </span>
       </div>
@@ -71,7 +71,7 @@ export async function LocationsPanel({ companyId }: { companyId: string }) {
                       {r.co2eKg > 0 && ` · ${fmtNum1(r.co2eKg / 1000)} tCO2e`}
                     </p>
                   </div>
-                  <span className="shrink-0 rounded px-2.5 py-1 font-data text-[11px] font-semibold" style={{ background: style.bg, color: style.fg }}>
+                  <span className="shrink-0 rounded px-2.5 py-1 font-data text-xs font-semibold" style={{ background: style.bg, color: style.fg }}>
                     {SITE_STATUS_LABEL[r.status]}
                   </span>
                 </div>
@@ -84,7 +84,7 @@ export async function LocationsPanel({ companyId }: { companyId: string }) {
                       defaultValue={site.contactEmail ?? ""}
                       placeholder="site-contact@company.com (comma-separate for more than one)"
                       className="input px-2 py-1 text-xs"
-                      style={{ width: "18rem" }}
+                      style={{ width: "18rem", maxWidth: "100%" }}
                     />
                     <input
                       name="message"
@@ -92,7 +92,7 @@ export async function LocationsPanel({ companyId }: { companyId: string }) {
                       maxLength={500}
                       placeholder="Add a note for them (optional)"
                       className="input px-2 py-1 text-xs"
-                      style={{ width: "14rem" }}
+                      style={{ width: "14rem", maxWidth: "100%" }}
                     />
                     <Pill as="button" className="transition-opacity hover:opacity-70" style={{ background: "var(--primary-tint)", color: "var(--primary)" }}>
                       {r.status === "no_link" ? "Send site link" : "Resend site link"}
@@ -117,16 +117,16 @@ export async function LocationsPanel({ companyId }: { companyId: string }) {
 
       <form action={addLocation.bind(null, companyId)} className="flex flex-wrap items-center gap-2 px-5 py-3" style={{ borderTop: "1px solid var(--divider)" }}>
         <input name="name" required placeholder="Site name (e.g. Fresno plant)" className="input flex-1 text-xs" style={{ minWidth: "10rem" }} />
-        <input name="city" placeholder="City" className="input text-xs" style={{ width: "7rem" }} />
-        <input name="state" placeholder="State" maxLength={2} className="input text-xs" style={{ width: "4rem" }} />
-        <input name="zip" placeholder="Zip" className="input text-xs" style={{ width: "5rem" }} />
-        <select name="egrid_subregion" required defaultValue="" className="input text-xs" style={{ width: "13rem" }}>
+        <input name="city" placeholder="City" className="input text-xs" style={{ width: "7rem", maxWidth: "100%" }} />
+        <input name="state" placeholder="State" maxLength={2} className="input text-xs" style={{ width: "4rem", maxWidth: "100%" }} />
+        <input name="zip" placeholder="Zip" className="input text-xs" style={{ width: "5rem", maxWidth: "100%" }} />
+        <select name="egrid_subregion" required defaultValue="" className="input text-xs" style={{ width: "13rem", maxWidth: "100%" }}>
           <option value="" disabled>Grid subregion (eGRID)</option>
           {EGRID_SUBREGION_OPTIONS.map((o) => (
             <option key={o.factorId} value={o.factorId}>{o.label}</option>
           ))}
         </select>
-        <input name="contact_email" type="text" placeholder="Site contact email(s), optional (comma-separated)" className="input text-xs" style={{ width: "16rem" }} />
+        <input name="contact_email" type="text" placeholder="Site contact email(s), optional (comma-separated)" className="input text-xs" style={{ width: "16rem", maxWidth: "100%" }} />
         <SubmitButton className="btn btn-secondary shrink-0 px-3 py-1.5 text-xs" pendingText="Adding...">Add site</SubmitButton>
       </form>
     </div>
