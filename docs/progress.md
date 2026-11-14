@@ -7,7 +7,7 @@ Update at the end of every session. Keep it current, not historical: git holds t
 - Today on v3: tech-debt pass (security fixes, QuickBooks code removed), 20-item UX pass, design-partner fixes from `docs/plan-ui.md` (Ledger rebrand tokens, consultant nav and phone menu, client tabs, deadlines strip and sourced dates config, "Get started" checklist, per-row "How calculated" panel, Excel traceability columns, snapshot and PDF totals fixes, branded PDF).
 - Also today: homepage turned into self-serve onboarding (deadline bar and sourced deadlines section, supplier "no account needed" box, design-partner pitch and waitlist removed); dashes swept from consultant, admin, marketing, legal, portal and email copy; supplier-calculated core logic (hidden from the request form until its rows are labeled).
 - UI: direction 4c approved and built on v3 (theme tokens, Archivo, one radius, homepage, shared nav and footer); `DESIGN.md` holds the theme. Site copy went through /no-ai-slop.
-- Checks: `npm run lint` clean, `npm test` 316/316, `npm run e2e` all passing (Playwright, a production build against Neon branch `qa-2026-11-13`). knip last showed only the 5 known items.
+- Checks: `npm run lint` clean, `npm test` 316/316, `npm run e2e` all passing on 2026-11-13 (Playwright, a production build against a Neon test branch, since deleted; make a new one before the next run, see docs/known-issues.md). knip last showed only the 5 known items.
 - E2E found 17 bugs on 2026-11-13; 16 fixed with tests (see CHANGES.html). Open: signed-out unknown paths redirect to sign-in instead of a 404 (`test.fail` in e2e/public.e2e.ts).
 - Phases: W3 format engine still blocked on a real buyer questionnaire. UI plan: Phase 0, most of 1, 3.1 and the Phase 4 foundation are built; the rest waits on Malachi's decisions (below).
 - Current goal (set 2026-07-21): get real consultants using it and collect their feedback.
@@ -59,7 +59,6 @@ Deferred tech debt (from the 2026-11-13 audit, not yet approved or decided):
 | Signed-out unknown path: keep the sign-in redirect or show a 404? | CHANGES.html |
 | Consultant pages lost their loading skeleton (Next stall fix); OK until a Next 16.3 upgrade? | CHANGES.html |
 | Scope 2 market-based override saves but no total shows it; intended? | CHANGES.html |
-| Keep or delete Neon branch `qa-2026-11-13` | Neon |
 | Drop `gapAnalysis`? (dead code from the company self-serve product) | this session |
 | Reflect proposals 1-5 from the tech-debt pass, plus today's | this session |
 | Real eGRID2024 / USEEIO v2.5 factor values | `/admin/factors` |
