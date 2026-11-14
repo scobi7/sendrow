@@ -26,7 +26,7 @@ export const E2E_PORT = 3200;
 export const BASE_URL = `http://localhost:${E2E_PORT}`;
 export const CRON_SECRET = "e2e-cron-secret";
 export const AUTH_DIR = path.join(root, "e2e", ".auth");
-export const E2E_DATABASE_URL = process.env.E2E_DATABASE_URL || e2eFile.E2E_DATABASE_URL || "";
+const E2E_DATABASE_URL = process.env.E2E_DATABASE_URL || e2eFile.E2E_DATABASE_URL || "";
 
 function host(url: string): string {
   const m = url.match(/@([^/?]+)/);

@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
     if (contactEmail) loc.contactEmail = contactEmail;
   }
 
-  const { token: siteToken, created } = await sendSiteLink({
+  const { token: siteToken, created, emailed } = await sendSiteLink({
     companyId: parent.companyId,
     location: loc,
     requestedBy: `portal:${parent.id}`,
@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
   return NextResponse.json({
     ok: true,
     created,
-    emailed: Boolean(loc.contactEmail),
+    emailed,
     // The CFO can always copy the link and share it directly (e.g. no email on file)
     link: `/portal/${siteToken}`,
     site: siteLabel(loc),

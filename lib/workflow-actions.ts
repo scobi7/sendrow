@@ -2,13 +2,15 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { and, eq, inArray } from "drizzle-orm";
+import { and, desc, eq, inArray } from "drizzle-orm";
 import { db } from "./db";
-import { companies, intakeSessions, requestTemplates } from "./db/schema";
+import { companies, dataRequests, intakeSessions, requestTemplates } from "./db/schema";
 import { currentUser } from "./auth";
 import { findOwnedLink } from "./guards";
 import { createDataRequest, createSnapshot, approveSession, flagSession } from "./consultant-actions";
 import { logEvent } from "./events";
+import { getBrandForCompany } from "./branding";
+import { sendChangesRequestedEmail } from "./email";
 import type { DataType } from "./ingestion/data-type-templates";
 
 /** Wireframe workflow actions (Plan W): glue between the Figma screens and
@@ -102,11 +104,50 @@ export async function requestChanges(companyId: string, formData: FormData) {
   if (!note) return;
 
   const pending = await db
-    .select({ id: intakeSessions.id })
+    .select({ id: intakeSessions.id, filename: intakeSessions.filename, uploadedBy: intakeSessions.uploadedBy })
     .from(intakeSessions)
     .where(and(eq(intakeSessions.companyId, companyId), eq(intakeSessions.status, "pending_review")));
   for (const s of pending) {
-    await flagSession(s.id, companyId, note);
+    await flagSession(s.id, companyId, note, { notifyClient: false });
+  }
+
+  // One email for the whole Request changes, not one per upload
+  if (pending.length > 0) {
+    const [company, brand] = await Promise.all([
+      db.query.companies.findFirst({ where: eq(companies.id, companyId) }),
+      getBrandForCompany(companyId),
+    ]);
+    let token: string | null = null;
+    // Portal submissions record uploaded_by "portal:<requestId>"; link back to that request.
+    const linked = pending.find((s) => s.uploadedBy.startsWith("portal:"))?.uploadedBy.slice("portal:".length);
+    if (linked) {
+      token = (await db.query.dataRequests.findFirst({ where: and(eq(dataRequests.id, linked), eq(dataRequests.companyId, companyId)) }))?.token ?? null;
+    }
+    if (!token) {
+      token = (await db.query.dataRequests.findFirst({
+        where: and(eq(dataRequests.companyId, companyId), eq(dataRequests.status, "open")),
+        orderBy: desc(dataRequests.createdAt),
+      }))?.token ?? null;
+    }
+    if (company?.clientContactEmail && token) {
+      const sent = await sendChangesRequestedEmail(
+        company.clientContactEmail,
+        company.clientContactName ?? "there",
+        company.name,
+        pending.map((s) => ({ filename: s.filename, note })),
+        token,
+        brand
+      );
+      logEvent({
+        companyId,
+        actor: "system",
+        actorType: "system",
+        verb: sent ? "email.sent" : "email.failed",
+        subject: sent
+          ? `Changes-requested email sent to ${company.clientContactEmail}`
+          : `Changes-requested email to ${company.clientContactEmail} did not send. Share the portal link directly.`,
+      });
+    }
   }
   logEvent({ companyId, actor: user.id, actorType: "consultant", verb: "review.changes_requested", subject: note });
   revalidatePath(`/consultant/clients/${companyId}/review`);

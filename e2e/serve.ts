@@ -1,7 +1,7 @@
-/** Starts the app for end-to-end tests: `next dev` on port 3200, pointed at the test database,
+/** Starts the app for end-to-end tests on port 3200 (a production build by default), pointed at the test database,
  *  with email, file storage and Stripe switched off. Playwright runs this (see playwright.config.ts);
  *  run it by hand with `npx tsx e2e/serve.ts` to click around the test data yourself. */
-import { spawn } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import path from "node:path";
 import { assertSafeDatabase, clerkKeys, CRON_SECRET, E2E_PORT, BASE_URL, USERS } from "./env";
 import { ensureUser } from "./clerk";
@@ -39,11 +39,16 @@ async function main() {
   };
   delete env.BLOB_READ_WRITE_TOKEN;
 
-  const child = spawn("npx", ["next", "dev", "-p", String(E2E_PORT)], {
-    cwd: path.resolve(__dirname, ".."),
-    env,
-    stdio: "inherit",
-  });
+  const cwd = path.resolve(__dirname, "..");
+  // Default: a production build (fast and stable under a full test run; `next dev` compiles each
+  // route on demand and falls over with several browsers). E2E_DEV=1 runs `next dev` instead.
+  // `next build` here never touches the database schema; only `npm run build` runs drizzle-kit.
+  if (process.env.E2E_DEV !== "1") {
+    const build = spawnSync("npx", ["next", "build"], { cwd, env, stdio: "inherit" });
+    if (build.status !== 0) process.exit(build.status ?? 1);
+  }
+  const args = process.env.E2E_DEV === "1" ? ["next", "dev", "-p", String(E2E_PORT)] : ["next", "start", "-p", String(E2E_PORT)];
+  const child = spawn("npx", args, { cwd, env, stdio: "inherit" });
   const stop = () => child.kill("SIGTERM");
   process.on("SIGINT", stop);
   process.on("SIGTERM", stop);

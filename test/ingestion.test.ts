@@ -61,6 +61,38 @@ describe("applyProfile", () => {
     const badRows = [{ "kWh Used": "n/a" }];
     const [norm] = applyProfile(badRows, { "kWh Used": "quantity" });
     expect(norm.quantity).toBeUndefined();
+    expect(norm.unit).toBeUndefined();
+  });
+
+  it("takes the unit and activity from a quantity header like kWh Used", () => {
+    const [norm] = applyProfile([{ Month: "2025-01", "kWh Used": "4100" }], { Month: "date", "kWh Used": "quantity" });
+    expect(norm).toMatchObject({ quantity: 4100, unit: "kWh", activity_type: "electricity" });
+  });
+
+  it("names therms and propane gallons from their headers", () => {
+    const map: ColumnMap = { "Natural Gas (therms)": "quantity" };
+    expect(applyProfile([{ "Natural Gas (therms)": "80" }], map)[0]).toMatchObject({ unit: "therms", activity_type: "natural gas" });
+    const [propane] = applyProfile([{ "Propane (gallons)": "40" }], { "Propane (gallons)": "quantity" });
+    expect(propane).toMatchObject({ unit: "gallons", activity_type: "propane" });
+  });
+
+  it("keeps an explicit unit column and activity over the header hint", () => {
+    const [norm] = applyProfile(
+      [{ "kWh Used": "12", Unit: "MWh", Type: "solar PPA" }],
+      { "kWh Used": "quantity", Unit: "unit", Type: "activity_type" }
+    );
+    expect(norm).toMatchObject({ unit: "MWh", activity_type: "solar PPA" });
+  });
+
+  it("adds no unit for a currency header", () => {
+    const [norm] = applyProfile([{ "Amount ($)": "5200" }], { "Amount ($)": "quantity" });
+    expect(norm.unit).toBeUndefined();
+  });
+
+  it("a kWh Used row becomes a mapped Scope 2 electricity line item", () => {
+    const [norm] = applyProfile([{ "kWh Used": "4100" }], { "kWh Used": "quantity" });
+    const item = rowToLineItem(norm, SEED_FACTORS, "co_test");
+    expect(item).toMatchObject({ scope: 2, category: "electricity", rawUnit: "kWh", status: "mapped" });
   });
 });
 

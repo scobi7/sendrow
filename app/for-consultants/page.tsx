@@ -27,7 +27,7 @@ const ROWS = [
   },
   {
     title: "Questionnaire formats",
-    text: "Fill CDP, EcoVadis and Walmart questionnaire fields from an approved snapshot.",
+    text: "Fill CDP, EcoVadis and Walmart questionnaire fields from the client's current totals.",
   },
   {
     title: "Deadlines",

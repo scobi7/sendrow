@@ -7,7 +7,8 @@ Update at the end of every session. Keep it current, not historical: git holds t
 - Today on v3: tech-debt pass (security fixes, QuickBooks code removed), 20-item UX pass, design-partner fixes from `docs/plan-ui.md` (Ledger rebrand tokens, consultant nav and phone menu, client tabs, deadlines strip and sourced dates config, "Get started" checklist, per-row "How calculated" panel, Excel traceability columns, snapshot and PDF totals fixes, branded PDF).
 - Also today: homepage turned into self-serve onboarding (deadline bar and sourced deadlines section, supplier "no account needed" box, design-partner pitch and waitlist removed); dashes swept from consultant, admin, marketing, legal, portal and email copy; supplier-calculated core logic (hidden from the request form until its rows are labeled).
 - UI: direction 4c approved and built on v3 (theme tokens, Archivo, one radius, homepage, shared nav and footer); `DESIGN.md` holds the theme. Site copy went through /no-ai-slop.
-- Checks: `npm run lint` clean, `npm test` 283/283, knip shows only the 5 known items. Nothing walked in a browser yet (see Untested).
+- Checks: `npm run lint` clean, `npm test` 316/316, `npm run e2e` all passing (Playwright, a production build against Neon branch `qa-2026-11-13`). knip last showed only the 5 known items.
+- E2E found 17 bugs on 2026-11-13; 16 fixed with tests (see CHANGES.html). Open: signed-out unknown paths redirect to sign-in instead of a 404 (`test.fail` in e2e/public.e2e.ts).
 - Phases: W3 format engine still blocked on a real buyer questionnaire. UI plan: Phase 0, most of 1, 3.1 and the Phase 4 foundation are built; the rest waits on Malachi's decisions (below).
 - Current goal (set 2026-07-21): get real consultants using it and collect their feedback.
 
@@ -31,8 +32,7 @@ P1:
 - Shared-store rate limiting (see known-issues).
 
 UI:
-- Walk the app screens on the preview while signed in: the 4c tokens changed under them and only public pages were screenshotted.
-- /for-consultants in 4c: it keeps its old layout, with a mock dashboard (macOS window dots), hover-lift cards and "Get started free".
+- Look over the 4c app screens on the preview while signed in (e2e covers behavior, not looks).
 - Supplier-calculated batch 2 (portal: template download and upload, no mapping panel) and batch 3 (labels on ledger, trace panel, review, overview subtotal, Excel origin column, PDF note); then add `existing_inventory` back to `DATA_TYPE_OPTIONS`.
 - Regulatory dates: CARB fee notices once a primary source confirms the date.
 - Phase 2 data in: supporting documents on any checklist item, manual Scope 2 kWh entry. One link per client: decided no.
@@ -46,10 +46,8 @@ Deferred tech debt (from the 2026-11-13 audit, not yet approved or decided):
 - Product call still open: keep or drop `gapAnalysis` (recommended: drop). Settled 2026-11-13: Scope 2 stays a checkbox; glyphs and spaced-hyphen dashes break house style; legacy tables drop after main runs v3.
 
 ## Untested (never walked end to end)
-- The 2026-11-13 UI work on the preview: Cmd+K, Archive then Undo, ledger Exclude/Restore rollback, "How calculated", phone menu, client tabs, branded PDF download, Excel export of a new snapshot with manual entries (Line items sum = Total).
+- E2E covers the app on a test server with email, Blob and Stripe off. Still untested: real email delivery, evidence files in Blob, and anything on the production deploy.
 - Live prod smoke test: send a data request to your own email on sendrow.app, confirm the link resolves.
-- Portal "Type it in" manual-entry path.
-- Create client; Scope 2 manual override save; comment on a line item.
 - Draft persistence for staged portal uploads (accepted gap; add if a pilot hits it).
 - After the next deploy: verify the 2026-10-02 fixes live.
 
@@ -58,6 +56,10 @@ Deferred tech debt (from the 2026-11-13 audit, not yet approved or decided):
 |---|---|
 | Confirm `BLOB_READ_WRITE_TOKEN` in prod | Vercel |
 | Look over the 4c site on the preview, signed in | preview |
+| Signed-out unknown path: keep the sign-in redirect or show a 404? | CHANGES.html |
+| Consultant pages lost their loading skeleton (Next stall fix); OK until a Next 16.3 upgrade? | CHANGES.html |
+| Scope 2 market-based override saves but no total shows it; intended? | CHANGES.html |
+| Keep or delete Neon branch `qa-2026-11-13` | Neon |
 | Drop `gapAnalysis`? (dead code from the company self-serve product) | this session |
 | Reflect proposals 1-5 from the tech-debt pass, plus today's | this session |
 | Real eGRID2024 / USEEIO v2.5 factor values | `/admin/factors` |
@@ -68,6 +70,7 @@ Deferred tech debt (from the 2026-11-13 audit, not yet approved or decided):
 | Possibly stale (from 2026-09-02, check): Clerk prod Google OAuth, attorney ToS (tool, not advice), Calendly links to a business account | ops |
 
 ## Log
+- 2026-11-13 (overnight): 4c on every page (marketing, legal, app, portal, shared page, PDF, emails). Playwright e2e in the repo (6 suites) on a Neon branch and a production build. Found 17 bugs, fixed 16: the server action stall (`loading.tsx`, React #35399), soft 404, no archived-client restore, share email never sent, restatement and delegation sends unrecorded or misreported, reports and questionnaire totals missing line items, irreproducible snapshot hash, kWh header unit, request changes never reaching the client, flag and approve logging, factor source fallback, consultant PDF 500 (React 18 vs 19). Haiku builders' checks rerun by the orchestrator; caught a claimed console allowance that wasn't in the file, and a request link that missed typed-in entries. 283 to 316 unit tests. CHANGES.html added.
 - 2026-11-13 (late night): Homepage directions: 5 prototypes, then 3 layered versions of "worked examples"; Malachi picked 4c (one green, layered sheets, still 3D stack) with upright headings. Built it: theme tokens, Archivo, one radius, homepage rebuild, shared nav and footer on every marketing and legal page, labels above headings removed. Installed /no-ai-slop and ran a site-wide wording pass (36 files: dashes, arrows, slop, unsourced stats and time promises, one contact address). Every Haiku builder's check rerun by the orchestrator; it caught invented example numbers, a dropped set of footer links, a "Built in California" claim, and an accent that failed contrast. 283 tests.
 - 2026-11-13 (night): Homepage made self-serve, with a sourced deadline bar and deadlines section (Ninth Circuit ruling: SB 253 Scope 3 and SB 261 on hold). Dash sweep over consultant, admin, marketing, legal, portal and email copy. Supplier-calculated core logic with factor guards on every recompute path (orchestrator added the vendor-remap guard the builder missed). DESIGN.md adopted. 263 to 283 tests.
 - 2026-11-13 (evening): 20-item UX pass (command menu, undo archive, optimistic ledger, safe areas, delayed skeletons, disabled create buttons). Then design-partner UI work by Haiku builders, each check rerun by the orchestrator: Ledger rebrand tokens and fonts, consultant nav and phone menu, client tabs, sourced regulatory dates and deadlines strip, Get started checklist, "How calculated" panel, Excel traceability. Fixed: snapshots didn't freeze manual calcs (exports didn't reconcile), PDF counted excluded rows and dropped manual entries. 248 to 263 tests.

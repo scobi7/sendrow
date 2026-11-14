@@ -25,7 +25,7 @@ import { logEvent } from "./events";
 import { snapshotHash, restatementDiff, freezeManualCalcs } from "./snapshots";
 import { siteLabel } from "./site-requests";
 import type { SnapshotTotals } from "./snapshots";
-import { sendRestatementEmail, sendCommentEmail, sendFlagReplyEmail } from "./email";
+import { sendRestatementEmail, sendCommentEmail, sendFlagReplyEmail, sendSnapshotShareEmail, sendChangesRequestedEmail } from "./email";
 import { combinedTotals as computeTotals } from "./calc";
 import { desc } from "drizzle-orm";
 import { generatePortalToken, portalExpiry, buildChecklist } from "./portal";
@@ -152,7 +152,7 @@ export async function approveSession(sessionId: string, companyId: string) {
   const session = await db.query.intakeSessions.findFirst({ where: eq(intakeSessions.id, sessionId) });
   if (!session || session.companyId !== companyId) return;
   await db.update(intakeSessions).set({ status: "approved", reviewedAt: new Date().toISOString() }).where(eq(intakeSessions.id, sessionId));
-  logEvent({ companyId, actor: user.id, actorType: "consultant", verb: "session.approved", subject: sessionId, subjectId: sessionId });
+  logEvent({ companyId, actor: user.id, actorType: "consultant", verb: "session.approved", subject: session.filename, subjectId: sessionId });
   await db
     .insert(pipelineStatus)
     .values({ companyId, status: "in_progress", updatedAt: new Date().toISOString() })
@@ -164,7 +164,10 @@ export async function approveSession(sessionId: string, companyId: string) {
   revalidatePath(`/consultant/clients/${companyId}`);
 }
 
-export async function flagSession(sessionId: string, companyId: string, notes: string) {
+/** Sends an upload back to the client with a note. By default the client is
+ *  emailed once for this call; Request changes passes notifyClient: false and
+ *  sends one email for the whole batch itself. */
+export async function flagSession(sessionId: string, companyId: string, notes: string, opts?: { notifyClient?: boolean }) {
   const user = await ownsClient(companyId);
   if (!user) return;
   const session = await db.query.intakeSessions.findFirst({ where: eq(intakeSessions.id, sessionId) });
@@ -173,6 +176,45 @@ export async function flagSession(sessionId: string, companyId: string, notes: s
     .update(intakeSessions)
     .set({ status: "needs_info", reviewerNotes: notes, reviewedAt: new Date().toISOString() })
     .where(eq(intakeSessions.id, sessionId));
+  logEvent({ companyId, actor: user.id, actorType: "consultant", verb: "session.flagged", subject: session.filename, subjectId: sessionId });
+
+  if (opts?.notifyClient !== false) {
+    const [company, brand] = await Promise.all([
+      db.query.companies.findFirst({ where: eq(companies.id, companyId) }),
+      getBrandForCompany(companyId),
+    ]);
+    // Portal submissions record uploaded_by "portal:<requestId>"; link back to that request.
+    const requestId = session.uploadedBy.startsWith("portal:") ? session.uploadedBy.slice("portal:".length) : null;
+    let token: string | null = null;
+    if (requestId) {
+      token = (await db.query.dataRequests.findFirst({ where: and(eq(dataRequests.id, requestId), eq(dataRequests.companyId, companyId)) }))?.token ?? null;
+    }
+    if (!token) {
+      token = (await db.query.dataRequests.findFirst({
+        where: and(eq(dataRequests.companyId, companyId), eq(dataRequests.status, "open")),
+        orderBy: desc(dataRequests.createdAt),
+      }))?.token ?? null;
+    }
+    if (company?.clientContactEmail && token) {
+      const sent = await sendChangesRequestedEmail(
+        company.clientContactEmail,
+        company.clientContactName ?? "there",
+        company.name,
+        [{ filename: session.filename, note: notes }],
+        token,
+        brand
+      );
+      logEvent({
+        companyId,
+        actor: "system",
+        actorType: "system",
+        verb: sent ? "email.sent" : "email.failed",
+        subject: sent
+          ? `Changes-requested email sent to ${company.clientContactEmail}`
+          : `Changes-requested email to ${company.clientContactEmail} did not send. Share the portal link directly.`,
+      });
+    }
+  }
   revalidatePath(`/consultant/clients/${companyId}`);
 }
 
@@ -693,19 +735,29 @@ export async function createSnapshot(companyId: string, formData: FormData) {
         .select()
         .from(shareLinks)
         .where(and(eq(shareLinks.companyId, companyId), isNull(shareLinks.revokedAt)));
+      const recipients = shares.flatMap((s) => (s.recipientEmail && s.snapshotId ? [s.recipientEmail] : []));
       const brand = await getBrandForCompany(companyId);
       const company_ = await db.query.companies.findFirst({ where: eq(companies.id, companyId) });
-      for (const share of shares) {
-        if (!share.recipientEmail || !share.snapshotId) continue;
-        sendRestatementEmail(
-          share.recipientEmail,
-          company_?.name ?? "your supplier",
-          prior.label,
-          changes,
-          null,
-          brand
-        ).catch(() => {});
-      }
+      const outcomes = await Promise.allSettled(
+        recipients.map((email) =>
+          sendRestatementEmail(email, company_?.name ?? "your supplier", prior.label, changes, null, brand)
+        )
+      );
+      // One timeline entry per recipient: who was told, and whether it went out.
+      recipients.forEach((email, i) => {
+        const outcome = outcomes[i];
+        const sent = outcome.status === "fulfilled" && outcome.value === true;
+        logEvent({
+          companyId,
+          actor: "system",
+          actorType: "system",
+          verb: sent ? "email.sent" : "email.failed",
+          subject: sent
+            ? `Restatement emailed to ${email} (was "${prior.label}")`
+            : `Restatement to ${email} did not send. Share the corrected snapshot directly.`,
+          subjectId: id,
+        });
+      });
     }
   }
 
@@ -725,8 +777,9 @@ export async function shareSnapshot(companyId: string, snapshotId: string, formD
   const recipientLabel = String(formData.get("recipient_label") ?? "").trim();
 
   const { generatePortalToken } = await import("./portal");
+  const token = generatePortalToken();
   await db.insert(shareLinks).values({
-    token: generatePortalToken(),
+    token,
     companyId,
     snapshotId,
     recipientEmail: recipientEmail || null,
@@ -735,6 +788,32 @@ export async function shareSnapshot(companyId: string, snapshotId: string, formD
     createdAt: new Date().toISOString(),
   });
   logEvent({ companyId, actor: user.id, actorType: "consultant", verb: "snapshot.shared", subject: snap.label, subjectId: snapshotId, meta: { recipient: recipientLabel || recipientEmail || "link only" } });
+
+  if (recipientEmail) {
+    const [company_, brand] = await Promise.all([
+      db.query.companies.findFirst({ where: eq(companies.id, companyId) }),
+      getBrandForCompany(companyId),
+    ]);
+    const sent = await sendSnapshotShareEmail(
+      recipientEmail,
+      company_?.name ?? "your supplier",
+      snap.label,
+      snap.period ?? null,
+      snap.createdAt.slice(0, 10),
+      token,
+      brand
+    );
+    logEvent({
+      companyId,
+      actor: "system",
+      actorType: "system",
+      verb: sent ? "email.sent" : "email.failed",
+      subject: sent
+        ? `Snapshot link emailed to ${recipientEmail} (${snap.label})`
+        : `Email to ${recipientEmail} for "${snap.label}" did not send. Copy the link and share it directly.`,
+      subjectId: snapshotId,
+    });
+  }
   revalidatePath(`/consultant/clients/${companyId}`);
 }
 

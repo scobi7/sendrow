@@ -235,14 +235,14 @@ export async function sendRestatementEmail(
   changes: { label: string; previous: number; current: number; pct: number | null }[],
   newLink: string | null,
   brand?: { brandName: string; replyTo: string | null } | null
-) {
+): Promise<boolean> {
   const rows = changes
     .map(
       (c) =>
         `<tr><td style="padding:4px 12px 4px 0;color:#0D2A1E">${c.label}</td><td style="padding:4px 12px;color:#0D2A1E">${c.previous.toLocaleString("en-US", { maximumFractionDigits: 2 })} t</td><td style="padding:4px 12px;color:#0D2A1E">${c.current.toLocaleString("en-US", { maximumFractionDigits: 2 })} t</td><td style="padding:4px 0;color:#0D2A1E">${c.pct === null ? "n/a" : `${c.pct > 0 ? "+" : ""}${c.pct.toFixed(1)}%`}</td></tr>`
     )
     .join("");
-  await send(
+  return send(
     to,
     `Restatement: updated emissions data for ${companyName}`,
     `<p style="font-family:Archivo,Arial,sans-serif;color:#0D2A1E">Hello,</p>
@@ -251,6 +251,30 @@ export async function sendRestatementEmail(
 ${newLink ? `<p style="font-family:Archivo,Arial,sans-serif;color:#0D2A1E"><a style="color:#0A7346" href="${newLink}">View the corrected version</a></p>` : ""}
 <p style="font-family:Archivo,Arial,sans-serif;color:#0D2A1E">The previous version remains on record; nothing was silently changed.</p>
 ${brand ? `<p style="font-family:Archivo,Arial,sans-serif;color:#0D2A1E">${brand.brandName}</p>` : ""}`,
+    brand ? { fromName: brand.brandName, replyTo: brand.replyTo } : undefined
+  );
+}
+
+/** A consultant shared one frozen snapshot with a named recipient. The link
+ *  opens the read-only shared page; the recipient needs no account. */
+export async function sendSnapshotShareEmail(
+  to: string,
+  companyName: string,
+  snapshotLabel: string,
+  period: string | null,
+  frozenOn: string,
+  token: string,
+  brand?: { brandName: string; replyTo: string | null } | null
+): Promise<boolean> {
+  const sharedBy = brand?.brandName ?? "Your consultant";
+  return send(
+    to,
+    `${sharedBy} shared emissions data for ${companyName}`,
+    `<p style="font-family:Archivo,Arial,sans-serif;color:#0D2A1E">Hello,</p>
+<p style="font-family:Archivo,Arial,sans-serif;color:#0D2A1E">${escapeHtml(sharedBy)} has shared the emissions snapshot &ldquo;${escapeHtml(snapshotLabel)}&rdquo; for <strong>${escapeHtml(companyName)}</strong>${period ? ` (period: ${escapeHtml(period)})` : ""}. It was frozen on ${escapeHtml(frozenOn)}.</p>
+<p style="font-family:Archivo,Arial,sans-serif;color:#0D2A1E"><a style="color:#0A7346" href="${APP_URL}/shared/${token}">View the shared snapshot</a></p>
+<p style="font-family:Archivo,Arial,sans-serif;color:#0D2A1E">The page is view only and needs no account or password. It shows the figures exactly as they were frozen.</p>
+${brand ? `<p style="font-family:Archivo,Arial,sans-serif;color:#0D2A1E">${escapeHtml(brand.brandName)}</p>` : ""}`,
     brand ? { fromName: brand.brandName, replyTo: brand.replyTo } : undefined
   );
 }
@@ -312,6 +336,35 @@ export async function sendFlagReplyEmail(
 <blockquote style="margin:0 0 16px;padding-left:12px;border-left:3px solid #C8DCCF;color:#3D5A4C"><p style="font-family:Archivo,Arial,sans-serif;color:#0D2A1E">${body}</p></blockquote>
 <p style="font-family:Archivo,Arial,sans-serif;color:#0D2A1E"><a style="color:#0A7346" href="${APP_URL}/portal/${portalToken}">Open your secure upload link to continue</a></p>
 ${brand ? `<p style="font-family:Archivo,Arial,sans-serif;color:#0D2A1E">${brand.brandName}</p>` : ""}`,
+    brand ? { fromName: brand.brandName, replyTo: brand.replyTo } : undefined
+  );
+}
+
+/** The reviewer sent one or more uploads back with a note. One email per action
+ *  (Request changes, or a single flag), listing each upload and its note. */
+export async function sendChangesRequestedEmail(
+  clientEmail: string,
+  clientName: string,
+  companyName: string,
+  items: { filename: string; note: string }[],
+  portalToken: string,
+  brand?: { brandName: string; replyTo: string | null } | null
+): Promise<boolean> {
+  const blocks = items
+    .map(
+      (i) => `<p style="font-family:Archivo,Arial,sans-serif;color:#0D2A1E"><strong>${escapeHtml(i.filename)}</strong></p>
+<blockquote style="margin:0 0 16px;padding-left:12px;border-left:3px solid #C8DCCF;color:#3D5A4C"><p style="font-family:Archivo,Arial,sans-serif;color:#0D2A1E">${escapeHtml(i.note)}</p></blockquote>`
+    )
+    .join("\n");
+  return send(
+    clientEmail,
+    `Changes requested for ${companyName} data`,
+    `<p style="font-family:Archivo,Arial,sans-serif;color:#0D2A1E">Hi ${escapeHtml(clientName.split(" ")[0])},</p>
+<p style="font-family:Archivo,Arial,sans-serif;color:#0D2A1E">Your reviewer has asked for changes to the data you sent for <strong>${escapeHtml(companyName)}</strong>:</p>
+${blocks}
+<p style="font-family:Archivo,Arial,sans-serif;color:#0D2A1E"><a style="color:#0A7346" href="${APP_URL}/portal/${portalToken}">Open your secure page to upload corrected files</a></p>
+<p style="font-family:Archivo,Arial,sans-serif;color:#0D2A1E">No account or password needed. The link is unique to you.</p>
+${brand ? `<p style="font-family:Archivo,Arial,sans-serif;color:#0D2A1E">${escapeHtml(brand.brandName)}</p>` : ""}`,
     brand ? { fromName: brand.brandName, replyTo: brand.replyTo } : undefined
   );
 }

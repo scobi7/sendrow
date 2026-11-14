@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { snapshotHash, restatementDiff, freezeManualCalcs } from "@/lib/snapshots";
+import { snapshotHash, restatementDiff, freezeManualCalcs, canonicalJson } from "@/lib/snapshots";
 import type { SnapshotTotals } from "@/lib/snapshots";
 
 const T = (total: number, scope2 = 10): SnapshotTotals => ({
@@ -52,5 +52,33 @@ describe("snapshots (Plan T3, invariant §13)", () => {
       locationId: null,
       calcLog: { formula: "100 gal x 0.0100 t/gal", basis: "measured", marketBasedTons: null },
     });
+  });
+});
+
+describe("snapshot hash is reproducible from stored rows (canonical JSON)", () => {
+  it("the same content with keys in a different order gives the same hash", () => {
+    const totals = T(100);
+    const reordered = { total: totals.total, scope3: totals.scope3, scope2Market: totals.scope2Market, scope2Location: totals.scope2Location, scope1: totals.scope1 };
+    const items = [{ sourceRef: "PG&E", co2eKg: "100", calcLog: { formula: "x", basis: "y" } }];
+    const itemsReordered = [{ calcLog: { basis: "y", formula: "x" }, co2eKg: "100", sourceRef: "PG&E" }];
+    expect(snapshotHash(reordered, itemsReordered)).toBe(snapshotHash(totals, items));
+  });
+
+  it("a changed value gives a different hash", () => {
+    const items = [{ sourceRef: "PG&E", co2eKg: "100" }];
+    expect(snapshotHash(T(100), items)).not.toBe(snapshotHash(T(100), [{ sourceRef: "PG&E", co2eKg: "100.5" }]));
+  });
+
+  it("a known input gives a fixed hex string (catches any change to the hashing)", () => {
+    const totals: SnapshotTotals = { scope1: 5, scope2Location: 10, scope2Market: 8, scope3: 85, total: 100 };
+    expect(snapshotHash(totals, [{ sourceRef: "PG&E", co2eKg: "100" }])).toBe(
+      "2ce096c7de82ebb8b516b496e7aaaa2f3fc1d528b9ba3b16b2006e09d4001a73"
+    );
+  });
+
+  it("canonicalJson sorts keys at every depth and keeps array order", () => {
+    expect(canonicalJson({ b: [{ z: 1, a: 2 }, { y: 1, x: 2 }], a: { d: 1, c: 2 } })).toBe(
+      '{"a":{"c":2,"d":1},"b":[{"a":2,"z":1},{"x":2,"y":1}]}'
+    );
   });
 });

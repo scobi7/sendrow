@@ -9,7 +9,7 @@ import { isSupplierCalculated } from "./ingestion/supplier-calculated";
  * Tons are not rounded here so the group sums match combinedTotals within rounding.
  */
 
-export type BreakdownBasis = "measured" | "spend_based" | "estimated";
+type BreakdownBasis = "measured" | "spend_based" | "estimated";
 
 export interface BreakdownRow {
   scope: 1 | 2 | 3;

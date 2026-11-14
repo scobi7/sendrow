@@ -1,11 +1,12 @@
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { comments, dataRequests, companies, emissionLineItems, locations } from "@/lib/db/schema";
+import { comments, dataRequests, companies, emissionLineItems, intakeSessions, locations } from "@/lib/db/schema";
 import { desc, and, inArray, isNotNull } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import { portalTokenValid } from "@/lib/portal";
 import type { ChecklistItem } from "@/lib/portal";
 import { PortalChecklist } from "./portal-checklist";
+import { ChangesRequested } from "./changes-requested";
 import { ConsultantQuestions, type QuestionThread } from "./consultant-questions";
 import { getBrandForCompany } from "@/lib/branding";
 import { RequestNewLink } from "./request-new-link";
@@ -130,6 +131,20 @@ export default async function PortalPage({ params }: { params: Promise<{ token: 
   }));
   const totalKg = taggedItems.filter((i) => i.status === "mapped").reduce((s, i) => s + Number(i.co2eKg), 0);
 
+  // Uploads the consultant sent back for changes on this request. Every portal submission, file or
+  // typed in, records uploaded_by "portal:<requestId>" (app/api/portal/import/route.ts).
+  const changeRows = await db
+    .select({ id: intakeSessions.id, filename: intakeSessions.filename, note: intakeSessions.reviewerNotes })
+    .from(intakeSessions)
+    .where(
+      and(
+        eq(intakeSessions.companyId, request.companyId),
+        eq(intakeSessions.uploadedBy, `portal:${request.id}`),
+        eq(intakeSessions.status, "needs_info")
+      )
+    )
+    .orderBy(desc(intakeSessions.createdAt));
+
   const questionThreads: QuestionThread[] = Object.entries(byLine)
     .filter(([, msgs]) => msgs.some((m) => m.authorType === "consultant"))
     .map(([lineItemId, messages]) => {
@@ -188,6 +203,8 @@ export default async function PortalPage({ params }: { params: Promise<{ token: 
       {!request.locationId && siteViews.length > 0 && (
         <SiteDelegation token={token} sites={siteViews} totalKg={totalKg} />
       )}
+
+      <ChangesRequested items={changeRows.map((r) => ({ id: r.id, filename: r.filename, note: r.note ?? "" }))} />
 
       {request.status === "fulfilled" ? (
         <div className="rounded p-8 text-center" style={{ background: "var(--card)" }}>

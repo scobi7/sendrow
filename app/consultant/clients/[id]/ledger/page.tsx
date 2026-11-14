@@ -7,6 +7,7 @@ import { companies, comments, emissionFactors, emissionLineItems, intakeSessions
 import { siteLabel } from "@/lib/site-requests";
 import { buildTrace } from "@/lib/trace";
 import { LedgerRow } from "./ledger-row";
+import { resolveFactorSource } from "./factor-source";
 
 const FILTERS = ["all", "mapped", "unmapped", "excluded"] as const;
 
@@ -185,7 +186,7 @@ export default async function LedgerPage({
                         period: item.period,
                         locationName,
                       },
-                      item.factorId ? factorById.get(item.factorId) ?? null : null
+                      item.factorId ? resolveFactorSource(item.factorId, factorById.get(item.factorId)) : null
                     )}
                     comments={itemComments}
                     extraEvidence={log?.extra_evidence ?? []}

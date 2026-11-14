@@ -46,6 +46,21 @@ export type LineItemInsert = {
   createdAt: string;
 };
 
+/** The physical unit a quantity column's header names ("kWh Used", "Natural Gas (therms)",
+ *  "Propane (gallons)"), and the activity that unit implies. Currency headers return null on
+ *  purpose: spend rows resolve through their category, not a unit. */
+function unitFromHeader(header: string): { unit: string; activity?: string } | null {
+  const h = header.toLowerCase();
+  if (/\bmwh\b|megawatt/.test(h)) return { unit: "MWh", activity: "electricity" };
+  if (/\bkwh\b|kilowatt/.test(h)) return { unit: "kWh", activity: "electricity" };
+  if (/therm/.test(h)) return { unit: "therms", activity: "natural gas" };
+  if (/gallon/.test(h)) {
+    const fuel = /propane/.test(h) ? "propane" : /diesel/.test(h) ? "diesel" : /gasoline|petrol/.test(h) ? "gasoline" : undefined;
+    return { unit: "gallons", activity: fuel };
+  }
+  return null;
+}
+
 /** Maps raw spreadsheet rows through a confirmed column map to normalized rows. */
 export function applyProfile(
   rows: Record<string, string>[],
@@ -53,14 +68,27 @@ export function applyProfile(
 ): NormalizedRow[] {
   return rows.map((row) => {
     const normalized: NormalizedRow = {};
+    let quantityHeader: string | null = null;
     for (const [theirHeader, ourField] of Object.entries(columnMap)) {
       if (!ourField || !(theirHeader in row)) continue;
       const raw = row[theirHeader]?.trim() ?? "";
       if (ourField === "quantity" || ourField === "scope") {
         const n = parseFloat(raw);
-        if (!isNaN(n)) (normalized as Record<string, unknown>)[ourField] = n;
+        if (!isNaN(n)) {
+          (normalized as Record<string, unknown>)[ourField] = n;
+          if (ourField === "quantity") quantityHeader = theirHeader;
+        }
       } else {
         (normalized as Record<string, unknown>)[ourField] = raw || undefined;
+      }
+    }
+    // A file with no unit column often names the unit in the quantity header ("kWh Used").
+    // Without this the row keeps a bare number and lands unmapped as spend.
+    if (quantityHeader && normalized.quantity !== undefined && !normalized.unit) {
+      const hint = unitFromHeader(quantityHeader);
+      if (hint) {
+        normalized.unit = hint.unit;
+        if (!normalized.activity_type && hint.activity) normalized.activity_type = hint.activity;
       }
     }
     return normalized;

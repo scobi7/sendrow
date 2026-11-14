@@ -17,8 +17,9 @@ export function siteLabel(loc: Pick<Location, "name" | "city" | "address">): str
 }
 
 /** Creates the site's data-request link, or re-sends the existing open one
- *  (renewing it if expired). Returns the live token, or null on email-less
- *  send (the caller surfaces the link for manual sharing). */
+ *  (renewing it if expired). Returns the live token, and whether the email
+ *  actually went out (false when there is no contact email or the send failed;
+ *  the caller surfaces the link for manual sharing). */
 export async function sendSiteLink(opts: {
   companyId: string;
   location: Location;
@@ -28,7 +29,7 @@ export async function sendSiteLink(opts: {
   dueDate?: string | null;
   periodLabel?: string | null;
   message?: string | null; // optional personal note from whoever's sending the link
-}): Promise<{ token: string; created: boolean }> {
+}): Promise<{ token: string; created: boolean; emailed: boolean }> {
   const { companyId, location } = opts;
   const label = siteLabel(location);
 
@@ -84,6 +85,7 @@ export async function sendSiteLink(opts: {
     });
   }
 
+  let emailed = false;
   if (location.contactEmail) {
     const recipients = location.contactEmail.split(",").map((e) => e.trim()).filter(Boolean);
     const brand = await getBrandForCompany(companyId);
@@ -97,6 +99,7 @@ export async function sendSiteLink(opts: {
       brand ? { brandName: brand.brandName, replyTo: brand.replyTo } : null,
       opts.message
     );
+    emailed = sent;
     logEvent({
       companyId,
       actor: "system",
@@ -109,5 +112,5 @@ export async function sendSiteLink(opts: {
     });
   }
 
-  return { token, created };
+  return { token, created, emailed };
 }

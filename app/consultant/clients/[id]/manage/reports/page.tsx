@@ -4,7 +4,10 @@ import { notFound, redirect } from "next/navigation";
 import { currentUser } from "@/lib/auth";
 import { findOwnedLink } from "@/lib/guards";
 import { loadCompany } from "@/lib/store";
-import { totals } from "@/lib/calc";
+import { combinedTotals } from "@/lib/calc";
+import { emissionLineItems } from "@/lib/db/schema";
+import { db } from "@/lib/db";
+import { and, eq } from "drizzle-orm";
 import { canGenerateReport, progressPercent } from "@/lib/progress";
 import { PageHeader } from "@/components/ui";
 import { questionnaireMapping, QUESTIONNAIRE_FORMATS } from "@/lib/mapping";
@@ -25,12 +28,20 @@ export default async function ManageReports({
   if (!link) notFound();
 
   const company = await loadCompany(id);
-  const t = totals(company);
+  // Same rows the PDF route reads (mapped line items), so these totals match the PDF.
+  const mappedItems = await db
+    .select()
+    .from(emissionLineItems)
+    .where(and(eq(emissionLineItems.companyId, id), eq(emissionLineItems.status, "mapped")));
+  const t = combinedTotals(
+    company,
+    mappedItems.map((i) => ({ scope: i.scope, category: i.category, co2eKg: i.co2eKg, rawValue: i.rawValue, rawUnit: i.rawUnit, status: i.status }))
+  );
   const ready = canGenerateReport(company);
   const pct = progressPercent(company);
   const s = company.sectionStatus;
   const format = rawFormat && QUESTIONNAIRE_FORMATS.includes(rawFormat) ? rawFormat : null;
-  const mapping = format ? questionnaireMapping(company, format) : null;
+  const mapping = format ? questionnaireMapping(company, format, t) : null;
   const base = `/consultant/clients/${id}/manage`;
 
   const boundGenerate = consultantGenerateReport.bind(null, id);

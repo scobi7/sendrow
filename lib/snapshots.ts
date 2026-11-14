@@ -12,9 +12,32 @@ export type SnapshotTotals = {
   total: number;
 };
 
+/** JSON with object keys sorted at every depth and arrays kept in order.
+ *  Postgres jsonb does not keep key order, so the hash must not depend on it. */
+export function canonicalJson(value: unknown): string {
+  return JSON.stringify(canonicalize(value));
+}
+
+function canonicalize(value: unknown): unknown {
+  if (value !== null && typeof value === "object" && typeof (value as { toJSON?: unknown }).toJSON === "function") {
+    return canonicalize((value as { toJSON: () => unknown }).toJSON());
+  }
+  if (Array.isArray(value)) return value.map(canonicalize);
+  if (value !== null && typeof value === "object") {
+    const out: Record<string, unknown> = {};
+    for (const key of Object.keys(value).sort()) {
+      const v = (value as Record<string, unknown>)[key];
+      if (v === undefined) continue;
+      out[key] = canonicalize(v);
+    }
+    return out;
+  }
+  return value;
+}
+
 export function snapshotHash(totals: SnapshotTotals, lineItems: unknown[]): string {
   return createHash("sha256")
-    .update(JSON.stringify({ totals, lineItems }))
+    .update(canonicalJson({ totals, lineItems }))
     .digest("hex");
 }
 

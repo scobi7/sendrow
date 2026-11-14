@@ -29,7 +29,7 @@ export default defineConfig({
     port: E2E_PORT,
     // E2E_REUSE_SERVER=1 reuses a server already started with `npm run e2e:serve` (same test database).
     reuseExistingServer: process.env.E2E_REUSE_SERVER === "1",
-    timeout: 180_000,
+    timeout: 600_000, // includes `next build`
     stdout: "pipe",
     stderr: "pipe",
   },

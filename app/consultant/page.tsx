@@ -3,9 +3,9 @@ import Link from "next/link";
 import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { companies, consultantClients, dataRequests, intakeSessions, snapshots } from "@/lib/db/schema";
-import { and, desc, eq, inArray, isNull } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, isNotNull, isNull } from "drizzle-orm";
 import { StatCard, StatusBadge, CompletenessMeter } from "@/components/workflow";
-import { archiveClient, deleteClient } from "@/lib/actions";
+import { archiveClient, deleteClient, unarchiveClient } from "@/lib/actions";
 import { DeleteClientButton } from "./delete-client-button";
 import { UndoToast } from "@/components/undo-toast";
 import { workflowStatus, nextDueDate, completenessPercent, type WorkflowStatus } from "@/lib/client-status";
@@ -67,6 +67,14 @@ export default async function ConsultantDashboard({
     .from(consultantClients)
     .where(and(eq(consultantClients.consultantId, user.id), isNull(consultantClients.archivedAt)));
   const ids = links.map((l) => l.companyId);
+
+  // Archived clients stay restorable after the Undo toast is gone.
+  const archived = await db
+    .select({ companyId: companies.id, name: companies.name })
+    .from(consultantClients)
+    .innerJoin(companies, eq(companies.id, consultantClients.companyId))
+    .where(and(eq(consultantClients.consultantId, user.id), isNotNull(consultantClients.archivedAt)))
+    .orderBy(asc(companies.name));
 
   const [rows, requests, sessions, snapshotRows] = ids.length
     ? await Promise.all([
@@ -236,6 +244,24 @@ export default async function ConsultantDashboard({
             </tbody>
           </table>
         </div>
+      )}
+
+      {archived.length > 0 && (
+        <details className="mt-6">
+          <summary className="cursor-pointer text-sm font-semibold" style={{ color: "var(--text-muted)" }}>
+            Archived clients ({archived.length})
+          </summary>
+          <ul className="card mt-3 list-none divide-y p-0" style={{ borderColor: "var(--divider)" }}>
+            {archived.map((a) => (
+              <li key={a.companyId} className="flex items-center justify-between gap-3 px-4 py-3 text-sm">
+                <span style={{ color: "var(--text)" }}>{a.name}</span>
+                <form action={unarchiveClient.bind(null, a.companyId)}>
+                  <button className="btn btn-secondary px-3 py-1 text-xs">Restore</button>
+                </form>
+              </li>
+            ))}
+          </ul>
+        </details>
       )}
 
       {undoTarget && <UndoToast companyId={undoTarget.companyId} name={undoTarget.name} />}

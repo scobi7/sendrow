@@ -1,5 +1,5 @@
 import { Company } from "./types";
-import { totals } from "./calc";
+import type { Totals } from "./calc";
 import { headcountMidpoint } from "./calc";
 
 /**
@@ -16,8 +16,9 @@ export interface MappingRow {
 
 const t = (n: number) => `${n.toLocaleString("en-US", { maximumFractionDigits: 2 })} tCO2e`;
 
-export function questionnaireMapping(company: Company, format: string): MappingRow[] {
-  const tot = totals(company);
+/** `tot` must be the company's combined totals (manual calcs plus line items),
+ *  the same figures the PDF and snapshots use. */
+export function questionnaireMapping(company: Company, format: string, tot: Totals): MappingRow[] {
   const inp = company.inputs;
   const employees = headcountMidpoint(company);
   const turnover =
