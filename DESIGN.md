@@ -1,8 +1,10 @@
 # DESIGN.md — UI rules for this project. Read before touching any UI.
 
-Reference: [one site, spread, object, or era this should feel like]
-Tone in three words: [e.g. quiet, precise, warm]
-Audience: [who, and what they are doing when they land here]
+Reference: greptile.com (wide bold type, the real product as the proof, handwritten notes pointing at it), built as direction 4c: one green, layered sheets, and a still 3D view of how one number is built from its bill and factor.
+Tone in three words: precise, calm, plain
+Audience: independent sustainability consultants (1 to 5 people) at a laptop between client deadlines, checking whether Sendrow can replace email and spreadsheets for collecting client data.
+
+Theme (approved 2026-11-13): every color is a step of one green, except amber for warnings and red for errors in the app. Ink #0D2A1E, accent #0A7346, page #EEF4F0, surfaces #FFFFFF and #DCEAE1, lines #C8DCCF. Archivo for everything, headings at normal width; Nanum Pen Script for handwritten notes on the homepage only. One radius, 10px. Shadows at most 24px blur. Tokens live in `app/globals.css`; the 3D stack (a deliberate exception to the tilted-3D ban, asked for by name) stays on the homepage.
 
 ## Process
 

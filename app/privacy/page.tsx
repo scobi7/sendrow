@@ -1,15 +1,11 @@
-import Link from "next/link";
-import { Logo } from "@/components/ui";
+import { LandingNav } from "@/components/landing-nav";
+import { LandingFooter } from "@/components/landing-footer";
 
 export default function PrivacyPage() {
   return (
-    <main style={{ background: "var(--bg)", minHeight: "100vh" }}>
-      <header
-        className="flex items-center justify-between px-8 py-5"
-        style={{ background: "var(--surface)", borderBottom: "1px solid var(--divider)" }}
-      >
-        <Link href="/"><Logo /></Link>
-      </header>
+    <>
+      <LandingNav />
+      <main style={{ background: "var(--bg)", minHeight: "100vh" }}>
       <article className="mx-auto max-w-3xl px-6 py-16" style={{ color: "var(--text)" }}>
         <h1 className="text-3xl font-black font-display" style={{ color: "var(--text)" }}>Privacy Policy</h1>
         <p className="mt-2 text-sm" style={{ color: "var(--text-muted)" }}>Last updated: November 13, 2026</p>
@@ -54,6 +50,8 @@ export default function PrivacyPage() {
           Questions about this policy? Email <a href="mailto:contact@sendrow.app" style={{ color: "var(--primary)" }}>contact@sendrow.app</a>.
         </p>
       </article>
-    </main>
+      </main>
+      <LandingFooter />
+    </>
   );
 }

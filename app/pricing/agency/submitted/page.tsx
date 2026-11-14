@@ -16,10 +16,10 @@ export default function AgencySubmittedPage() {
           </svg>
         </div>
         <h1 className="text-3xl font-black font-display" style={{ color: "var(--text)" }}>
-          Got it - thanks
+          Thanks, we have your request
         </h1>
         <p className="mt-4 text-base leading-relaxed" style={{ color: "var(--text-muted)" }}>
-          We received your quote request and will get back to you within one business day. In the meantime, feel free to look around.
+          We received your quote request and will get back to you. In the meantime, feel free to look around.
         </p>
         <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
           <Link href="/for-consultants" className="btn btn-primary px-6">

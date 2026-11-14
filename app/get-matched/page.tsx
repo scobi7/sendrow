@@ -1,5 +1,5 @@
-import Link from "next/link";
-import { Logo } from "@/components/ui";
+import { LandingNav } from "@/components/landing-nav";
+import { LandingFooter } from "@/components/landing-footer";
 import { submitReferralLead } from "@/lib/actions";
 import { SubmitButton } from "@/components/submit-button";
 
@@ -11,8 +11,9 @@ export default async function GetMatchedPage({
   const { submitted, error } = await searchParams;
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-lg flex-col px-6 py-16" style={{ background: "var(--bg)" }}>
-      <div className="mb-10 flex justify-center"><Link href="/"><Logo /></Link></div>
+    <>
+      <LandingNav />
+      <main className="mx-auto flex min-h-screen max-w-lg flex-col px-6 py-16" style={{ background: "var(--bg)" }}>
 
       {submitted ? (
         <div className="card text-center">
@@ -64,6 +65,8 @@ export default async function GetMatchedPage({
           </form>
         </>
       )}
-    </main>
+      </main>
+      <LandingFooter />
+    </>
   );
 }

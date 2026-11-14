@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Logo } from "@/components/ui";
+import { LandingNav } from "@/components/landing-nav";
+import { LandingFooter } from "@/components/landing-footer";
 
 export const metadata = { title: "Security: Sendrow" };
 
@@ -22,7 +23,7 @@ const SECTIONS: [string, string][] = [
   ],
   [
     "Your data is yours",
-    "Your consultant can export everything (inputs, calculations, the full audit trail and the original evidence files) as a ZIP, anytime, no questions asked. A self-serve export for suppliers with their own account is coming as part of the supplier portal upgrade. To request deletion, email us. We remove your data from production within 30 days and confirm by email.",
+    "Your consultant can export everything (inputs, calculations, the full audit trail and the original evidence files) as a ZIP, anytime, no questions asked. A self-serve export for suppliers with their own account is coming as part of the supplier portal upgrade. To request deletion, email us.",
   ],
   [
     "Subprocessors",
@@ -32,8 +33,9 @@ const SECTIONS: [string, string][] = [
 
 export default function SecurityPage() {
   return (
-    <main className="mx-auto max-w-2xl px-6 py-16" style={{ background: "var(--bg)" }}>
-      <Link href="/"><Logo /></Link>
+    <>
+      <LandingNav />
+      <main className="mx-auto max-w-2xl px-6 py-16" style={{ background: "var(--bg)" }}>
       <h1 className="mt-10 text-3xl font-extrabold font-display" style={{ color: "var(--text)" }}>Security overview</h1>
       <p className="mt-3 text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>
         You trust us with utility bills and spend data. Here is exactly how that data is handled, before you have to ask. Questions:{" "}
@@ -52,6 +54,8 @@ export default function SecurityPage() {
       <p className="mt-12 text-xs" style={{ color: "var(--text-muted)" }}>
         See also: <Link href="/dpa" className="underline">Data Processing Agreement template</Link> · <Link href="/privacy" className="underline">Privacy policy</Link> · <Link href="/terms" className="underline">Terms</Link>
       </p>
-    </main>
+      </main>
+      <LandingFooter />
+    </>
   );
 }

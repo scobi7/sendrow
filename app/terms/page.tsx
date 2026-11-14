@@ -1,15 +1,12 @@
 import Link from "next/link";
-import { Logo } from "@/components/ui";
+import { LandingNav } from "@/components/landing-nav";
+import { LandingFooter } from "@/components/landing-footer";
 
 export default function TermsPage() {
   return (
-    <main style={{ background: "var(--bg)", minHeight: "100vh" }}>
-      <header
-        className="flex items-center justify-between px-8 py-5"
-        style={{ background: "var(--surface)", borderBottom: "1px solid var(--divider)" }}
-      >
-        <Link href="/"><Logo /></Link>
-      </header>
+    <>
+      <LandingNav />
+      <main style={{ background: "var(--bg)", minHeight: "100vh" }}>
       <article className="mx-auto max-w-3xl px-6 py-16 prose" style={{ color: "var(--text)" }}>
         <h1 className="text-3xl font-black font-display" style={{ color: "var(--text)" }}>Terms of Service</h1>
         <p className="mt-2 text-sm" style={{ color: "var(--text-muted)" }}>Last updated: November 13, 2026</p>
@@ -49,6 +46,8 @@ export default function TermsPage() {
           Questions about these terms? Email <a href="mailto:contact@sendrow.app" style={{ color: "var(--primary)" }}>contact@sendrow.app</a>.
         </p>
       </article>
-    </main>
+      </main>
+      <LandingFooter />
+    </>
   );
 }

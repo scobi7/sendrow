@@ -61,17 +61,6 @@ export default function ForConsultants() {
         }}
       >
         <div className="relative z-10 w-full max-w-5xl">
-          <div
-            className="mb-8 inline-flex items-center gap-2 rounded px-4 py-1.5 text-xs font-semibold"
-            style={{
-              border: "1px solid rgba(34,168,84,0.35)",
-              background: "rgba(34,197,94,0.1)",
-              color: "var(--primary)",
-            }}
-          >
-            For ESG consultants
-          </div>
-
           <h1
             className="mx-auto max-w-3xl font-display text-5xl font-extrabold leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl"
             style={{ color: "var(--text)" }}
@@ -208,9 +197,6 @@ export default function ForConsultants() {
       {/* Features */}
       <section id="features" className="px-6 py-24" style={{ background: "var(--surface)" }}>
         <div className="mx-auto max-w-5xl">
-          <p className="mb-3 text-xs font-bold uppercase tracking-widest" style={{ color: "var(--primary)" }}>
-            Features
-          </p>
           <h2
             className="font-display text-3xl font-extrabold tracking-tight sm:text-4xl"
             style={{ color: "var(--text)" }}
@@ -243,9 +229,6 @@ export default function ForConsultants() {
         <div className="mx-auto max-w-5xl">
           <div className="grid items-center gap-16 lg:grid-cols-2">
             <div>
-              <p className="mb-3 text-xs font-bold uppercase tracking-widest" style={{ color: "var(--primary)" }}>
-                Client onboarding
-              </p>
               <h2
                 className="font-display text-3xl font-extrabold tracking-tight sm:text-4xl"
                 style={{ color: "var(--text)" }}
@@ -316,9 +299,6 @@ export default function ForConsultants() {
       {/* How it works */}
       <section id="how-it-works" className="px-6 py-24">
         <div className="mx-auto max-w-5xl">
-          <p className="mb-3 text-xs font-bold uppercase tracking-widest" style={{ color: "var(--primary)" }}>
-            How it works
-          </p>
           <h2
             className="font-display text-3xl font-extrabold tracking-tight sm:text-4xl"
             style={{ color: "var(--text)" }}
@@ -364,9 +344,6 @@ export default function ForConsultants() {
         <div className="mx-auto max-w-5xl">
           <div className="max-w-2xl">
             <div>
-              <p className="mb-3 text-xs font-bold uppercase tracking-widest" style={{ color: "var(--primary)" }}>
-                Who we built this for
-              </p>
               <h2
                 className="font-display text-3xl font-extrabold tracking-tight sm:text-4xl"
                 style={{ color: "var(--text)" }}

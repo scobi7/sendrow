@@ -1,12 +1,14 @@
 import Link from "next/link";
-import { Logo } from "@/components/ui";
+import { LandingNav } from "@/components/landing-nav";
+import { LandingFooter } from "@/components/landing-footer";
 
 export const metadata = { title: "Data Processing Agreement: Sendrow" };
 
 export default function DpaPage() {
   return (
-    <main className="mx-auto max-w-2xl px-6 py-16" style={{ background: "var(--bg)" }}>
-      <Link href="/"><Logo /></Link>
+    <>
+      <LandingNav />
+      <main className="mx-auto max-w-2xl px-6 py-16" style={{ background: "var(--bg)" }}>
       <div className="mt-6 rounded-lg px-4 py-2 text-xs" style={{ background: "var(--warning-tint)", color: "var(--warning)" }}>
         Template for review. Execute a signed copy per engagement. Not legal advice.
       </div>
@@ -37,6 +39,8 @@ export default function DpaPage() {
           <p>Sendrow provides calculation and document-production tooling. Professional judgment on methodology, materiality, and regulatory interpretation remains with the Consultant or the Client&rsquo;s qualified advisor.</p>
         </section>
       </div>
-    </main>
+      </main>
+      <LandingFooter />
+    </>
   );
 }

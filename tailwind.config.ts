@@ -39,6 +39,10 @@ const config: Config = {
         },
       },
       borderRadius: {
+        lg: "10px",
+        xl: "10px",
+        "2xl": "10px",
+        "3xl": "10px",
         "canopy-lg": "var(--radius-lg)",
         "canopy-sm": "var(--radius-sm)",
       },

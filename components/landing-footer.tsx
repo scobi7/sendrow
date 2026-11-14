@@ -1,117 +1,79 @@
 import Link from "next/link";
-import { Logo } from "./ui";
+import { LandingBrand } from "./landing-nav";
 
-/** "default": light footer with the full product and legal link set (marketing pages).
- *  "ink": the dark homepage band - tagline, short link row, no margin above. */
-export function LandingFooter({ variant = "default" }: { variant?: "default" | "ink" }) {
+const GROUPS: { title: string; links: { href: string; label: string }[] }[] = [
+  {
+    title: "Product",
+    links: [
+      { href: "/how-it-works", label: "How it works" },
+      { href: "/for-consultants", label: "For consultants" },
+      { href: "/get-matched", label: "Get matched" },
+      { href: "/pricing", label: "Pricing" },
+      { href: "/demo", label: "Book a demo" },
+    ],
+  },
+  {
+    title: "Legal",
+    links: [
+      { href: "/security", label: "Security" },
+      { href: "/privacy", label: "Privacy" },
+      { href: "/terms", label: "Terms" },
+      { href: "/dpa", label: "DPA template" },
+    ],
+  },
+];
+
+/** Light footer with the full link set and contact email, shared by the homepage and marketing pages. */
+export function LandingFooter() {
   const year = new Date().getFullYear();
   const support = process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "contact@sendrow.app";
 
-  if (variant === "ink") {
-    return (
-      <footer className="px-6 py-14" style={{ background: "var(--ink-band)" }}>
-        <div className="mx-auto max-w-4xl">
-          <p className="font-display text-xl font-semibold leading-snug" style={{ color: "var(--ink-band-text)" }}>
-            One audited inventory in.
-            <br />
-            Every buyer and regulator format out.
-          </p>
-          <div
-            className="mt-8 flex flex-wrap items-center justify-between gap-6"
-            style={{ borderTop: "1px solid rgba(233,239,233,0.15)", paddingTop: "1.5rem" }}
-          >
-            <span className="font-display text-base font-bold" style={{ color: "var(--ink-band-text)" }}>
-              Sendrow
-            </span>
-            <p className="text-xs" style={{ color: "rgba(233,239,233,0.45)" }}>
-              &copy; {year} Sendrow. Built in California.
-            </p>
-            <div className="flex gap-6">
-              {[
-                ["Sign in", "/login"],
-                ["Request demo", "/demo"],
-                ["Security", "/security"],
-              ].map(([label, href]) => (
-                <Link
-                  key={href}
-                  href={href}
-                  className="text-xs transition-opacity hover:opacity-80"
-                  style={{ color: "rgba(233,239,233,0.6)" }}
-                >
-                  {label}
-                </Link>
-              ))}
-            </div>
-          </div>
-        </div>
-      </footer>
-    );
-  }
-
   return (
-    <footer
-      className="mt-24 border-t"
-      style={{ borderColor: "var(--divider)", background: "var(--surface)" }}
-    >
-      <div className="mx-auto max-w-6xl px-6 py-12">
-        <div className="flex flex-col gap-8 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <Logo />
-            <p className="mt-3 max-w-xs text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>
-              Sendrow keeps a supplier's emissions information in one place. It is collected once, kept with proof attached, and shared in any format asked.
-            </p>
-          </div>
-
-          <div className="flex gap-16">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>Product</p>
-              <ul className="mt-3 space-y-2">
-                {[
-                  ["How it works", "/how-it-works"],
-                  ["For consultants", "/for-consultants"],
-                  ["Get matched (companies)", "/get-matched"],
-                  ["Pricing", "/pricing"],
-                  ["Request a demo", "/demo"],
-                ].map(([label, href]) => (
-                  <li key={href}>
-                    <Link href={href} className="text-sm transition-colors hover:opacity-80" style={{ color: "var(--text-muted)" }}>
-                      {label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>Legal</p>
-              <ul className="mt-3 space-y-2">
-                {[
-                  ["Terms of Service", "/terms"],
-                  ["Privacy Policy", "/privacy"],
-                  ["Security", "/security"],
-                  ["DPA template", "/dpa"],
-                ].map(([label, href]) => (
-                  <li key={href}>
-                    <Link href={href} className="text-sm transition-colors hover:opacity-80" style={{ color: "var(--text-muted)" }}>
-                      {label}
-                    </Link>
-                  </li>
-                ))}
-                <li>
-                  <a href={`mailto:${support}`} className="text-sm transition-colors hover:opacity-80" style={{ color: "var(--text-muted)" }}>
-                    {support}
-                  </a>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-10 border-t pt-6" style={{ borderColor: "var(--divider)" }}>
-          <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-            © {year} Sendrow. All rights reserved.
+    <footer className="mt-24 px-4 py-12 sm:px-10 sm:py-14" style={{ background: "var(--bg)", borderTop: "1px solid var(--divider)", color: "var(--text)" }}>
+      <div className="mx-auto flex max-w-[1320px] flex-col gap-10 sm:flex-row sm:justify-between sm:gap-16">
+        <div>
+          <Link href="/" aria-label="Sendrow, home">
+            <LandingBrand />
+          </Link>
+          <p className="mt-3 text-sm" style={{ color: "var(--text-muted)" }}>
+            Sendrow, {year}
           </p>
         </div>
+        <nav aria-label="Footer" className="grid grid-cols-2 gap-x-10 gap-y-8 sm:flex sm:gap-14">
+          {GROUPS.map((g) => (
+            <div key={g.title}>
+              <p className="text-sm font-semibold" style={{ color: "var(--text-muted)" }}>
+                {g.title}
+              </p>
+              <ul className="mt-3 space-y-2.5">
+                {g.links.map((l) => (
+                  <li key={l.href}>
+                    <Link href={l.href} className="text-[15px] hover:underline hover:underline-offset-4">
+                      {l.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+          <div>
+            <p className="text-sm font-semibold" style={{ color: "var(--text-muted)" }}>
+              Account
+            </p>
+            <ul className="mt-3 space-y-2.5">
+              <li>
+                <Link href="/login" className="text-[15px] hover:underline hover:underline-offset-4">
+                  Sign in
+                </Link>
+              </li>
+              <li>
+                <a href={`mailto:${support}`} className="text-[15px] hover:underline hover:underline-offset-4">
+                  {support}
+                </a>
+              </li>
+            </ul>
+          </div>
+        </nav>
       </div>
     </footer>
   );

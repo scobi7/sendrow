@@ -3,36 +3,36 @@
 @tailwind utilities;
 
 :root {
-  /* Ledger (2026-11-13): paper, ink, one forest green. No glass, no glow, flat fills. */
-  --bg:             #FAF9F6;
+  /* Theme 4c (2026-11-13): one green, ink on paper, flat fills. Warnings stay amber, errors stay red. */
+  --bg:             #EEF4F0;
   --surface:        #FFFFFF;
   --card:           #FFFFFF;
   --card-strong:    #FFFFFF;
-  --text:           #161D18;
-  --text-muted:     #5F6B62;
-  --primary:        #1D5A36;
-  --primary-strong: #174A2C;
-  --primary-tint:   #EEF3EF;
-  --chip-border:    #DCE5DE;
-  --green:          #1D5A36;
-  --emerald:        #2E7D4F;
-  --mint:           #A9C9B5;
-  --teal:           #2E7D4F;
-  --accent:         #B4532A;
-  --accent-tint:    #F8EDE7;
-  --ink-band:       #122619;
-  --ink-band-text:  #EEF3EF;
-  --track-bg:       #ECEAE3;
+  --text:           #0D2A1E;
+  --text-muted:     #3D5A4C;
+  --primary:        #0A7346;
+  --primary-strong: #08603B;
+  --primary-tint:   #DCEAE1;
+  --chip-border:    #C8DCCF;
+  --green:          #0A7346;
+  --emerald:        #0A7346;
+  --mint:           #A9CBB7;
+  --teal:           #0A7346;
+  --accent:         #0D2A1E;
+  --accent-tint:    #DCEAE1;
+  --ink-band:       #0D2A1E;
+  --ink-band-text:  #EEF4F0;
+  --track-bg:       #DCEAE1;
   --scope1:         #1D5A36;
   --scope2:         #4F8A63;
   --scope3:         #9DBFA8;
-  --divider:        #E6E2D8;
-  --divider-strong: #D9D4C7;
-  --bg-subtle:      #F4F2EC;
-  --status-green:   #2E7D4F;
-  --success-bg:     #EEF6F0;
-  --success-border: #CFE3D5;
-  --success-text:   #1F6B3F;
+  --divider:        #C8DCCF;
+  --divider-strong: #A9C4B3;
+  --bg-subtle:      #E4EEE7;
+  --status-green:   #0A7346;
+  --success-bg:     #E6F2EA;
+  --success-border: #C8DCCF;
+  --success-text:   #0B6B42;
   --warning:        #B45309;
   --warning-strong: #92400E;
   --warning-tint:   #FEF7EC;
@@ -40,12 +40,13 @@
   --danger:         #DC2626;
   --danger-tint:    #FEF1F1;
   --danger-border:  #F8D7D7;
-  --neutral-muted:  #737A74;
-  --radius-lg:      8px;
-  --radius-sm:      6px;
-  --shadow-card:    0 1px 2px rgba(22, 29, 24, 0.05);
+  --neutral-muted:  #5B7266;
+  --radius-lg:      10px;
+  --radius-sm:      10px;
+  --shadow-card:    0 1px 2px rgba(13, 42, 30, 0.06), 0 8px 24px rgba(13, 42, 30, 0.06);
+  --shadow-raised:  0 1px 2px rgba(13, 42, 30, 0.08), 0 12px 24px rgba(13, 42, 30, 0.10);
 
-  /* Fonts: Fraunces (display), Instrument Sans (body), IBM Plex Mono (data), injected by layout.tsx via next/font */
+  /* Fonts: Archivo for body, display and data, loaded once in layout.tsx via next/font */
 }
 
 html {
@@ -64,9 +65,11 @@ body {
   background: var(--bg);
 }
 
-/* Headings: tight tracking */
-h1, h2, h3 {
+/* Headings: Archivo at normal width, tight tracking, open word spacing */
+h1, h2, h3, .font-display {
+  font-stretch: 100%;
   letter-spacing: -0.015em;
+  word-spacing: 0.05em;
   text-wrap: balance;
 }
 
@@ -126,7 +129,7 @@ section[id] {
 .input:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(29, 90, 54, 0.12);
+  box-shadow: 0 0 0 3px rgba(11, 122, 75, 0.12);
 }
 
 .btn {
@@ -201,6 +204,7 @@ section[id] {
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
 }
 
 /* Mono chip: counts, cycles, statuses */
@@ -213,6 +217,7 @@ section[id] {
   padding: 0.2rem 0.45rem;
   border-radius: 4px;
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
 /* Success badge */
@@ -225,6 +230,7 @@ section[id] {
   border: 1px solid var(--success-border);
   font-family: var(--font-data), monospace;
   font-size: 11px;
+  font-variant-numeric: tabular-nums;
 }
 
 /* Progress bars: flat track with a solid green fill */

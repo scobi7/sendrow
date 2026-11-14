@@ -1,29 +1,14 @@
 import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata, Viewport } from "next";
-import { Instrument_Sans, Fraunces, IBM_Plex_Mono } from "next/font/google";
+import { Archivo } from "next/font/google";
 import "./globals.css";
 
-// "The Ledger" type system (docs/design-direction.md):
-// serif speaks (Fraunces, headlines), sans works (Instrument Sans, UI/body),
-// mono counts (IBM Plex Mono, every figure)
-const instrumentSans = Instrument_Sans({
+// One type family: Archivo (wdth axis loaded so font-stretch works).
+// --font-body is set by the class below; display and data alias it.
+const archivo = Archivo({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  axes: ["wdth"],
   variable: "--font-body",
-  display: "swap",
-});
-
-const fraunces = Fraunces({
-  subsets: ["latin"],
-  weight: ["500", "600", "700"],
-  variable: "--font-display",
-  display: "swap",
-});
-
-const ibmPlexMono = IBM_Plex_Mono({
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
-  variable: "--font-data",
   display: "swap",
 });
 
@@ -41,10 +26,15 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
+const archivoAliases = {
+  "--font-display": "var(--font-body)",
+  "--font-data": "var(--font-body)",
+} as React.CSSProperties;
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <ClerkProvider>
-      <html lang="en" className={`${instrumentSans.variable} ${fraunces.variable} ${ibmPlexMono.variable}`}>
+      <html lang="en" className={archivo.variable} style={archivoAliases}>
         <body>{children}</body>
       </html>
     </ClerkProvider>
