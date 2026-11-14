@@ -107,7 +107,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
             <h1 className="text-2xl font-bold font-display" style={{ color: "var(--text)" }}>{companyRow.name}</h1>
             <p className="mt-0.5 text-sm" style={{ color: "var(--text-muted)" }}>
               {companyRow.industry ?? "Industry not set"} ·{" "}
-              {companyRow.headcountRange ? `${companyRow.headcountRange.replace(/_/g, "–")} employees` : "headcount not set"} ·{" "}
+              {companyRow.headcountRange ? `${companyRow.headcountRange.replace("under_", "under ").replace(/_/g, " to ")} employees` : "headcount not set"} ·{" "}
               {STATUS_META[status].label}
               {due && ` · due ${fmtShortDateYear(due + "T12:00:00")}`}
             </p>
@@ -181,7 +181,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
             <div className="px-5 py-3" style={{ borderBottom: "1px solid var(--divider)", background: companyRow.clientContactEmail ? "transparent" : "var(--warning-tint)" }}>
               {!companyRow.clientContactEmail && (
                 <p className="mb-2 text-xs font-medium" style={{ color: "var(--warning-strong)" }}>
-                  No supplier contact on file - requests and reminders can&apos;t be emailed.
+                  No supplier contact on file. Requests and reminders can&apos;t be emailed.
                 </p>
               )}
               <form action={updateClientContact.bind(null, id)} className="flex flex-wrap items-center gap-2">
@@ -193,9 +193,9 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
 
             {requests.length === 0 ? (
               <p className="px-5 py-5 text-sm" style={{ color: "var(--text-muted)" }}>
-                No requests yet - {" "}
+                No requests yet. {" "}
                 <Link href={`/consultant/requests/new?client=${id}`} className="underline" style={{ color: "var(--primary)" }}>
-                  send the first one
+                  Send the first one
                 </Link>
                 .
               </p>
@@ -234,7 +234,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
                       {checklist.filter((c) => c.stuckNote && c.status !== "received").map((c) => (
                         <div key={c.id} className="mt-2 rounded-lg px-3 py-2.5" style={{ background: "var(--danger-tint)" }}>
                           <p className="text-xs" style={{ color: "var(--danger)" }}>
-                            <strong>Flag - {c.label}:</strong> &ldquo;{c.stuckNote}&rdquo;
+                            <strong>Flag on {c.label}:</strong> &ldquo;{c.stuckNote}&rdquo;
                           </p>
                           {/* Reply history (BUG-8) so the consultant sees what they already sent */}
                           {(flagThreads.get(c.id)?.filter((m) => m.authorType === "consultant") ?? []).map((m) => (
@@ -250,15 +250,15 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
                               name="reply"
                               rows={1}
                               required
-                              placeholder="Answer the client - they'll see it on their upload page and by email"
+                              placeholder="Answer the client. They'll see it on their upload page and by email"
                               className="min-h-[34px] flex-1 rounded-lg px-2.5 py-1.5 text-xs"
                               style={{ background: "var(--card)", border: "1px solid var(--divider)", color: "var(--text)" }}
                             />
                             <button className="btn btn-primary px-3 py-1.5 text-xs">Reply</button>
                           </form>
                           <form action={resolveFlag.bind(null, id, req.id, c.id)} className="mt-1.5">
-                            <button className="text-xs underline" style={{ color: "var(--text-muted)" }}>
-                              Mark resolved - clears the flag, keeps the thread
+                            <button className="text-xs underline" style={{ color: "var(--text-muted)" }} title="Clears the flag and keeps the thread">
+                              Mark resolved
                             </button>
                           </form>
                         </div>
@@ -303,7 +303,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
             </div>
             {threadList.length === 0 ? (
               <p className="px-5 py-4 text-sm" style={{ color: "var(--text-muted)" }}>
-                No threads yet - comment on any line item in Review & Approve.
+                No threads yet. Comment on any line item in Review & Approve.
               </p>
             ) : (
               <div className="divide-y" style={{ borderColor: "var(--divider)" }}>
@@ -346,7 +346,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
                       <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full" style={{ background: "var(--emerald)" }} />
                       <p style={{ color: "var(--text)" }}>
                         <span className="font-data text-xs" style={{ color: "var(--text-muted)" }}>{fmtShortDateYear(e.ts)}</span>{" "}
- - {eventLabel(e.verb, e.subject)}
+{eventLabel(e.verb, e.subject)}
                       </p>
                     </div>
                   ))}
@@ -364,7 +364,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
           <div className="card h-fit">
             <h2 className="text-sm font-bold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>Review & Approve</h2>
             <p className="mt-2 text-xs" style={{ color: "var(--text-muted)" }}>
-              Every submitted figure, its receipt, and its math - approve to freeze a snapshot.
+              Every submitted number, its receipt, and its math. Approve to freeze a snapshot.
             </p>
             <Link href={`/consultant/clients/${id}/review`} className="btn btn-primary mt-3 w-full text-sm">
               Open review
@@ -377,10 +377,10 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
           <div className="card h-fit">
             <h2 className="text-sm font-bold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>Snapshots</h2>
             <p className="mt-2 text-xs" style={{ color: "var(--text-muted)" }}>
-              Frozen, dated versions - the only thing that ever gets shared.
+              Frozen, dated versions. They are the only thing that ever gets shared.
             </p>
             {snapshotList.length === 0 ? (
-              <p className="mt-3 text-xs" style={{ color: "var(--text-muted)" }}>None yet - approve a review to create one.</p>
+              <p className="mt-3 text-xs" style={{ color: "var(--text-muted)" }}>None yet. Approve a review to create one.</p>
             ) : (
               <div className="mt-3 space-y-2">
                 {snapshotList.slice(0, 5).map((snap) => {
@@ -423,13 +423,13 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
 /** Wireframe-style plain-language event lines. */
 function eventLabel(verb: string, subject: string): string {
   switch (verb) {
-    case "request.created": return `Request sent via magic link - ${subject}`;
-    case "request.renewed": return `Portal link renewed - ${subject}`;
+    case "request.created": return `Request sent via magic link: ${subject}`;
+    case "request.renewed": return `Portal link renewed: ${subject}`;
     case "upload.received": return `Supplier submitted ${subject}`;
-    case "session.approved": return `Upload approved - ${subject}`;
-    case "session.flagged": return `Changes requested - ${subject}`;
-    case "snapshot.created": return `Snapshot frozen - ${subject}`;
-    case "snapshot.shared": return `Snapshot shared - ${subject}`;
+    case "session.approved": return `Upload approved: ${subject}`;
+    case "session.flagged": return `Changes requested: ${subject}`;
+    case "snapshot.created": return `Snapshot frozen: ${subject}`;
+    case "snapshot.shared": return `Snapshot shared: ${subject}`;
     case "snapshot.approved_with_flags": return subject;
     case "review.changes_requested": return `Changes requested: "${subject}"`;
     case "comment.added": return `New comment on ${subject}`;

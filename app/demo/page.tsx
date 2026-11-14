@@ -8,7 +8,7 @@ import { LandingFooter } from "@/components/landing-footer";
 import { sendDemoRequest } from "@/lib/email";
 import { clientIp, checkRateLimit } from "@/lib/ratelimit";
 
-const CALENDLY_URL = process.env.NEXT_PUBLIC_CALENDLY_URL ?? "{CALENDLY_URL}";
+const CALENDLY_URL = process.env.NEXT_PUBLIC_CALENDLY_URL || "";
 
 export default async function DemoPage({
   searchParams,
@@ -58,16 +58,18 @@ export default async function DemoPage({
             </div>
             <h1 className="mt-5 text-xl font-bold font-display" style={{ color: "var(--text)" }}>Request received</h1>
             <p className="mt-2 text-sm" style={{ color: "var(--text-muted)" }}>
-              We&rsquo;ll be in touch shortly. Or pick a time right now:
+              {CALENDLY_URL ? "We'll be in touch shortly. Or pick a time right now:" : "We'll be in touch shortly."}
             </p>
-            <a
-              href={CALENDLY_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn btn-primary mt-6 inline-block text-sm px-6 py-2.5"
-            >
-              Book a time
-            </a>
+            {CALENDLY_URL && (
+              <a
+                href={CALENDLY_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn btn-primary mt-6 inline-block text-sm px-6 py-2.5"
+              >
+                Book a time
+              </a>
+            )}
             <div className="mt-4">
               <Link href="/" className="text-sm font-medium transition-opacity hover:opacity-70" style={{ color: "var(--text-muted)" }}>
                 Back to home
@@ -78,7 +80,7 @@ export default async function DemoPage({
           <div className="card">
             <h1 className="text-2xl font-bold font-display" style={{ color: "var(--text)" }}>Request a demo</h1>
             <p className="mt-2 text-sm" style={{ color: "var(--text-muted)" }}>
-              We&rsquo;ll show you how Sendrow handles a real questionnaire end to end. Usually 20 minutes.
+              We&rsquo;ll show you how Sendrow handles a real questionnaire end to end.
             </p>
             <form action={requestDemo} className="mt-8 space-y-4">
               <div>
@@ -97,18 +99,20 @@ export default async function DemoPage({
                 Request demo
               </SubmitButton>
             </form>
-            <p className="mt-4 text-center text-xs" style={{ color: "var(--text-muted)" }}>
-              Prefer to pick a time directly?{" "}
-              <a
-                href={CALENDLY_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="underline transition-opacity hover:opacity-70"
-                style={{ color: "var(--primary)" }}
-              >
-                Book on Calendly
-              </a>
-            </p>
+            {CALENDLY_URL && (
+              <p className="mt-4 text-center text-xs" style={{ color: "var(--text-muted)" }}>
+                Prefer to pick a time directly?{" "}
+                <a
+                  href={CALENDLY_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline transition-opacity hover:opacity-70"
+                  style={{ color: "var(--primary)" }}
+                >
+                  Book on Calendly
+                </a>
+              </p>
+            )}
             <p className="mt-2 text-center text-xs" style={{ color: "var(--text-muted)" }}>
               Rather sign up directly?{" "}
               <Link href="/signup" className="underline transition-opacity hover:opacity-70" style={{ color: "var(--primary)" }}>

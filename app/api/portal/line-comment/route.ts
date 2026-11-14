@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
 
   if (!token) return NextResponse.json({ error: "Missing link token" }, { status: 401 });
   if (!checkRateLimit(`portal:line-comment:${token}`, 30, 60 * 60 * 1000)) {
-    return NextResponse.json({ error: "Too many replies sent - try again later" }, { status: 429 });
+    return NextResponse.json({ error: "Too many replies sent. Try again later" }, { status: 429 });
   }
   if (!message) return NextResponse.json({ error: "Write a reply first" }, { status: 400 });
 

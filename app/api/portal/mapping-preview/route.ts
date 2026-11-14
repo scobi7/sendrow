@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
 
   if (!token) return NextResponse.json({ error: "Missing link token" }, { status: 401 });
   if (!checkRateLimit(`portal:mapping-preview:${token}`, 100, 60 * 60 * 1000)) {
-    return NextResponse.json({ error: "Too many requests - please wait a bit and try again" }, { status: 429 });
+    return NextResponse.json({ error: "Too many requests. Please wait a bit and try again" }, { status: 429 });
   }
   if (!headers.length) return NextResponse.json({ error: "No headers provided" }, { status: 400 });
 

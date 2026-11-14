@@ -5,7 +5,7 @@ import { Logo } from "./ui";
  *  "ink": the dark homepage band - tagline, short link row, no margin above. */
 export function LandingFooter({ variant = "default" }: { variant?: "default" | "ink" }) {
   const year = new Date().getFullYear();
-  const support = process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "contact@sendrow.app";
+  const support = process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "contact@sendrow.app";
 
   if (variant === "ink") {
     return (
@@ -58,7 +58,7 @@ export function LandingFooter({ variant = "default" }: { variant?: "default" | "
           <div>
             <Logo />
             <p className="mt-3 max-w-xs text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>
-              The one organized place where a supplier's emissions information lives: collected once, kept with proof attached, shared in any format asked.
+              Sendrow keeps a supplier's emissions information in one place. It is collected once, kept with proof attached, and shared in any format asked.
             </p>
           </div>
 

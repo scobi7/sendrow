@@ -69,7 +69,7 @@ export async function sendWelcomeEmail(name: string, email: string) {
     "Welcome to Sendrow",
     `<p>Hi ${firstName},</p>
 <p>Your Sendrow workspace is ready. Add your first client and send them a data request. They get a secure link, no account needed.</p>
-<p><a href="${APP_URL}/consultant">Go to your workspace →</a></p>
+<p><a href="${APP_URL}/consultant">Go to your workspace</a></p>
 <p>The Sendrow team</p>`
   );
 }
@@ -130,7 +130,7 @@ export async function sendDataRequestEmail(
 <blockquote><p>${description}</p></blockquote>
 ${dueDate ? `<p><strong>Due:</strong> ${dueDate}</p>` : ""}
 ${message ? `<p><em>"${escapeHtml(message)}"</em></p>` : ""}
-<p><a href="${link}">Open your secure upload link →</a></p>
+<p><a href="${link}">Open your secure upload link</a></p>
 <p>No account or password needed. The link is unique to you.</p>
 ${brand ? `<p>${brand.brandName}</p>` : ""}`,
     brand ? { fromName: brand.brandName, replyTo: brand.replyTo } : undefined
@@ -165,7 +165,7 @@ export async function sendPortalReminderEmail(
   const to = ccConsultant ? [...recipients, ccConsultant] : recipients;
   const urgency =
     reminder.tier === "overdue"
-      ? "This is now past due. A few minutes today keeps everything on track."
+      ? "This is now past due. Sending it today keeps everything on track."
       : reminder.tier === "due-0"
         ? "It's due today."
         : reminder.daysUntilDue !== null
@@ -179,8 +179,8 @@ export async function sendPortalReminderEmail(
     `<p>Hi ${firstName},</p>
 <p>Your reviewer is still waiting on data for <strong>${companyName}</strong>. ${urgency}</p>
 <blockquote><p>${description}</p></blockquote>
-<p><a href="${APP_URL}/portal/${portalToken}">Open your secure upload link →</a></p>
-<p>It usually takes just a few minutes. No account or password needed.</p>
+<p><a href="${APP_URL}/portal/${portalToken}">Open your secure upload link</a></p>
+<p>It usually takes a few minutes. No account or password needed.</p>
 ${brand ? `<p>${brand.brandName}</p>` : ""}`,
     brand ? { fromName: brand.brandName, replyTo: brand.replyTo } : undefined
   );
@@ -203,7 +203,7 @@ export async function sendSubmissionEmail(
     `<p>Hi ${firstName},</p>
 <p><strong>${companyName}</strong> submitted <strong>${filename}</strong>: ${imported} row${imported === 1 ? "" : "s"}${unmapped > 0 ? `, ${unmapped} flagged for your review` : ""}.</p>
 <p>${autoApproved ? "It auto-processed (mapping was confirmed by the uploader)." : "It's waiting in your review queue."}</p>
-<p><a href="${APP_URL}/consultant/clients/${companyId}">Open the client →</a></p>
+<p><a href="${APP_URL}/consultant/clients/${companyId}">Open the client</a></p>
 <p>The Sendrow team</p>`
   );
 }
@@ -222,7 +222,7 @@ export async function sendUploadNeedsReviewEmail(
     `<p>Hi ${firstName},</p>
 <p><strong>${companyName}</strong> uploaded <strong>${filename}</strong> and it was routed to your review queue.</p>
 ${unmappedCount > 0 ? `<p><strong>${unmappedCount}</strong> row${unmappedCount === 1 ? "" : "s"} could not be mapped to an emission factor and ${unmappedCount === 1 ? "is" : "are"} flagged for categorization.</p>` : ""}
-<p><a href="${APP_URL}/consultant">Open your dashboard →</a></p>
+<p><a href="${APP_URL}/consultant">Open your dashboard</a></p>
 <p>The Sendrow team</p>`
   );
 }
@@ -248,7 +248,7 @@ export async function sendRestatementEmail(
     `<p>Hello,</p>
 <p>Emissions data previously shared with you for <strong>${companyName}</strong> (&ldquo;${snapshotLabel}&rdquo;) has been corrected. Here is exactly what changed:</p>
 <table style="border-collapse:collapse;font-size:14px"><tr><th align="left" style="padding:4px 12px 4px 0">Figure</th><th align="left" style="padding:4px 12px">Previous</th><th align="left" style="padding:4px 12px">Corrected</th><th align="left">Change</th></tr>${rows}</table>
-${newLink ? `<p><a href="${newLink}">View the corrected version →</a></p>` : ""}
+${newLink ? `<p><a href="${newLink}">View the corrected version</a></p>` : ""}
 <p>The previous version remains on record; nothing was silently changed.</p>
 ${brand ? `<p>${brand.brandName}</p>` : ""}`,
     brand ? { fromName: brand.brandName, replyTo: brand.replyTo } : undefined
@@ -270,8 +270,8 @@ export async function sendClientStuckEmail(
     `<p>Hi ${firstName},</p>
 <p><strong>${companyName}</strong> hit a wall on the portal item <strong>&ldquo;${itemLabel}&rdquo;</strong> and asked for your help:</p>
 <blockquote><p>${message}</p></blockquote>
-<p>A quick reply usually keeps the response moving. Stuck items are where portals lose people.</p>
-<p><a href="${APP_URL}/consultant/clients/${companyId}">Reply from the client page →</a></p>
+<p>A quick reply usually keeps the response moving.</p>
+<p><a href="${APP_URL}/consultant/clients/${companyId}">Reply from the client page</a></p>
 <p>The Sendrow team</p>`
   );
 }
@@ -289,7 +289,7 @@ export async function sendNewLinkRequestEmail(
     `<p>Hi ${consultantName.split(" ")[0]},</p>
 <p><strong>${companyName}</strong> tried to open an expired upload link for the request
 &ldquo;${requestDescription}&rdquo; and asked for a new one.</p>
-<p><a href="${APP_URL}/consultant/clients/${companyId}">Open the client: the &ldquo;Renew link&rdquo; button is on the request →</a></p>
+<p><a href="${APP_URL}/consultant/clients/${companyId}">Open the client</a>. The &ldquo;Renew link&rdquo; button is on the request.</p>
 <p>The Sendrow team</p>`
   );
 }
@@ -308,9 +308,9 @@ export async function sendFlagReplyEmail(
     clientEmail,
     `Reply about “${itemLabel}”`,
     `<p>Hi ${clientName.split(" ")[0]},</p>
-<p>You asked about <strong>${itemLabel}</strong>. Here's the answer:</p>
+<p>You asked about <strong>${itemLabel}</strong>. Your reviewer replied:</p>
 <blockquote><p>${body}</p></blockquote>
-<p><a href="${APP_URL}/portal/${portalToken}">Open your secure upload link to continue →</a></p>
+<p><a href="${APP_URL}/portal/${portalToken}">Open your secure upload link to continue</a></p>
 ${brand ? `<p>${brand.brandName}</p>` : ""}`,
     brand ? { fromName: brand.brandName, replyTo: brand.replyTo } : undefined
   );
@@ -334,7 +334,7 @@ export async function sendCommentEmail(
     `<p>Hi ${clientName.split(" ")[0]},</p>
 <p>Your reviewer has a question about <strong>${lineLabel}</strong>:</p>
 <blockquote><p>${body}</p></blockquote>
-${link ? `<p><a href="${link}">Open your secure page to answer →</a></p>` : "<p>Your consultant will follow up.</p>"}
+${link ? `<p><a href="${link}">Open your secure page to answer</a></p>` : "<p>Your consultant will follow up.</p>"}
 ${brand ? `<p>${brand.brandName}</p>` : ""}`,
     brand ? { fromName: brand.brandName, replyTo: brand.replyTo } : undefined
   );

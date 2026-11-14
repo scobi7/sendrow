@@ -191,7 +191,7 @@ export function toQuestionnaire(snapshot: SnapshotForExport, company: CompanyFor
   const rows: [string, string][] = [
     ["Company name", company.name],
     ["Industry / sector", company.industry ?? ""],
-    ["Employee count range", company.headcountRange?.replace(/_/g, "–") ?? ""],
+    ["Employee count range", company.headcountRange?.replace("under_", "under ").replace(/_/g, " to ") ?? ""],
     ["Do you measure your greenhouse gas emissions?", "Yes"],
     ["Methodology / standard used", "GHG Protocol Corporate Standard"],
     ["Scope 1 emissions (tCO2e)", fmt(t.scope1)],

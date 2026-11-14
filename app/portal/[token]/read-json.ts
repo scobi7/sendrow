@@ -11,6 +11,6 @@ export async function readJson(res: Response, fallbackError?: string): Promise<{
     if (res.status === 413) {
       return { error: "That file is too large to send (about 4 MB max). Export a smaller date range, or type the numbers in instead." };
     }
-    return { error: "The upload didn't go through - please try again. If it keeps failing, use “Type it in” and we'll take it from there." };
+    return { error: "The upload didn't go through. Please try again. If it keeps failing, use “Type it in” and we'll take it from there." };
   }
 }

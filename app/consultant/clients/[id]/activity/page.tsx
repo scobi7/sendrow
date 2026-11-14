@@ -64,7 +64,7 @@ export default async function ActivityPage({ params }: { params: Promise<{ id: s
 
       {rows.length === 0 ? (
         <div className="card py-12 text-center" style={{ color: "var(--text-muted)" }}>
-          No activity yet. Events appear here the moment anything happens.
+          No activity yet. Events are listed here as they happen.
         </div>
       ) : (
         <div className="glass-panel">

@@ -5,7 +5,7 @@ import { LandingFooter } from "@/components/landing-footer";
 export const metadata = {
   title: "How it works: Sendrow",
   description:
-    "Your emissions data, collected once, proven, and shared anywhere. One trusted record instead of seventeen email threads.",
+    "Your emissions data, collected once, proven, and shared anywhere. One trusted record instead of a pile of email threads.",
 };
 
 const STEPS: { n: string; title: string; body: React.ReactNode }[] = [
@@ -22,7 +22,7 @@ const STEPS: { n: string; title: string; body: React.ReactNode }[] = [
   },
   {
     n: "2",
-    title: "You answer from your inbox. Ten minutes.",
+    title: "You answer from your inbox.",
     body: (
       <>
         One email, one link. <strong>No account, no password, no portal to learn.</strong> Upload
@@ -36,7 +36,7 @@ const STEPS: { n: string; title: string; body: React.ReactNode }[] = [
     body: (
       <>
         Each figure is stapled to the bill, invoice, or receipt it came from. When anyone later
-        asks &ldquo;where did this number come from?&rdquo; The answer is one click away.
+        asks &ldquo;where did this number come from?&rdquo; the answer is one click away.
       </>
     ),
   },
@@ -58,15 +58,15 @@ const STEPS: { n: string; title: string; body: React.ReactNode }[] = [
       <>
         California SB 253, CDP, a customer&apos;s questionnaire, plain Excel: the same approved
         snapshot, reshaped per request. When the <em>next</em> customer asks, it&apos;s done
-        before lunch. And you share on your terms: this snapshot, to this company, in this
-        format, nothing more.
+        before lunch. You decide what gets shared: this snapshot, to this company, in this
+        format, and nothing more.
       </>
     ),
   },
 ];
 
 const PROMISES: { title: string; body: string }[] = [
-  { title: "We never grade you.", body: "No scores, no report cards. Ever." },
+  { title: "We never grade you.", body: "There are no scores and no report cards." },
   {
     title: "We never replace your consultant.",
     body: "We're the tool you both use together.",
@@ -93,7 +93,7 @@ export default function HowItWorksPage() {
             Your emissions data, collected once, proven, and shared anywhere.
           </h1>
           <p className="mx-auto mt-5 max-w-xl text-lg" style={{ color: "var(--text-muted)" }}>
-            One trusted record instead of seventeen email threads and five conflicting
+            One trusted record instead of email threads and conflicting
             spreadsheets.
           </p>
         </section>

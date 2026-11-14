@@ -46,7 +46,7 @@ export default async function ComplianceCalendarPage() {
     .map((r) => ({
       date: r.dueDate!,
       dateLabel: fmtShortDateYear(new Date(r.dueDate! + "T12:00:00")),
-      title: `${nameOf.get(r.companyId) ?? "Client"} - ${r.description}`,
+      title: `${nameOf.get(r.companyId) ?? "Client"}: ${r.description}`,
       note: "Set by consultant",
       companyId: r.companyId,
     }));
@@ -119,7 +119,7 @@ export default async function ComplianceCalendarPage() {
       </div>
 
       <p className="mt-4 text-xs" style={{ color: "var(--text-muted)" }}>
-        Regulatory dates are maintained centrally. Client deadlines come from open requests - set one on the{" "}
+        Regulatory dates are maintained centrally. Client deadlines come from open requests. Set one on the{" "}
         <Link href="/consultant/requests/new" className="underline" style={{ color: "var(--primary)" }}>
           New request
         </Link>{" "}

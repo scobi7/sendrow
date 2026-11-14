@@ -21,7 +21,7 @@ const FEATURES = [
   },
   {
     title: "Full audit trail",
-    desc: "Every figure traced to its source across every client. Defensible methodology you can stand behind.",
+    desc: "Every figure links to its source and method, across every client.",
   },
   {
     title: "Progress tracking",
@@ -220,7 +220,7 @@ export default function ForConsultants() {
             ready to scale
           </h2>
           <p className="mt-4 max-w-lg text-base leading-relaxed" style={{ color: "var(--text-muted)" }}>
-            Clients self-serve their data. Calculations run automatically. You stay focused on the work that actually requires your expertise.
+            Clients self-serve their data. Calculations run automatically. You stay focused on the work that requires your expertise.
           </p>
 
           <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -255,7 +255,7 @@ export default function ForConsultants() {
                 data collection.
               </h2>
               <p className="mt-4 text-base leading-relaxed" style={{ color: "var(--text-muted)" }}>
-                Send a client a secure link: no account, no software to connect. They upload utility bills and fuel receipts, or just type the numbers in, and Sendrow runs the calculations the moment it lands.
+                Send a client a secure link: no account, no software to connect. They upload utility bills and fuel receipts, or type the numbers in, and Sendrow runs the calculations the moment it lands.
               </p>
               <ul className="mt-8 space-y-4">
                 {[
@@ -285,7 +285,7 @@ export default function ForConsultants() {
               </p>
               <div className="space-y-3">
                 {[
-                  { step: "1", title: "You generate an invite link", sub: "Takes 10 seconds. Unique per client." },
+                  { step: "1", title: "You generate an invite link", sub: "Each client gets a unique link." },
                   { step: "2", title: "Client uploads their data", sub: "Utility bills, fuel receipts, or typed in directly. No account needed." },
                   { step: "3", title: "Calculations run automatically", sub: "Scope 1, 2, and 3 calculated the moment data lands." },
                   { step: "4", title: "You review and generate the report", sub: "Audit-ready PDF, pre-filled questionnaire fields." },
@@ -308,29 +308,6 @@ export default function ForConsultants() {
                   </div>
                 ))}
               </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Stats strip */}
-      <section
-        className="px-6 py-16"
-        style={{ background: "var(--surface)", borderTop: "1px solid var(--divider)", borderBottom: "1px solid var(--divider)" }}
-      >
-        <div className="mx-auto max-w-5xl">
-          <div className="overflow-hidden rounded-2xl" style={{ border: "1px solid var(--divider)" }}>
-            <div className="grid grid-cols-1 divide-y sm:grid-cols-3 sm:divide-x sm:divide-y-0">
-              {[
-                { value: "Days, not months", label: "Target cycle time from request to approved snapshot" },
-                { value: "Zero", label: "Spreadsheets required to manage your book" },
-                { value: "CDP, EcoVadis, Walmart", label: "Buyer questionnaires mapped today, and more as we add real examples to design against" },
-              ].map(({ value, label }) => (
-                <div key={value} className="bg-white px-8 py-10 text-center">
-                  <p className="font-data text-4xl font-bold" style={{ color: "var(--primary)" }}>{value}</p>
-                  <p className="mt-2 text-sm leading-snug" style={{ color: "var(--text-muted)" }}>{label}</p>
-                </div>
-              ))}
             </div>
           </div>
         </div>
@@ -385,7 +362,7 @@ export default function ForConsultants() {
         style={{ background: "var(--surface)", borderTop: "1px solid var(--divider)" }}
       >
         <div className="mx-auto max-w-5xl">
-          <div className="grid items-start gap-16 sm:grid-cols-2">
+          <div className="max-w-2xl">
             <div>
               <p className="mb-3 text-xs font-bold uppercase tracking-widest" style={{ color: "var(--primary)" }}>
                 Who we built this for
@@ -400,21 +377,8 @@ export default function ForConsultants() {
                 ESG practices are growing fast, but the tools haven&rsquo;t kept up. Most consultants are still coordinating data collection over email, running calculations in spreadsheets, and manually building reports for every client.
               </p>
               <p className="mt-4 text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>
-                Sendrow gives you a platform where clients handle their own data, calculations run automatically, and every report is audit-ready from the start. Spend your time on the work that requires your expertise.
+                Sendrow gives you a platform where clients handle their own data, calculations run automatically, and every report is audit-ready from the start. Your time goes to the analysis itself.
               </p>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              {[
-                { stat: "One", label: "Dashboard for your entire client book" },
-                { stat: "3 days", label: "Average client turnaround time" },
-                { stat: "Auto", label: "Calculations run as client data comes in" },
-                { stat: "5+", label: "Questionnaire frameworks supported" },
-              ].map(({ stat, label }) => (
-                <div key={stat} className="rounded-xl p-5" style={{ background: "#fff", border: "1px solid var(--divider)" }}>
-                  <p className="font-data text-2xl font-bold" style={{ color: "var(--primary)" }}>{stat}</p>
-                  <p className="mt-1 text-xs leading-snug" style={{ color: "var(--text-muted)" }}>{label}</p>
-                </div>
-              ))}
             </div>
           </div>
         </div>

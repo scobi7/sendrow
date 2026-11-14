@@ -72,7 +72,7 @@ export default async function ManageReports({
                 {ok ? "Ready" : "Missing"}
               </span>
               <span className="font-medium" style={{ color: "var(--text)" }}>{label}</span>
-              <span className="text-xs" style={{ color: "var(--text-muted)" }}> - {detail}</span>
+              <span className="text-xs" style={{ color: "var(--text-muted)" }}>: {detail}</span>
             </li>
           ))}
         </ul>

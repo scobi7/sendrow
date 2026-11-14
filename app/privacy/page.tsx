@@ -12,14 +12,14 @@ export default function PrivacyPage() {
       </header>
       <article className="mx-auto max-w-3xl px-6 py-16" style={{ color: "var(--text)" }}>
         <h1 className="text-3xl font-black font-display" style={{ color: "var(--text)" }}>Privacy Policy</h1>
-        <p className="mt-2 text-sm" style={{ color: "var(--text-muted)" }}>Last updated: {new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}</p>
+        <p className="mt-2 text-sm" style={{ color: "var(--text-muted)" }}>Last updated: November 13, 2026</p>
 
         {process.env.NEXT_PUBLIC_DRAFT_LEGAL === "true" && (
           <div className="mt-8 rounded-xl p-6" style={{ background: "var(--warning-tint)", border: "1px solid var(--warning)" }}>
             <p className="text-sm font-semibold" style={{ color: "var(--warning)" }}>Draft: legal review pending</p>
             <p className="mt-1 text-sm" style={{ color: "var(--warning)" }}>
               This page is a placeholder. A full privacy policy is being drafted and will be published before general availability.
-              Contact <a href="mailto:hello@sendrow.app" style={{ color: "var(--warning)" }}>hello@sendrow.app</a> with questions.
+              Contact <a href="mailto:contact@sendrow.app" style={{ color: "var(--warning)" }}>contact@sendrow.app</a> with questions.
             </p>
           </div>
         )}
@@ -51,7 +51,7 @@ export default function PrivacyPage() {
 
         <h2 className="mt-8 text-xl font-bold font-display" style={{ color: "var(--text)" }}>6. Contact</h2>
         <p style={{ color: "var(--text-muted)" }}>
-          Questions about this policy? Email <a href="mailto:hello@sendrow.app" style={{ color: "var(--primary)" }}>hello@sendrow.app</a>.
+          Questions about this policy? Email <a href="mailto:contact@sendrow.app" style={{ color: "var(--primary)" }}>contact@sendrow.app</a>.
         </p>
       </article>
     </main>

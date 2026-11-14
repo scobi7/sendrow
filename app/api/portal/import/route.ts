@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
     // surfaces as "Unexpected end of JSON input" for the supplier.
     console.error("portal/import failed:", e);
     return NextResponse.json(
-      { error: "We couldn't process that submission. Please try again - if it keeps failing, type the numbers in instead." },
+      { error: "We couldn't process that submission. Please try again. If it keeps failing, type the numbers in instead." },
       { status: 500 }
     );
   }
@@ -76,13 +76,13 @@ async function handleImport(request: NextRequest) {
   // Generous: legitimate batch uploads (up to 12 files x multiple checklist
   // items) can mean dozens of calls in one session.
   if (!checkRateLimit(`portal:import:${token}`, 100, 60 * 60 * 1000)) {
-    return NextResponse.json({ error: "Too many submissions - please wait a bit and try again" }, { status: 429 });
+    return NextResponse.json({ error: "Too many submissions. Please wait a bit and try again" }, { status: 429 });
   }
   if (!rows.length) return NextResponse.json({ error: "No rows provided" }, { status: 400 });
 
   const dataRequest = await loadPortalRequest(token);
   if (!dataRequest) {
-    return NextResponse.json({ error: "This link has expired - ask your consultant for a new one" }, { status: 401 });
+    return NextResponse.json({ error: "This link has expired. Ask your consultant for a new one" }, { status: 401 });
   }
 
   const checklist = (dataRequest.checklist as ChecklistItem[] | null) ?? [];
@@ -90,7 +90,7 @@ async function handleImport(request: NextRequest) {
   if (!item) return NextResponse.json({ error: "Unknown checklist item" }, { status: 400 });
   if (itemFileCount(item) >= MAX_FILES_PER_CHECKLIST_ITEM) {
     return NextResponse.json(
-      { error: `This item already has ${MAX_FILES_PER_CHECKLIST_ITEM} files - that's the max. Ask your consultant if you need to add more.` },
+      { error: `This item already has ${MAX_FILES_PER_CHECKLIST_ITEM} files. That's the max. Ask your consultant if you need to add more.` },
       { status: 400 }
     );
   }

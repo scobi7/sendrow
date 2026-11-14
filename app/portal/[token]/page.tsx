@@ -28,7 +28,7 @@ export default async function PortalPage({ params }: { params: Promise<{ token: 
           This link has expired
         </h1>
         <p className="mt-2 text-sm" style={{ color: "var(--text-muted)" }}>
-          Data upload links are valid for 30 days - but getting a fresh one takes a single click.
+          Data upload links are valid for 30 days, but getting a fresh one takes a single click.
         </p>
         <RequestNewLink token={token} />
       </main>
@@ -137,7 +137,7 @@ export default async function PortalPage({ params }: { params: Promise<{ token: 
       const parts = l
         ? [l.sourceRef?.trim() || l.category.replace(/_/g, " "), l.rawValue && l.rawUnit ? `${Number(l.rawValue).toLocaleString()} ${l.rawUnit}` : "", l.activityDate ? `(${l.activityDate})` : ""].filter(Boolean)
         : ["a figure you sent"];
-      return { lineItemId, figure: parts.join(" - "), messages };
+      return { lineItemId, figure: parts.join(", "), messages };
     });
 
   return (
@@ -165,7 +165,7 @@ export default async function PortalPage({ params }: { params: Promise<{ token: 
         </p>
         <h1 className="mt-1 text-2xl font-extrabold font-display" style={{ color: "var(--text)" }}>
           {company?.name ?? "your company"}
-          {currentSite && <span style={{ color: "var(--text-muted)" }}> - {siteLabel(currentSite)}</span>}
+          {currentSite && <span style={{ color: "var(--text-muted)" }}>, {siteLabel(currentSite)}</span>}
         </h1>
         <p className="mt-2 text-sm" style={{ color: "var(--text-muted)" }}>{request.description}</p>
         {request.periodLabel && (
@@ -196,7 +196,7 @@ export default async function PortalPage({ params }: { params: Promise<{ token: 
       ) : (
         <>
           <p className="mb-4 text-sm" style={{ color: "var(--text-muted)" }}>
-            {received} of {checklist.length} item{checklist.length !== 1 ? "s" : ""} received. No account needed - this page is your secure upload link.
+            {received} of {checklist.length} item{checklist.length !== 1 ? "s" : ""} received. No account needed. This page is your secure upload link.
           </p>
           <PortalChecklist token={token} items={checklist} prefill={prefill} threads={threads} />
         </>

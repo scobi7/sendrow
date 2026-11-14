@@ -53,7 +53,7 @@ export function ConsultantQuestions({ token, threads }: { token: string; threads
         Questions from your consultant
       </p>
       <p className="mt-0.5 text-xs" style={{ color: "var(--text-muted)" }}>
-        Your consultant has a question about specific numbers you sent. A quick answer keeps things moving.
+        Your consultant has a question about specific numbers you sent. Answer each one below.
       </p>
       <div className="mt-4 space-y-3">
         {threads.map((t) => (

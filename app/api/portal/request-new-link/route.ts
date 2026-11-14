@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
   const token: string = body.token ?? "";
   if (!token) return NextResponse.json({ error: "Missing token" }, { status: 400 });
   if (!checkRateLimit(`portal:request-new-link:${token}`, 5, 60 * 60 * 1000)) {
-    return NextResponse.json({ error: "Already asked recently - check your email or wait a bit" }, { status: 429 });
+    return NextResponse.json({ error: "Already asked recently. Check your email or wait a bit" }, { status: 429 });
   }
 
   // findPortalRequest, not loadPortalRequest: this route must accept expired tokens

@@ -91,7 +91,7 @@ export default async function ReviewApprovePage({ params }: { params: Promise<{ 
     <div className="mx-auto max-w-4xl">
       <div className="mb-6 flex items-end justify-between">
         <div>
-          <h1 className="text-2xl font-bold font-display" style={{ color: "var(--text)" }}>Review - {company.name}</h1>
+          <h1 className="text-2xl font-bold font-display" style={{ color: "var(--text)" }}>Review: {company.name}</h1>
           <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>
             {currentRequest ? `${currentRequest.periodLabel ? `${currentRequest.periodLabel} · ` : ""}${currentRequest.description}` : "All submitted data"}
           </p>
@@ -113,7 +113,7 @@ export default async function ReviewApprovePage({ params }: { params: Promise<{ 
             {stuckNotes.map((c) => (
               <div key={c.id} className="px-5 py-3">
                 <p className="text-sm" style={{ color: "var(--text)" }}>
-                  <strong>Flag - {c.label}:</strong> &ldquo;{c.stuckNote}&rdquo;
+                  <strong>Flag on {c.label}:</strong> &ldquo;{c.stuckNote}&rdquo;
                 </p>
                 <Link href={`/consultant/clients/${id}`} className="mt-1 inline-block text-xs underline" style={{ color: "var(--primary)" }}>
                   Reply from the client page
@@ -207,7 +207,7 @@ export default async function ReviewApprovePage({ params }: { params: Promise<{ 
               Dollar-based fuel ({dollarFuel.length} rows)
             </p>
             <p className="mt-1 text-xs" style={{ color: "var(--text-muted)" }}>
-              Set the price you&apos;re applying ($/gallon) - every row converts to gallons × EPA factor, with the price and your name in each calc log.
+              Set the price you&apos;re applying ($/gallon). Every row converts to gallons multiplied by the EPA factor, with the price and your name in each calc log.
             </p>
           </div>
           <form action={convertDollarFuel.bind(null, id)} className="flex flex-wrap items-end gap-3 px-5 py-4">
@@ -237,7 +237,7 @@ export default async function ReviewApprovePage({ params }: { params: Promise<{ 
       {/* Line items by category */}
       {groups.size === 0 ? (
         <div className="card mb-6 py-12 text-center text-sm" style={{ color: "var(--text-muted)" }}>
-          Nothing to review yet - data arrives via the portal or on-behalf entry.
+          Nothing to review yet. Data arrives via the portal or on-behalf entry.
         </div>
       ) : (
         <div className="mb-6 space-y-4">
@@ -311,7 +311,7 @@ export default async function ReviewApprovePage({ params }: { params: Promise<{ 
       <ApproveBar companyId={id} openFlags={openFlags} flagSummary={flagSummary(unmapped.length, stuckNotes.length)} hasData={active.some((i) => i.status === "mapped")} />
 
       <p className="mt-3 text-center text-xs" style={{ color: "var(--text-muted)" }}>
-        Approving freezes an immutable snapshot and takes you straight to Snapshot & Share - corrections later create a new snapshot, this one stays on record.
+        Approving freezes an immutable snapshot and takes you straight to Snapshot & Share. Corrections later create a new snapshot, and this one stays on record.
       </p>
     </div>
   );

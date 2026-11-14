@@ -86,7 +86,7 @@ export function LedgerRow({
       try {
         await action();
       } catch {
-        setError("Not saved. The row has been reverted - try again.");
+        setError("Not saved. The row has been reverted. Try again.");
       }
     });
   };
@@ -95,7 +95,7 @@ export function LedgerRow({
     <>
       <tr style={{ borderBottom: "1px solid var(--divider)", opacity: excluded ? 0.45 : 1 }}>
         <td className="px-4 py-2.5">
-          <p className="font-medium" style={{ color: "var(--text)" }}>{item.sourceRef || " - "}</p>
+          <p className="font-medium" style={{ color: "var(--text)" }}>{item.sourceRef || "None"}</p>
           {item.locationName && (
             <p className="text-xs" style={{ color: "var(--text-muted)" }}>{item.locationName}</p>
           )}
@@ -112,10 +112,10 @@ export function LedgerRow({
           {fmtNum3(Number(item.rawValue))} {item.rawUnit}
         </td>
         <td className="px-4 py-2.5 text-right font-data" style={{ color: "var(--text)" }}>
-          {item.status === "mapped" ? fmtNum3(Number(item.co2eKg) / 1000) : " - "}
+          {item.status === "mapped" ? fmtNum3(Number(item.co2eKg) / 1000) : "Not calculated"}
         </td>
         <td className="px-4 py-2.5 text-xs" style={{ color: "var(--text-muted)" }}>
-          {item.activityDate ?? item.period ?? " - "}
+          {item.activityDate ?? item.period ?? "None"}
         </td>
         <td className="px-4 py-2.5 text-xs">
           {uploadName ? (
@@ -148,7 +148,7 @@ export function LedgerRow({
           {item.status === "mapped" && (
             <span
               className="ml-1 rounded px-1.5 py-0.5 text-xs"
-              title={item.confidence === "actual" || item.confidence === "measured" ? "Actual / measured value" : "Estimated value - replace with the real number when it arrives"}
+              title={item.confidence === "actual" || item.confidence === "measured" ? "Actual / measured value" : "Estimated value. Replace with the real number when it arrives"}
               style={
                 item.confidence === "actual" || item.confidence === "measured"
                   ? { background: "var(--primary-tint)", color: "var(--primary)" }
@@ -369,7 +369,7 @@ export function LedgerRow({
                 }
               >
                 <span className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>
-                  Replace estimate with the actual value ({item.rawUnit}) - leave blank to keep the number and just re-label:
+                  Replace estimate with the actual value ({item.rawUnit}). Leave blank to keep the number and only re-label:
                 </span>
                 <input name="quantity" type="number" step="any" min="0" placeholder={item.rawValue} className="input text-xs" style={{ maxWidth: "10rem" }} autoFocus />
                 <button disabled={pending} className="btn btn-secondary px-3 py-1 text-xs">

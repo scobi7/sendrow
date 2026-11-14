@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
 
   if (!token) return NextResponse.json({ error: "Missing link token" }, { status: 401 });
   if (!checkRateLimit(`portal:delegate:${token}`, 25, 60 * 60 * 1000)) {
-    return NextResponse.json({ error: "Too many site links sent - try again later" }, { status: 429 });
+    return NextResponse.json({ error: "Too many site links sent. Try again later" }, { status: 429 });
   }
 
   const parent = await loadPortalRequest(token);

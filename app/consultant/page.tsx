@@ -112,7 +112,7 @@ export default async function ConsultantDashboard({
   const activeFilter = rawFilter && FILTER_STATUS[rawFilter] ? rawFilter : null;
   const displayed = activeFilter ? clients.filter((c) => c.status === FILTER_STATUS[activeFilter]) : clients;
   const fmtDue = (d: string | null) =>
-    d ? fmtShortDate(new Date(d + "T12:00:00")) : " - ";
+    d ? fmtShortDate(new Date(d + "T12:00:00")) : "None";
 
   return (
     <div className="mx-auto max-w-6xl">

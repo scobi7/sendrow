@@ -80,13 +80,13 @@ export function GHGReportPDF({
   ).sort();
 
   const scopeSections: [string, typeof s1, boolean][] = [
-    ["SCOPE 1 - DIRECT EMISSIONS BY SOURCE", s1, false],
-    ["SCOPE 2 - ELECTRICITY BY LOCATION (DUAL REPORTING)", s2, true],
-    ["SCOPE 3 - VALUE CHAIN BY CATEGORY", s3, false],
+    ["SCOPE 1: DIRECT EMISSIONS BY SOURCE", s1, false],
+    ["SCOPE 2: ELECTRICITY BY LOCATION (DUAL REPORTING)", s2, true],
+    ["SCOPE 3: VALUE CHAIN BY CATEGORY", s3, false],
   ];
 
   return (
-    <Document title={`GHG Inventory - ${company.name}`}>
+    <Document title={`GHG Inventory: ${company.name}`}>
       <Page size="LETTER" style={s.page}>
         {/* Header */}
         <View style={[s.headerRule, { borderBottomColor: accent }]}>
@@ -96,7 +96,7 @@ export function GHGReportPDF({
           <Text style={[s.badge, { color: accent }]}>GREENHOUSE GAS INVENTORY REPORT</Text>
           <Text style={s.h1}>{company.name}</Text>
           {brand && <Text style={s.meta}>Prepared by {brand.name}</Text>}
-          <Text style={s.meta}>Reporting period: {period}  ·  Industry: {company.industry ?? " - "}</Text>
+          <Text style={s.meta}>Reporting period: {period}  ·  Industry: {company.industry ?? "None"}</Text>
           <Text style={s.metaSmall}>
             Generated {genDate}
             {company.reportingFramework ? `  ·  Purpose: ${company.reportingFramework.replace(/_/g, " ")}` : ""}
@@ -109,10 +109,10 @@ export function GHGReportPDF({
           <Text style={s.h2}>Summary of Emissions</Text>
           {(
             [
-              ["Scope 1 - Direct emissions", t.scope1],
-              ["Scope 2 - Electricity (location-based)", t.scope2Location],
-              ["Scope 2 - Electricity (market-based)", t.scope2Market],
-              ["Scope 3 - Value chain", t.scope3],
+              ["Scope 1: Direct emissions", t.scope1],
+              ["Scope 2: Electricity (location-based)", t.scope2Location],
+              ["Scope 2: Electricity (market-based)", t.scope2Market],
+              ["Scope 3: Value chain", t.scope3],
             ] as [string, number][]
           ).map(([label, val]) => (
             <View key={label} style={s.row}>
@@ -169,7 +169,7 @@ export function GHGReportPDF({
               <Text style={s.h3}>Scope 3 materiality screening</Text>
               {screeningDecisions.filter((d) => d.status === "excluded").map((d) => (
                 <Text key={d.categoryNumber} style={s.bullet}>
-                  {"• "}Cat {d.categoryNumber} - {d.categoryName || `Category ${d.categoryNumber}`}: excluded
+                  {"• "}Cat {d.categoryNumber}, {d.categoryName || `Category ${d.categoryNumber}`}: excluded
                   {d.reason ? ` (${d.reason})` : ""}
                 </Text>
               ))}
@@ -184,7 +184,7 @@ export function GHGReportPDF({
             if (!f) return null;
             return (
               <Text key={fid} style={s.bullet}>
-                {"• "}{f.factor_name}: {f.value} {f.unit} - {f.source} ({f.year_effective})
+                {"• "}{f.factor_name}: {f.value} {f.unit}, {f.source} ({f.year_effective})
               </Text>
             );
           })}
@@ -200,7 +200,7 @@ export function GHGReportPDF({
               <Text key={c.id} style={s.bullet}>
                 {"• "}{c.category}:{" "}
                 {c.basis === "spend_based"
-                  ? "calculated from financial spend using USEEIO sector averages - a recognized estimation method for first-time reporters."
+                  ? "calculated from financial spend using USEEIO sector averages. This is a recognized estimation method for first-time reporters."
                   : "estimated; flagged low-confidence. Replacing with measured data is recommended next cycle."}
               </Text>
             ))
@@ -209,7 +209,7 @@ export function GHGReportPDF({
 
         {/* Repeating page footer */}
         <Text style={s.footer} fixed>
-          {company.name} - GHG Inventory - {period} - Powered by Sendrow  ·  Emission factors are representative published values; verify against cited sources before external submission.
+          {company.name}  ·  GHG Inventory  ·  {period}  ·  Powered by Sendrow  ·  Emission factors are representative published values; verify against cited sources before external submission.
         </Text>
       </Page>
     </Document>

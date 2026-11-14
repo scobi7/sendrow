@@ -19,7 +19,7 @@ export default async function ConsultantSettingsPage() {
       <div className="mb-6">
         <h1 className="text-2xl font-bold font-display" style={{ color: "var(--text)" }}>Branding</h1>
         <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>
-          Your brand is what suppliers see on portals, shared results, and emails - never ours.
+          Your brand is what suppliers see on portals, shared results, and emails, not Sendrow's.
         </p>
       </div>
       <BrandingForm

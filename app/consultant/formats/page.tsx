@@ -39,11 +39,11 @@ export default function FormatLibraryPage() {
         <p className="font-semibold" style={{ color: "var(--text)" }}>+ Add a new format</p>
         <p className="mt-1.5 text-sm" style={{ color: "var(--text-muted)" }}>
           Got a buyer&apos;s custom questionnaire (PDF/Excel)? Email it over and it gets added as a config for your
-          practice, usually within a day. The self-serve builder lets you upload it, connect each question to a data field
+          practice. The self-serve builder lets you upload it, connect each question to a data field
           once, reuse it forever. It is the next build phase.
         </p>
         <a
-          href={`mailto:${process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "hello@sendrow.app"}?subject=${encodeURIComponent("New format request: [buyer / framework name]")}&body=${encodeURIComponent("Attach the questionnaire (PDF or Excel) and tell us which client it's for.")}`}
+          href={`mailto:${process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "contact@sendrow.app"}?subject=${encodeURIComponent("New format request: [buyer / framework name]")}&body=${encodeURIComponent("Attach the questionnaire (PDF or Excel) and tell us which client it's for.")}`}
           className="btn btn-primary mt-4 inline-block text-sm"
         >
           Email us the format

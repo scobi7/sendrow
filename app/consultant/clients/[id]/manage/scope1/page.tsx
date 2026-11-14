@@ -25,7 +25,7 @@ export default async function ManageScope1({ params }: { params: Promise<{ id: s
   return (
     <div>
       <PageHeader
-        title="Scope 1 - Direct Emissions"
+        title="Scope 1: Direct emissions"
         subtitle={`Entering data on behalf of ${company.name}.`}
       />
 

@@ -127,7 +127,7 @@ export default async function LedgerPage({
 
       {displayed.length === 0 ? (
         <div className="card py-12 text-center" style={{ color: "var(--text-muted)" }}>
-          No rows{statusFilter && statusFilter !== "all" ? ` with status "${statusFilter}"` : " yet - data arrives via the portal or on-behalf entry"}.
+          No rows{statusFilter && statusFilter !== "all" ? ` with status "${statusFilter}"` : " yet. Data arrives via the portal or on-behalf entry"}.
         </div>
       ) : (
         <div className="glass-panel overflow-x-auto">

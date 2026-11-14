@@ -24,8 +24,8 @@ const ENTRY_KINDS: Record<string, { label: string; activity_type: string; unit: 
   gasoline: { label: "Gasoline (gallons)", activity_type: "gasoline", unit: "gallon" },
   propane: { label: "Propane (gallons)", activity_type: "propane", unit: "gallon" },
   commute: { label: "Commuting (miles)", activity_type: "commute", unit: "mile" },
-  waste_landfill: { label: "Waste - landfilled (tons)", activity_type: "waste landfilled", unit: "ton" },
-  waste_recycled: { label: "Waste - recycled (tons)", activity_type: "waste recycled", unit: "ton" },
+  waste_landfill: { label: "Waste: landfilled (tons)", activity_type: "waste landfilled", unit: "ton" },
+  waste_recycled: { label: "Waste: recycled (tons)", activity_type: "waste recycled", unit: "ton" },
   other: { label: "Other (will be reviewed)", activity_type: "other", unit: "" },
 };
 
@@ -182,7 +182,7 @@ export function PortalChecklist({
         rowCount: payload.rows.length,
       },
     ]);
-    setDoneMsg(`Added "${payload.filename}" (${payload.rows.length} row${payload.rows.length === 1 ? "" : "s"}) - staged, not sent yet.`);
+    setDoneMsg(`Added "${payload.filename}" (${payload.rows.length} row${payload.rows.length === 1 ? "" : "s"}). Staged, not sent yet.`);
     setOpenItem(null);
     setPending(null);
     setSheetChoice(null);
@@ -237,7 +237,7 @@ export function PortalChecklist({
       setSubmitted(true);
       router.refresh();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not submit - please try again. The files that went through are removed from the list.");
+      setError(e instanceof Error ? e.message : "Could not submit. Please try again. The files that went through are removed from the list.");
     } finally {
       setSubmitting(false);
     }
@@ -257,7 +257,7 @@ export function PortalChecklist({
       setError(null);
       setDoneMsg(null);
       setPdfNotice(
-        `We can't read numbers out of PDFs automatically yet. Your file “${file.name}” will be attached as proof - type the totals from it below and submit.`
+        `We can't read numbers out of PDFs automatically yet. Your file “${file.name}” will be attached as proof. Type the totals from it below and submit.`
       );
       return;
     }
@@ -271,7 +271,7 @@ export function PortalChecklist({
       // codepage 65001 = UTF-8, so CSVs with em-dashes etc. don't mojibake
       wb = XLSX.read(buf, { codepage: 65001 });
     } catch {
-      setError("We couldn't read that file as a spreadsheet. CSV and Excel exports work best - or type the numbers in instead.");
+      setError("We couldn't read that file as a spreadsheet. CSV and Excel exports work best, or you can type the numbers in instead.");
       return;
     }
 
@@ -286,7 +286,7 @@ export function PortalChecklist({
     }).filter((s) => s.rowCount > 0);
 
     if (sheets.length === 0) {
-      setError("That file looks empty - please check it and try again.");
+      setError("That file looks empty. Please check it and try again.");
       return;
     }
     if (sheets.length > 1) {
@@ -304,7 +304,7 @@ export function PortalChecklist({
       setSheetChoice(null);
       setPending({ itemId: item.id, file, filename, matrix, headerRowIndex: parsed.headerRowIndex, suggestion });
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not read that file - please try again.");
+      setError(e instanceof Error ? e.message : "Could not read that file. Please try again.");
     } finally {
       setBusy(false);
     }
@@ -323,7 +323,7 @@ export function PortalChecklist({
       setStuckOpen(null);
       setStuckMsg("");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not send - please try again.");
+      setError(e instanceof Error ? e.message : "Could not send. Please try again.");
     } finally {
       setBusy(false);
     }
@@ -427,14 +427,14 @@ export function PortalChecklist({
               <div className="px-5 pb-5">
                 {hasAny && (
                   <p className="mb-3 rounded-lg px-3 py-2 text-xs" style={{ background: "var(--primary-tint)", color: "var(--primary)" }}>
-                    {fileCount} file{fileCount === 1 ? "" : "s"} added so far. Add another below - up to {MAX_FILES_PER_CHECKLIST_ITEM} total (e.g. separate electricity and gas sheets, or one per month).
+                    {fileCount} file{fileCount === 1 ? "" : "s"} added so far. Add another below, up to {MAX_FILES_PER_CHECKLIST_ITEM} total (e.g. separate electricity and gas sheets, or one per month).
                   </p>
                 )}
                 {itemSheets ? (
                   /* ── Sheet picker: multi-tab workbooks ── */
                   <div>
                     <div className="mb-3 rounded-lg px-3 py-2 text-sm" style={{ background: "var(--warning-tint)", color: "var(--warning-strong)" }}>
-                      &ldquo;{itemSheets.filename}&rdquo; has {itemSheets.sheets.length} tabs - which one holds this data?
+                      &ldquo;{itemSheets.filename}&rdquo; has {itemSheets.sheets.length} tabs. Which one holds this data?
                     </div>
                     <div className="space-y-2">
                       {itemSheets.sheets.map((sh) => (
@@ -443,7 +443,7 @@ export function PortalChecklist({
                           disabled={busy}
                           className="flex w-full items-center justify-between rounded-lg px-4 py-3 text-left text-sm transition-colors hover:opacity-80"
                           style={{ border: "1px solid var(--divider)", background: "var(--bg)" }}
-                          onClick={() => startMapping(item, itemSheets.file, `${itemSheets.filename} - ${sh.name}`, sh.matrix)}
+                          onClick={() => startMapping(item, itemSheets.file, `${itemSheets.filename}: ${sh.name}`, sh.matrix)}
                         >
                           <span className="font-medium" style={{ color: "var(--text)" }}>{sh.name}</span>
                           <span className="text-xs" style={{ color: "var(--text-muted)" }}>
@@ -514,7 +514,7 @@ export function PortalChecklist({
                           />
                         </label>
                         <p className="mt-2 text-xs" style={{ color: "var(--text-muted)" }}>
-                          Any spreadsheet works - you&apos;ll confirm how we read it. Want zero fuss?{" "}
+                          Any spreadsheet works. You&apos;ll confirm how we read it. Or{" "}
                           <button
                             className="underline"
                             style={{ color: "var(--primary)" }}
@@ -528,7 +528,7 @@ export function PortalChecklist({
                               URL.revokeObjectURL(url);
                             }}
                           >
-                            Download our template
+                            download our template
                           </button>{" "}
                           and fill it in.
                         </p>
@@ -552,7 +552,7 @@ export function PortalChecklist({
                       >
                         {draftRestored && (
                           <p className="mb-2 rounded-lg px-3 py-2 text-xs" style={{ background: "var(--primary-tint)", color: "var(--primary)" }}>
-                            Picked up where you left off - your draft was saved automatically.
+                            Picked up where you left off. Your draft was saved automatically.
                           </p>
                         )}
                         {pdfNotice && evidenceStash?.itemId === item.id && (
@@ -564,7 +564,7 @@ export function PortalChecklist({
                           <div className="mb-2 flex items-center justify-between rounded-lg px-3 py-2" style={{ background: "var(--warning-tint)" }}>
                             <p className="text-xs" style={{ color: "var(--warning-strong)" }}>
                               You submitted {prefill.length} entries last time{prefill[0]?.period ? ` (${prefill[0].period})` : ""}.
-                              Start from those and just update what changed?
+                              Start from those and update what changed.
                             </p>
                             <button
                               className="btn btn-secondary ml-3 shrink-0 px-2.5 py-1 text-xs"
@@ -585,7 +585,7 @@ export function PortalChecklist({
                         )}
                         {prefillUsed && (
                           <p className="mb-2 rounded-lg px-3 py-2 text-xs" style={{ background: "var(--warning-tint)", color: "var(--warning-strong)" }}>
-                            From your last submission - <strong>confirm or update</strong> each number before submitting.
+                            These are from your last submission. <strong>Confirm or update</strong> each number before submitting.
                           </p>
                         )}
                         <p className="mb-2 text-xs" style={{ color: "var(--text-muted)" }}>
@@ -654,7 +654,7 @@ export function PortalChecklist({
                     <div className="mt-4 pt-3" style={{ borderTop: "1px solid var(--divider)" }}>
                       {stuckSent === item.id ? (
                         <p className="text-xs" style={{ color: "var(--primary)" }}>
-                          Sent - your consultant will follow up.
+                          Sent. Your consultant will follow up.
                         </p>
                       ) : stuckOpen === item.id ? (
                         <div>
@@ -710,7 +710,7 @@ export function PortalChecklist({
           style={{ background: "var(--card)", border: "1px solid var(--primary)" }}
         >
           <p className="mb-2 text-sm font-semibold" style={{ color: "var(--text)" }}>
-            {staged.length} file{staged.length === 1 ? "" : "s"} ready - your consultant sees nothing until you submit
+            {staged.length} file{staged.length === 1 ? "" : "s"} ready. Your consultant sees nothing until you submit
           </p>
           <div className="mb-3 space-y-1">
             {staged.map((s) => (
