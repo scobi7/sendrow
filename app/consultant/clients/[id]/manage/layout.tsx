@@ -35,7 +35,7 @@ export default async function ManageLayout({
       {/* Banner */}
       <div
         className="mb-6 flex items-center justify-between rounded-xl px-5 py-3"
-        style={{ background: "var(--primary-tint)", border: "1px solid rgba(34,168,84,0.25)" }}
+        style={{ background: "var(--primary-tint)", border: "1px solid var(--divider)" }}
       >
         <div className="flex items-center gap-3">
           <div

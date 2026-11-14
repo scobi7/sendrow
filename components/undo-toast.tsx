@@ -64,10 +64,10 @@ export function UndoToast({ companyId, name }: { companyId: string; name: string
       <div
         role="status"
         aria-live="polite"
-        className={`pointer-events-auto card flex items-center gap-3 px-4 py-3 text-sm shadow-lg transition duration-200 ease-out ${
+        className={`pointer-events-auto card flex items-center gap-3 px-4 py-3 text-sm transition duration-200 ease-out ${
           entered ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0"
         }`}
-        style={{ color: "var(--text)" }}
+        style={{ color: "var(--text)", boxShadow: "var(--shadow-raised)" }}
       >
         <span>{failed ? `Undo failed. ${name} is still archived.` : `Archived ${name}.`}</span>
         {!failed && (

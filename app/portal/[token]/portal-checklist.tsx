@@ -706,8 +706,8 @@ export function PortalChecklist({
       {/* Sticky "Submit all" bar - nothing above reached the server until this */}
       {!submitted && staged.length > 0 && (
         <div
-          className="sticky bottom-[max(1rem,env(safe-area-inset-bottom))] z-10 rounded-2xl p-4 shadow-lg"
-          style={{ background: "var(--card)", border: "1px solid var(--primary)" }}
+          className="sticky bottom-[max(1rem,env(safe-area-inset-bottom))] z-10 rounded-2xl p-4"
+          style={{ background: "var(--card)", border: "1px solid var(--primary)", boxShadow: "var(--shadow-raised)" }}
         >
           <p className="mb-2 text-sm font-semibold" style={{ color: "var(--text)" }}>
             {staged.length} file{staged.length === 1 ? "" : "s"} ready. Your consultant sees nothing until you submit

@@ -14,7 +14,7 @@ import React from "react";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const DEFAULT_ACCENT = "#1D5A36";
+const DEFAULT_ACCENT = "#0A7346";
 const LOGO_TIMEOUT_MS = 3000;
 
 /** Fetches the brand logo for react-pdf. react-pdf cannot draw SVG and a failed

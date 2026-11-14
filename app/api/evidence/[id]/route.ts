@@ -38,13 +38,13 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
   if (!row.blobUrl) {
     // Provenance exists (hash + metadata) but the bytes were never stored -     // render that honestly instead of a raw 404 the consultant can't act on.
     const html = `<!doctype html><meta charset="utf-8"><title>File not stored</title>
-<body style="font-family:system-ui,sans-serif;max-width:34rem;margin:15vh auto;padding:0 1.5rem;color:#1a2e24">
+<body style="font-family:system-ui,sans-serif;max-width:34rem;margin:15vh auto;padding:0 1.5rem;color:#0D2A1E">
 <h1 style="font-size:1.2rem">This file's proof is on record. The file itself wasn't stored.</h1>
-<p style="color:#5c7268;line-height:1.6">When <strong>${escapeHtml(row.filename)}</strong> was uploaded, file storage wasn't configured,
+<p style="color:#3D5A4C;line-height:1.6">When <strong>${escapeHtml(row.filename)}</strong> was uploaded, file storage wasn't configured,
 so Sendrow kept its fingerprint but not its bytes. The original can be re-uploaded any time and will match this fingerprint.</p>
-<p style="font-family:ui-monospace,monospace;font-size:0.8rem;background:#f2faf6;padding:0.75rem;border-radius:8px;word-break:break-all">
+<p style="font-family:ui-monospace,monospace;font-size:0.8rem;background:#DCEAE1;padding:0.75rem;border-radius:10px;word-break:break-all">
 SHA-256&nbsp;·&nbsp;${escapeHtml(row.sha256)}</p>
-<p style="color:#5c7268;font-size:0.85rem">To store files going forward, set <code>BLOB_READ_WRITE_TOKEN</code> in the Vercel Storage settings (Blob).</p>
+<p style="color:#3D5A4C;font-size:0.85rem">To store files going forward, set <code>BLOB_READ_WRITE_TOKEN</code> in the Vercel Storage settings (Blob).</p>
 </body>`;
     return new NextResponse(html, { status: 200, headers: { "Content-Type": "text/html; charset=utf-8" } });
   }

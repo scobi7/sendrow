@@ -72,8 +72,8 @@ export function InfoTip({ text }: { text: string }) {
       >
         i
       </span>
-      <span className="invisible absolute bottom-5 left-1/2 z-10 w-64 -translate-x-1/2 rounded-canopy-sm p-3 text-xs text-white shadow-lg group-hover:visible group-focus:visible"
-        style={{ background: "var(--text)" }}>
+      <span className="invisible absolute bottom-5 left-1/2 z-10 w-64 -translate-x-1/2 rounded-canopy-sm p-3 text-xs text-white group-hover:visible group-focus:visible"
+        style={{ background: "var(--text)", boxShadow: "var(--shadow-raised)" }}>
         {text}
       </span>
     </span>

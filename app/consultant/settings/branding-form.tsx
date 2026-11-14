@@ -113,7 +113,7 @@ export function BrandingForm({
                 No account or password needed. The link is unique to you.
               </p>
             </div>
-            <p className="mt-6 border-t pt-3 text-[11px]" style={{ borderColor: "#E5E7EB", color: "var(--neutral-muted)" }}>
+            <p className="mt-6 border-t pt-3 text-[11px]" style={{ borderColor: "var(--divider)", color: "var(--neutral-muted)" }}>
               Powered by sendrow: a secure way to share data with your customers
             </p>
           </div>

@@ -11,7 +11,7 @@ function lookupFactor(id: string, overrides: EmissionFactor[]): EmissionFactor |
   return overrides.find((f) => f.factor_id === id) ?? SEED_FACTORS.find((f) => f.factor_id === id);
 }
 
-const DEFAULT_ACCENT = "#1D5A36";
+const DEFAULT_ACCENT = "#0A7346";
 const slate900 = "#0f172a";
 const slate600 = "#475569";
 const slate400 = "#94a3b8";

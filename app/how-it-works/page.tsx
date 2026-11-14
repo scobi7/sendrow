@@ -1,6 +1,4 @@
-import Link from "next/link";
-import { LandingNav } from "@/components/landing-nav";
-import { LandingFooter } from "@/components/landing-footer";
+import { MarketingPage, PageHead, Section, Band, Close, ButtonLink, mk } from "@/components/marketing/parts";
 
 export const metadata = {
   title: "How it works: Sendrow",
@@ -8,10 +6,9 @@ export const metadata = {
     "Your emissions data, collected once, proven, and shared anywhere. One trusted record instead of a pile of email threads.",
 };
 
-const STEPS: { n: string; title: string; body: React.ReactNode }[] = [
+const STEPS: { title: string; body: React.ReactNode }[] = [
   {
-    n: "1",
-    title: "Your consultant asks. In plain English.",
+    title: "Your consultant asks in plain English",
     body: (
       <>
         Your consultant picks exactly what&apos;s needed, such as &ldquo;your last 12 electricity
@@ -21,8 +18,7 @@ const STEPS: { n: string; title: string; body: React.ReactNode }[] = [
     ),
   },
   {
-    n: "2",
-    title: "You answer from your inbox.",
+    title: "You answer from your inbox",
     body: (
       <>
         One email, one link. <strong>No account, no password, no portal to learn.</strong> Upload
@@ -31,8 +27,7 @@ const STEPS: { n: string; title: string; body: React.ReactNode }[] = [
     ),
   },
   {
-    n: "3",
-    title: "Every number gets its receipt.",
+    title: "Every number gets its receipt",
     body: (
       <>
         Each figure is stapled to the bill, invoice, or receipt it came from. When anyone later
@@ -41,8 +36,7 @@ const STEPS: { n: string; title: string; body: React.ReactNode }[] = [
     ),
   },
   {
-    n: "4",
-    title: "A professional signs off. Then it's frozen.",
+    title: "Your consultant signs off and the data is frozen",
     body: (
       <>
         Your consultant reviews, fixes, and approves. Approved data is locked into a dated
@@ -52,8 +46,7 @@ const STEPS: { n: string; title: string; body: React.ReactNode }[] = [
     ),
   },
   {
-    n: "5",
-    title: "Answer once. Share it in any format.",
+    title: "Answer once, share it in any format",
     body: (
       <>
         California SB 253, CDP, a customer&apos;s questionnaire, plain Excel: the same approved
@@ -79,82 +72,52 @@ const PROMISES: { title: string; body: string }[] = [
 
 export default function HowItWorksPage() {
   return (
-    <div style={{ background: "var(--bg)" }}>
-      <LandingNav />
+    <MarketingPage>
+      <PageHead
+        title="Your emissions data, collected once, proven, and shared anywhere."
+        lede="One trusted record instead of email threads and conflicting spreadsheets."
+      />
 
-      <main>
-        {/* Hero */}
-        <section className="mx-auto max-w-3xl px-6 pt-20 pb-14 text-center">
-          <h1
-            className="mt-3 text-4xl font-extrabold leading-tight font-display sm:text-5xl"
-            style={{ color: "var(--text)" }}
-          >
-            Your emissions data, collected once, proven, and shared anywhere.
-          </h1>
-          <p className="mx-auto mt-5 max-w-xl text-lg" style={{ color: "var(--text-muted)" }}>
-            One trusted record instead of email threads and conflicting
-            spreadsheets.
-          </p>
-        </section>
-
-        {/* Steps */}
-        <section className="mx-auto max-w-2xl space-y-4 px-6 pb-20">
-          {STEPS.map((step) => (
-            <div key={step.n} className="card flex gap-5">
-              <div
-                className="shrink-0 font-bold font-data"
-                style={{ color: "var(--text-muted)" }}
-              >
-                {step.n}
-              </div>
-              <div>
-                <h2 className="font-bold font-display" style={{ color: "var(--text)" }}>
-                  {step.title}
-                </h2>
-                <p className="mt-1.5 text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>
-                  {step.body}
-                </p>
-              </div>
-            </div>
+      <Section>
+        <ol className={mk.steps}>
+          {STEPS.map((step, i) => (
+            <li key={step.title}>
+              <h3 className={mk.stepH}>
+                {i + 1}. {step.title}
+              </h3>
+              <p>{step.body}</p>
+            </li>
           ))}
-        </section>
+        </ol>
+      </Section>
 
-        {/* The three promises - ink band */}
-        <section className="px-6 py-16" style={{ background: "var(--ink-band)" }}>
-          <div className="mx-auto max-w-4xl">
-            <h2 className="text-center text-2xl font-bold font-display" style={{ color: "var(--ink-band-text)" }}>
-              Three promises we put in writing
-            </h2>
-            <div className="mt-10 grid gap-8 sm:grid-cols-3">
-              {PROMISES.map((p) => (
-                <div key={p.title} className="text-center">
-                  <p className="font-bold font-display" style={{ color: "var(--ink-band-text)" }}>{p.title}</p>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--ink-band-text)", opacity: 0.65 }}>
-                    {p.body}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
+      <Band>
+        <Section title="Three promises we put in writing">
+          <ul className={mk.rows}>
+            {PROMISES.map((p) => (
+              <li key={p.title}>
+                <span className={mk.rowTitle}>{p.title}</span>
+                <span>{p.body}</span>
+              </li>
+            ))}
+          </ul>
+        </Section>
+      </Band>
 
-        {/* CTAs */}
-        <section className="mx-auto max-w-2xl px-6 py-16 text-center">
-          <h2 className="text-xl font-bold font-display" style={{ color: "var(--text)" }}>
-            Ready?
-          </h2>
-          <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Link href="/for-consultants" className="btn btn-primary px-6 py-3 text-sm">
-              Are you a consultant? See the workspace
-            </Link>
-            <Link href="/get-matched" className="btn btn-secondary px-6 py-3 text-sm">
-              Got a data request? Get matched
-            </Link>
-          </div>
-        </section>
-      </main>
-
-      <LandingFooter />
-    </div>
+      <Close
+        title="Already have a request?"
+        actions={
+          <>
+            <ButtonLink href="/get-matched">Get matched</ButtonLink>
+            <ButtonLink href="/for-consultants" variant="secondary">
+              For consultants
+            </ButtonLink>
+          </>
+        }
+      >
+        Open the link in your consultant&rsquo;s email. You don&rsquo;t need an account. No consultant
+        yet? We can introduce you to one.
+      </Close>
+    </MarketingPage>
   );
 }

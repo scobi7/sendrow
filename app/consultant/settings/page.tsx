@@ -26,7 +26,7 @@ export default async function ConsultantSettingsPage() {
         action={saveBrandProfile}
         initial={{
           brandName: profile?.brandName ?? "",
-          accentColor: profile?.accentColor ?? "#178B5A",
+          accentColor: profile?.accentColor ?? "#0A7346",
           replyTo: profile?.replyTo ?? "",
           logoUrl: profile?.logoUrl ?? null,
         }}

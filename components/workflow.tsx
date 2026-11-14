@@ -79,14 +79,14 @@ export function StatCard({ label, value, href, active = false, tone = "neutral" 
     : "var(--text)";
   const body = (
     <div
-      className="card-inner transition-shadow"
+      className="card-inner transition-shadow group-hover:[border-color:var(--primary)]"
       style={active ? { borderColor: "var(--primary)", boxShadow: "inset 0 0 0 1px var(--primary)" } : undefined}
     >
       <p className="eyebrow">{label}</p>
       <p className="mt-2 font-data text-3xl font-bold" style={{ color: valueColor }}>{value}</p>
     </div>
   );
-  return href ? <Link href={href} className="block transition-transform hover:-translate-y-0.5">{body}</Link> : body;
+  return href ? <Link href={href} className="group block">{body}</Link> : body;
 }
 
 export function BackLink({ href = "/consultant", label = "Dashboard" }: { href?: string; label?: string }) {

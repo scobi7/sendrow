@@ -2,11 +2,10 @@ export const dynamic = "force-dynamic";
 
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Logo } from "@/components/ui";
 import { SubmitButton } from "@/components/submit-button";
-import { LandingFooter } from "@/components/landing-footer";
 import { sendDemoRequest } from "@/lib/email";
 import { clientIp, checkRateLimit } from "@/lib/ratelimit";
+import { MarketingPage, PageHead, Section, Sheet, ButtonLink, mk } from "@/components/marketing/parts";
 
 const CALENDLY_URL = process.env.NEXT_PUBLIC_CALENDLY_URL || "";
 
@@ -29,60 +28,39 @@ export default async function DemoPage({
     redirect("/demo?submitted=1");
   }
 
-  return (
-    <main className="flex min-h-screen flex-col" style={{ background: "var(--bg)" }}>
-      <header
-        className="flex items-center justify-between px-8 py-5"
-        style={{ background: "var(--surface)", borderBottom: "1px solid var(--divider)" }}
-      >
-        <Link href="/"><Logo /></Link>
-        <Link
-          href="/signup"
-          className="text-sm font-medium transition-opacity hover:opacity-70"
-          style={{ color: "var(--text-muted)" }}
+  if (submitted) {
+    return (
+      <MarketingPage>
+        <PageHead
+          title="Request received"
+          lede={CALENDLY_URL ? "We'll be in touch shortly. Or pick a time right now:" : "We'll be in touch shortly."}
         >
-          Get started free
-        </Link>
-      </header>
+          {CALENDLY_URL && (
+            <ButtonLink href={CALENDLY_URL} external>
+              Book a time
+            </ButtonLink>
+          )}
+        </PageHead>
+        <Section>
+          <Link href="/" className={mk.link}>
+            Back to home
+          </Link>
+        </Section>
+      </MarketingPage>
+    );
+  }
 
-      <div className="mx-auto flex w-full max-w-lg flex-1 flex-col justify-center px-6 py-16">
-        {submitted ? (
-          <div className="card text-center">
-            <div
-              className="flex h-12 w-12 items-center justify-center rounded-full mx-auto"
-              style={{ background: "var(--primary-tint)" }}
-            >
-              <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" style={{ color: "var(--primary)" }}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-              </svg>
-            </div>
-            <h1 className="mt-5 text-xl font-bold font-display" style={{ color: "var(--text)" }}>Request received</h1>
-            <p className="mt-2 text-sm" style={{ color: "var(--text-muted)" }}>
-              {CALENDLY_URL ? "We'll be in touch shortly. Or pick a time right now:" : "We'll be in touch shortly."}
-            </p>
-            {CALENDLY_URL && (
-              <a
-                href={CALENDLY_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn btn-primary mt-6 inline-block text-sm px-6 py-2.5"
-              >
-                Book a time
-              </a>
-            )}
-            <div className="mt-4">
-              <Link href="/" className="text-sm font-medium transition-opacity hover:opacity-70" style={{ color: "var(--text-muted)" }}>
-                Back to home
-              </Link>
-            </div>
-          </div>
-        ) : (
-          <div className="card">
-            <h1 className="text-2xl font-bold font-display" style={{ color: "var(--text)" }}>Request a demo</h1>
-            <p className="mt-2 text-sm" style={{ color: "var(--text-muted)" }}>
-              We&rsquo;ll show you how Sendrow handles a real questionnaire end to end.
-            </p>
-            <form action={requestDemo} className="mt-8 space-y-4">
+  return (
+    <MarketingPage>
+      <PageHead
+        title="Request a demo"
+        lede={<>We&rsquo;ll show you how Sendrow handles a real questionnaire end to end.</>}
+      />
+
+      <Section>
+        <div style={{ maxWidth: 720 }}>
+          <Sheet layered>
+            <form action={requestDemo} className="space-y-4">
               <div>
                 <label className="label">Your name</label>
                 <input name="name" required className="input" placeholder="Alex Johnson" />
@@ -100,29 +78,22 @@ export default async function DemoPage({
               </SubmitButton>
             </form>
             {CALENDLY_URL && (
-              <p className="mt-4 text-center text-xs" style={{ color: "var(--text-muted)" }}>
+              <p className={`${mk.meta} text-center`}>
                 Prefer to pick a time directly?{" "}
-                <a
-                  href={CALENDLY_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="underline transition-opacity hover:opacity-70"
-                  style={{ color: "var(--primary)" }}
-                >
+                <a href={CALENDLY_URL} target="_blank" rel="noopener noreferrer" className={mk.link}>
                   Book on Calendly
                 </a>
               </p>
             )}
-            <p className="mt-2 text-center text-xs" style={{ color: "var(--text-muted)" }}>
+            <p className={`${mk.meta} text-center`}>
               Rather sign up directly?{" "}
-              <Link href="/signup" className="underline transition-opacity hover:opacity-70" style={{ color: "var(--primary)" }}>
-                Get started free
+              <Link href="/signup" className={mk.link}>
+                Get started
               </Link>
             </p>
-          </div>
-        )}
-      </div>
-      <LandingFooter />
-    </main>
+          </Sheet>
+        </div>
+      </Section>
+    </MarketingPage>
   );
 }

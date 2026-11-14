@@ -1,367 +1,90 @@
-import Link from "next/link";
-import { LandingNav } from "@/components/landing-nav";
-import { LandingFooter } from "@/components/landing-footer";
+import { MarketingPage, PageHead, Section, Band, Sheet, ButtonLink, Close, mk } from "@/components/marketing/parts";
 
-const FEATURES = [
+const ROWS = [
   {
-    title: "Multi-client dashboard",
-    desc: "Every client, their progress, and what needs attention in one view. No more chasing status updates.",
+    title: "Client list",
+    text: "Every client, how far their current request has got, and which ones need you next.",
   },
   {
-    title: "Client invite links",
-    desc: "Generate a unique link for each client. They upload their data directly, no account needed: you review.",
+    title: "Requests",
+    text: "Pick what you need from each client: electricity and gas, fleet fuel, spend, travel or a commute survey. Start from a saved template.",
   },
   {
-    title: "Automated calculations",
-    desc: "GHG Protocol emission factors applied automatically for every client. No manual factor lookups.",
+    title: "Client portal",
+    text: "Your client opens one link and uploads bills, invoices or spreadsheets, or types the figures in. No account.",
   },
   {
-    title: "Audit-ready reports",
-    desc: "PDF exports and questionnaire pre-fills for CDP, EcoVadis, and Walmart. Methodology documented for every figure.",
+    title: "Reminders",
+    text: "Sendrow sends reminders until your client finishes.",
   },
   {
-    title: "Full audit trail",
-    desc: "Every figure links to its source and method, across every client.",
+    title: "Review",
+    text: "Each row shows its source document, the factor (name, value, source and year) and the formula. Fix or exclude a row and Sendrow logs the change.",
   },
   {
-    title: "Progress tracking",
-    desc: "See at a glance which clients are on track, which are stalled, and exactly where they need your attention.",
+    title: "Snapshots",
+    text: "Approve a dated snapshot and share it as a PDF in your brand, an Excel export that adds up to the totals, or a read-only link. A correction makes a new version and alerts everyone who had the old one.",
+  },
+  {
+    title: "Questionnaire formats",
+    text: "Fill CDP, EcoVadis and Walmart questionnaire fields from an approved snapshot.",
+  },
+  {
+    title: "Deadlines",
+    text: "A calendar of SB 253, CDP and EcoVadis dates, each with its source.",
+  },
+  {
+    title: "Your brand",
+    text: "Your logo and color on requests, the portal, emails and the PDF, with a small “Powered by Sendrow” line at the bottom.",
   },
 ];
-
-const MOCK_CLIENTS = [
-  { name: "Pacific Coast Logistics", status: "Complete", pct: 100 },
-  { name: "Bay Area Manufacturing Co.", status: "In Progress", pct: 57 },
-  { name: "Central Valley Foods", status: "Needs Attention", pct: 29 },
-  { name: "Sierra Industrial Supply", status: "In Progress", pct: 71 },
-];
-
-const STATUS_COLORS: Record<string, string> = {
-  "Complete": "var(--status-green)",
-  "In Progress": "var(--primary)",
-  "Needs Attention": "#F59E0B",
-};
 
 export default function ForConsultants() {
   return (
-    <main style={{ background: "var(--bg)", minHeight: "100vh" }}>
-      <LandingNav />
-
-      {/* Hero */}
-      <section
-        className="relative overflow-hidden px-6 text-center"
-        style={{
-          minHeight: "100vh",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          paddingTop: "7rem",
-          paddingBottom: "0",
-        }}
+    <MarketingPage>
+      <PageHead
+        title="Every client&rsquo;s emissions data, in one workspace."
+        lede="Send each client a request, see who has answered, check every figure against its bill, and deliver a dated snapshot under your own brand."
       >
-        <div className="relative z-10 w-full max-w-5xl">
-          <h1
-            className="mx-auto max-w-3xl font-display text-5xl font-extrabold leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl"
-            style={{ color: "var(--text)" }}
-          >
-            Run your entire client book
-            <br />
-            <span style={{ color: "var(--primary)" }}>from one platform.</span>
-          </h1>
+        <ButtonLink href="/signup">Get started</ButtonLink>
+        <ButtonLink href="/demo" variant="secondary">Book a demo</ButtonLink>
+      </PageHead>
 
-          <p
-            className="mx-auto mt-6 max-w-xl text-lg leading-relaxed"
-            style={{ color: "var(--text-muted)" }}
-          >
-            Clients upload their own data through a secure link, with no account needed. Sendrow runs the calculations. You review, report, and deliver without the spreadsheet overhead.
-          </p>
-
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
-            <Link href="/demo" className="btn btn-primary px-6 py-3 text-sm">
-              Request a demo
-            </Link>
-            <Link href="/signup" className="btn btn-secondary px-6 py-3 text-sm">
-              Get started free
-            </Link>
-          </div>
-
-          {/* Client dashboard preview */}
-          <div className="relative z-10 mt-16 w-full">
-            <div
-              className="mx-auto max-w-4xl overflow-hidden rounded-2xl"
-              style={{
-                background: "var(--card)",
-                border: "1px solid rgba(15,50,28,0.12)",
-                boxShadow: "var(--shadow-card)",
-              }}
-            >
-              <div
-                className="flex items-center gap-2 px-5 py-3.5"
-                style={{ borderBottom: "1px solid rgba(15,50,28,0.08)" }}
-              >
-                <span className="h-2.5 w-2.5 rounded-full" style={{ background: "#FF5F57" }} />
-                <span className="h-2.5 w-2.5 rounded-full" style={{ background: "#FFBD2E" }} />
-                <span className="h-2.5 w-2.5 rounded-full" style={{ background: "#28C840" }} />
-                <span className="ml-4 text-xs font-medium" style={{ color: "var(--text-muted)" }}>
-                  Sendrow: Consultant Dashboard
-                </span>
-              </div>
-
-              <div className="p-5">
-                {/* Summary row */}
-                <div className="mb-4 grid grid-cols-3 gap-3">
-                  {[
-                    { label: "Active clients", value: "4" },
-                    { label: "Reports complete", value: "1" },
-                    { label: "Need attention", value: "1" },
-                  ].map(({ label, value }) => (
-                    <div
-                      key={label}
-                      className="rounded-xl p-4"
-                      style={{ background: "rgba(255,255,255,0.65)", border: "1px solid rgba(15,50,28,0.07)" }}
-                    >
-                      <p className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
-                        {label}
-                      </p>
-                      <p className="mt-1.5 font-data text-2xl font-bold" style={{ color: "var(--text)" }}>
-                        {value}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Client table */}
-                <div
-                  className="overflow-hidden rounded-xl"
-                  style={{ background: "rgba(255,255,255,0.65)", border: "1px solid rgba(15,50,28,0.07)" }}
-                >
-                  <div
-                    className="grid grid-cols-3 px-4 py-2.5 text-xs font-bold uppercase tracking-wide"
-                    style={{ color: "var(--text-muted)", borderBottom: "1px solid rgba(15,50,28,0.07)" }}
-                  >
-                    <span>Client</span>
-                    <span>Progress</span>
-                    <span>Status</span>
-                  </div>
-                  {MOCK_CLIENTS.map(({ name, status, pct }) => (
-                    <div
-                      key={name}
-                      className="grid grid-cols-3 items-center px-4 py-3"
-                      style={{ borderBottom: "1px solid rgba(15,50,28,0.05)" }}
-                    >
-                      <p className="text-xs font-semibold" style={{ color: "var(--text)" }}>{name}</p>
-                      <div className="flex items-center gap-2">
-                        <div className="h-1.5 flex-1 overflow-hidden rounded-full" style={{ background: "rgba(15,50,28,0.08)" }}>
-                          <div
-                            className="h-full rounded-full"
-                            style={{ width: `${pct}%`, background: "var(--primary)" }}
-                          />
-                        </div>
-                        <span className="font-data text-xs font-semibold" style={{ color: "var(--text-muted)" }}>
-                          {pct}%
-                        </span>
-                      </div>
-                      <span
-                        className="inline-flex w-fit items-center rounded px-2 py-0.5 text-xs font-semibold"
-                        style={{
-                          background: `${STATUS_COLORS[status]}22`,
-                          color: STATUS_COLORS[status],
-                        }}
-                      >
-                        {status}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Trust bar */}
-      <div style={{ background: "#fff", borderTop: "1px solid var(--divider)", borderBottom: "1px solid var(--divider)" }}>
-        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-center gap-10 px-6 py-7">
-          <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
-            Built on GHG Protocol methodology: questionnaire mapping for
-          </span>
-          {["CDP", "EcoVadis", "Walmart Supplier Sustainability"].map((name) => (
-            <span key={name} className="text-sm font-semibold" style={{ color: "var(--text-muted)" }}>
-              {name}
-            </span>
+      <Section title="What&rsquo;s in the workspace">
+        <ul className={mk.rows}>
+          {ROWS.map(({ title, text }) => (
+            <li key={title}>
+              <span className={mk.rowTitle}>{title}</span>
+              <span>{text}</span>
+            </li>
           ))}
-        </div>
-      </div>
+        </ul>
+      </Section>
 
-      {/* Features */}
-      <section id="features" className="px-6 py-24" style={{ background: "var(--surface)" }}>
-        <div className="mx-auto max-w-5xl">
-          <h2
-            className="font-display text-3xl font-extrabold tracking-tight sm:text-4xl"
-            style={{ color: "var(--text)" }}
-          >
-            Built for practices that are
-            <br className="hidden sm:block" />
-            ready to scale
-          </h2>
-          <p className="mt-4 max-w-lg text-base leading-relaxed" style={{ color: "var(--text-muted)" }}>
-            Clients self-serve their data. Calculations run automatically. You stay focused on the work that requires your expertise.
-          </p>
-
-          <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {FEATURES.map(({ title, desc }) => (
-              <div
-                key={title}
-                className="rounded-2xl bg-white p-6 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg"
-                style={{ border: "1px solid var(--divider)", boxShadow: "0 1px 3px rgba(15,50,28,0.04)" }}
-              >
-                <h3 className="font-display font-bold" style={{ color: "var(--text)" }}>{title}</h3>
-                <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>{desc}</p>
+      <Band>
+        <Section title="Pricing" id="pricing">
+          <div style={{ maxWidth: 720 }}>
+            <Sheet layered>
+              <p>We haven&rsquo;t published prices yet. Tell us about your practice and we&rsquo;ll send you a quote.</p>
+              <div style={{ marginTop: 24 }}>
+                <ButtonLink href="/pricing/agency">Get a quote</ButtonLink>
               </div>
-            ))}
+            </Sheet>
           </div>
-        </div>
-      </section>
+        </Section>
+      </Band>
 
-      {/* How clients connect */}
-      <section className="px-6 py-24">
-        <div className="mx-auto max-w-5xl">
-          <div className="grid items-center gap-16 lg:grid-cols-2">
-            <div>
-              <h2
-                className="font-display text-3xl font-extrabold tracking-tight sm:text-4xl"
-                style={{ color: "var(--text)" }}
-              >
-                Clients handle their own
-                <br />
-                data collection.
-              </h2>
-              <p className="mt-4 text-base leading-relaxed" style={{ color: "var(--text-muted)" }}>
-                Send a client a secure link: no account, no software to connect. They upload utility bills and fuel receipts, or type the numbers in, and Sendrow runs the calculations the moment it lands.
-              </p>
-              <ul className="mt-8 space-y-4">
-                {[
-                  "Generate a unique invite link per client in one click",
-                  "Clients upload or type in their own data. You never chase spreadsheets by email",
-                  "You see their progress in real time and can step in wherever needed",
-                ].map((item) => (
-                  <li key={item} className="flex items-start gap-3 text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>
-                    <span
-                      className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full"
-                      style={{ background: "rgba(34,197,94,0.12)", border: "1px solid rgba(34,168,84,0.3)" }}
-                    >
-                      <svg width="9" height="9" viewBox="0 0 9 9" fill="none" aria-hidden>
-                        <path d="M1 4.5l2.5 2.5L8 1.5" stroke="#1A5C30" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    </span>
-                    <span dangerouslySetInnerHTML={{ __html: item }} />
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Invite flow visual */}
-            <div className="rounded-2xl p-6" style={{ background: "var(--card)", border: "1px solid rgba(15,50,28,0.1)" }}>
-              <p className="mb-4 text-xs font-bold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
-                Client invite flow
-              </p>
-              <div className="space-y-3">
-                {[
-                  { step: "1", title: "You generate an invite link", sub: "Each client gets a unique link." },
-                  { step: "2", title: "Client uploads their data", sub: "Utility bills, fuel receipts, or typed in directly. No account needed." },
-                  { step: "3", title: "Calculations run automatically", sub: "Scope 1, 2, and 3 calculated the moment data lands." },
-                  { step: "4", title: "You review and generate the report", sub: "Audit-ready PDF, pre-filled questionnaire fields." },
-                ].map(({ step, title, sub }) => (
-                  <div
-                    key={step}
-                    className="flex items-start gap-4 rounded-xl p-4"
-                    style={{ background: "#fff", border: "1px solid rgba(15,50,28,0.08)" }}
-                  >
-                    <div
-                      className="shrink-0 font-data text-xs font-black"
-                      style={{ color: "var(--text-muted)" }}
-                    >
-                      {step}
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>{title}</p>
-                      <p className="mt-0.5 text-xs" style={{ color: "var(--text-muted)" }}>{sub}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* How it works */}
-      <section id="how-it-works" className="px-6 py-24">
-        <div className="mx-auto max-w-5xl">
-          <h2
-            className="font-display text-3xl font-extrabold tracking-tight sm:text-4xl"
-            style={{ color: "var(--text)" }}
-          >
-            From new client to delivered report
-          </h2>
-          <div className="mt-14 grid gap-10 sm:grid-cols-3">
-            {[
-              {
-                num: "01",
-                title: "Add a client",
-                desc: "Create a client profile and generate a unique invite link. Send it over however you like.",
-              },
-              {
-                num: "02",
-                title: "They upload their data",
-                desc: "Clients upload utility bills and fuel receipts, or type the numbers in, with no account, no software to connect.",
-              },
-              {
-                num: "03",
-                title: "You review and deliver",
-                desc: "Check calculations, generate an audit-ready PDF or pre-filled questionnaire, and deliver to your client.",
-              },
-            ].map(({ num, title, desc }) => (
-              <div key={num}>
-                <p className="font-data text-5xl font-bold leading-none" style={{ color: "rgba(26,92,48,0.13)" }}>
-                  {num}
-                </p>
-                <h3 className="mt-5 font-display text-lg font-bold" style={{ color: "var(--text)" }}>{title}</h3>
-                <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>{desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* About */}
-      <section
-        id="about"
-        className="px-6 py-24"
-        style={{ background: "var(--surface)", borderTop: "1px solid var(--divider)" }}
+      <Close
+        title="Send your first request."
+        actions={
+          <>
+            <ButtonLink href="/signup">Get started</ButtonLink>
+            <ButtonLink href="/demo" variant="secondary">Book a demo</ButtonLink>
+          </>
+        }
       >
-        <div className="mx-auto max-w-5xl">
-          <div className="max-w-2xl">
-            <div>
-              <h2
-                className="font-display text-3xl font-extrabold tracking-tight sm:text-4xl"
-                style={{ color: "var(--text)" }}
-              >
-                ESG consultants whose practice is outgrowing their tools
-              </h2>
-              <p className="mt-5 text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>
-                ESG practices are growing fast, but the tools haven&rsquo;t kept up. Most consultants are still coordinating data collection over email, running calculations in spreadsheets, and manually building reports for every client.
-              </p>
-              <p className="mt-4 text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>
-                Sendrow gives you a platform where clients handle their own data, calculations run automatically, and every report is audit-ready from the start. Your time goes to the analysis itself.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <LandingFooter />
-    </main>
+        Add your brand, add a client, send the link.
+      </Close>
+    </MarketingPage>
   );
 }

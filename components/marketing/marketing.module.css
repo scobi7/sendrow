@@ -1,0 +1,137 @@
+/* Marketing and legal pages, direction 4c. Mirrors app/home.module.css so every public page
+   reads like the homepage. Colors, radius and shadows come from the tokens in app/globals.css. */
+
+.page {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 18px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+.page ::selection { background: var(--primary-tint); color: var(--text); }
+.page :focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+.wrap { max-width: 1320px; margin: 0 auto; padding-left: 40px; padding-right: 40px; }
+
+/* ---------- Headings (Archivo at normal width, Malachi's "upright" setting) ---------- */
+.h1, .h2, .h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-stretch: 100%;
+  font-weight: 800;
+  letter-spacing: -0.015em;
+  line-height: 1.06;
+  word-spacing: 0.05em;
+  text-wrap: balance;
+  color: var(--text);
+}
+.h1 { font-size: 64px; max-width: 16ch; }
+.h2 { font-size: 40px; max-width: 22ch; }
+.h3 { font-size: 24px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.2; margin-bottom: 12px; }
+
+/* ---------- Page head: pulled-left headline, lede under it ---------- */
+.head { padding-top: 88px; padding-bottom: 8px; }
+.lede { margin-top: 24px; max-width: 60ch; font-size: 20px; line-height: 1.55; color: var(--text); }
+.headActions { margin-top: 32px; }
+
+/* ---------- Sections ---------- */
+.section { padding-top: 112px; }
+.sectionRule { margin-top: 112px; padding-top: 64px; border-top: 1px solid var(--divider); }
+.intro { margin-top: 16px; max-width: 60ch; color: var(--text-muted); }
+.body { margin-top: 40px; }
+.muted { color: var(--text-muted); }
+
+/* Tinted band: the homepage's second layer, full width */
+.band { margin-top: 112px; padding-top: 88px; padding-bottom: 96px; background: var(--primary-tint); }
+.band .section:first-child { padding-top: 0; }
+
+/* ---------- Sheets: white surfaces; "layered" puts a tint sheet behind, peeking above ---------- */
+.sheet {
+  position: relative;
+  background: var(--surface);
+  border-radius: 10px;
+  box-shadow: var(--shadow-card);
+  padding: 36px 40px 40px;
+}
+.layered { margin-top: 28px; }
+.layered::before {
+  content: "";
+  position: absolute;
+  left: 24px; right: 24px; top: -14px; height: 40px;
+  background: var(--primary-tint);
+  border: 1px solid var(--divider);
+  border-bottom: 0;
+  border-radius: 10px 10px 0 0;
+  z-index: -1;
+}
+.layeredWrap { position: relative; z-index: 0; }
+/* On the tinted band the back sheet would vanish (tint on tint), so it takes the page color there */
+.band .layered::before { background: var(--bg); }
+
+/* ---------- Numbered steps and plain lists ---------- */
+.steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 48px; counter-reset: step; }
+.steps > li { max-width: 62ch; }
+.stepH { margin: 0 0 12px; font-family: var(--font-display); font-stretch: 100%; font-size: 26px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.15; color: var(--text); }
+.rows { list-style: none; margin: 0; padding: 0; }
+.rows > li { padding: 22px 0; border-top: 1px solid var(--divider); display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); column-gap: 24px; }
+.rows > li:last-child { border-bottom: 1px solid var(--divider); }
+.rowTitle { font-weight: 700; }
+
+/* ---------- Two columns, the right one narrower on purpose ---------- */
+.split { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); column-gap: 64px; row-gap: 40px; align-items: start; }
+
+/* ---------- Prose (legal pages) ---------- */
+.prose { max-width: 68ch; }
+.prose h2 { margin: 48px 0 12px; font-family: var(--font-display); font-stretch: 100%; font-size: 24px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.2; color: var(--text); }
+.prose h3 { margin: 28px 0 8px; font-size: 18px; font-weight: 700; color: var(--text); }
+.prose p, .prose li { font-size: 17px; line-height: 1.65; color: var(--text); }
+.prose p + p { margin-top: 14px; }
+.prose ul, .prose ol { margin: 12px 0 0; padding-left: 22px; }
+.prose li + li { margin-top: 6px; }
+.prose a, .link { color: var(--primary); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+.meta { margin-top: 16px; font-size: 15px; color: var(--text-muted); }
+
+/* ---------- Buttons (same as the homepage) ---------- */
+.actions { display: flex; flex-wrap: wrap; gap: 12px; }
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 44px; padding: 0 20px; border-radius: 10px;
+  font: inherit; font-size: 16px; font-weight: 600; line-height: 1;
+  text-decoration: none; white-space: nowrap; cursor: pointer;
+  border: 1px solid transparent;
+}
+.btnPrimary { background: var(--primary); color: var(--surface); border-color: var(--primary); }
+.btnPrimary:hover { background: var(--primary-strong); border-color: var(--primary-strong); }
+.btnSecondary { background: transparent; color: var(--text); border-color: var(--text); }
+.btnSecondary:hover { background: var(--surface); }
+
+/* ---------- Closing call to action ---------- */
+.close { padding-top: 128px; padding-bottom: 128px; }
+.close p { margin-top: 20px; }
+.close .actions { margin-top: 28px; }
+
+@media (max-width: 1000px) {
+  .h1 { font-size: 52px; }
+  .split { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (max-width: 760px) {
+  .page { font-size: 17px; }
+  .wrap { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  .h1 { font-size: 38px; line-height: 1.04; }
+  .h2 { font-size: 30px; }
+  .h3 { font-size: 21px; }
+  .head { padding-top: 44px; }
+  .lede { font-size: 18px; }
+  .section { padding-top: 72px; }
+  .sectionRule { margin-top: 72px; padding-top: 44px; }
+  .band { margin-top: 72px; padding-top: 56px; padding-bottom: 64px; }
+  .sheet { padding: 24px 20px 26px; }
+  .layered::before { left: 14px; right: 14px; }
+  .steps { gap: 36px; }
+  .stepH { font-size: 22px; }
+  .rows > li { grid-template-columns: minmax(0, 1fr); row-gap: 6px; }
+  .actions .btn { flex: 1 1 auto; }
+  .close { padding-top: 80px; padding-bottom: 88px; }
+}
