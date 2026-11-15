@@ -3,7 +3,7 @@
 Update at the end of every session. Keep it current, not historical: git holds the history.
 
 ## Now (2026-11-13)
-- Branch `sendrow-v3`, pushed. Preview of the latest push: https://sendrow-git-sendrow-v3-malachinguyenn-4218s-projects.vercel.app. `main` (sendrow.app) caught up to v3 on 2026-11-15 (fast-forward to bfbb793; the build's schema push reported no changes). Clerk production sign-up is in Waitlist mode (2026-11-15): strangers request access on /request-access and land in the Clerk dashboard's Waitlist tab; design partners are invited from Users > Invitations or from that tab.
+- Branch `sendrow-v3`, pushed. Preview of the latest push: https://sendrow-git-sendrow-v3-malachinguyenn-4218s-projects.vercel.app. `main` (sendrow.app) caught up to v3 on 2026-11-15 (fast-forward to bfbb793; the build's schema push reported no changes). `main` at fad911b (request access page) on 2026-11-15. Vercel Blob store `sendrow-evidence` (public access, Production and Preview) created 2026-11-15; production redeployed and a logo upload confirmed files save. Clerk production sign-up is in Waitlist mode (2026-11-15): strangers request access on /request-access and land in the Clerk dashboard's Waitlist tab; design partners are invited from Users > Invitations or from that tab.
 - Today on v3: tech-debt pass (security fixes, QuickBooks code removed), 20-item UX pass, design-partner fixes from `docs/plan-ui.md` (Ledger rebrand tokens, consultant nav and phone menu, client tabs, deadlines strip and sourced dates config, "Get started" checklist, per-row "How calculated" panel, Excel traceability columns, snapshot and PDF totals fixes, branded PDF).
 - Also today: homepage turned into self-serve onboarding (deadline bar and sourced deadlines section, supplier "no account needed" box, design-partner pitch and waitlist removed); dashes swept from consultant, admin, marketing, legal, portal and email copy; supplier-calculated core logic (hidden from the request form until its rows are labeled).
 - UI: direction 4c approved and built on v3 (theme tokens, Archivo, one radius, homepage, shared nav and footer); `DESIGN.md` holds the theme. Site copy went through /no-ai-slop.
@@ -20,9 +20,7 @@ Update at the end of every session. Keep it current, not historical: git holds t
 
 ## Next
 P0, before a design partner touches real client data:
-- Confirm `BLOB_READ_WRITE_TOKEN` is set in production (otherwise evidence is hash-only).
 - Load real EPA eGRID2024 and USEEIO v2.5 factor values via `/admin/factors`.
-- Apply the `userCompanies.stripeCustomerId` column (nullable; applies on the next deploy's schema push).
 
 P1:
 - Upgrade Next to 16.3+ as its own job (fixes the server action stall upstream; then restore the consultant loading skeleton). Then: preview builds on their own Neon branch with migrations instead of `push --force`, and the `neon-serverless` driver for transactions (see the stack write-up, 2026-11-14).
@@ -55,7 +53,6 @@ Deferred tech debt (from the 2026-11-13 audit, not yet approved or decided):
 ## Waiting on Malachi
 | What | Where |
 |---|---|
-| Confirm `BLOB_READ_WRITE_TOKEN` in prod | Vercel |
 | Look over the 4c site on the preview, signed in | preview |
 | Drop `gapAnalysis`? (dead code from the company self-serve product) | this session |
 | Reflect proposals 1-5 from the tech-debt pass, plus today's | this session |
@@ -67,6 +64,7 @@ Deferred tech debt (from the 2026-11-13 audit, not yet approved or decided):
 | Possibly stale (from 2026-09-02, check): Clerk prod Google OAuth, attorney ToS (tool, not advice), Calendly links to a business account | ops |
 
 ## Log
+- 2026-11-15: main fast-forwarded to fad911b and deployed. Blob store created with a read-write token (the code reads `BLOB_READ_WRITE_TOKEN`; Vercel's default OIDC-only connection would not set it); redeployed; logo upload works on prod. Uploads before today are hash-only. Design partner invited.
 - 2026-11-15: Request access page (Clerk <Waitlist/>, 4c); every "Get started" button now says "Request access"; a bare /signup with no invite ticket redirects there. 4 new browser tests; public and snapshot suites green on a fresh Neon branch (deleted). Fixed a sign-out race in the snapshot tests.
 - 2026-11-15: Merged v3 to main (fast-forward, 27 commits); production deploy Ready, schema push no changes; smoke test on www.sendrow.app passed (homepage 4c, unknown path 404, signed-out /consultant to /login, cron 401). Clerk sign-up set to Invite-only by Malachi.
 - 2026-11-14: Malachi's calls on the open items: signed-out unknown paths now 404 (middleware protects only app sections, guarded by test/middleware-routes.test.ts); no loading skeleton until Next 16.3; Reports page shows Scope 2 market-based. Found and fixed: the market-based override was added to the line items' market figure instead of replacing it. Neon test branch deleted; a fresh one made and deleted for the rerun.

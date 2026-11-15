@@ -31,6 +31,7 @@ Traps that cost time, with the fix or workaround. Add one when something bites; 
 - `lib/ratelimit.ts` is an in-process `Map`, so limits don't hold across Vercel instances. Needs a shared store to be real.
 - Private Blob access needs `@vercel/blob` 1.1.1 to 2.x (multi-major). Meanwhile evidence downloads stream through `/api/evidence/[id]`, so the raw blob URL never reaches the browser.
 - Without `BLOB_READ_WRITE_TOKEN`, uploads record only a sha256 hash, not the file.
+- New Vercel Blob stores connect with OIDC only (`BLOB_STORE_ID`). Our code (@vercel/blob 1.x, `access: "public"`) needs `BLOB_READ_WRITE_TOKEN`: tick "Add a read-write token env var" and pick Public access when creating a store. Production's store has it since 2026-11-15; uploads before that are hash-only.
 - `/admin/*` is gated once, in `middleware.ts` via `ADMIN_CLERK_ID`. Don't add a second check in pages (that caused the BUG-1 hang). `/api/cron/reminders` fails closed without `CRON_SECRET`.
 - The billing gate is disabled in `middleware.ts`.
 
