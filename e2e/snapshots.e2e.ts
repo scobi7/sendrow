@@ -136,6 +136,9 @@ async function excludeInLedger(page: Page, id: string, sourceRef: string) {
 
 /** Signed-out view: clears the session cookies on this page's context. */
 async function signOut(page: Page) {
+  // Leave the consultant page first: if it is still open when the session goes, its tab links'
+  // background prefetches hit the sign-in redirect and log CORS errors (seen 2026-11-15).
+  await page.goto("about:blank");
   await page.context().clearCookies();
 }
 

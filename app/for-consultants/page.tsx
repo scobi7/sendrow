@@ -46,7 +46,7 @@ export default function ForConsultants() {
         title="Every client&rsquo;s emissions data, in one workspace."
         lede="Send each client a request, see who has answered, check every figure against its bill, and deliver a dated snapshot under your own brand."
       >
-        <ButtonLink href="/signup">Get started</ButtonLink>
+        <ButtonLink href="/request-access">Request access</ButtonLink>
         <ButtonLink href="/demo" variant="secondary">Book a demo</ButtonLink>
       </PageHead>
 
@@ -78,7 +78,7 @@ export default function ForConsultants() {
         title="Send your first request."
         actions={
           <>
-            <ButtonLink href="/signup">Get started</ButtonLink>
+            <ButtonLink href="/request-access">Request access</ButtonLink>
             <ButtonLink href="/demo" variant="secondary">Book a demo</ButtonLink>
           </>
         }

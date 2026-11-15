@@ -34,6 +34,8 @@ const archivoAliases = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <ClerkProvider
+      // Sign-up is in Clerk's Waitlist mode; its "Join waitlist" links point here.
+      waitlistUrl="/request-access"
       appearance={{
         // Clerk takes literal colors, so these mirror the 4c tokens in app/globals.css.
         variables: {

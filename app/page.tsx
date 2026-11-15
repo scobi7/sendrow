@@ -39,8 +39,8 @@ export default async function Home() {
                   snapshot under your own brand.
                 </p>
                 <div className={`${styles.actions} ${styles.heroActions}`}>
-                  <TrackedLink href="/signup" event="hero_get_started_click" className={`${styles.btn} ${styles.btnPrimary}`}>
-                    Get started
+                  <TrackedLink href="/request-access" event="hero_get_started_click" className={`${styles.btn} ${styles.btnPrimary}`}>
+                    Request access
                   </TrackedLink>
                   <TrackedLink href="/demo" event="hero_book_demo_click" className={`${styles.btn} ${styles.btnSecondary}`}>
                     Book a demo
@@ -282,8 +282,8 @@ export default async function Home() {
             </h2>
             <p>Add your brand, add a client, send the link.</p>
             <div className={`${styles.actions} ${styles.closeActions}`}>
-              <TrackedLink href="/signup" event="close_get_started_click" className={`${styles.btn} ${styles.btnPrimary}`}>
-                Get started
+              <TrackedLink href="/request-access" event="close_get_started_click" className={`${styles.btn} ${styles.btnPrimary}`}>
+                Request access
               </TrackedLink>
               <TrackedLink href="/demo" event="close_book_demo_click" className={`${styles.btn} ${styles.btnSecondary}`}>
                 Book a demo

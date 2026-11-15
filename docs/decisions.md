@@ -24,6 +24,7 @@ What's settled, with the date and why. This is the project's long-term memory: w
 AI suggestions; buyer features (2027); QuickBooks or utility integrations; peer benchmarking or any cross-client data use; EPR module; referral-routing software (Masao's spreadsheet; `/admin/referrals` frozen as is); scoring suppliers; managed service; direct-to-company self-serve (lives on `sendrow-v1`); enterprise SSO; in-app newsletter; third-party analytics or ad pixels; blockchain traceability; international expansion; ML on the dataset.
 
 ## Build decisions
+- 2026-11-15 (Malachi): Sign-up is closed to strangers (Clerk Waitlist mode). /request-access holds Clerk's waitlist form; Malachi invites from the Clerk dashboard. Every "Get started" button became "Request access". Revisit when the paywall goes on.
 - 2026-11-14 (Malachi): Signed-out visitors to an unknown path get the 404 page. `middleware.ts` requires sign-in only on `/consultant`, `/admin`, `/checkout` and `/api` (minus four routes that check a token, secret or signature themselves); everything else is public. `test/middleware-routes.test.ts` fails until each new top-level folder in `app/` is classified, so nothing becomes public by accident.
 - 2026-11-14 (Malachi): Consultant pages go without a loading skeleton until the Next 16.3 upgrade, planned as its own job.
 - 2026-11-14 (Malachi): The Reports page shows Scope 2 location-based with the market-based figure under it (dual reporting, as the PDF, shared page and CDP answers already do). The total stays location-based.

@@ -66,8 +66,8 @@ export function LandingNav() {
               </Link>
             ))}
           </nav>
-          <Link href="/signup" className="btn btn-primary px-4 py-2 text-sm sm:ml-7 sm:text-base">
-            Get started
+          <Link href="/request-access" className="btn btn-primary px-4 py-2 text-sm sm:ml-7 sm:text-base">
+            Request access
           </Link>
           <button
             ref={buttonRef}

@@ -1,5 +1,6 @@
 import { SignUp } from "@clerk/nextjs";
 import { Suspense } from "react";
+import { redirect } from "next/navigation";
 import { Logo } from "@/components/ui";
 
 function AuthSkeleton() {
@@ -8,7 +9,19 @@ function AuthSkeleton() {
   );
 }
 
-export default function SignupPage() {
+/** Sign-up is invite-only (Clerk Waitlist mode). An invite link arrives with a __clerk_ticket, and
+ *  Clerk's later steps use sub-paths (/signup/continue, /signup/verify-...), so only a bare /signup
+ *  with no ticket goes to the request form. */
+export default async function SignupPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ "sign-up"?: string[] }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const [{ "sign-up": step }, query] = await Promise.all([params, searchParams]);
+  if (!step?.length && !query.__clerk_ticket) redirect("/request-access");
+
   return (
     <main className="flex min-h-screen flex-col items-center justify-center px-6" style={{ background: "var(--bg)" }}>
       <Logo />

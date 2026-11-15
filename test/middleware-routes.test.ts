@@ -15,7 +15,7 @@ const PROTECTED = ["consultant", "admin", "checkout", "api"];
 /** Open to signed-out visitors (marketing, legal, auth screens, token-auth pages). */
 const PUBLIC = [
   "demo", "dpa", "for-consultants", "get-matched", "how-it-works", "login", "onboarding",
-  "portal", "pricing", "privacy", "security", "shared", "signup", "sso-callback", "terms",
+  "portal", "pricing", "privacy", "request-access", "security", "shared", "signup", "sso-callback", "terms",
 ];
 
 /** API routes that skip sign-in because they check a token, secret or signature themselves. */

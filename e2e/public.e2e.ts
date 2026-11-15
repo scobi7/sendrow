@@ -17,7 +17,7 @@ const PUBLIC_ROUTES = [
   "/terms",
   "/dpa",
   "/login",
-  "/signup",
+  "/request-access",
 ];
 
 const SIGN_IN_URL = /\/login|sign-in|accounts\./;
@@ -129,6 +129,36 @@ test("signed out: a protected API route is still refused", async ({ request }) =
   const res = await request.get("/api/clients/demo_bayb/export", { maxRedirects: 0 });
   expect(res.status(), "not served to a signed-out caller").not.toBe(200);
   expect(await res.text()).not.toContain("Bayshore Bottling");
+});
+
+// Sign-up is invite-only (Clerk Waitlist mode, 2026-11-15). Strangers request access; invite links
+// carry a __clerk_ticket and still reach Clerk's sign-up form.
+test("request access: the page shows Clerk's waitlist form with its sign-in link", async ({ page }) => {
+  await page.goto("/request-access", { waitUntil: "load" });
+  await expect(page.getByRole("heading", { level: 1, name: "Request access" })).toBeVisible();
+  await expect(page.locator('input[type="email"], input[name="emailAddress"]').first()).toBeVisible();
+  // Clerk's own card footer: "Already have access? Sign in".
+  await expect(page.locator('a[data-localization-key="waitlist.start.actionLink"]')).toHaveAttribute("href", /\/login$/);
+});
+
+test("request access: /signup without an invite goes to the request page", async ({ page }) => {
+  await page.goto("/signup", { waitUntil: "load" });
+  await expect(page).toHaveURL(/\/request-access$/);
+});
+
+test("request access: an invite link still opens Clerk's sign-up form", async ({ page }) => {
+  // A fake ticket: Clerk rejects it, but the page must render the sign-up form, not redirect away.
+  const res = await page.goto("/signup?__clerk_ticket=e2e-not-a-real-ticket", { waitUntil: "load" });
+  expect(res!.status()).toBeLessThan(400);
+  await expect(page).toHaveURL(/\/signup\?__clerk_ticket=/);
+});
+
+test("request access: the homepage and nav buttons lead there", async ({ page }) => {
+  await page.goto("/");
+  const links = page.getByRole("link", { name: "Request access" });
+  expect(await links.count()).toBeGreaterThanOrEqual(2);
+  for (const href of await links.evaluateAll((els) => els.map((e) => e.getAttribute("href")))) expect(href).toBe("/request-access");
+  await expect(page.getByRole("link", { name: "Get started" })).toHaveCount(0);
 });
 
 test("a fake portal token shows a friendly message", async ({ page }) => {

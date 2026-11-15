@@ -86,9 +86,9 @@ export default async function DemoPage({
               </p>
             )}
             <p className={`${mk.meta} text-center`}>
-              Rather sign up directly?{" "}
-              <Link href="/signup" className={mk.link}>
-                Get started
+              Rather skip the call?{" "}
+              <Link href="/request-access" className={mk.link}>
+                Request access
               </Link>
             </p>
           </Sheet>
