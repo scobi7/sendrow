@@ -5,6 +5,7 @@ What's settled, with the date and why. This is the project's long-term memory: w
 ## Workflow
 - 2026-11-13: Orchestrator (main session, Opus, xhigh effort) plus Haiku workers (builder, reviewer; built-in agents forced to Haiku). Why: bulk work is cheap on Haiku and verification stays with the orchestrator. Source: murphmaxxing.com/vault/omega-agent-orchestration.
 - 2026-11-13: Retired GOALS, ROADMAP, PLANS, TASKS, NEXT and MAPS for CLAUDE.md plus docs/. Why: six overlapping files with stale instructions (they still pointed at `sendrow-v2`). Stable product decisions moved here; changing plans live in progress.md.
+- 2026-11-16: `main` holds production code only; tests, docs, scripts and the Claude setup live on `sendrow-v3` and `matthew-start` (Matthew, front-end dev). `scripts/promote-main.sh` builds each main update from v3 with those files removed. Stale docs and one-off reports (CHANGES.html, wireframes, pre-pivot direction, old research) are gitignored and kept locally. Why: Malachi wants main clean; the new dev pulls the working branch.
 
 ## Product (the stable core of the old GOALS.md)
 - Sendrow is the system of record for supplier emissions data, operated through consultants: collected once, evidence attached, shared out in whatever format the recipient asks for.

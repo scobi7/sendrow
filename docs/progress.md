@@ -64,6 +64,7 @@ Deferred tech debt (from the 2026-11-13 audit, not yet approved or decided):
 | Possibly stale (from 2026-09-02, check): Clerk prod Google OAuth, attorney ToS (tool, not advice), Calendly links to a business account | ops |
 
 ## Log
+- 2026-11-16: Repo cleanup for Matthew (front-end, no Neon branch yet). Stale docs and CHANGES.html untracked and gitignored; `matthew-start` branched from v3; main stripped to production code via `scripts/promote-main.sh`.
 - 2026-11-15: main fast-forwarded to fad911b and deployed. Blob store created with a read-write token (the code reads `BLOB_READ_WRITE_TOKEN`; Vercel's default OIDC-only connection would not set it); redeployed; logo upload works on prod. Uploads before today are hash-only. Design partner invited.
 - 2026-11-15: Request access page (Clerk <Waitlist/>, 4c); every "Get started" button now says "Request access"; a bare /signup with no invite ticket redirects there. 4 new browser tests; public and snapshot suites green on a fresh Neon branch (deleted). Fixed a sign-out race in the snapshot tests.
 - 2026-11-15: Merged v3 to main (fast-forward, 27 commits); production deploy Ready, schema push no changes; smoke test on www.sendrow.app passed (homepage 4c, unknown path 404, signed-out /consultant to /login, cron 401). Clerk sign-up set to Invite-only by Malachi.

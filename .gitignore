@@ -21,3 +21,15 @@ tsconfig.tsbuildinfo
 e2e/.auth/
 e2e/results/
 e2e/report/
+
+# local-only files (never on GitHub)
+.Rhistory
+/PRODUCT.md
+/*.pdf
+/CHANGES.html
+.impeccable/
+docs/*.pdf
+docs/wireframes-*
+docs/direction-v1-company-first.md
+docs/design-direction.md
+docs/research-supplier-conversion.md

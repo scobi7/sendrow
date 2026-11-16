@@ -23,7 +23,7 @@ Read this file, then `docs/progress.md`, `docs/decisions.md` and `docs/known-iss
 Update `docs/progress.md` (now, next, one dated log line), add new decisions and gotchas, then run the `reflect` skill: propose skill or CLAUDE.md edits with evidence from the session. Malachi approves them before you apply them.
 
 ## Rules
-- Branches: work on `sendrow-v3`. Never push to `main` unless told. Never commit to `sendrow-v1` (frozen pre-pivot archive).
+- Branches: work on `sendrow-v3`. `matthew-start` is Matthew's front-end branch; merge it into v3 to ship his work. `main` is production code only (no tests, docs, scripts or Claude setup): update it only with `scripts/promote-main.sh`, never a plain merge, and push it only when told. Never commit to `sendrow-v1` (frozen pre-pivot archive).
 - House style: no emojis and no em dashes anywhere in product UI or copy. Grep new copy before calling it done.
 - Do only the essential work that was asked for. No speculative features, no drive-by refactors.
 - Never break `contracts/invariants.md`. Most at risk: tenant isolation (`ownsClient()`), snapshot immutability, formats as config.
